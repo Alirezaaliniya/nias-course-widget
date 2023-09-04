@@ -29,7 +29,7 @@ This plug-in adds lessons widget, which is similar to Assistant Professor, to yo
 
 == Description ==
 
-**Nias course widget** A cool and professional plugin for elementors who want to add a course section in every template they install that has no bugs and is SEO optimized.
+**Nias course widget** A cool and professional plugin for elementors who want to add a course section in every template they install that is SEO optimized.
 
 = Facilities =
 * All departments are similar to assistant professor
