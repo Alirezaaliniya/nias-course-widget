@@ -27,9 +27,9 @@ if ( ! defined( 'ABSPATH' ) ) {
  
  function enqueue_my_files() {
     // Enqueue JavaScript file
-    wp_enqueue_script( 'my-js', plugin_dir_url( __FILE__ ) . 'assets/nias.js', array( 'jquery' ), '1.0.4', false );
+    wp_enqueue_script( 'my-js', plugin_dir_url( __FILE__ ) . 'assets/nias.js', array( 'jquery' ), false );
     // Enqueue CSS file
-    wp_enqueue_style( 'my-css', plugin_dir_url( __FILE__ ) . 'assets/nias.css', array(), '1.0.4' );
+    wp_enqueue_style( 'my-css', plugin_dir_url( __FILE__ ) . 'assets/nias.css');
 }
 add_action( 'wp_enqueue_scripts', 'enqueue_my_files' );
 

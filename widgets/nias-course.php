@@ -149,7 +149,7 @@ class Nias_course_widget extends \Elementor\Widget_Base {
 		   $repeater->add_control(
 			  'subtitlelesson_sub',
 			  [
-				 'label' => __( 'زیرنویس عنوان', 'learn-soogh' ),
+				 'label' => __( 'زیرنویس عنوان', 'nias-course-widget' ),
 				 'type' => \Elementor\Controls_Manager::TEXT,
 				  				                'dynamic' => [
                     'active' => true,
@@ -158,17 +158,29 @@ class Nias_course_widget extends \Elementor\Widget_Base {
 			  ]
 		   );
    
-		 $repeater->add_control(
+		   $this->add_control(
 			'icon',
 			[
-			   'label' => __( 'آیکون درس', 'nias-course-widget' ),
-                'type' => \Elementor\Controls_Manager::ICONS,
-                'default' => [
-                    'value' => 'fas fa-star',
-                    'library' => 'fa-solid', ],
-   
+				'label' => esc_html__( 'Icon', 'nias-course-widget' ),
+				'type' => \Elementor\Controls_Manager::ICONS,
+				'default' => [
+					'value' => 'fas fa-circle',
+					'library' => 'fa-solid',
+				],
+				'recommended' => [
+					'fa-solid' => [
+						'circle',
+						'dot-circle',
+						'square-full',
+					],
+					'fa-regular' => [
+						'circle',
+						'dot-circle',
+						'square-full',
+					],
+				],
 			]
-		 );
+		);
    
 		 $repeater->add_control(
 			'label_lesson',
@@ -267,8 +279,8 @@ class Nias_course_widget extends \Elementor\Widget_Base {
 		$settings = $this->get_settings_for_display();
 		   $tag = $settings['tag_selector_titlelesson'];
 		 $tagsub = $settings['tag_selector_subtitlelesson'];
-		         $icon = $settings['icon']['value'];
-        $icon_library = $settings['icon']['library'];
+	//	$icon = $settings['icon']['value'];
+    //  $icon_library = $settings['icon']['library'];
 		$bought_course = false;
 		$current_user = wp_get_current_user();
 
@@ -300,6 +312,15 @@ class Nias_course_widget extends \Elementor\Widget_Base {
 	  <div class="gheadlinel">
 		  <?php     echo '<' . $tag . '>' . $settings['titlelesson'] . '</' . $tag . '>'; ?>
 		<p class="subtitle-lesson"><?php echo $settings['subtitlelesson']; ?> </p>
+		
+		<div class="my-icon-wrapper">
+			<?php \Elementor\Icons_Manager::render_icon( $settings['icon'], [ 'aria-hidden' => 'true' ] ); ?>
+		</div>
+		<!--
+			<div class="my-icon-wrapper">
+			<?php// \Elementor\Icons_Manager::render_icon( $settings['icon'], [ 'aria-hidden' => 'true' ] ); ?>
+		</div>
+	-->
 	  </div>
 	  <?php if (  'yes' == $settings['arrowsection'] ) : echo($arrow_section); ?><?php endif; ?>
 	</div>
@@ -406,14 +427,14 @@ if (!empty($badge)) {
 	 } elseif ( $lesson_single["private_lesson"] !== "yes" ) {
 		 echo $lesson_single['lesson_content'];
 	 }
-		 ?>
+	endforeach; ?>
   
 	  </div>
 	</div>
   
   
   
-  <?php endforeach; ?>
+  <?php  ?>
   </div>
   </div>
   </div>
