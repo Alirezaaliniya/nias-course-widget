@@ -2,14 +2,12 @@
 /**
  * Plugin Name: Nias course
  * Description: ویجتی جهت ایجاد سایت فروش دوره با المنتور(ویجت دوره را به المنتور اضافه میکند)
- * Plugin URI:  https://d.nias.ir/
+ * Plugin URI:  https://nias.ir/
  * Version:     1.0.4
  * Author:      Alireza aliniya
  * Author URI:  https://nias.ir/
  * Text Domain: nias-course-widget
- * Elementor tested up to: 3.15.3
- * Elementor Pro tested up to: 3.15.3
- */
+ **/
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Exit if accessed directly.
