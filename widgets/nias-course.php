@@ -157,11 +157,12 @@ class Nias_course_widget extends \Elementor\Widget_Base {
    
 			  ]
 		   );
-   
+
+		
 		   $this->add_control(
 			'icon',
 			[
-				'label' => esc_html__( 'Icon', 'nias-course-widget' ),
+				'label' => esc_html__( 'آیکن درس', 'nias-course-widget' ),
 				'type' => \Elementor\Controls_Manager::ICONS,
 				'default' => [
 					'value' => 'fas fa-circle',
@@ -181,24 +182,90 @@ class Nias_course_widget extends \Elementor\Widget_Base {
 				],
 			]
 		);
+
+		///nias custom icon for private leeson
+		$this->add_control(
+			'privateicon',
+			[
+				'label' => esc_html__( 'آیکن قفل درس', 'nias-course-widget' ),
+				'type' => \Elementor\Controls_Manager::ICONS,
+				'default' => [
+					'value' => 'fa fa-lock',
+					'library' => 'fa-solid',
+				],
+				'recommended' => [
+					'fa-solid' => [
+						'circle',
+						'dot-circle',
+						'square-full',
+					],
+					'fa-regular' => [
+						'circle',
+						'dot-circle',
+						'square-full',
+					],
+				],
+			]
+		);
+
+		///nias custom icon for private leeson
+		$this->add_control(
+			'unprivateicon',
+			[
+				'label' => esc_html__( 'آیکن بازشدن درس', 'nias-course-widget' ),
+				'type' => \Elementor\Controls_Manager::ICONS,
+				'default' => [
+					'value' => 'fa fa-unlock',
+					'library' => 'fa-solid',
+				],
+				'recommended' => [
+					'fa-solid' => [
+						'circle',
+						'dot-circle',
+						'square-full',
+					],
+					'fa-regular' => [
+						'circle',
+						'dot-circle',
+						'square-full',
+					],
+				],
+			]
+		);		
    
+		$repeater->add_control(
+			'singlelessonicon',
+			[
+				'label' => esc_html__( 'آیکن مخصوص این درس', 'nias-course-widget' ),
+				'type' => \Elementor\Controls_Manager::ICONS,
+				'default' => [
+					'value' => 'far fa-circle', // Default icon (far fa-circle is a regular circle)
+					'library' => 'fa-regular', // Default library (Font Awesome regular)
+				],
+				'recommended' => [
+					'fa-solid' => [
+						'circle',
+						'dot-circle',
+						'square-full',
+					],
+					'fa-regular' => [
+						'circle',
+						'dot-circle',
+						'square-full',
+					],
+				],
+			]
+		);
 		 $repeater->add_control(
 			'label_lesson',
 			[
-			   'label' => __( 'لیبل درس', 'nias-course-widget' ),
-			   'type' => \Elementor\Controls_Manager::SELECT,
-			   'default' => '',
-			   'options' => [
-				  'free' => __( 'رایگان', 'nias-course-widget' ),
-				  'video' => __( 'ویدئو', 'nias-course-widget' ),
-				  'exam' => __( 'آزمون', 'nias-course-widget' ),
-				  'quiz' => __( 'کوئیز', 'nias-course-widget' ),
-				  'lecture' => __( 'مقاله', 'nias-course-widget' ),
-				  'practice' => __( 'تمرین', 'nias-course-widget' ),
-				  'attachments' => __( 'فایل ضمیمه', 'nias-course-widget' ),
-				  'sound' => __( 'صوت', 'nias-course-widget' ),
+				'label' => __( 'لیبل درس', 'nias-course-widget' ),
+				'type' => \Elementor\Controls_Manager::TEXT,
+												 'dynamic' => [
+				   'active' => true,
 			   ],
-			]
+  
+			 ]
 		 );
    
    
@@ -273,32 +340,39 @@ class Nias_course_widget extends \Elementor\Widget_Base {
  
 
 
-	 protected function render( $instance = [] ) {
+	 protected function render() {
 
 		// get our input from the widget settings.
 		$settings = $this->get_settings_for_display();
 		   $tag = $settings['tag_selector_titlelesson'];
 		 $tagsub = $settings['tag_selector_subtitlelesson'];
-	//	$icon = $settings['icon']['value'];
-    //  $icon_library = $settings['icon']['library'];
 		$bought_course = false;
 		$current_user = wp_get_current_user();
 
+	 
   
   
   
   
-  
-		if( !empty($current_user->user_login) and !empty($current_user->ID) ) {
-			if ( wc_customer_bought_product( $current_user->user_login, $current_user->ID, get_the_id() )  ) {
-				$bought_course = true;
+		if( is_user_logged_in() ) {
+			$current_user = wp_get_current_user();
+			if( !empty($current_user->user_login) && !empty($current_user->ID) ) {
+				global $post;
+				if( isset($post) && !empty($post->ID) ) {
+					$product_id = $post->ID;
+					if ( wc_customer_bought_product( $current_user->user_login, $current_user->ID, $product_id ) ) {
+						$bought_course = true;
+					}
+				}
 			}
 		}
+		
+	
 		global $product;
 		$arrow_section = "<i class='fas fa-chevron-down'></i>";
   
   
-		?>
+	?>
   
   
   
@@ -312,15 +386,7 @@ class Nias_course_widget extends \Elementor\Widget_Base {
 	  <div class="gheadlinel">
 		  <?php     echo '<' . $tag . '>' . $settings['titlelesson'] . '</' . $tag . '>'; ?>
 		<p class="subtitle-lesson"><?php echo $settings['subtitlelesson']; ?> </p>
-		
-		<div class="my-icon-wrapper">
-			<?php \Elementor\Icons_Manager::render_icon( $settings['icon'], [ 'aria-hidden' => 'true' ] ); ?>
-		</div>
-		<!--
-			<div class="my-icon-wrapper">
-			<?php// \Elementor\Icons_Manager::render_icon( $settings['icon'], [ 'aria-hidden' => 'true' ] ); ?>
-		</div>
-	-->
+
 	  </div>
 	  <?php if (  'yes' == $settings['arrowsection'] ) : echo($arrow_section); ?><?php endif; ?>
 	</div>
@@ -330,42 +396,34 @@ class Nias_course_widget extends \Elementor\Widget_Base {
 	  <div class="course-panel-heading">
 		<div class="panel-heading-left">
 		  <div class="course-lesson-icon">
-<?php echo '<i class="' . esc_attr( $lesson_single['icon']['value'] ) . '" aria-hidden="true"></i>'; ?>
+					<i class="ns-icon-wrapper">
+			<?php
+
+			//nias fix icon load in elementor
+			\Elementor\Icons_Manager::render_icon( $settings['icon'], [ 'aria-hidden' => 'true' ] ); 
+			
+			
+			?>
+		</i>
 		  </div>
   
 		  <div class="title">
 			  <?php    echo '<' . $tagsub . '>' . $lesson_single['subtitlelesson'] . '</' . $tagsub . '>';?>
-			  			  	<?php
-$badge = $lesson_single['label_lesson'];
-if (!empty($badge)) {
-    $label_translations = [
-        'free' => 'رایگان',
-        'video' => 'ویدئو',
-        'exam' => 'آزمون',
-        'quiz' => 'کوئیز',
-        'lecture' => 'مقاله',
-        'practice' => 'تمرین',
-        'attachments' => 'فایل ضمیمه',
-        'sound' => 'صوت',
-    ];
-    $translated_label = isset($label_translations[$badge]) ? $label_translations[$badge] : $badge;
-    ?>
-    <span class="badge-item <?php echo $lesson_single['label_lesson']; ?>"><?php echo $translated_label; ?></span>
-<?php } ?>
+    <span class="badge-item"><?php echo $lesson_single['label_lesson']; ?></span>
 			<p class="subtitle"> <?php echo $lesson_single['subtitlelesson_sub']; ?></p>
 		  </div>
   
 		</div>
   
 		<div class="panel-heading-right">
-  
+	
 		  <?php
 		  $preview_video = $lesson_single['preview_video']['url'];
 		  if(!empty($preview_video)): ?>
-		  <a class="video-lesson-preview preview-button" href="<?php echo esc_url( $preview_video ); ?>"><i class="fa fa-play-circle"></i><?php esc_html_e( 'پیش نمایش', 'nias' ); ?></a>
+		  <a class="video-lesson-preview preview-button" href="<?php echo esc_url( $preview_video ); ?>"><i class="fa fa-play-circle"></i><?php esc_html_e( 'پیش نمایش', 'nias-course-widget' ); ?></a>
 		  <a class="video-lesson-preview preview-button for-mobile" href="<?php echo esc_url( $preview_video ); ?>"><i class="fa fa-play-circle"></i></a>
 		  <?php endif; ?>
-  
+		
   
   
   
@@ -385,25 +443,39 @@ if (!empty($badge)) {
   
   
   
-  
+			
   
   
   
 		  <?php if( $lesson_single["private_lesson"] !== "no" ): ?>
-				<div class="private-lesson">
-  
+
+				<div class="ns-private-lesson">
 				<?php if($bought_course): ?>
-				  <?php echo '<i class="fa fa-unlock"></i>'; ?>
+
+					<i class="ns-icon-wrapper">
+				  <?php 
+//nias fix icon load in elementor
+				  \Elementor\Icons_Manager::render_icon( $settings['unprivateicon'], [ 'aria-hidden' => 'true' ] ); 
+					?>
+					</i>
+					
 				  <?php  else : ?>
-					  <?php echo '<i class="fa fa-lock"></i>'; ?>
+
+					<i class="ns-icon-wrapper">
+				  <?php 
+//nias fix icon load in elementor
+				  \Elementor\Icons_Manager::render_icon( $settings['privateicon'], [ 'aria-hidden' => 'true' ] ); 
+					?>
+					</i>
+
 				<?php endif; ?>
   
   
 		  <span>
 		  <?php if($bought_course): ?>
-			<?php esc_html_e('دسترسی دارید', 'nias'); ?>
+			<?php esc_html_e('دسترسی دارید', 'nias-course-widget'); ?>
 			 <?php else : ?>
-			  <?php  esc_html_e('خصوصی', 'nias'); ?>
+			  <?php  esc_html_e('خصوصی', 'nias-course-widget'); ?>
 			<?php endif; ?>
 		  </span>
   
@@ -422,25 +494,25 @@ if (!empty($badge)) {
 		if($bought_course) {
 		 echo $lesson_single['lesson_content'];
 	   } else {
-		 esc_html_e( 'این دوره خصوصی است برای دسترسی کامل باید دوره را خریداری کنید', 'nias' );
+		 esc_html_e( 'این دوره خصوصی است برای دسترسی کامل باید دوره را خریداری کنید', 'nias-course-widget' );
 	   }
 	 } elseif ( $lesson_single["private_lesson"] !== "yes" ) {
 		 echo $lesson_single['lesson_content'];
 	 }
-	endforeach; ?>
+	 ?>
   
-	  </div>
-	</div>
-  
-  
-  
-  <?php  ?>
-  </div>
-  </div>
-  </div>
-  
-	 <?php }
-  
-  }
+	 </div>
+   </div>
+ 
+ 
+ 
+ <?php endforeach; ?>
+ </div>
+ </div>
+ </div>
+ 
+	<?php }
+ 
+ }
   
   

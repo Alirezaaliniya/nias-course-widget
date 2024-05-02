@@ -5,21 +5,21 @@ author: Alireza Alinia
 
 Contributors: Nias
 
-author URI: https://d.nias.ir/
+author URI: https://nias.ir/
 
-Donate link: https://d.nias.ir/
+Donate link: https://nias.ir/
 
-plugin URI: https://d.nias.ir/
+plugin URI: https://nias.ir/
 
 Tags: assistant professor, LMS elementor, Elementor course widget, Nias widget
 
 Requires at least: 5.8
 
-Tested up to: 6.3.1
+Tested up to: 6.5.2
 
 Requires PHP: 7.2
 
-Stable tag: 6.0.0
+Stable tag: 1.0.0
 
 License: GPLv2 (or later)
 
@@ -42,7 +42,7 @@ This plug-in adds lessons widget, which is similar to Assistant Professor, to yo
  
 
 = Support =
-* [Support in Nias] (https://d.nias.ir/)
+* [Support in Nias] (https://nias.ir/)
 
 == Installation ==
 1. Upload `nias-course-widget` folder to the `/wp-content/plugins/` directory
