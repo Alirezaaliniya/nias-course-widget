@@ -10,6 +10,53 @@ if ( ! defined( 'ABSPATH' ) ) {
  *
  * @since 1.0.0
  */
+
+
+ //spot player function
+ function niasspotdata(){
+    $current_user_id = get_current_user_id();
+    $orders = wc_get_orders( array(
+        'customer' => $current_user_id,
+    ) );
+    $meta_values = array();
+    foreach ( $orders as $order ) {
+        $meta_data = $order->get_meta( '_spotplayer_data', true );
+        if ( $meta_data ) {
+            $unserialized_data = maybe_unserialize( $meta_data );
+            if ( $unserialized_data !== false ) {
+                $meta_values[] = array(
+                    'name' => $unserialized_data['name'],
+                    'watermark' => $unserialized_data['watermark']['texts'][0]['text'],
+                    'key' => $unserialized_data['key']
+                );
+            }
+        }
+    }
+    if ( !empty( $meta_values ) ) {
+		?>
+     <div>
+		<p>لایسنس این دوره با اطلاعات زیر برای شما ثبت شد</p>
+		<?php
+        foreach ( $meta_values as $meta_value ) {
+            echo '
+			
+            نام: ' . esc_html( $meta_value['name'] ) . '</p>';
+            echo '<p>واترمارک: ' . esc_html( $meta_value['watermark'] ) . '</p>';
+            echo '
+			<label>کلید لایسنس:</label>
+			<textarea>' . esc_html( $meta_value['key'] ) . '</textarea>
+			<button>کپی لایسنس</button>
+			';
+        }
+        echo '</div>';
+    } else {
+        echo '<p>لایسنس این دوره برای شما در اسپات ثبت نشده است</p>';
+    }
+} 
+
+
+
+///ns main code of widget
 class Nias_course_widget extends \Elementor\Widget_Base {
 	public function get_name() {
 		return 'lessons';
@@ -158,89 +205,17 @@ class Nias_course_widget extends \Elementor\Widget_Base {
 			  ]
 		   );
 
-		
-		   $this->add_control(
-			'icon',
-			[
-				'label' => esc_html__( 'آیکن درس', 'nias-course-widget' ),
-				'type' => \Elementor\Controls_Manager::ICONS,
-				'default' => [
-					'value' => 'fas fa-circle',
-					'library' => 'fa-solid',
-				],
-				'recommended' => [
-					'fa-solid' => [
-						'circle',
-						'dot-circle',
-						'square-full',
-					],
-					'fa-regular' => [
-						'circle',
-						'dot-circle',
-						'square-full',
-					],
-				],
-			]
-		);
+	
 
-		///nias custom icon for private leeson
-		$this->add_control(
-			'privateicon',
-			[
-				'label' => esc_html__( 'آیکن قفل درس', 'nias-course-widget' ),
-				'type' => \Elementor\Controls_Manager::ICONS,
-				'default' => [
-					'value' => 'fa fa-lock',
-					'library' => 'fa-solid',
-				],
-				'recommended' => [
-					'fa-solid' => [
-						'circle',
-						'dot-circle',
-						'square-full',
-					],
-					'fa-regular' => [
-						'circle',
-						'dot-circle',
-						'square-full',
-					],
-				],
-			]
-		);
-
-		///nias custom icon for private leeson
-		$this->add_control(
-			'unprivateicon',
-			[
-				'label' => esc_html__( 'آیکن بازشدن درس', 'nias-course-widget' ),
-				'type' => \Elementor\Controls_Manager::ICONS,
-				'default' => [
-					'value' => 'fa fa-unlock',
-					'library' => 'fa-solid',
-				],
-				'recommended' => [
-					'fa-solid' => [
-						'circle',
-						'dot-circle',
-						'square-full',
-					],
-					'fa-regular' => [
-						'circle',
-						'dot-circle',
-						'square-full',
-					],
-				],
-			]
-		);		
-   
+   ///nias custom icon for every leeson
 		$repeater->add_control(
 			'singlelessonicon',
 			[
 				'label' => esc_html__( 'آیکن مخصوص این درس', 'nias-course-widget' ),
 				'type' => \Elementor\Controls_Manager::ICONS,
 				'default' => [
-					'value' => 'far fa-circle', // Default icon (far fa-circle is a regular circle)
-					'library' => 'fa-regular', // Default library (Font Awesome regular)
+					'value' => 'far fa-circle', 
+					'library' => 'fa-regular', 
 				],
 				'recommended' => [
 					'fa-solid' => [
@@ -333,9 +308,227 @@ class Nias_course_widget extends \Elementor\Widget_Base {
     );
 		 $this->end_controls_section();
    
+		 $this->start_controls_section(
+			'nspublicicontext',
+			[
+			   'label' => esc_html__( 'آیکن و متن عمومی', 'nias-course-widget' ),
+			   'type' => \Elementor\Controls_Manager::SECTION,
+			]
+		 );
    
-   
+		
+		 $this->add_control(
+			'icon',
+			[
+				'label' => esc_html__( 'آیکن درس', 'nias-course-widget' ),
+				'type' => \Elementor\Controls_Manager::ICONS,
+				'default' => [
+					'value' => 'fas fa-circle',
+					'library' => 'fa-solid',
+				],
+				'recommended' => [
+					'fa-solid' => [
+						'circle',
+						'dot-circle',
+						'square-full',
+					],
+					'fa-regular' => [
+						'circle',
+						'dot-circle',
+						'square-full',
+					],
+				],
+			]
+		);
+///nias notice about icon lesson publicc
+		$this->add_control(
+			'ns_icon_notice',
+			[
+				'type' => \Elementor\Controls_Manager::NOTICE,
+				'notice_type' => 'info',
+				'dismissible' => true,
+				'heading' => esc_html__( 'آیکن درس', 'nias-course-widget' ),
+				'content' => esc_html__( 'این آیکن برای تمام دروس نمایش داده میشود', 'nias-course-widget' ),
+			]
+		);
 
+		///nias custom icon for private leeson
+		$this->add_control(
+			'privateicon',
+			[
+				'label' => esc_html__( 'آیکن قفل درس', 'nias-course-widget' ),
+				'type' => \Elementor\Controls_Manager::ICONS,
+				'default' => [
+					'value' => 'fa fa-lock',
+					'library' => 'fa-solid',
+				],
+				'recommended' => [
+					'fa-solid' => [
+						'circle',
+						'dot-circle',
+						'square-full',
+					],
+					'fa-regular' => [
+						'circle',
+						'dot-circle',
+						'square-full',
+					],
+				],
+			]
+		);
+
+		///nias custom icon for private leeson
+		$this->add_control(
+			'unprivateicon',
+			[
+				'label' => esc_html__( 'آیکن بازشدن درس', 'nias-course-widget' ),
+				'type' => \Elementor\Controls_Manager::ICONS,
+				'default' => [
+					'value' => 'fa fa-unlock',
+					'library' => 'fa-solid',
+				],
+				'recommended' => [
+					'fa-solid' => [
+						'circle',
+						'dot-circle',
+						'square-full',
+					],
+					'fa-regular' => [
+						'circle',
+						'dot-circle',
+						'square-full',
+					],
+				],
+			]
+		);	
+	
+		///nias download icon
+		$this->add_control(
+			'nsdownloadicon',
+			[
+				'label' => esc_html__( 'آیکون دانلود', 'nias-course-widget' ),
+				'type' => \Elementor\Controls_Manager::ICONS,
+				'default' => [
+					'value' => 'fa fa-download',
+					'library' => 'fa-solid',
+				],
+				'recommended' => [
+					'fa-solid' => [
+						'circle',
+						'dot-circle',
+						'square-full',
+					],
+					'fa-regular' => [
+						'circle',
+						'dot-circle',
+						'square-full',
+					],
+				],
+			]
+		);
+		
+		
+
+		///nias custom icon for private leeson
+		$this->add_control(
+			'nspreviewicon',
+			[
+				'label' => esc_html__( 'آیکون پیش نمایش', 'nias-course-widget' ),
+				'type' => \Elementor\Controls_Manager::ICONS,
+				'default' => [
+					'value' => 'fa fa-play-circle',
+					'library' => 'fa-solid',
+				],
+				'recommended' => [
+					'fa-solid' => [
+						'circle',
+						'dot-circle',
+						'square-full',
+					],
+					'fa-regular' => [
+						'circle',
+						'dot-circle',
+						'square-full',
+					],
+				],
+			]
+		);
+		$this->add_control(
+			'nsprivatetextcontent',
+			[
+			   'label' => esc_html__( 'متن دوره خصوصی در محتوا', 'nias-course-widget' ),
+			   'type' => \Elementor\Controls_Manager::WYSIWYG,
+								                'dynamic' => [
+                    'active' => true,
+                ],
+				'default' => esc_html__( 'این دوره خصوصی است برای دسترسی کامل باید دوره را خریداری کنید', 'nias-course-widget' ),
+				'placeholder' => esc_html__( 'این دوره خصوصی است برای دسترسی کامل باید دوره را خریداری کنید', 'nias-course-widget' ),
+			]
+		 );
+
+		 $this->add_control(
+			'nspreviewtext',
+			[
+				'label' => esc_html__( 'متن دکمه پیش نمایش', 'nias-course-widget' ),
+				'type' => \Elementor\Controls_Manager::TEXT,
+				'default' => esc_html__( 'پیش نمایش', 'nias-course-widget' ),
+				'placeholder' => esc_html__( 'پیش نمایش', 'nias-course-widget' ),
+			]
+		);
+		$this->add_control(
+			'nsdastresi',
+			[
+				'label' => esc_html__( 'متن دسترسی به دوره', 'nias-course-widget' ),
+				'type' => \Elementor\Controls_Manager::TEXT,
+				'default' => esc_html__( 'دسترسی دارید', 'nias-course-widget' ),
+				'placeholder' => esc_html__( 'دسترسی دارید', 'nias-course-widget' ),
+			]
+		);
+		$this->add_control(
+			'nskhososi',
+			[
+				'label' => esc_html__( 'متن عدم دسترسی به دوره', 'nias-course-widget' ),
+				'type' => \Elementor\Controls_Manager::TEXT,
+				'default' => esc_html__( 'خصوصی', 'nias-course-widget' ),
+				'placeholder' => esc_html__( 'خصوصی', 'nias-course-widget' ),
+			]
+		);
+
+		 $this->end_controls_section();
+
+	
+   
+		 $this->start_controls_section(
+			'nsspotplayer',
+			[
+			   'label' => esc_html__( 'اسپات پلیر', 'nias-course-widget' ),
+			   'type' => \Elementor\Controls_Manager::SECTION,
+			]
+		 );
+
+		 $this->add_control(
+			'ns_show_spot',
+			[
+				'label' => esc_html__( 'نمایش لایسنس اسپات', 'nias-course-widget' ),
+				'type' => \Elementor\Controls_Manager::SWITCHER,
+				'label_on' => esc_html__( 'نمایش', 'nias-course-widget' ),
+				'label_off' => esc_html__( 'پنهان سازی', 'nias-course-widget' ),
+				'return_value' => 'yes',
+				'default' => 'no',
+			]
+		);
+		$this->add_control(
+			'ns_spot_notice',
+			[
+				'type' => \Elementor\Controls_Manager::NOTICE,
+				'notice_type' => 'danger',
+				'dismissible' => true,
+				'heading' => esc_html__( 'خیلی مهم', 'nias-course-widget' ),
+				'content' => esc_html__( 'لطفاً فقط یکبار در یکی از ویجت های درس از این گزینه استفاده کنید!', 'nias-course-widget' ),
+			]
+		);
+
+		 $this->end_controls_section();
 		}
  
 
@@ -349,7 +542,9 @@ class Nias_course_widget extends \Elementor\Widget_Base {
 		$bought_course = false;
 		$current_user = wp_get_current_user();
 
-	 
+	///spotplayer
+
+
   
   
   
@@ -371,13 +566,14 @@ class Nias_course_widget extends \Elementor\Widget_Base {
 		global $product;
 		$arrow_section = "<i class='fas fa-chevron-down'></i>";
   
-  
+		if (  'yes' == $settings['ns_show_spot'] ) {
+			niasspotdata();
+		}
 	?>
   
   
   
-  
-  
+
   <div class="elementory-section">
   <div class="course-section">
   
@@ -398,12 +594,13 @@ class Nias_course_widget extends \Elementor\Widget_Base {
 		  <div class="course-lesson-icon">
 					<i class="ns-icon-wrapper">
 			<?php
-
 			//nias fix icon load in elementor
 			\Elementor\Icons_Manager::render_icon( $settings['icon'], [ 'aria-hidden' => 'true' ] ); 
-			
-			
 			?>
+		</i>
+		<i class="ns-icon-wrapper2">
+   			 <?php \Elementor\Icons_Manager::render_icon( $lesson_single['singlelessonicon'], [ 'aria-hidden' => 'true' ] ); 
+ ?>
 		</i>
 		  </div>
   
@@ -420,8 +617,30 @@ class Nias_course_widget extends \Elementor\Widget_Base {
 		  <?php
 		  $preview_video = $lesson_single['preview_video']['url'];
 		  if(!empty($preview_video)): ?>
-		  <a class="video-lesson-preview preview-button" href="<?php echo esc_url( $preview_video ); ?>"><i class="fa fa-play-circle"></i><?php esc_html_e( 'پیش نمایش', 'nias-course-widget' ); ?></a>
-		  <a class="video-lesson-preview preview-button for-mobile" href="<?php echo esc_url( $preview_video ); ?>"><i class="fa fa-play-circle"></i></a>
+		  <a class="video-lesson-preview preview-button" href="<?php echo esc_url( $preview_video ); ?>">
+
+		  <i>
+		 	 	<?php 
+//nias preview icon
+				  \Elementor\Icons_Manager::render_icon( $settings['nspreviewicon'], [ 'aria-hidden' => 'true' ] ); 
+				?>
+
+		  </i>
+		  
+		  <?php echo $settings['nspreviewtext']; ?>
+		
+		</a>
+		  <a class="video-lesson-preview preview-button for-mobile" href="<?php echo esc_url( $preview_video ); ?>">
+		  
+		  <i>
+		  <?php 
+//nias preview icon
+				  \Elementor\Icons_Manager::render_icon( $settings['nspreviewicon'], [ 'aria-hidden' => 'true' ] ); 
+				?>
+
+		  </i>
+		
+		</a>
 		  <?php endif; ?>
 		
   
@@ -433,11 +652,33 @@ class Nias_course_widget extends \Elementor\Widget_Base {
 				  if(!empty($download_lesson)):
 		  ?>
 				<?php if($bought_course): ?>
-			<a class="download-button" href="<?php echo esc_url( $download_lesson ); ?>"><i class="fa fa-download"></i></a>
+			<a class="download-button" href="<?php echo esc_url( $download_lesson ); ?>">
+			<i>
+			<?php 
+//nias download icon
+				  \Elementor\Icons_Manager::render_icon( $settings['nsdownloadicon'], [ 'aria-hidden' => 'true' ] ); 
+			?>
+			</i>
+			</a>
 				<?php elseif ($lesson_single["private_lesson"] !== "yes") : ?>
-			<a class="download-button" href="<?php echo esc_url( $download_lesson ); ?>"><i class="fa fa-download"></i></a>
+			<a class="download-button" href="<?php echo esc_url( $download_lesson ); ?>">
+			<i>
+			<?php 
+//nias download icon
+				  \Elementor\Icons_Manager::render_icon( $settings['nsdownloadicon'], [ 'aria-hidden' => 'true' ] ); 
+			?>
+			</i>
+			</a>
 		  <?php elseif ($lesson_single["private_lesson"] !== "no") : ?>
-					<div class="download-button gray"><i class="fa fa-download"></i></div>
+			<div class="download-button gray">
+						
+			<i>
+			<?php 
+			//nias download icon
+				  \Elementor\Icons_Manager::render_icon( $settings['nsdownloadicon'], [ 'aria-hidden' => 'true' ] ); 
+			?>
+			</i>
+					</div>
 				<?php endif; ?>
 				<?php endif; ?>
   
@@ -473,9 +714,9 @@ class Nias_course_widget extends \Elementor\Widget_Base {
   
 		  <span>
 		  <?php if($bought_course): ?>
-			<?php esc_html_e('دسترسی دارید', 'nias-course-widget'); ?>
+			<?php echo $settings['nsdastresi']; ?>
 			 <?php else : ?>
-			  <?php  esc_html_e('خصوصی', 'nias-course-widget'); ?>
+				<?php echo $settings['nskhososi']; ?>
 			<?php endif; ?>
 		  </span>
   
@@ -494,7 +735,7 @@ class Nias_course_widget extends \Elementor\Widget_Base {
 		if($bought_course) {
 		 echo $lesson_single['lesson_content'];
 	   } else {
-		 esc_html_e( 'این دوره خصوصی است برای دسترسی کامل باید دوره را خریداری کنید', 'nias-course-widget' );
+		echo $settings['nsprivatetextcontent']; 
 	   }
 	 } elseif ( $lesson_single["private_lesson"] !== "yes" ) {
 		 echo $lesson_single['lesson_content'];
