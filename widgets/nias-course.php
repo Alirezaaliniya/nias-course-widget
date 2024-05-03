@@ -529,6 +529,29 @@ class Nias_course_widget extends \Elementor\Widget_Base {
 		);
 
 		 $this->end_controls_section();
+
+/////////////////////////////////////////////////style
+
+		 $this->start_controls_section(
+			'nsstylewidget',
+			[
+				'label' => esc_html__( 'استایل باکس', 'nias-course-widget' ),
+				'tab' => \Elementor\Controls_Manager::TAB_STYLE,
+			]
+		);
+
+		$this->add_control(
+			'nsbackground_season',
+			[
+				'label' => esc_html__( 'Text Color', 'textdomain' ),
+				'type' => \Elementor\Controls_Manager::COLOR,
+				'selectors' => [
+					'{{WRAPPER}} .your-class' => 'color: {{VALUE}}',
+				],
+			]
+		);
+
+		$this->end_controls_section();
 		}
  
 
@@ -542,12 +565,8 @@ class Nias_course_widget extends \Elementor\Widget_Base {
 		$bought_course = false;
 		$current_user = wp_get_current_user();
 
+
 	///spotplayer
-
-
-  
-  
-  
   
 		if( is_user_logged_in() ) {
 			$current_user = wp_get_current_user();
@@ -562,7 +581,6 @@ class Nias_course_widget extends \Elementor\Widget_Base {
 			}
 		}
 		
-	
 		global $product;
 		$arrow_section = "<i class='fas fa-chevron-down'></i>";
   
@@ -574,24 +592,24 @@ class Nias_course_widget extends \Elementor\Widget_Base {
   
   
 
-  <div class="elementory-section">
-  <div class="course-section">
+  <div class="nselementory-section">
+  <div class="nscourse-section">
   
-	<div class="course-section-title-elementory <?php if (  'yes' == $settings['arrowsection'] ) : echo('cursor-pointer'); ?><?php endif; ?>" >
+	<div class="nscourse-section-title-elementory <?php if (  'yes' == $settings['arrowsection'] ) : echo('cursor-pointer'); ?><?php endif; ?>" >
 	  <?php echo '<img src="' . $settings['image']['url'] . '">'; ?>
-	  <div class="gheadlinel">
+	  <div class="nsgheadlinel">
 		  <?php     echo '<' . $tag . '>' . $settings['titlelesson'] . '</' . $tag . '>'; ?>
-		<p class="subtitle-lesson"><?php echo $settings['subtitlelesson']; ?> </p>
+		<p class="nssubtitle-lesson"><?php echo $settings['subtitlelesson']; ?> </p>
 
 	  </div>
 	  <?php if (  'yes' == $settings['arrowsection'] ) : echo($arrow_section); ?><?php endif; ?>
 	</div>
   
-	<div class="panel-group <?php if (  'yes' == $settings['arrowsection'] ) : echo('deactive'); ?><?php endif; ?>">
+	<div class="nspanel-group <?php if (  'yes' == $settings['arrowsection'] ) : echo('deactive'); ?><?php endif; ?>">
 	<?php foreach (  $settings['lessons_list'] as $lesson_single ): ?>
-	  <div class="course-panel-heading">
-		<div class="panel-heading-left">
-		  <div class="course-lesson-icon">
+	  <div class="nscourse-panel-heading">
+		<div class="nspanel-heading-left">
+		  <div class="nscourse-lesson-icon">
 					<i class="ns-icon-wrapper">
 			<?php
 			//nias fix icon load in elementor
@@ -727,8 +745,8 @@ class Nias_course_widget extends \Elementor\Widget_Base {
   
 	</div>
   
-	<div class="panel-content">
-	  <div class="panel-content-inner">
+	<div class="nspanel-content">
+	  <div class="nspanel-content-inner">
   
 		<?php
 		if( $lesson_single["private_lesson"] !== "no" ) {

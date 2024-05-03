@@ -1,4 +1,4 @@
-.elementory-section .course-section .panel-group .course-panel-heading {
+.nselementory-section .nscourse-section .nspanel-group .nscourse-panel-heading {
     border-top: 1px solid #e9ecef;
     display: -webkit-box;
     display: -ms-flexbox;
@@ -12,17 +12,17 @@
     transition: background-color .2s ease-out
 }
 
-.elementory-section .course-section .panel-group .course-panel-heading.active,
-.elementory-section .course-section .panel-group .course-panel-heading:hover {
+.nselementory-section .nscourse-section .nspanel-group .nscourse-panel-heading.active,
+.nselementory-section .nscourse-section .nspanel-group .nscourse-panel-heading:hover {
     background-color: #f8f9fa
 }
 
-.elementory-section .course-section .panel-group .course-panel-heading.active .panel-heading-left .course-lesson-icon i,
-.elementory-section .course-section .panel-group .course-panel-heading:hover .panel-heading-left .course-lesson-icon i {
+.nselementory-section .nscourse-section .nspanel-group .nscourse-panel-heading.active .nspanel-heading-left .nscourse-lesson-icon i,
+.nselementory-section .nscourse-section .nspanel-group .nscourse-panel-heading:hover .nspanel-heading-left .nscourse-lesson-icon i {
     color: #ec406a
 }
 
-.elementory-section .course-section .panel-group .course-panel-heading .panel-heading-left {
+.nselementory-section .nscourse-section .nspanel-group .nscourse-panel-heading .nspanel-heading-left {
     display: -webkit-box;
     display: -ms-flexbox;
     display: flex;
@@ -34,28 +34,28 @@
     flex-grow: 1
 }
 
-.elementory-section .course-section .panel-group .course-panel-heading .panel-heading-left .title {
+.nselementory-section .nscourse-section .nspanel-group .nscourse-panel-heading .nspanel-heading-left .title {
   margin-bottom: 0px;
 }
 
-.elementory-section .course-section .panel-group .course-panel-heading .panel-heading-left .course-lesson-icon {
+.nselementory-section .nscourse-section .nspanel-group .nscourse-panel-heading .nspanel-heading-left .nscourse-lesson-icon {
     line-height: 1;
     margin-left: 15px
 }
 
-.elementory-section .course-section .panel-group .course-panel-heading .panel-heading-left .course-lesson-icon i {
+.nselementory-section .nscourse-section .nspanel-group .nscourse-panel-heading .nspanel-heading-left .nscourse-lesson-icon i {
     color: #d4d9dd;
     font-size: 20px;
     -webkit-transition: color .2s ease-out;
     transition: color .2s ease-out
 }
 
-.elementory-section .course-section .panel-group .course-panel-heading .panel-heading-left .title h4 {
+.nselementory-section .nscourse-section .nspanel-group .nscourse-panel-heading .nspanel-heading-left .title h4 {
     font-size: 16px;
     margin: 0 0 8px
 }
 
-.elementory-section .course-section .panel-group .course-panel-heading .panel-heading-left .title>p {
+.nselementory-section .nscourse-section .nspanel-group .nscourse-panel-heading .nspanel-heading-left .title>p {
     font-size: 14px;
     color: #adb5bd;
     font-weight: 400;
@@ -64,7 +64,7 @@
 	width:100%;
 }
 
-.elementory-section .course-section .panel-group .course-panel-heading .panel-heading-left .badge-item {
+.nselementory-section .nscourse-section .nspanel-group .nscourse-panel-heading .nspanel-heading-left .badge-item {
     background-color: #e9ecef;
     padding: 2px 6px;
     display: inline-block;
@@ -76,47 +76,47 @@
     order: -9999;
 }
 
-.elementory-section .course-section .panel-group .course-panel-heading .panel-heading-left .badge-item.video {
+.nselementory-section .nscourse-section .nspanel-group .nscourse-panel-heading .nspanel-heading-left .badge-item.video {
     background-color: #65bded;
     color: #fff
 }
 
-.elementory-section .course-section .panel-group .course-panel-heading .panel-heading-left .badge-item.quiz {
+.nselementory-section .nscourse-section .nspanel-group .nscourse-panel-heading .nspanel-heading-left .badge-item.quiz {
     background-color: #bd83ef;
     color: #fff
 }
 
-.elementory-section .course-section .panel-group .course-panel-heading .panel-heading-left .badge-item.lecture {
+.nselementory-section .nscourse-section .nspanel-group .nscourse-panel-heading .nspanel-heading-left .badge-item.lecture {
     background-color: #68e8b7;
     color: #fff
 }
 
-.elementory-section .course-section .panel-group .course-panel-heading .panel-heading-left .badge-item.exam {
+.nselementory-section .nscourse-section .nspanel-group .nscourse-panel-heading .nspanel-heading-left .badge-item.exam {
     background-color: #e89369;
     color: #fff
 }
 
-.elementory-section .course-section .panel-group .course-panel-heading .panel-heading-left .badge-item.practice {
+.nselementory-section .nscourse-section .nspanel-group .nscourse-panel-heading .nspanel-heading-left .badge-item.practice {
     background-color: #eada68;
     color: #fff
 }
 
-.elementory-section .course-section .panel-group .course-panel-heading .panel-heading-left .badge-item.attachments {
+.nselementory-section .nscourse-section .nspanel-group .nscourse-panel-heading .nspanel-heading-left .badge-item.attachments {
     background-color: #4ece3d;
     color: #fff
 }
 
-.elementory-section .course-section .panel-group .course-panel-heading .panel-heading-left .badge-item.sound {
+.nselementory-section .nscourse-section .nspanel-group .nscourse-panel-heading .nspanel-heading-left .badge-item.sound {
     background-color: #a76388;
     color: #fff
 }
 
-.elementory-section .course-section .panel-group .course-panel-heading .panel-heading-left .badge-item.free {
+.nselementory-section .nscourse-section .nspanel-group .nscourse-panel-heading .nspanel-heading-left .badge-item.free {
     background-color: #8be669;
     color: #fff
 }
 
-.elementory-section .course-section .panel-group .course-panel-heading .panel-heading-right {
+.nselementory-section .nscourse-section .nspanel-group .nscourse-panel-heading .panel-heading-right {
     display: -webkit-box;
     display: -ms-flexbox;
     display: flex;
@@ -125,7 +125,7 @@
     justify-content: flex-end
 }
 
-.elementory-section .course-section .panel-group .course-panel-heading .private-lesson {
+.nselementory-section .nscourse-section .nspanel-group .nscourse-panel-heading .private-lesson {
     margin-left: 6px;
     padding-right: 0
 }
@@ -135,21 +135,21 @@
 }
 
 @media (max-width:767.98px) {
-    .elementory-section .course-section .panel-group .course-panel-heading .private-lesson i {
+    .nselementory-section .nscourse-section .nspanel-group .nscourse-panel-heading .private-lesson i {
         margin-right: 0!important
     }
-    .elementory-section .course-section .panel-group .course-panel-heading .private-lesson span {
+    .nselementory-section .nscourse-section .nspanel-group .nscourse-panel-heading .private-lesson span {
         display: none
     }
 }
 
-.elementory-section .course-section .panel-group .course-panel-heading .preview-button {
+.nselementory-section .nscourse-section .nspanel-group .nscourse-panel-heading .preview-button {
     background-color: #ff6060;
     color: #fff;
     border-radius: 30px
 }
 
-.elementory-section .course-section .panel-group .course-panel-heading .download-button {
+.nselementory-section .nscourse-section .nspanel-group .nscourse-panel-heading .download-button {
     background-color: #4ece3d;
     margin-right: 8px;
     color: #fff;
@@ -157,7 +157,7 @@
     border-radius: 30px
 }
 
-.elementory-section .course-section .panel-group .course-panel-heading .download-button.gray {
+.nselementory-section .nscourse-section .nspanel-group .nscourse-panel-heading .download-button.gray {
     background-color: #bac2c5;
     margin-right: 8px;
     color: #fff;
@@ -165,44 +165,44 @@
 }
 
 @media (max-width:767.98px) {
-    .elementory-section .course-section .panel-group .course-panel-heading .preview-button {
+    .nselementory-section .nscourse-section .nspanel-group .nscourse-panel-heading .preview-button {
         display: none
     }
 }
 
-.elementory-section .course-section .panel-group .course-panel-heading .preview-button.for-mobile {
+.nselementory-section .nscourse-section .nspanel-group .nscourse-panel-heading .preview-button.for-mobile {
     display: none
 }
 
 @media (max-width:767.98px) {
-    .elementory-section .course-section .panel-group .course-panel-heading .preview-button.for-mobile {
+    .nselementory-section .nscourse-section .nspanel-group .nscourse-panel-heading .preview-button.for-mobile {
         display: block
     }
 }
 
-.elementory-section .course-section .panel-group .course-panel-heading .preview-button.for-mobile i {
+.nselementory-section .nscourse-section .nspanel-group .nscourse-panel-heading .preview-button.for-mobile i {
     margin-left: 0
 }
 
-.elementory-section .course-section .panel-group .course-panel-heading .download-button,
-.elementory-section .course-section .panel-group .course-panel-heading .preview-button,
-.elementory-section .course-section .panel-group .course-panel-heading .private-lesson {
+.nselementory-section .nscourse-section .nspanel-group .nscourse-panel-heading .download-button,
+.nselementory-section .nscourse-section .nspanel-group .nscourse-panel-heading .preview-button,
+.nselementory-section .nscourse-section .nspanel-group .nscourse-panel-heading .private-lesson {
     font-size: 14px;
     line-height: 1.5;
     padding: 7px 10px
 }
 
-.elementory-section .course-section .panel-group .course-panel-heading .preview-button i,
-.elementory-section .course-section .panel-group .course-panel-heading .private-lesson i {
+.nselementory-section .nscourse-section .nspanel-group .nscourse-panel-heading .preview-button i,
+.nselementory-section .nscourse-section .nspanel-group .nscourse-panel-heading .private-lesson i {
     margin-left: 5px
 }
 
-.elementory-section .course-section .panel-group .panel-content {
+.nselementory-section .nscourse-section .nspanel-group .nspanel-content {
     overflow: hidden;
     background-color: #f8f9fa;
 }
 
-.elementory-section .course-section .panel-group .panel-content .panel-content-inner {
+.nselementory-section .nscourse-section .nspanel-group .nspanel-content .nsnspanel-content-inner {
     padding: 15px 15px 20px 15px;
     background: #fff;
     font-size: 13px;
@@ -330,23 +330,23 @@
 }
 
 
-.elementory-section .course-section-title-elementory {
+.nselementory-section .nscourse-section-title-elementory {
     margin: 0;
     padding: 5px 10px;
     display: flex;
     align-items: center;
 }
 
-.elementory-section .course-section-title-elementory.cursor-pointer {
+.nselementory-section .nscourse-section-title-elementory.cursor-pointer {
     cursor: pointer
 }
 
-.elementory-section .course-section-title-elementory .far {
+.nselementory-section .nscourse-section-title-elementory .far {
     padding: 4px 0 4px 10px;
     color: #7b868a
 }
 
-.elementory-section .course-section-title-elementory .fas {
+.nselementory-section .nscourse-section-title-elementory .fas {
 	    display: flex;
     justify-content: center;
     align-items: center;
@@ -362,25 +362,25 @@
     color: #bdbdbd;
 }
 
-.elementory-section .course-section-title-elementory img {
+.nselementory-section .nscourse-section-title-elementory img {
   margin-left: 15px;
   display: inline-block;
 }
 
-.elementory-section .course-section-title-elementory .gheadlinel {
+.nselementory-section .nscourse-section-title-elementory .nsgheadlinel {
     display: inline-block;
     margin-right: 7px;
     color: #111;
 }
-.elementory-section .course-section-title-elementory .gheadlinel span {
+.nselementory-section .nscourse-section-title-elementory .nsgheadlinel span {
   font-size:18px;
   font-weight: 600;
 }
-.elementory-section .course-section-title-elementory .gheadlinel p {
+.nselementory-section .nscourse-section-title-elementory .nsgheadlinel p {
   margin-bottom: 0;
 }
 
-.elementory-section .course-section.active .course-section-title-elementory .fas {
+.nselementory-section .nscourse-section.active .nscourse-section-title-elementory .fas {
     -webkit-transform: rotate(180deg);
     -moz-transform: rotate(180deg);
     -ms-transform: rotate(180deg);
@@ -388,29 +388,29 @@
     transform: rotate(180deg);
 	
 }
-.elementory-section .course-section {
+.nselementory-section .nscourse-section {
 	background: #fff;
     border: 1px solid #e9ecef;
 	border-radius: 10px;
 }
 
 @media (max-width: 991.98px) {
-  .elementory-section .course-section-title-elementory .gheadlinel span {
+  .nselementory-section .nscourse-section-title-elementory .nsgheadlinel span {
     font-size: 14px;
     font-weight: 600;
 }
-.elementory-section .course-section-title-elementory .gheadlinel {
+.nselementory-section .nscourse-section-title-elementory .nsgheadlinel {
     float: none;
     width: 100%;
     padding-left: 11px;
 }
-.elementory-section .course-section-title-elementory .gheadlinel p {
+.nselementory-section .nscourse-section-title-elementory .nsgheadlinel p {
     font-size: 11px;
 }
-.elementory-section .course-section-title-elementory img {
+.nselementory-section .nscourse-section-title-elementory img {
     margin-left: 5px;
 }
-.elementory-section .course-section {
+.nselementory-section .nscourse-section {
     background: #f7f7f7;
     padding: 10px 10px;
     border: 1px solid #e9ecef;
@@ -420,33 +420,33 @@
 
 }
 
-.panel-group.deactive {
+.nspanel-group.deactive {
     display: none;
 }
 
 @media (max-width:767.98px) {
-.elementory-section .course-section-title-elementory .fa {
+.nselementory-section .nscourse-section-title-elementory .fa {
     left: 14px;
     top:30px;
     font-size: 18px;
   }
-.elementory-section .course-section-title-elementory {
+.nselementory-section .nscourse-section-title-elementory {
     padding: 2px 2px;
 }
-.elementory-section .course-section .panel-group .course-panel-heading .panel-heading-left .title h4 {
+.nselementory-section .nscourse-section .nspanel-group .nscourse-panel-heading .nspanel-heading-left .title h4 {
     font-size: 13px;
 }
-.elementory-section .course-section .panel-group .course-panel-heading .panel-heading-left .title>p {
+.nselementory-section .nscourse-section .nspanel-group .nscourse-panel-heading .nspanel-heading-left .title>p {
     display: none;
 }
-.elementory-section .course-section .panel-group .course-panel-heading {
+.nselementory-section .nscourse-section .nspanel-group .nscourse-panel-heading {
     padding: 15px;
 }
-.elementory-section .course-section .panel-group .course-panel-heading .panel-heading-left .badge-item {
+.nselementory-section .nscourse-section .nspanel-group .nscourse-panel-heading .nspanel-heading-left .badge-item {
     font-size: 11px;
     font-weight: 400;
 }
-.elementory-section .course-section-title-elementory .gheadlinel {
+.nselementory-section .nscourse-section-title-elementory .nsgheadlinel {
     padding-left: 11px;
     line-height: 20px;
 }
@@ -454,16 +454,16 @@
 
 /*panel content nias*/
 
-.panel-content {
+.nspanel-content {
   max-height: 0;
   overflow: hidden;
   transition: max-height 0.3s ease;
 }
 
-.panel-content.active {
+.nspanel-content.active {
   max-height: 1000px; /* Set a default max-height value */
 }
-.course-section-title-elementory.cursor-pointer img, .course-section-title-elementory img {
+.nscourse-section-title-elementory.cursor-pointer img, .nscourse-section-title-elementory img {
     max-height: 58px;
         max-width: 58px !important;
     margin-left: 15px;
@@ -471,7 +471,7 @@
         height: auto!important;
 }
 
-.elementory-section .course-section .panel-group .course-panel-heading .panel-heading-left .title {
+.nselementory-section .nscourse-section .nspanel-group .nscourse-panel-heading .nspanel-heading-left .title {
     display: flex;
     align-items: flex-start;
     flex-wrap: wrap;
