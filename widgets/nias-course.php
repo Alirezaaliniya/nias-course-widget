@@ -213,10 +213,6 @@ class Nias_course_widget extends \Elementor\Widget_Base {
 			[
 				'label' => esc_html__( 'آیکن مخصوص این درس', 'nias-course-widget' ),
 				'type' => \Elementor\Controls_Manager::ICONS,
-				'default' => [
-					'value' => 'far fa-circle', 
-					'library' => 'fa-regular', 
-				],
 				'recommended' => [
 					'fa-solid' => [
 						'circle',
@@ -323,7 +319,7 @@ class Nias_course_widget extends \Elementor\Widget_Base {
 				'label' => esc_html__( 'آیکن درس', 'nias-course-widget' ),
 				'type' => \Elementor\Controls_Manager::ICONS,
 				'default' => [
-					'value' => 'fas fa-circle',
+					'value' => 'fab fa-youtube',
 					'library' => 'fa-solid',
 				],
 				'recommended' => [
@@ -539,14 +535,82 @@ class Nias_course_widget extends \Elementor\Widget_Base {
 				'tab' => \Elementor\Controls_Manager::TAB_STYLE,
 			]
 		);
+		$this->add_group_control(
+			\Elementor\Group_Control_Background::get_type(),
+			[
+				'name' => 'background',
+				'types' => [ 'classic', 'gradient', 'video' ],
+				'selector' => '{{WRAPPER}} .nscourse-section',
+			]
+		);
+		$this->add_group_control(
+			\Elementor\Group_Control_Border::get_type(),
+			[
+				'name' => 'border',
+				'selector' => '{{WRAPPER}} .nscourse-section',
+			]
+		);
+
+		$this->add_responsive_control(
+			'nsmainradius',
+			[
+				'label' => esc_html__( 'نرمی حاشیه', 'nias-course-widget' ),
+				'type' => \Elementor\Controls_Manager::DIMENSIONS,
+				'size_units' => [ 'px', '%', 'em', 'rem', 'custom' ],
+				'default' => [
+					'isLinked' => true,
+				],
+				'selectors' => [
+					'{{WRAPPER}} .nscourse-section' => 'border-radius: {{TOP}}{{UNIT}} {{RIGHT}}{{UNIT}} {{BOTTOM}}{{UNIT}} {{LEFT}}{{UNIT}};',
+				],
+			]
+		);
+
+		$this->add_responsive_control(
+			'nsmainpadding',
+			[
+				'label' => esc_html__( 'فاصله داخلی', 'nias-course-widget' ),
+				'type' => \Elementor\Controls_Manager::DIMENSIONS,
+				'size_units' => [ 'px', '%', 'em', 'rem', 'custom' ],
+				'default' => [
+					'isLinked' => true,
+				],
+				'selectors' => [
+					'{{WRAPPER}} .nscourse-section' => 'padding: {{TOP}}{{UNIT}} {{RIGHT}}{{UNIT}} {{BOTTOM}}{{UNIT}} {{LEFT}}{{UNIT}};',
+				],
+			]
+		);
+		$this->end_controls_section();
+
+
+		
+		$this->start_controls_section(
+			'nsstylewidget_head',
+			[
+				'label' => esc_html__( 'استایل فصل', 'nias-course-widget' ),
+				'tab' => \Elementor\Controls_Manager::TAB_STYLE,
+			]
+		);
 
 		$this->add_control(
-			'nsbackground_season',
+			'nsheadimgwidth',
 			[
-				'label' => esc_html__( 'Text Color', 'textdomain' ),
-				'type' => \Elementor\Controls_Manager::COLOR,
+				'label' => esc_html__( 'عرض عکس فصل', 'nias-course-widget' ),
+				'type' => \Elementor\Controls_Manager::SLIDER,
+				'size_units' => [ 'px', '%', 'em', 'rem', 'custom' ],
+				'range' => [
+					'px' => [
+						'min' => 0,
+						'max' => 1000,
+						'step' => 5,
+					],
+					'%' => [
+						'min' => 0,
+						'max' => 100,
+					],
+				],
 				'selectors' => [
-					'{{WRAPPER}} .your-class' => 'color: {{VALUE}}',
+					'{{WRAPPER}} .nscourse-section-title-elementory.cursor-pointer img' => 'width: {{SIZE}}{{UNIT}};',
 				],
 			]
 		);
