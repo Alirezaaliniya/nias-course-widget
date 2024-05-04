@@ -41,6 +41,7 @@ document.addEventListener("DOMContentLoaded", function() {
       var contentHeight = innerContent.offsetHeight;
       content.style.maxHeight = content.classList.contains("active") ? "0" : contentHeight + "px";
       content.classList.toggle("active");
+      heading.classList.toggle("active");
     });
   });
 });

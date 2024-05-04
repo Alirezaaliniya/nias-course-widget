@@ -152,6 +152,34 @@ class Nias_course_widget extends \Elementor\Widget_Base {
 			]
 		 );
 
+		 		///nias custom icon for private leeson
+		$this->add_control(
+			'nsarrowicon',
+			[
+				'condition' => [
+					'arrowsection' => 'yes',
+				],
+				'label' => esc_html__( 'آیکون باز و بسته شدن', 'nias-course-widget' ),
+				'type' => \Elementor\Controls_Manager::ICONS,
+				'default' => [
+					'value' => 'fas fa-chevron-down',
+					'library' => 'fa-solid',
+				],
+				'recommended' => [
+					'fa-solid' => [
+						'circle',
+						'dot-circle',
+						'square-full',
+					],
+					'fa-regular' => [
+						'circle',
+						'dot-circle',
+						'square-full',
+					],
+				],
+			]
+		);
+
 		 $this->end_controls_section();
 
 		 $this->start_controls_section(
@@ -213,6 +241,10 @@ class Nias_course_widget extends \Elementor\Widget_Base {
 			[
 				'label' => esc_html__( 'آیکن مخصوص این درس', 'nias-course-widget' ),
 				'type' => \Elementor\Controls_Manager::ICONS,
+				'default' => [
+					'value' => 'fab fa-youtube',
+					'library' => 'fa-solid',
+				],
 				'recommended' => [
 					'fa-solid' => [
 						'circle',
@@ -313,38 +345,15 @@ class Nias_course_widget extends \Elementor\Widget_Base {
 		 );
    
 		
-		 $this->add_control(
-			'icon',
-			[
-				'label' => esc_html__( 'آیکن درس', 'nias-course-widget' ),
-				'type' => \Elementor\Controls_Manager::ICONS,
-				'default' => [
-					'value' => 'fab fa-youtube',
-					'library' => 'fa-solid',
-				],
-				'recommended' => [
-					'fa-solid' => [
-						'circle',
-						'dot-circle',
-						'square-full',
-					],
-					'fa-regular' => [
-						'circle',
-						'dot-circle',
-						'square-full',
-					],
-				],
-			]
-		);
 ///nias notice about icon lesson publicc
 		$this->add_control(
-			'ns_icon_notice',
+			'ns_public_notice',
 			[
 				'type' => \Elementor\Controls_Manager::NOTICE,
 				'notice_type' => 'info',
 				'dismissible' => true,
-				'heading' => esc_html__( 'آیکن درس', 'nias-course-widget' ),
-				'content' => esc_html__( 'این آیکن برای تمام دروس نمایش داده میشود', 'nias-course-widget' ),
+				'heading' => esc_html__( 'اطلاعیه', 'nias-course-widget' ),
+				'content' => esc_html__( 'مواردی که از این قسمت تنظیم میشود برای تمامی دروس ویجت اعمال میشود', 'nias-course-widget' ),
 			]
 		);
 
@@ -449,12 +458,29 @@ class Nias_course_widget extends \Elementor\Widget_Base {
 				],
 			]
 		);
+
+		$this->add_control(
+			'nscontorol_privattext',
+			[
+			   'label' => __( 'میخواهید متن دوره خصوصی را تغییر دهید؟', 'nias-course-widget' ),
+			   'type' => \Elementor\Controls_Manager::SELECT,
+			   'default' => 'no',
+			   'options' => [
+				  'yes' => __( 'بله', 'nias-course-widget' ),
+				  'no' => __( 'خیر', 'nias-course-widget' ),
+			   ],
+			]
+		 );
+
 		$this->add_control(
 			'nsprivatetextcontent',
 			[
 			   'label' => esc_html__( 'متن دوره خصوصی در محتوا', 'nias-course-widget' ),
 			   'type' => \Elementor\Controls_Manager::WYSIWYG,
-								                'dynamic' => [
+			   'condition' => [
+				'nscontorol_privattext' => 'yes',
+			],			
+				'dynamic' => [
                     'active' => true,
                 ],
 				'default' => esc_html__( 'این دوره خصوصی است برای دسترسی کامل باید دوره را خریداری کنید', 'nias-course-widget' ),
@@ -469,6 +495,9 @@ class Nias_course_widget extends \Elementor\Widget_Base {
 				'type' => \Elementor\Controls_Manager::TEXT,
 				'default' => esc_html__( 'پیش نمایش', 'nias-course-widget' ),
 				'placeholder' => esc_html__( 'پیش نمایش', 'nias-course-widget' ),
+				'dynamic' => [
+                    'active' => true,
+                ],
 			]
 		);
 		$this->add_control(
@@ -478,6 +507,9 @@ class Nias_course_widget extends \Elementor\Widget_Base {
 				'type' => \Elementor\Controls_Manager::TEXT,
 				'default' => esc_html__( 'دسترسی دارید', 'nias-course-widget' ),
 				'placeholder' => esc_html__( 'دسترسی دارید', 'nias-course-widget' ),
+				'dynamic' => [
+                    'active' => true,
+                ],
 			]
 		);
 		$this->add_control(
@@ -487,6 +519,9 @@ class Nias_course_widget extends \Elementor\Widget_Base {
 				'type' => \Elementor\Controls_Manager::TEXT,
 				'default' => esc_html__( 'خصوصی', 'nias-course-widget' ),
 				'placeholder' => esc_html__( 'خصوصی', 'nias-course-widget' ),
+				'dynamic' => [
+                    'active' => true,
+                ],
 			]
 		);
 
@@ -526,6 +561,30 @@ class Nias_course_widget extends \Elementor\Widget_Base {
 
 		 $this->end_controls_section();
 
+////////////////////////////////////////////////////////////////////////////////////////////////
+		 $this->start_controls_section(
+			'nshelpnotif',
+			[
+				'label' => esc_html__( 'راهنمای استفاده', 'nias-course-widget' ),
+				'type' => \Elementor\Controls_Manager::SECTION,
+	
+			]
+		);
+
+		$this->add_control(
+			'ns_dynamic_notice',
+			[
+				'type' => \Elementor\Controls_Manager::NOTICE,
+				'notice_type' => 'danger',
+				'dismissible' => true,
+				'heading' => esc_html__( 'داینامیک سازی فیلد و لینک', 'nias-course-widget' ),
+				'content' => esc_html__( 'برای داینامیک سازی لینک ها میتوانید از <a>متاساز نیاس</a> استفاده کنید', 'nias-course-widget' ),
+			]
+		);
+
+		 $this->end_controls_section();
+
+
 /////////////////////////////////////////////////style
 
 		 $this->start_controls_section(
@@ -538,7 +597,7 @@ class Nias_course_widget extends \Elementor\Widget_Base {
 		$this->add_group_control(
 			\Elementor\Group_Control_Background::get_type(),
 			[
-				'name' => 'background',
+				'name' => 'backgroundnscourse-section',
 				'types' => [ 'classic', 'gradient', 'video' ],
 				'selector' => '{{WRAPPER}} .nscourse-section',
 			]
@@ -546,7 +605,7 @@ class Nias_course_widget extends \Elementor\Widget_Base {
 		$this->add_group_control(
 			\Elementor\Group_Control_Border::get_type(),
 			[
-				'name' => 'border',
+				'name' => 'bordernscourse-section',
 				'selector' => '{{WRAPPER}} .nscourse-section',
 			]
 		);
@@ -602,7 +661,7 @@ class Nias_course_widget extends \Elementor\Widget_Base {
 					'px' => [
 						'min' => 0,
 						'max' => 1000,
-						'step' => 5,
+						'step' => 1,
 					],
 					'%' => [
 						'min' => 0,
@@ -614,8 +673,379 @@ class Nias_course_widget extends \Elementor\Widget_Base {
 				],
 			]
 		);
+		$this->add_group_control(
+			\Elementor\Group_Control_Typography::get_type(),
+			[
+				'label' => esc_html__( 'سایز عنوان', 'nias-course-widget' ),
+				'name' => 'nstitleseson',
+				'selector' => '{{WRAPPER}} .nstitleseson',
+			]
+		);
+		$this->add_group_control(
+			\Elementor\Group_Control_Typography::get_type(),
+			[
+				'label' => esc_html__( 'سایز زیر عنوان', 'nias-course-widget' ),
+				'name' => 'nsnssubtitle-lesson',
+				'selector' => '{{WRAPPER}} .nssubtitle-lesson',
+			]
+		);
+		$this->add_control(
+			'nssubtitlemargin',
+			[
+				'label' => esc_html__( 'فاصله از بالا', 'nias-course-widget' ),
+				'type' => \Elementor\Controls_Manager::SLIDER,
+				'size_units' => [ 'px', '%', 'em', 'rem', 'custom' ],
+				'range' => [
+					'px' => [
+						'min' => 0,
+						'max' => 70,
+						'step' => 1,
+					],
+					'%' => [
+						'min' => 0,
+						'max' => 100,
+					],
+				],
+				'selectors' => [
+					'{{WRAPPER}} .nssubtitle-lesson' => 'margin-top: {{SIZE}}{{UNIT}};',
+				],
+			]
+		);
+
+		$this->add_control(
+			'nsarrowiconsize',
+			[
+				'label' => esc_html__( 'اندازه آیکون باز و بسته شدن', 'nias-course-widget' ),
+				'type' => \Elementor\Controls_Manager::SLIDER,
+				'size_units' => [ 'px', '%', 'em', 'rem', 'custom' ],
+				'range' => [
+					'px' => [
+						'min' => 0,
+						'max' => 70,
+						'step' => 1,
+					],
+					'%' => [
+						'min' => 0,
+						'max' => 100,
+					],
+				],
+				'selectors' => [
+					'{{WRAPPER}} .nsarrowicon' => 'font-size: {{SIZE}}{{UNIT}};',
+				],
+			]
+		);
+		$this->add_control(
+			'nsarrowicon_color',
+			[
+				'label' => esc_html__( 'رنگ آیکن باز و بسته شدن', 'nias-course-widget' ),
+				'type' => \Elementor\Controls_Manager::COLOR,
+				'selectors' => [
+					'{{WRAPPER}} .nsarrowicon' => 'color: {{VALUE}}',
+				],
+			]
+		);
 
 		$this->end_controls_section();
+
+
+		$this->start_controls_section(
+			'nsstyle_eachcourse',
+			[
+				'label' => esc_html__( '(ناحیه راست) استایل درس', 'nias-course-widget' ),
+				'tab' => \Elementor\Controls_Manager::TAB_STYLE,
+			]
+		);
+
+		$this->add_control(
+			'nslessoniconsize',
+			[
+				'label' => esc_html__( 'اندازه آیکن درس', 'nias-course-widget' ),
+				'type' => \Elementor\Controls_Manager::SLIDER,
+				'size_units' => [ 'px', 'em', 'rem', 'custom' ],
+				'range' => [
+					'px' => [
+						'min' => 0,
+						'max' => 100,
+						'step' => 1,
+					],
+				],
+				
+				'selectors' => [
+					'{{WRAPPER}} .ns-icon-wrapper i' => 'font-size: {{SIZE}}{{UNIT}};',
+					'{{WRAPPER}} .ns-icon-wrapper svg' => 'height: {{SIZE}}{{UNIT}};',
+
+
+				],
+			]
+		);
+
+		$this->add_control(
+			'nslessonicon_color',
+			[
+				'label' => esc_html__( 'رنگ آیکن باز و بسته شدن', 'nias-course-widget' ),
+				'type' => \Elementor\Controls_Manager::COLOR,
+				'selectors' => [
+					'{{WRAPPER}} .ns-icon-wrapper i' => 'color: {{VALUE}}',
+				],
+			]
+		);
+
+		$this->add_control(
+			'nslessonicon_color_hover',
+			[
+				'label' => esc_html__( 'حالت هاور رنگ آیکن باز و بسته شدن', 'nias-course-widget' ),
+				'type' => \Elementor\Controls_Manager::COLOR,
+				'selectors' => [
+					'{{WRAPPER}} .nscourse-panel-heading:hover .ns-icon-wrapper i' => 'color: {{VALUE}}',
+					'{{WRAPPER}} .nscourse-panel-heading.active .ns-icon-wrapper i' => 'color: {{VALUE}}',
+
+				],
+			]
+		);
+		$this->add_group_control(
+			\Elementor\Group_Control_Typography::get_type(),
+			[
+				'label' => esc_html__( 'فونت لیبل درس', 'nias-course-widget' ),
+				'name' => 'nsbadgtypograpy',
+				'selector' => '{{WRAPPER}} .nsbadge-item',
+			]
+		);
+		$this->add_control(
+			'nsbadge-itemcolor',
+			[
+				'label' => esc_html__( 'رنگ لیبل درس', 'nias-course-widget' ),
+				'type' => \Elementor\Controls_Manager::COLOR,
+				'selectors' => [
+					'{{WRAPPER}} .nsbadge-item' => 'color: {{VALUE}}',
+				],
+			]
+		);
+		$this->add_control(
+			'nsbadge-itembackcolor',
+			[
+				'label' => esc_html__( 'رنگ بک گراند لیبل درس', 'nias-course-widget' ),
+				'type' => \Elementor\Controls_Manager::COLOR,
+				'selectors' => [
+					'{{WRAPPER}} .nsbadge-item' => 'background-color: {{VALUE}}',
+				],
+			]
+		);
+
+		$this->add_group_control(
+			\Elementor\Group_Control_Typography::get_type(),
+			[
+				'label' => esc_html__( 'فونت عنوان درس', 'nias-course-widget' ),
+				'name' => 'nsstitlecoursetypography',
+				'selector' => '{{WRAPPER}} .nsstitlecourse',
+			]
+		);
+		$this->add_group_control(
+			\Elementor\Group_Control_Typography::get_type(),
+			[
+				'label' => esc_html__( 'فونت زیر عنوان درس', 'nias-course-widget' ),
+				'name' => 'nssubtitletypography',
+				'selector' => '{{WRAPPER}} .nssubtitle',
+			]
+		);
+		$this->end_controls_section();
+
+				$this->start_controls_section(
+			'nsstyle_eachcourseleft',
+			[
+				'label' => esc_html__( '(ناحیه چپ) استایل درس', 'nias-course-widget' ),
+				'tab' => \Elementor\Controls_Manager::TAB_STYLE,
+			]
+		);
+
+		$this->add_group_control(
+			\Elementor\Group_Control_Typography::get_type(),
+			[
+				'label' => esc_html__( 'فونت دکمه پیش نمایش', 'nias-course-widget' ),
+				'name' => 'nsvideopretext',
+				'selector' => '{{WRAPPER}} .video-lesson-preview.preview-button .nsspanpreviewtext',
+			]
+		);
+
+		$this->add_control(
+			'nspreviewback',
+			[
+				'label' => esc_html__( 'رنگ بک گراند پیش نمایش', 'nias-course-widget' ),
+				'type' => \Elementor\Controls_Manager::COLOR,
+				'selectors' => [
+					'{{WRAPPER}} .video-lesson-preview' => 'background-color: {{VALUE}}',
+				],
+			]
+
+		);
+		$this->add_group_control(
+			\Elementor\Group_Control_Border::get_type(),
+			[
+				'name' => 'nspreviewborder',
+				'selector' => '{{WRAPPER}} .video-lesson-preview',
+			]
+		);
+
+		$this->add_responsive_control(
+			'nspreviewpadding',
+			[
+				'label' => esc_html__( 'فاصله داخلی پیش نمایش', 'nias-course-widget' ),
+				'type' => \Elementor\Controls_Manager::DIMENSIONS,
+				'size_units' => [ 'px', '%', 'em', 'rem', 'custom' ],
+				'default' => [
+					'isLinked' => true,
+				],
+				'selectors' => [
+					'{{WRAPPER}} .video-lesson-preview' => 'padding: {{TOP}}{{UNIT}} {{RIGHT}}{{UNIT}} {{BOTTOM}}{{UNIT}} {{LEFT}}{{UNIT}};',
+				],
+			]
+		);
+		$this->add_responsive_control(
+			'nspreviewborder_radius',
+			[
+				'label' => esc_html__( 'نرمی حاشیه پیش نمایش', 'nias-course-widget' ),
+				'type' => \Elementor\Controls_Manager::DIMENSIONS,
+				'size_units' => [ 'px', '%', 'em', 'rem', 'custom' ],
+				'default' => [
+					'isLinked' => true,
+				],
+				'selectors' => [
+					'{{WRAPPER}} .video-lesson-preview' => 'border-radius: {{TOP}}{{UNIT}} {{RIGHT}}{{UNIT}} {{BOTTOM}}{{UNIT}} {{LEFT}}{{UNIT}};',
+				],
+			]
+		);
+		$this->add_control(
+			'nspreviewiconsize',
+			[
+				'label' => esc_html__( 'اندازه آیکن پیش نمایش', 'nias-course-widget' ),
+				'type' => \Elementor\Controls_Manager::SLIDER,
+				'size_units' => [ 'px', 'em', 'rem', 'custom' ],
+				'range' => [
+					'px' => [
+						'min' => 0,
+						'max' => 100,
+						'step' => 1,
+					],
+				],
+				
+				'selectors' => [
+					'{{WRAPPER}} .nspreviewicon i' => 'font-size: {{SIZE}}{{UNIT}};',
+					'{{WRAPPER}} .nspreviewicon svg' => 'height: {{SIZE}}{{UNIT}};',
+
+
+				],
+			]
+		);
+
+		$this->add_control(
+			'nsdownloadbtnback',
+			[
+				'label' => esc_html__( 'رنگ بک گراند دکمه دانلود', 'nias-course-widget' ),
+				'type' => \Elementor\Controls_Manager::COLOR,
+				'selectors' => [
+					'{{WRAPPER}} .nsdownload-button' => 'background-color: {{VALUE}}',
+				],
+			]
+
+		);
+		$this->add_control(
+			'nsdownloadbtncolor',
+			[
+				'label' => esc_html__( 'رنگ دکمه دانلود', 'nias-course-widget' ),
+				'type' => \Elementor\Controls_Manager::COLOR,
+				'selectors' => [
+					'{{WRAPPER}} .nsdownload-button' => 'color: {{VALUE}}',
+				],
+			]
+
+		);
+		$this->add_group_control(
+			\Elementor\Group_Control_Border::get_type(),
+			[
+				'name' => 'nsdownloadbtnborder',
+				'selector' => '{{WRAPPER}} .nsdownload-button',
+			]
+		);
+
+		$this->add_responsive_control(
+			'nsdownloadbtnborder',
+			[
+				'label' => esc_html__( 'فاصله داخلی دکمه دانلود', 'nias-course-widget' ),
+				'type' => \Elementor\Controls_Manager::DIMENSIONS,
+				'size_units' => [ 'px', '%', 'em', 'rem', 'custom' ],
+				'default' => [
+					'isLinked' => true,
+				],
+				'selectors' => [
+					'{{WRAPPER}} .nsdownload-button' => 'padding: {{TOP}}{{UNIT}} {{RIGHT}}{{UNIT}} {{BOTTOM}}{{UNIT}} {{LEFT}}{{UNIT}};',
+				],
+			]
+		);
+		$this->add_responsive_control(
+			'nsdownloadbtnborder_radius',
+			[
+				'label' => esc_html__( 'نرمی حاشیه دکمه دانلود', 'nias-course-widget' ),
+				'type' => \Elementor\Controls_Manager::DIMENSIONS,
+				'size_units' => [ 'px', '%', 'em', 'rem', 'custom' ],
+				'default' => [
+					'isLinked' => true,
+				],
+				'selectors' => [
+					'{{WRAPPER}} .nsdownload-button' => 'border-radius: {{TOP}}{{UNIT}} {{RIGHT}}{{UNIT}} {{BOTTOM}}{{UNIT}} {{LEFT}}{{UNIT}};',
+				],
+			]
+		);
+		$this->add_control(
+			'nsdownload_iconsize',
+			[
+				'label' => esc_html__( 'اندازه آیکن دانلود', 'nias-course-widget' ),
+				'type' => \Elementor\Controls_Manager::SLIDER,
+				'size_units' => [ 'px', 'em', 'rem', 'custom' ],
+				'range' => [
+					'px' => [
+						'min' => 0,
+						'max' => 100,
+						'step' => 1,
+					],
+				],
+				
+				'selectors' => [
+					'{{WRAPPER}} .nsdownload-icon i' => 'font-size: {{SIZE}}{{UNIT}};',
+					'{{WRAPPER}} .nsdownload-icon svg' => 'height: {{SIZE}}{{UNIT}};',
+
+
+				],
+			]
+		);
+
+		$this->add_control(
+			'ns_private_iconcolor',
+			[
+				'label' => esc_html__( 'رنگ ایکن دوره خصوصی', 'nias-course-widget' ),
+				'type' => \Elementor\Controls_Manager::COLOR,
+				'selectors' => [
+					'{{WRAPPER}} .ns-private-icon i' => 'color: {{VALUE}}',
+				],
+			]
+
+		);
+		$this->add_control(
+			'ns_unprivate_iconcolor',
+			[
+				'label' => esc_html__( 'رنگ ایکن دوره باز', 'nias-course-widget' ),
+				'type' => \Elementor\Controls_Manager::COLOR,
+				'selectors' => [
+					'{{WRAPPER}} .ns-unprivate-icon i' => 'color: {{VALUE}}',
+				],
+			]
+
+		);
+
+
+
+
+
+		$this->end_controls_section();
+
 		}
  
 
@@ -646,8 +1076,6 @@ class Nias_course_widget extends \Elementor\Widget_Base {
 		}
 		
 		global $product;
-		$arrow_section = "<i class='fas fa-chevron-down'></i>";
-  
 		if (  'yes' == $settings['ns_show_spot'] ) {
 			niasspotdata();
 		}
@@ -662,11 +1090,14 @@ class Nias_course_widget extends \Elementor\Widget_Base {
 	<div class="nscourse-section-title-elementory <?php if (  'yes' == $settings['arrowsection'] ) : echo('cursor-pointer'); ?><?php endif; ?>" >
 	  <?php echo '<img src="' . $settings['image']['url'] . '">'; ?>
 	  <div class="nsgheadlinel">
-		  <?php     echo '<' . $tag . '>' . $settings['titlelesson'] . '</' . $tag . '>'; ?>
+		  <?php     echo '<' . $tag . ' class="nstitleseson">' . $settings['titlelesson'] . '</' . $tag . '>'; ?>
 		<p class="nssubtitle-lesson"><?php echo $settings['subtitlelesson']; ?> </p>
 
 	  </div>
-	  <?php if (  'yes' == $settings['arrowsection'] ) : echo($arrow_section); ?><?php endif; ?>
+	  <i class="nsarrowicon">
+	  <?php	\Elementor\Icons_Manager::render_icon( $settings['nsarrowicon'], [ 'aria-hidden' => 'true' ] );
+?>
+</i>
 	</div>
   
 	<div class="nspanel-group <?php if (  'yes' == $settings['arrowsection'] ) : echo('deactive'); ?><?php endif; ?>">
@@ -674,54 +1105,71 @@ class Nias_course_widget extends \Elementor\Widget_Base {
 	  <div class="nscourse-panel-heading">
 		<div class="nspanel-heading-left">
 		  <div class="nscourse-lesson-icon">
-					<i class="ns-icon-wrapper">
-			<?php
-			//nias fix icon load in elementor
-			\Elementor\Icons_Manager::render_icon( $settings['icon'], [ 'aria-hidden' => 'true' ] ); 
-			?>
-		</i>
-		<i class="ns-icon-wrapper2">
+		<i class="ns-icon-wrapper">
    			 <?php \Elementor\Icons_Manager::render_icon( $lesson_single['singlelessonicon'], [ 'aria-hidden' => 'true' ] ); 
  ?>
+ 
 		</i>
 		  </div>
   
-		  <div class="title">
-			  <?php    echo '<' . $tagsub . '>' . $lesson_single['subtitlelesson'] . '</' . $tagsub . '>';?>
-    <span class="badge-item"><?php echo $lesson_single['label_lesson']; ?></span>
-			<p class="subtitle"> <?php echo $lesson_single['subtitlelesson_sub']; ?></p>
+		  <div class="nstitle">
+			  <?php    echo '<' . $tagsub . ' class="nsstitlecourse">' . $lesson_single['subtitlelesson'] . '</' . $tagsub . '>';?>
+    <span class="nsbadge-item"><?php echo $lesson_single['label_lesson']; ?></span>
+			<p class="nssubtitle"> <?php echo $lesson_single['subtitlelesson_sub']; ?></p>
 		  </div>
   
 		</div>
   
 		<div class="panel-heading-right">
+		<?php if( $lesson_single["private_lesson"] !== "no" ): ?>
+
+<div class="ns-private-lesson">
+<?php if($bought_course): ?>
+
+	<i class="ns-unprivate-icon">
+  <?php 
+//nias fix icon load in elementor
+  \Elementor\Icons_Manager::render_icon( $settings['unprivateicon'], [ 'aria-hidden' => 'true' ] ); 
+	?>
+	</i>
 	
+  <?php  else : ?>
+
+	<i class="ns-private-icon">
+  <?php 
+//nias fix icon load in elementor
+  \Elementor\Icons_Manager::render_icon( $settings['privateicon'], [ 'aria-hidden' => 'true' ] ); 
+	?>
+	</i>
+
+<?php endif; ?>
+
+
+<span>
+<?php if($bought_course): ?>
+<?php echo $settings['nsdastresi']; ?>
+<?php else : ?>
+<?php echo $settings['nskhososi']; ?>
+<?php endif; ?>
+</span>
+
+</div>
+<?php endif; ?>
 		  <?php
 		  $preview_video = $lesson_single['preview_video']['url'];
 		  if(!empty($preview_video)): ?>
 		  <a class="video-lesson-preview preview-button" href="<?php echo esc_url( $preview_video ); ?>">
 
-		  <i>
+		  <i class="nspreviewicon">
 		 	 	<?php 
 //nias preview icon
 				  \Elementor\Icons_Manager::render_icon( $settings['nspreviewicon'], [ 'aria-hidden' => 'true' ] ); 
 				?>
 
 		  </i>
-		  
+		  <span class="nsspanpreviewtext">
 		  <?php echo $settings['nspreviewtext']; ?>
-		
-		</a>
-		  <a class="video-lesson-preview preview-button for-mobile" href="<?php echo esc_url( $preview_video ); ?>">
-		  
-		  <i>
-		  <?php 
-//nias preview icon
-				  \Elementor\Icons_Manager::render_icon( $settings['nspreviewicon'], [ 'aria-hidden' => 'true' ] ); 
-				?>
-
-		  </i>
-		
+		  </span>
 		</a>
 		  <?php endif; ?>
 		
@@ -734,8 +1182,8 @@ class Nias_course_widget extends \Elementor\Widget_Base {
 				  if(!empty($download_lesson)):
 		  ?>
 				<?php if($bought_course): ?>
-			<a class="download-button" href="<?php echo esc_url( $download_lesson ); ?>">
-			<i>
+			<a class="nsdownload-button" href="<?php echo esc_url( $download_lesson ); ?>">
+			<i class="nsdownload-icon">
 			<?php 
 //nias download icon
 				  \Elementor\Icons_Manager::render_icon( $settings['nsdownloadicon'], [ 'aria-hidden' => 'true' ] ); 
@@ -743,7 +1191,7 @@ class Nias_course_widget extends \Elementor\Widget_Base {
 			</i>
 			</a>
 				<?php elseif ($lesson_single["private_lesson"] !== "yes") : ?>
-			<a class="download-button" href="<?php echo esc_url( $download_lesson ); ?>">
+			<a class="nsdownload-button" href="<?php echo esc_url( $download_lesson ); ?>">
 			<i>
 			<?php 
 //nias download icon
@@ -752,7 +1200,7 @@ class Nias_course_widget extends \Elementor\Widget_Base {
 			</i>
 			</a>
 		  <?php elseif ($lesson_single["private_lesson"] !== "no") : ?>
-			<div class="download-button gray">
+			<div class="nsdownload-button gray">
 						
 			<i>
 			<?php 
@@ -770,40 +1218,7 @@ class Nias_course_widget extends \Elementor\Widget_Base {
   
   
   
-		  <?php if( $lesson_single["private_lesson"] !== "no" ): ?>
 
-				<div class="ns-private-lesson">
-				<?php if($bought_course): ?>
-
-					<i class="ns-icon-wrapper">
-				  <?php 
-//nias fix icon load in elementor
-				  \Elementor\Icons_Manager::render_icon( $settings['unprivateicon'], [ 'aria-hidden' => 'true' ] ); 
-					?>
-					</i>
-					
-				  <?php  else : ?>
-
-					<i class="ns-icon-wrapper">
-				  <?php 
-//nias fix icon load in elementor
-				  \Elementor\Icons_Manager::render_icon( $settings['privateicon'], [ 'aria-hidden' => 'true' ] ); 
-					?>
-					</i>
-
-				<?php endif; ?>
-  
-  
-		  <span>
-		  <?php if($bought_course): ?>
-			<?php echo $settings['nsdastresi']; ?>
-			 <?php else : ?>
-				<?php echo $settings['nskhososi']; ?>
-			<?php endif; ?>
-		  </span>
-  
-		  </div>
-		  <?php endif; ?>
   
 		</div>
   
