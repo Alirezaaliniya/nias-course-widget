@@ -391,34 +391,6 @@ trait Nias_course_controls {
 			]
 		);
 
-		$this->add_control(
-			'nscontorol_privattext',
-			[
-			   'label' => __( 'میخواهید متن دوره خصوصی را تغییر دهید؟', 'nias-course-widget' ),
-			   'type' => \Elementor\Controls_Manager::SELECT,
-			   'default' => 'no',
-			   'options' => [
-				  'yes' => __( 'بله', 'nias-course-widget' ),
-				  'no' => __( 'خیر', 'nias-course-widget' ),
-			   ],
-			]
-		 );
-
-		$this->add_control(
-			'nsprivatetextcontent',
-			[
-			   'label' => esc_html__( 'متن دوره خصوصی در محتوا', 'nias-course-widget' ),
-			   'type' => \Elementor\Controls_Manager::WYSIWYG,
-			   'condition' => [
-				'nscontorol_privattext' => 'yes',
-			],			
-				'dynamic' => [
-                    'active' => true,
-                ],
-				'default' => esc_html__( 'این دوره خصوصی است برای دسترسی کامل باید دوره را خریداری کنید', 'nias-course-widget' ),
-				'placeholder' => esc_html__( 'این دوره خصوصی است برای دسترسی کامل باید دوره را خریداری کنید', 'nias-course-widget' ),
-			]
-		 );
 
 		 $this->add_control(
 			'nspreviewtext',
@@ -456,6 +428,20 @@ trait Nias_course_controls {
                 ],
 			]
 		);
+
+		
+		$this->add_control(
+			'nsprivatetextcontent',
+			[
+			   'label' => esc_html__( 'متن دوره خصوصی در محتوا', 'nias-course-widget' ),
+			   'type' => \Elementor\Controls_Manager::WYSIWYG,	
+				'dynamic' => [
+                    'active' => true,
+                ],
+				'default' => esc_html__( 'این دوره خصوصی است برای دسترسی کامل باید دوره را خریداری کنید', 'nias-course-widget' ),
+				'placeholder' => esc_html__( 'این دوره خصوصی است برای دسترسی کامل باید دوره را خریداری کنید', 'nias-course-widget' ),
+			]
+		 );
 
 		 $this->end_controls_section();
 
