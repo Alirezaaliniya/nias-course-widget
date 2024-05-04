@@ -9,7 +9,7 @@
             $temp.val($(".nsspotlicense").text()).select();
             document.execCommand("copy");
             $temp.remove();
-            $(this).text("!کپی شد").prop('disabled', true);
+            $(this).text("کپی شد!").prop('disabled', true);
         });
 
         $(document).on('click', '.nscourse-section-title-elementory.cursor-pointer', function(event) {

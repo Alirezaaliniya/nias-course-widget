@@ -17,9 +17,9 @@ Requires at least: 5.8
 
 Tested up to: 6.5.2
 
-Requires PHP: 7.2
+Requires PHP: 7.4
 
-Stable tag: 1.0.0
+Stable tag: 1.1.0
 
 License: GPLv2 (or later)
 
@@ -49,5 +49,11 @@ This plug-in adds lessons widget, which is similar to Assistant Professor, to yo
 2. Activate the plugin through the 'Plugins' menu in WordPress
 
 == Changelog ==
+= 1.1.0 =
+* code problems fixed
+* style tab added
+* spot config added
+* every field can be change
+
 = 1.0.0 =
 * Alpha version
