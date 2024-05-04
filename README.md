@@ -1,4 +1,4 @@
-# Nias-course
+# nias-course
 === Nias Elementor course widget plugin - converting store format to educational ===
 
 author: Alireza Alinia
