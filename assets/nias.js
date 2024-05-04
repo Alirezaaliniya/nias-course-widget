@@ -2,6 +2,15 @@
     'use strict';
 
     jQuery(document).ready(function($) {
+//nias copy button
+        $(".nsspotcopybtn").click(function(){
+            var $temp = $("<input>");
+            $("body").append($temp);
+            $temp.val($(".nsspotlicense").text()).select();
+            document.execCommand("copy");
+            $temp.remove();
+            $(this).text("!کپی شد").prop('disabled', true);
+        });
 
         $(document).on('click', '.nscourse-section-title-elementory.cursor-pointer', function(event) {
             event.preventDefault();

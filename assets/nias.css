@@ -409,3 +409,70 @@ margin: 0!important;
 .nspanel-content-inner{
     padding: 10px;
 }
+
+/*spot player*/
+.ns-spotlicense {
+    background-color: #6611dd;
+    color: white;
+    padding: 10px;
+    border-radius: 15px;
+    margin-bottom: 20px;
+}
+
+textarea.nsspotlicense {
+    width: 100%;
+    border-radius: 10px;
+}
+
+button.nsspotcopybtn {
+    padding: 12px 24px;
+    border-radius: 15px;
+    border: none;
+    font-family: unset;
+    background-color: #2a2a2a;
+    color: white;
+    cursor: pointer;
+}
+
+p.ns-spotconfirm {
+    text-align: center;
+    background-color: white;
+    padding: 10px;
+    border-radius: 10px;
+    color: #6611dd;
+    font-weight: bold;
+    font-size: 16px;
+}
+
+.ns-spotdlicon a svg {
+    width: 50px;
+    height: 50px;
+}
+
+.ns-spotdlicon a {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    width: 100px;
+    height: 100px;
+    border: 1px solid #6611dd;
+    border-radius: 15px;
+}
+
+.ns-spotdlicon {
+    display: flex;
+    justify-content: space-evenly;
+    flex-wrap: wrap;
+    gap: 15px;
+    margin-bottom: 35px;
+}
+p.ns-spotdltitle {
+    width: 100%;
+    text-align: center;
+    padding: 5px;
+    border-bottom: 3px solid #6611dd;
+    margin-bottom: 20px;
+    color: #6611dd;
+    font-weight: bold;
+}
