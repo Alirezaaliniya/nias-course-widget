@@ -74,8 +74,8 @@ trait Nias_course_controls {
 			[
 			   'label' => __( 'قابلیت باز و بسته شدن؟', 'nias-course-widget' ),
 			   'type' => \Elementor\Controls_Manager::SWITCHER,
-			   'label_on' => esc_html_x("بله", 'pelleh'),
-					   'label_off' => esc_html_x("خیر", 'pelleh'),
+			   'label_on' => esc_html__("بله", 'nias-course-widget'),
+					   'label_off' => esc_html__("خیر", 'nias-course-widget'),
 			   'default' => 'yes'
   
 			]

@@ -48,11 +48,11 @@ if (  'yes' == $settings['ns_show_spotdl'] ) {
   <div class="nselementory-section">
   <div class="nscourse-section">
   
-	<div class="nscourse-section-title-elementory <?php if (  'yes' == $settings['arrowsection'] ) : echo('cursor-pointer'); ?><?php endif; ?>" >
-	  <?php echo '<img src="' . $settings['image']['url'] . '">'; ?>
+  <div class="nscourse-section-title-elementory <?php if ('yes' == $settings['arrowsection']) echo esc_attr(' cursor-pointer'); ?>">
+	<?php echo '<img src="' . esc_url($settings['image']['url']) . '">'; ?>
 	  <div class="nsgheadlinel">
-		  <?php     echo '<' . $tag . ' class="nstitleseson">' . $settings['titlelesson'] . '</' . $tag . '>'; ?>
-		<p class="nssubtitle-lesson"><?php echo $settings['subtitlelesson']; ?> </p>
+	  <?php echo '<' . esc_html($tag) . ' class="nstitleseson">' . esc_html($settings['titlelesson']) . '</' . esc_html($tag) . '>'; ?>
+	  <p class="nssubtitle-lesson"><?php echo esc_html($settings['subtitlelesson']); ?></p>
 
 	  </div>
 	  <i class="nsarrowicon">
@@ -61,7 +61,7 @@ if (  'yes' == $settings['ns_show_spotdl'] ) {
 </i>
 	</div>
   
-	<div class="nspanel-group <?php if (  'yes' == $settings['arrowsection'] ) : echo('deactive'); ?><?php endif; ?>">
+	<div class="nspanel-group <?php if ('yes' == $settings['arrowsection']) echo esc_attr('deactive'); ?>">
 	<?php foreach (  $settings['lessons_list'] as $lesson_single ): ?>
 	  <div class="nscourse-panel-heading">
 		<div class="nspanel-heading-left">
@@ -74,9 +74,9 @@ if (  'yes' == $settings['ns_show_spotdl'] ) {
 		  </div>
   
 		  <div class="nstitle">
-			  <?php    echo '<' . $tagsub . ' class="nsstitlecourse">' . $lesson_single['subtitlelesson'] . '</' . $tagsub . '>';?>
-    <span class="nsbadge-item"><?php echo $lesson_single['label_lesson']; ?></span>
-			<p class="nssubtitle"> <?php echo $lesson_single['subtitlelesson_sub']; ?></p>
+		  <?php echo '<' . esc_html($tagsub) . ' class="nsstitlecourse">' . esc_html($lesson_single['subtitlelesson']) . '</' . esc_html($tagsub) . '>';?>
+			  <span class="nsbadge-item"><?php echo esc_html($lesson_single['label_lesson']); ?></span>
+			  <p class="nssubtitle"><?php echo esc_html($lesson_single['subtitlelesson_sub']); ?></p>
 		  </div>
   
 		</div>
@@ -108,9 +108,9 @@ if (  'yes' == $settings['ns_show_spotdl'] ) {
 
 <span>
 <?php if($bought_course): ?>
-<?php echo $settings['nsdastresi']; ?>
+<?php echo esc_html($settings['nsdastresi']); ?>
 <?php else : ?>
-<?php echo $settings['nskhososi']; ?>
+<?php echo esc_html($settings['nskhososi']); ?>
 <?php endif; ?>
 </span>
 
@@ -129,7 +129,7 @@ if (  'yes' == $settings['ns_show_spotdl'] ) {
 
 		  </i>
 		  <span class="nsspanpreviewtext">
-		  <?php echo $settings['nspreviewtext']; ?>
+		  <?php echo esc_html($settings['nspreviewtext']); ?>
 		  </span>
 		</a>
 		  <?php endif; ?>
@@ -191,13 +191,13 @@ if (  'yes' == $settings['ns_show_spotdl'] ) {
 		<?php
 		if( $lesson_single["private_lesson"] !== "no" ) {
 		if($bought_course) {
-		 echo $lesson_single['lesson_content'];
-	   } else {
+			echo wp_kses_post($lesson_single['lesson_content']);
+		} else {
 		echo $settings['nsprivatetextcontent']; 
 	   }
 	 } elseif ( $lesson_single["private_lesson"] !== "yes" ) {
-		 echo $lesson_single['lesson_content'];
-	 }
+		echo htmlspecialchars($lesson_single['lesson_content']);
+	}
 	 ?>
   
 	 </div>

@@ -51,11 +51,11 @@ function showspotlisence($meta_values) {
         echo '<div class="ns-spotlicense">
         <p class="ns-spotconfirm">لایسنس این دوره با اطلاعات زیر برای شما ثبت شد</p>';
         foreach ($meta_values as $meta_value) {
-            echo '<p class="ns-spotuserinfo"> نام: ' . esc_html($meta_value['name']) . '</p>';
-            echo '<p class="ns-spotuserinfo">واترمارک: ' . esc_html($meta_value['watermark']) . '</p>';
+            echo '<p class="ns-spotuserinfo"> نام: ' . esc_attr($meta_value['name']) . '</p>';
+            echo '<p class="ns-spotuserinfo">واترمارک: ' . esc_attr($meta_value['watermark']) . '</p>';
             echo '
             <p class="ns-spotuserinfo">کلید لایسنس:</p>
-            <textarea class="nsspotlicense" readonly rows="3">' . esc_html($meta_value['key']) . '</textarea>
+            <textarea class="nsspotlicense" readonly rows="3">' . esc_attr($meta_value['key']) . '</textarea>
             <button class="nsspotcopybtn">کپی لایسنس</button>
             ';
         }

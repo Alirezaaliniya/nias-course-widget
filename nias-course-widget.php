@@ -7,6 +7,8 @@
  * Author:      Alireza aliniya
  * Author URI:  https://nias.ir/
  * Text Domain: nias-course-widget
+ * License:GPL v2 or later
+ * License URI: https://www.gnu.org/licenses/gpl-2.0.html 
  * Requires Plugins: elementor, woocommerce
  **/
 
@@ -24,7 +26,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  * @return void
  */
  
- function enqueue_niascourse_asset() {
+ function nias_enqueue_course_asset() {
     // Check if the current page is a WooCommerce product page
     if (is_product()) {
         // Enqueue JavaScript file
@@ -33,21 +35,21 @@ if ( ! defined( 'ABSPATH' ) ) {
         wp_enqueue_style( 'nscourse-css', plugin_dir_url( __FILE__ ) . 'assets/niascourse.css');
     }
 }
-add_action( 'wp_enqueue_scripts', 'enqueue_niascourse_asset' );
+add_action( 'wp_enqueue_scripts', 'nias_enqueue_course_asset' );
 
-add_action( 'elementor/elements/categories_registered', 'add_custom_category_nias_widget' );
+add_action( 'elementor/elements/categories_registered', 'nias_add_custom_category_widget' );
 
-function add_custom_category_nias_widget() {
+function nias_add_custom_category_widget() {
     \Elementor\Plugin::$instance->elements_manager->add_category(
         'nias-widget-category',
         [
-            'title' => __( 'ویجت های نیاس', 'nias-course-widget' ), // عنوان دسته بندی
+            'title' => esc_html__( 'ویجت های نیاس', 'nias-course-widget' ), // عنوان دسته بندی
             'icon' => 'fa fa-plug', // آیکون دسته بندی (اختیاری)
         ]
     );
 }
 
-function register_nias_widget( $widgets_manager ) {
+function nias_register_widget( $widgets_manager ) {
 
 	require_once( __DIR__ . '/widgets/nias-course.php' );
     require_once( __DIR__ . '/widgets/nias-render.php' );
@@ -56,4 +58,4 @@ function register_nias_widget( $widgets_manager ) {
     $widgets_manager->register( new \Nias_Course\Nias_course_widget() );
 }
 
-add_action( 'elementor/widgets/register', 'register_nias_widget' );
+add_action( 'elementor/widgets/register', 'nias_register_widget' );
