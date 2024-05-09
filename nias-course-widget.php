@@ -26,7 +26,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  * @return void
  */
  
- function nias_enqueue_course_asset() {
+ function nias_course_enqueue_course_asset() {
     // Check if the current page is a WooCommerce product page
     if (is_product()) {
         // Enqueue JavaScript file
@@ -35,11 +35,11 @@ if ( ! defined( 'ABSPATH' ) ) {
         wp_enqueue_style( 'nscourse-css', plugin_dir_url( __FILE__ ) . 'assets/niascourse.css');
     }
 }
-add_action( 'wp_enqueue_scripts', 'nias_enqueue_course_asset' );
+add_action( 'wp_enqueue_scripts', 'nias_course_enqueue_course_asset' );
 
-add_action( 'elementor/elements/categories_registered', 'nias_add_custom_category_widget' );
+add_action( 'elementor/elements/categories_registered', 'nias_course_add_custom_category_widget' );
 
-function nias_add_custom_category_widget() {
+function nias_course_add_custom_category_widget() {
     \Elementor\Plugin::$instance->elements_manager->add_category(
         'nias-widget-category',
         [
@@ -49,7 +49,7 @@ function nias_add_custom_category_widget() {
     );
 }
 
-function nias_register_widget( $widgets_manager ) {
+function nias_course_register_widget( $widgets_manager ) {
 
 	require_once( __DIR__ . '/widgets/nias-course.php' );
     require_once( __DIR__ . '/widgets/nias-render.php' );
@@ -58,4 +58,4 @@ function nias_register_widget( $widgets_manager ) {
     $widgets_manager->register( new \Nias_Course\Nias_course_widget() );
 }
 
-add_action( 'elementor/widgets/register', 'nias_register_widget' );
+add_action( 'elementor/widgets/register', 'nias_course_register_widget' );

@@ -139,7 +139,7 @@ if (  'yes' == $settings['ns_show_spotdl'] ) {
   
 		  <?php
 				$download_lesson = $lesson_single['download_lesson']['url'];
-				$download_lesson = apply_filters('wcpl_download_lesson', $download_lesson);
+				$download_lesson = apply_filters('nias_course_download_lesson', $download_lesson);
 				  if(!empty($download_lesson)):
 		  ?>
 				<?php if($bought_course): ?>
