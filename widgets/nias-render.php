@@ -186,21 +186,19 @@ if (  'yes' == $settings['ns_show_spotdl'] ) {
 	</div>
   
 	<div class="nspanel-content">
-	  <div class="nspanel-content-inner">
-  
-		<?php
-		if( $lesson_single["private_lesson"] !== "no" ) {
-		if($bought_course) {
-			echo wp_kses_post($lesson_single['lesson_content']);
-		} else {
-		echo $settings['nsprivatetextcontent']; 
-	   }
-	 } elseif ( $lesson_single["private_lesson"] !== "yes" ) {
-		echo htmlspecialchars($lesson_single['lesson_content']);
-	}
-	 ?>
-  
-	 </div>
+<div class="nspanel-content-inner">
+<?php
+if ($lesson_single["private_lesson"] !== "no") {
+if ($bought_course) {
+echo wp_kses_post($lesson_single['lesson_content']);
+} else {
+echo esc_html($settings['nsprivatetextcontent']);
+}
+} elseif ($lesson_single["private_lesson"] !== "yes") {
+echo esc_html($lesson_single['lesson_content']);
+}
+?>
+</div>
    </div>
  
  
