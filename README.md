@@ -9,7 +9,7 @@ author URI: https://nias.ir/
 
 Donate link: https://nias.ir/
 
-plugin URI: https://nias.ir/
+plugin URI: https://nias.ir/product/nias-course-widget/
 
 Tags: assistant professor, LMS elementor, Elementor course widget, Nias widget
 
