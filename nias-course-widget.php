@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Nias course | دوره ساز نیاس
  * Description:   پلاگین دوره ساز نیاس ویجت "دوره ساز نیاس" را به ویرایشگر المنتور شما اضافه میکند که میتوانید دوره مورد نظر خود را درون تمپلیت محصول بسازیدو قالب خود را به یک قالب فروش دوره و فایل تبدیل کنید | این پلاگین بصورت رایگان منتشر شده و رایگان هم خواهد ماند❤️
- * Plugin URI:  https://nias.ir/
+ * Plugin URI:  https://nias.ir/product/nias-course-widget/
  * Version:     1.1.0
  * Author:      Alireza aliniya
  * Author URI:  https://nias.ir/
