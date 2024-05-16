@@ -117,8 +117,6 @@ function showspotdlbox($meta_values) {
 }
 
 
-add_action( 'elementor/elements/categories_registered', 'nias_elementor_widgets' );
-
 require_once( __DIR__ . '/nias-render.php' );
 require_once( __DIR__ . '/nias-controls.php' );
 class Nias_course_widget extends \Elementor\Widget_Base {
