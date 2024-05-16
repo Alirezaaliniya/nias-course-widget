@@ -45,6 +45,9 @@ Nias course widget A cool and professional plugin for elementor users who want t
 3. scrnias3
 
 == Changelog ==
+v1.1.1
+php error fixed
+v1.1.0
 * code problems fixed
 * style tab added
 * spot config added
