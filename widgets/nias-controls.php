@@ -1,8 +1,12 @@
 <?php
+
 namespace Nias_Course;
+
+
 
 // nias-controls.php
 trait Nias_course_controls {
+	
     protected function register_controls() {
 	
 		$this->start_controls_section(
@@ -225,6 +229,30 @@ trait Nias_course_controls {
                 ],
 			]
 		 );
+
+ $product = wc_get_product( get_the_ID() ); // برای نمایش جزئیات محصول
+
+// بدست آوردن لیست فایل‌های دانلودی برای محصول فعلی
+$files = $product->get_files();
+
+$options = []; // آرایه‌ای برای ذخیره آپشن‌ها
+
+foreach ($files as $file_key => $file) {
+    $options[$file_key] = $file['name']; // اضافه کردن آپشن با نام فایل به آرایه آپشن‌ها
+}
+// اضافه کردن کنترل SELECT با آپشن‌های بدست آمده به الیمنتور
+$repeater->add_control(
+    'downloads_list',
+    [
+        'label' => esc_html__( 'Available Downloads', 'nias-course-widget' ),
+        'type' => \Elementor\Controls_Manager::SELECT,
+        'options' => $options,
+        'default' => '',
+        'render_type' => 'template', // تعیین نوع رندرینگ به عنوان قالب
+        'template' => '{{{download_link}}}', // قالب رندر کردن لینک دانلود
+    ]
+);
+
    
 		 $repeater->add_control(
 			'lesson_content',
@@ -1027,4 +1055,6 @@ trait Nias_course_controls {
 		);
 		$this->end_controls_section();    }
 }
+
+
 ?>
