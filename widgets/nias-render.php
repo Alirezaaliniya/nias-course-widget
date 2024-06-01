@@ -42,8 +42,8 @@ if (  'yes' == $settings['ns_show_spotdl'] ) {
     showspotdlbox($meta_values);
 }
 	?>  
-  
-  
+
+
 
   <div class="nselementory-section">
   <div class="nscourse-section">
@@ -138,6 +138,59 @@ if (  'yes' == $settings['ns_show_spotdl'] ) {
   
   
 		  <?php
+global $product;
+$current_product_id = $product->get_id();
+
+// Get downloadable products for the user
+$woo_downloads = WC()->customer->get_downloadable_products();
+
+// Flag to track if any downloadable files were found
+$has_downloads = false;
+
+$selectedfile = $lesson_single['downloads_list'];
+
+$product = wc_get_product(); // Get the current product
+$current_product_id = $product->get_id(); // Get the current product ID
+$files = $product->get_files(); // Get the downloadable files
+
+// Loop through downloadable products
+foreach ($woo_downloads as $download) {
+    if ($download['product_id'] == $current_product_id) {
+        $has_downloads = true;
+
+        // Escape and sanitize download URL and file name
+        $download_url = esc_url($download['download_url']);
+        $file_name = esc_html($download['file']['name']);
+
+        // Render the download link within the loop for each downloadable file
+        foreach ($files as $file_key => $file) {
+			if ($file_key === $selectedfile){
+            // Only render the anchor tag for the file that matches the download
+            if ($download['file']['name'] == $file['name']) {
+                ?>
+                <a href="<?php echo $download_url; ?>" class="nscoursedownload-btns" data-key="<?php echo esc_attr($file_key); ?>">
+                    <?php echo $file_name; ?>
+                </a>
+                <?php
+                break; // Stop the loop once the matching file is found
+            }
+        }
+	}
+    }
+}
+
+
+
+// Handle the case where no downloadable files exist
+if (!$has_downloads) {
+    echo esc_html__('You do not have permission to download any files for this product.', 'nias-course-widget');
+}
+
+
+
+
+
+		  
 				$download_lesson = $lesson_single['download_lesson']['url'];
 				$download_lesson = apply_filters('nias_course_download_lesson', $download_lesson);
 				  if(!empty($download_lesson)):

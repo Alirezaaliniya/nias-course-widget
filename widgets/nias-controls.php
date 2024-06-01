@@ -230,29 +230,25 @@ trait Nias_course_controls {
 			]
 		 );
 
- $product = wc_get_product( get_the_ID() ); // برای نمایش جزئیات محصول
-
-// بدست آوردن لیست فایل‌های دانلودی برای محصول فعلی
-$files = $product->get_files();
-
-$options = []; // آرایه‌ای برای ذخیره آپشن‌ها
-
-foreach ($files as $file_key => $file) {
-    $options[$file_key] = $file['name']; // اضافه کردن آپشن با نام فایل به آرایه آپشن‌ها
-}
-// اضافه کردن کنترل SELECT با آپشن‌های بدست آمده به الیمنتور
-$repeater->add_control(
-    'downloads_list',
-    [
-        'label' => esc_html__( 'Available Downloads', 'nias-course-widget' ),
-        'type' => \Elementor\Controls_Manager::SELECT,
-        'options' => $options,
-        'default' => '',
-        'render_type' => 'template', // تعیین نوع رندرینگ به عنوان قالب
-        'template' => '{{{download_link}}}', // قالب رندر کردن لینک دانلود
-    ]
-);
-
+		 global $product;
+		 $product = wc_get_product(get_the_ID()); // Get product details for display
+		 $files = $product->get_files();
+		 $options = [];
+		 $current_product_id = $product->get_id();
+		 
+		 foreach ($files as $file_key => $file) {
+			 $options[$file_key] = $file['name']; // Add option with file name to options array
+		 }
+		 
+		 $repeater->add_control(
+			 'downloads_list',
+			 [
+				 'label' => esc_html__('Available Downloads', 'nias-course-widget'),
+				 'type' => \Elementor\Controls_Manager::SELECT,
+				 'options' => $options,
+				 'default' => '',
+			 ]
+		 );
    
 		 $repeater->add_control(
 			'lesson_content',
