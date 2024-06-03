@@ -28,14 +28,14 @@ if ( ! defined( 'ABSPATH' ) ) {
  
  function nias_course_enqueue_course_asset() {
     // Check if the current page is a WooCommerce product page
-    if (is_product()) {
         // Enqueue JavaScript file
         wp_enqueue_script( 'nscourse-js', plugin_dir_url( __FILE__ ) . 'assets/niascourse.js', array( 'jquery' ), false );
         // Enqueue CSS file
         wp_enqueue_style( 'nscourse-css', plugin_dir_url( __FILE__ ) . 'assets/niascourse.css');
-    }
+
 }
-add_action( 'wp_enqueue_scripts', 'nias_course_enqueue_course_asset' );
+add_action( 'woocommerce_after_single_product', 'nias_course_enqueue_course_asset' );
+add_action('elementor/editor/after_enqueue_scripts' , 'nias_course_enqueue_course_asset');
 
 add_action( 'elementor/elements/categories_registered', 'nias_course_add_custom_category_widget' );
 

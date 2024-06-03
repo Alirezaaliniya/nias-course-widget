@@ -160,7 +160,7 @@ foreach ($woo_downloads as $download) {
 
         // Escape and sanitize download URL and file name
         $download_url = esc_url($download['download_url']);
-        $file_name = esc_html($download['file']['name']);
+        //$file_name = esc_html($download['file']['name']); نمایش نام فایل
 
         // Render the download link within the loop for each downloadable file
         foreach ($files as $file_key => $file) {
@@ -168,8 +168,14 @@ foreach ($woo_downloads as $download) {
             // Only render the anchor tag for the file that matches the download
             if ($download['file']['name'] == $file['name']) {
                 ?>
-                <a href="<?php echo $download_url; ?>" class="nscoursedownload-btns" data-key="<?php echo esc_attr($file_key); ?>">
-                    <?php echo $file_name; ?>
+                <a class="nsdownload-button" href="<?php echo $download_url; ?>" data-key="<?php echo esc_attr($file_key); ?>">
+                    <?php// echo $file_name; ?>
+					<i class="nsdownload-icon">
+			<?php 
+//nias download icon
+				  \Elementor\Icons_Manager::render_icon( $settings['nsdownloadicon'], [ 'aria-hidden' => 'true' ] ); 
+			?>
+			</i>
                 </a>
                 <?php
                 break; // Stop the loop once the matching file is found
@@ -182,9 +188,9 @@ foreach ($woo_downloads as $download) {
 
 
 // Handle the case where no downloadable files exist
-if (!$has_downloads) {
-    echo esc_html__('You do not have permission to download any files for this product.', 'nias-course-widget');
-}
+//if (!$has_downloads) {
+//    echo esc_html__('You do not have permission to download any files for this product.', 'nias-course-widget');
+//}
 
 
 
