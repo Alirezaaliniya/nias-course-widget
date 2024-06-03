@@ -247,17 +247,17 @@ trait Nias_course_controls {
                 ],
 			]
 		 );
-
-		 global $product;
+		 if (nias_course_is_feature_enabled() === '1') {
+		global $product;
 		 $product = wc_get_product(get_the_ID()); // Get product details for display
-		 $files = $product->get_files();
+		 $files = $product->get_downloads();
 		 $options = [];
-		 $current_product_id = $product->get_id();
+		//$current_product_id = $product->get_id();
 		 
 		 foreach ($files as $file_key => $file) {
 			 $options[$file_key] = $file['name']; // Add option with file name to options array
 		 }
-		 
+
 		 $repeater->add_control(
 			 'downloads_list',
 			 [
@@ -270,7 +270,7 @@ trait Nias_course_controls {
 				 'default' => '',
 			 ]
 		 );
-   
+		}
 		 $repeater->add_control(
 			'lesson_content',
 			[

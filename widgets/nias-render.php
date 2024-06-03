@@ -138,6 +138,8 @@ if (  'yes' == $settings['ns_show_spotdl'] ) {
   
   
 		  <?php
+
+if (nias_course_is_feature_enabled() === '1') {
 global $product;
 $current_product_id = $product->get_id();
 
@@ -151,7 +153,7 @@ $selectedfile = $lesson_single['downloads_list'];
 
 $product = wc_get_product(); // Get the current product
 $current_product_id = $product->get_id(); // Get the current product ID
-$files = $product->get_files(); // Get the downloadable files
+$files = $product->get_downloads(); // Get the downloadable files
 
 // Loop through downloadable products
 foreach ($woo_downloads as $download) {
@@ -160,7 +162,7 @@ foreach ($woo_downloads as $download) {
 
         // Escape and sanitize download URL and file name
         $download_url = esc_url($download['download_url']);
-        //$file_name = esc_html($download['file']['name']); نمایش نام فایل
+       // $file_name = esc_html($download['file']['name']);
 
         // Render the download link within the loop for each downloadable file
         foreach ($files as $file_key => $file) {
@@ -168,9 +170,8 @@ foreach ($woo_downloads as $download) {
             // Only render the anchor tag for the file that matches the download
             if ($download['file']['name'] == $file['name']) {
                 ?>
-                <a class="nsdownload-button" href="<?php echo $download_url; ?>" data-key="<?php echo esc_attr($file_key); ?>">
-                    <?php// echo $file_name; ?>
-					<i class="nsdownload-icon">
+                <a href="<?php echo $download_url; ?>" class="nsdownload-button" data-key="<?php echo esc_attr($file_key); ?>">
+				<i class="nsdownload-icon">
 			<?php 
 //nias download icon
 				  \Elementor\Icons_Manager::render_icon( $settings['nsdownloadicon'], [ 'aria-hidden' => 'true' ] ); 
@@ -184,14 +185,7 @@ foreach ($woo_downloads as $download) {
 	}
     }
 }
-
-
-
-// Handle the case where no downloadable files exist
-//if (!$has_downloads) {
-//    echo esc_html__('You do not have permission to download any files for this product.', 'nias-course-widget');
-//}
-
+}
 
 
 
