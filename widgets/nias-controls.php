@@ -217,12 +217,30 @@ trait Nias_course_controls {
                 ],
 			]
 		 );
+
+		 $repeater->add_control(
+			'protect_downloadlink',
+			[
+			   'label' => __( 'آیا میخواهید از لینک های محافظت شده ووکامرس استفاده کنید؟', 'nias-course-widget' ),
+			   'description' => esc_html__( 'لینک های محافظت شده بصورت غیر مستقیم نمایش داده میشوند و فقط توسط کاربر فعلی قابل دانلود است البته برای استفاده از این روش باید لینک ها را در صفحه ویرایش محصول دانلودی درج کنید', 'nias-course-widget' ),
+			   'type' => \Elementor\Controls_Manager::SELECT,
+			   'default' => 'no',
+			   'options' => [
+				  'yes' => __( 'بله', 'nias-course-widget' ),
+				  'no' => __( 'خیر', 'nias-course-widget' ),
+			   ],
+			]
+		 );
    
 		 $repeater->add_control(
 			'download_lesson',
 			[
+				'condition' => [
+					'protect_downloadlink' => 'no',
+				],
+
 			   'label' => __( 'لینک فایل خصوصی درس', 'nias-course-widget' ),
-               'description' => esc_html__( 'توجه کنید لینک فایل محافظت نمیشود برای حفاظت میتوانید از پلاگین ham3da یا پلاگین WP Secure Links استفاده کنید', 'nias-course-widget' ),
+               'description' => esc_html__( 'در این روش لینک مستقیم فایل به کاربر نمایش داده میشود (لینک میتواند توسط دیگران هم دانلود شود)', 'nias-course-widget' ),
 			   'type' => \Elementor\Controls_Manager::URL,
 								                'dynamic' => [
                     'active' => true,
@@ -243,7 +261,10 @@ trait Nias_course_controls {
 		 $repeater->add_control(
 			 'downloads_list',
 			 [
-				 'label' => esc_html__('Available Downloads', 'nias-course-widget'),
+				'condition' => [
+					'protect_downloadlink' => 'yes',
+				],
+				 'label' => esc_html__('فایل های موجوداین محصول', 'nias-course-widget'),
 				 'type' => \Elementor\Controls_Manager::SELECT,
 				 'options' => $options,
 				 'default' => '',
