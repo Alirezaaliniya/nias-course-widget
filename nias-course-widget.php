@@ -92,7 +92,7 @@ function nias_course_add_checkbox() {
     // اضافه کردن یک بخش به صفحه تنظیمات با نام "تنظیمات پلاگین"
     add_settings_section(
         'nias_course_settings_section', // شناسه بخش
-        __('تنظیمات پلاگین', 'nias-course-widget'), // عنوان بخش
+        __('تنظیمات دوره ساز نیاس', 'nias-course-widget'), // عنوان بخش
         'nias_course_section_description', // نام تابع برای توضیحات بخش (اختیاری)
         'nias-course-settings' // شناسه صفحه تنظیمات
     );
@@ -100,7 +100,7 @@ function nias_course_add_checkbox() {
     // اضافه کردن چک باکس به بخش تنظیمات
     add_settings_field(
         'nias_course_enable_feature', // شناسه فیلد
-        __('فعالسازی ویژگی', 'nias-course-widget'), // برچسب فیلد
+        __('فعالسازی قابلیت محافظت لینک', 'nias-course-widget'), // برچسب فیلد
         'nias_course_render_checkbox', // نام تابع برای نمایش فیلد
         'nias-course-settings', // شناسه صفحه تنظیمات
         'nias_course_settings_section' // شناسه بخش
@@ -116,7 +116,7 @@ add_action('admin_init', 'nias_course_add_checkbox');
 
 // توضیحات بخش
 function nias_course_section_description() {
-    echo '<p>'.__('در اینجا می‌توانید ویژگی‌های پلاگین را تنظیم کنید.', 'nias-course-widget').'</p>';
+    echo '<p>'.__('هشدار:حتماً قبل از فعالسازی این گزینه از هر محصول سایت برای خودتان سفارش ثبت کنید در غیر این صورت تمپلیت محصول شما هنگام ویرایش با المنتور مشکل لود پیدا خواهد کرد', 'nias-course-widget').'</p>';
 }
 
 
@@ -124,7 +124,7 @@ function nias_course_section_description() {
 function nias_course_render_checkbox() {
     $value = get_option('nias_course_enable_feature');
     ?>
-    <input type="checkbox" name="nias_course_enable_feature" value="1" <?php checked(1, $value); ?> />
+    <input type="checkbox" name="nias_course_enable_feature" value="" <?php checked(1, $value); ?> />
     <?php
    // echo $value;
 }

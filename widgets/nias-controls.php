@@ -218,6 +218,20 @@ trait Nias_course_controls {
 			]
 		 );
 
+
+   
+
+		 if (nias_course_is_feature_enabled() === '1') {
+		global $product;
+		 $product = wc_get_product(get_the_ID()); // Get product details for display
+		 $files = $product->get_downloads();
+		 $options = [];
+		//$current_product_id = $product->get_id();
+		 
+		 foreach ($files as $file_key => $file) {
+			 $options[$file_key] = $file['name']; // Add option with file name to options array
+		 }
+
 		 $repeater->add_control(
 			'protect_downloadlink',
 			[
@@ -231,33 +245,6 @@ trait Nias_course_controls {
 			   ],
 			]
 		 );
-   
-		 $repeater->add_control(
-			'download_lesson',
-			[
-				'condition' => [
-					'protect_downloadlink' => 'no',
-				],
-
-			   'label' => __( 'لینک فایل خصوصی درس', 'nias-course-widget' ),
-               'description' => esc_html__( 'در این روش لینک مستقیم فایل به کاربر نمایش داده میشود (لینک میتواند توسط دیگران هم دانلود شود)', 'nias-course-widget' ),
-			   'type' => \Elementor\Controls_Manager::URL,
-								                'dynamic' => [
-                    'active' => true,
-                ],
-			]
-		 );
-		 if (nias_course_is_feature_enabled() === '1') {
-		global $product;
-		 $product = wc_get_product(get_the_ID()); // Get product details for display
-		 $files = $product->get_downloads();
-		 $options = [];
-		//$current_product_id = $product->get_id();
-		 
-		 foreach ($files as $file_key => $file) {
-			 $options[$file_key] = $file['name']; // Add option with file name to options array
-		 }
-
 		 $repeater->add_control(
 			 'downloads_list',
 			 [
@@ -271,6 +258,24 @@ trait Nias_course_controls {
 			 ]
 		 );
 		}
+
+		$repeater->add_control(
+			'download_lesson',
+			[
+				'condition' => [
+					'private_lesson' => 'yes',
+					
+				],
+
+			   'label' => __( 'لینک فایل خصوصی درس', 'nias-course-widget' ),
+               'description' => esc_html__( 'در این روش لینک مستقیم فایل به کاربر نمایش داده میشود (لینک میتواند توسط دیگران هم دانلود شود)', 'nias-course-widget' ),
+			   'type' => \Elementor\Controls_Manager::URL,
+								                'dynamic' => [
+                    'active' => true,
+                ],
+			]
+		 );
+
 		 $repeater->add_control(
 			'lesson_content',
 			[
