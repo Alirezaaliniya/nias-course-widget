@@ -28,56 +28,18 @@ function nias_course_render_settings_page() {
         <form method="post" action="options.php">
             <?php settings_fields('nias_course_settings_group'); ?>
             <?php do_settings_sections('nias-course-settings'); ?>
+            <label for="nias_check_unregister_message">پنهان سازی دوره در صورت عدم ورود کاربر</label>
+            <input type="checkbox" id="nias_check_unregister_message" name="nias_check_unregister_message" value="1" <?php checked(1, get_option('nias_check_unregister_message'), true); ?>>
+
             <?php submit_button(); ?>
         </form>
     </div>
     <?php
 }
 
-// اضافه کردن چک باکس به صفحه تنظیمات
-function nias_course_add_checkbox() {
-    // اضافه کردن یک بخش به صفحه تنظیمات با نام "تنظیمات پلاگین"
-    add_settings_section(
-        'nias_course_settings_section', // شناسه بخش
-        __('تنظیمات دوره ساز نیاس', 'nias-course-widget'), // عنوان بخش
-        'nias_course_section_description', // نام تابع برای توضیحات بخش (اختیاری)
-        'nias-course-settings' // شناسه صفحه تنظیمات
-    );
 
-    // اضافه کردن چک باکس به بخش تنظیمات
-    add_settings_field(
-        'nias_course_enable_feature', // شناسه فیلد
-        __('فعالسازی قابلیت محافظت لینک', 'nias-course-widget'), // برچسب فیلد
-        'nias_course_render_checkbox', // نام تابع برای نمایش فیلد
-        'nias-course-settings', // شناسه صفحه تنظیمات
-        'nias_course_settings_section' // شناسه بخش
-    );
-
-    // ثبت فیلد
-    register_setting(
-        'nias_course_settings_group', // گروه تنظیمات
-        'nias_course_enable_feature' // شناسه فیلد
-    );
+function nias_course_settings_register(){
+register_setting( 'nias_course_settings_group', 'nias_check_unregister_message' );
+register_setting('nias_course_settings_group' , 'nias_signin_link');
 }
-add_action('admin_init', 'nias_course_add_checkbox');
-
-// توضیحات بخش
-function nias_course_section_description() {
-    echo '<p>'.__('هشدار:حتماً قبل از فعالسازی این گزینه از هر محصول سایت برای خودتان سفارش ثبت کنید در غیر این صورت تمپلیت محصول شما هنگام ویرایش با المنتور مشکل لود پیدا خواهد کرد', 'nias-course-widget').'</p>';
-}
-
-/*
-// نمایش چک باکس
-function nias_course_render_checkbox() {
-    $value = get_option('nias_course_enable_feature');
-    ?>
-    <input type="checkbox" name="nias_course_enable_feature" value="1" <?php checked(1, $value); ?> />
-    <?php
-}
-
-
-// تابع برای برگرداندن مقدار گزینه تنظیمات
-function nias_course_is_feature_enabled() {
-    return get_option('nias_course_enable_feature');
-}
-*/
+add_action( 'admin_init', 'nias_course_settings_register');

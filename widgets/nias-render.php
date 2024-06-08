@@ -27,7 +27,20 @@ trait Nias_course_render {
 				}
 			}
 		}
-		
+		///check if user setting check show courses
+$check_nias_register = get_option('nias_check_unregister_message');
+
+if($check_nias_register === '1'){
+if( !is_user_logged_in() ){
+?>
+<div>
+	<p>برای مشاهده جلسات لطفاً</p>
+	<a href="/my-account">وارد شوید</a>
+</div>
+<?php
+}else{
+
+
 		global $product;
 		if (  'yes' == $settings['ns_show_spot'] ) {
             $current_user_id = get_current_user_id();
@@ -41,10 +54,11 @@ if (  'yes' == $settings['ns_show_spotdl'] ) {
     $meta_values = get_user_orders_meta_values($current_user_id, $current_product_id);
     showspotdlbox($meta_values);
 }
+
+
+
+
 	?>  
-
-
-
   <div class="nselementory-section">
   <div class="nscourse-section">
   
@@ -261,7 +275,10 @@ echo esc_html($lesson_single['lesson_content']);
  </div>
  </div>
  
-	<?php }
+	<?php 
  
     }
+}
+}
+}
 ?>
