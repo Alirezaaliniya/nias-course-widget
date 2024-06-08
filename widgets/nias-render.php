@@ -139,7 +139,7 @@ if (  'yes' == $settings['ns_show_spotdl'] ) {
   
 		  <?php
 
-if (nias_course_is_feature_enabled() === '1') {
+if (is_product()) {
 global $product;
 $current_product_id = $product->get_id();
 

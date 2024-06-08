@@ -221,7 +221,7 @@ trait Nias_course_controls {
 
    
 
-		 if (nias_course_is_feature_enabled() === '1') {
+		 if (is_product()) {
 		global $product;
 		 $product = wc_get_product(get_the_ID()); // Get product details for display
 		 $files = $product->get_downloads();
@@ -262,10 +262,12 @@ trait Nias_course_controls {
 		$repeater->add_control(
 			'download_lesson',
 			[
+				/*
 				'condition' => [
 					'private_lesson' => 'yes',
 					
 				],
+				*/
 
 			   'label' => __( 'لینک فایل خصوصی درس', 'nias-course-widget' ),
                'description' => esc_html__( 'در این روش لینک مستقیم فایل به کاربر نمایش داده میشود (لینک میتواند توسط دیگران هم دانلود شود)', 'nias-course-widget' ),
