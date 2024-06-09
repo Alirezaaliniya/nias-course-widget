@@ -479,3 +479,10 @@ p.ns-spotdltitle {
     color: #6611dd;
     font-weight: bold;
 }
+/*fix load svg*/
+.nscourse-section i svg{
+    width: 1em;
+    height: 1em;
+    position: relative;
+    display: block;
+}

@@ -176,7 +176,7 @@ trait Nias_course_controls {
 				'label' => esc_html__( 'آیکن مخصوص این درس', 'nias-course-widget' ),
 				'type' => \Elementor\Controls_Manager::ICONS,
 				'default' => [
-					'value' => 'fa fa-book',
+					'value' => 'fas fa-book',
 					'library' => 'fa-solid',
 				],
 				'recommended' => [
@@ -747,6 +747,7 @@ trait Nias_course_controls {
 				'type' => \Elementor\Controls_Manager::COLOR,
 				'selectors' => [
 					'{{WRAPPER}} .nsarrowicon' => 'color: {{VALUE}}',
+					'{{WRAPPER}} .nsarrowicon svg' => 'fill: {{VALUE}}',
 				],
 			]
 		);
@@ -792,6 +793,8 @@ trait Nias_course_controls {
 				'type' => \Elementor\Controls_Manager::COLOR,
 				'selectors' => [
 					'{{WRAPPER}} .ns-icon-wrapper i' => 'color: {{VALUE}}',
+					'{{WRAPPER}} .ns-icon-wrapper i svg' => 'fill: {{VALUE}}',
+
 				],
 			]
 		);
@@ -804,6 +807,8 @@ trait Nias_course_controls {
 				'selectors' => [
 					'{{WRAPPER}} .nscourse-panel-heading:hover .ns-icon-wrapper i' => 'color: {{VALUE}}',
 					'{{WRAPPER}} .nscourse-panel-heading.active .ns-icon-wrapper i' => 'color: {{VALUE}}',
+					'{{WRAPPER}} .nscourse-panel-heading:hover .ns-icon-wrapper i svg' => 'fill: {{VALUE}}',
+					'{{WRAPPER}} .nscourse-panel-heading.active .ns-icon-wrapper i svg' => 'fill: {{VALUE}}',
 
 				],
 			]
@@ -961,6 +966,8 @@ trait Nias_course_controls {
 				'type' => \Elementor\Controls_Manager::COLOR,
 				'selectors' => [
 					'{{WRAPPER}} .nsdownload-button' => 'color: {{VALUE}}',
+					'{{WRAPPER}} .nsdownload-button svg' => 'fill: {{VALUE}}',
+
 				],
 			]
 
@@ -1031,6 +1038,8 @@ trait Nias_course_controls {
 				'type' => \Elementor\Controls_Manager::COLOR,
 				'selectors' => [
 					'{{WRAPPER}} .ns-private-icon i' => 'color: {{VALUE}}',
+					'{{WRAPPER}} .ns-private-icon i svg' => 'fill: {{VALUE}}',
+
 				],
 			]
 
@@ -1042,6 +1051,8 @@ trait Nias_course_controls {
 				'type' => \Elementor\Controls_Manager::COLOR,
 				'selectors' => [
 					'{{WRAPPER}} .ns-unprivate-icon i' => 'color: {{VALUE}}',
+					'{{WRAPPER}} .ns-unprivate-icon i svg' => 'fill: {{VALUE}}',
+
 				],
 			]
 
