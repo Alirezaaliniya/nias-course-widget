@@ -276,8 +276,6 @@ trait Nias_course_controls {
 					 'default' => '',
 				 ]
 			 );
-			}else{
-				return;
 			}
 
    
