@@ -3,7 +3,7 @@
  * Plugin Name: Nias course | دوره ساز نیاس
  * Description:   پلاگین دوره ساز نیاس ویجت "دوره ساز نیاس" را به ویرایشگر المنتور شما اضافه میکند که میتوانید دوره مورد نظر خود را درون تمپلیت محصول بسازیدو قالب خود را به یک قالب فروش دوره و فایل تبدیل کنید | این پلاگین بصورت رایگان منتشر شده و رایگان هم خواهد ماند❤️
  * Plugin URI:  https://nias.ir/product/nias-course-widget/
- * Version:     1.1.2
+ * Version:     1.1.3
  * Author:      Alireza aliniya
  * Author URI:  https://nias.ir/
  * Text Domain: nias-course-widget
@@ -41,6 +41,15 @@ add_action( 'elementor/elements/categories_registered', 'nias_course_add_custom_
 //define setting panel
 define('NIAS_COURSE_PANEL',plugin_dir_path(__FILE__).'admin');
 require(NIAS_COURSE_PANEL.'/adminpannel.php');
+
+//add setting to installed plugins
+add_filter('plugin_action_links_'.plugin_basename(__FILE__), 'nias_setting_link');
+function nias_setting_link( $links ) {
+	$links[] = '<a href="' .
+		admin_url( 'admin.php?page=nias-course-settings' ) .
+		'">' . __('Settings') . '</a>';
+	return $links;
+}
 
 function nias_course_add_custom_category_widget() {
     \Elementor\Plugin::$instance->elements_manager->add_category(

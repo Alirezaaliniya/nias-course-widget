@@ -2,3 +2,56 @@
     width: 22px;
     height: 22px;
 }
+.toplevel_page_nias-course-settings #submit {
+    width: 140px;
+    height: 40px;
+    border: none;
+    border-radius: 10px;
+    background: linear-gradient(to right,#77530a,#ffd277,#77530a,#77530a,#ffd277,#77530a);
+    background-size: 250%;
+    background-position: left;
+    color: #151515;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition-duration: 1s;
+    overflow: hidden;
+  }
+  
+  .toplevel_page_nias-course-settings #submit::before {
+    position: absolute;
+    right: 0;
+    top: 0;
+    content: "";
+    color: #ffd277;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 97%;
+    height: 90%;
+    border-radius: 8px;
+    transition-duration: 1s;
+    background-color: rgba(0, 0, 0, 0.842)!important;
+    background-size: 200%;
+  }
+  
+  .toplevel_page_nias-course-settings #submit:hover {
+    background-position: right;
+    transition-duration: 1s;
+  }
+  
+  .toplevel_page_nias-course-settings #submit:hover::before {
+    background-position: right;
+    transition-duration: 1s;
+  }
+  
+  .toplevel_page_nias-course-settings #submit:active {
+    transform: scale(0.95);
+  }
+
+
+  .toplevel_page_nias-course-settings{  p , span:not(#wpadminbar span) , h1 , h2 , h3 , h4 , h5 , h6 , a , button , label , input , div , table{
+font-family: 'niasyekan'!important;
+}}

@@ -218,48 +218,7 @@ trait Nias_course_controls {
 			]
 		 );
 
-
-   
-
-		 if (is_product()) {
-		global $product;
-		 $product = wc_get_product(get_the_ID()); // Get product details for display
-		 $files = $product->get_downloads();
-		 $options = [];
-		//$current_product_id = $product->get_id();
-		 
-		 foreach ($files as $file_key => $file) {
-			 $options[$file_key] = $file['name']; // Add option with file name to options array
-		 }
-
 		 $repeater->add_control(
-			'protect_downloadlink',
-			[
-			   'label' => __( 'آیا میخواهید از لینک های محافظت شده ووکامرس استفاده کنید؟', 'nias-course-widget' ),
-			   'description' => esc_html__( 'لینک های محافظت شده بصورت غیر مستقیم نمایش داده میشوند و فقط توسط کاربر فعلی قابل دانلود است البته برای استفاده از این روش باید لینک ها را در صفحه ویرایش محصول دانلودی درج کنید', 'nias-course-widget' ),
-			   'type' => \Elementor\Controls_Manager::SELECT,
-			   'default' => 'no',
-			   'options' => [
-				  'yes' => __( 'بله', 'nias-course-widget' ),
-				  'no' => __( 'خیر', 'nias-course-widget' ),
-			   ],
-			]
-		 );
-		 $repeater->add_control(
-			 'downloads_list',
-			 [
-				'condition' => [
-					'protect_downloadlink' => 'yes',
-				],
-				 'label' => esc_html__('فایل های موجوداین محصول', 'nias-course-widget'),
-				 'type' => \Elementor\Controls_Manager::SELECT,
-				 'options' => $options,
-				 'default' => '',
-			 ]
-		 );
-		}
-
-		$repeater->add_control(
 			'download_lesson',
 			[
 				/*
@@ -278,16 +237,61 @@ trait Nias_course_controls {
 			]
 		 );
 
-		 $repeater->add_control(
-			'lesson_content',
-			[
-			   'label' => __( 'محتوای دوره', 'nias-course-widget' ),
-			   'type' => \Elementor\Controls_Manager::WYSIWYG,
-								                'dynamic' => [
-                    'active' => true,
-                ],
-			]
-		 );
+
+
+
+		 if (is_product()) {
+			global $product;
+			 $product = wc_get_product(get_the_ID()); // Get product details for display
+			 $files = $product->get_downloads();
+			 $options = [];
+			//$current_product_id = $product->get_id();
+			 
+			 foreach ($files as $file_key => $file) {
+				 $options[$file_key] = $file['name']; // Add option with file name to options array
+			 }
+	
+			 $repeater->add_control(
+				'protect_downloadlink',
+				[
+				   'label' => __( 'آیا میخواهید از لینک های محافظت شده ووکامرس استفاده کنید؟', 'nias-course-widget' ),
+				   'description' => esc_html__( 'لینک های محافظت شده بصورت غیر مستقیم نمایش داده میشوند و فقط توسط کاربر فعلی قابل دانلود است البته برای استفاده از این روش باید لینک ها را در صفحه ویرایش محصول دانلودی درج کنید', 'nias-course-widget' ),
+				   'type' => \Elementor\Controls_Manager::SELECT,
+				   'default' => 'no',
+				   'options' => [
+					  'yes' => __( 'بله', 'nias-course-widget' ),
+					  'no' => __( 'خیر', 'nias-course-widget' ),
+				   ],
+				]
+			 );
+			 $repeater->add_control(
+				 'downloads_list',
+				 [
+					'condition' => [
+						'protect_downloadlink' => 'yes',
+					],
+					 'label' => esc_html__('فایل های موجوداین محصول', 'nias-course-widget'),
+					 'type' => \Elementor\Controls_Manager::SELECT,
+					 'options' => $options,
+					 'default' => '',
+				 ]
+			 );
+			}else{
+				return;
+			}
+
+   
+			$repeater->add_control(
+				'lesson_content',
+				[
+				   'label' => __( 'محتوای دوره', 'nias-course-widget' ),
+				   'type' => \Elementor\Controls_Manager::WYSIWYG,
+													'dynamic' => [
+						'active' => true,
+					],
+				]
+			 );
+
    
    
 		 $this->add_control(

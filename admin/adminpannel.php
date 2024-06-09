@@ -20,20 +20,55 @@ function nias_course_add_menu() {
 }
 add_action('admin_menu', 'nias_course_add_menu');
 
+
 // نمایش صفحه تنظیمات
 function nias_course_render_settings_page() {
     ?>
+
+
+
     <div class="wrap">
+        
         <h1><?php _e('تنظیمات پلاگین', 'nias-course-widget'); ?></h1>
+        <p>بزودی:تنظیمات وامکانات بیشتر...</p>
         <form method="post" action="options.php">
             <?php settings_fields('nias_course_settings_group'); ?>
-            <?php do_settings_sections('nias-course-settings'); ?>
-            <label for="nias_check_unregister_message">پنهان سازی دوره در صورت عدم ورود کاربر</label>
-            <input type="checkbox" id="nias_check_unregister_message" name="nias_check_unregister_message" value="1" <?php checked(1, get_option('nias_check_unregister_message'), true); ?>>
+            <?php do_settings_sections('nias-course-settings');
+            /* ?>
+       <label for="nias_check_unregister_message">پنهان سازی دوره در صورت عدم ورود کاربر</label>
+            <input type="checkbox" id="nias_check_unregister_message" name="nias_check_unregister_message" value="1" <?php checked(1, get_option('nias_check_unregister_message'), true); */
+            ?>
+            <p>لطفاً در صورت وجود مشکل یا سوال از طریق تلگرام با بنده در ارتباط باشید</p>
+            <a href="https://T.me/niasir">T.me/niasir</a>
+
+            <h2>آموزش استفاده از پلاگین را از اینجا ببینید</h2>
+<div style="max-width: 363px;">
+    <style>.h_iframe-aparat_embed_frame{position:relative;}.h_iframe-aparat_embed_frame .ratio{display:block;width:100%;height:auto;}.h_iframe-aparat_embed_frame iframe{position:absolute;top:0;left:0;width:100%;height:100%;}</style><div class="h_iframe-aparat_embed_frame"><span style="display: block;padding-top: 57%"></span><iframe src="https://www.aparat.com/video/video/embed/videohash/b90c8sh/vt/frame?titleShow=true&recom=self"  allowFullScreen="true" webkitallowfullscreen="true" mozallowfullscreen="true"></iframe></div>
+        </div>
 
             <?php submit_button(); ?>
         </form>
     </div>
+    <style>  @font-face {
+    font-family: 'niasyekan';
+    src:url('https://cdn.font-store.ir/fonts/yekan/Yekan-Regular.woff2') format('woff2'),
+    url('https://cdn.font-store.ir/fonts/yekan/Yekan-Regular.woff') format('woff'),
+    url('https://cdn.font-store.ir/fonts/yekan/Yekan-Regular.ttf') format('truetype'),
+	url('https://cdn.font-store.ir/fonts/yekan/Yekan-Regular.otf') format('opentype');
+    font-weight: normal;
+    font-style: normal;
+}
+@font-face {
+    font-family: 'niasyekan';
+    src:url('https://cdn.font-store.ir/fonts/yekan/Yekan-Bold.woff2') format('woff2'),
+    url('https://cdn.font-store.ir/fonts/yekan/Yekan-Bold.woff') format('woff'),
+    url('https://cdn.font-store.ir/fonts/yekan/Yekan-Bold.ttf') format('truetype'),
+	url('https://cdn.font-store.ir/fonts/yekan/Yekan-Bold.otf') format('opentype');
+    font-weight: bold;
+    font-style: normal;
+}</style>
+
+
     <?php
 }
 

@@ -27,18 +27,6 @@ trait Nias_course_render {
 				}
 			}
 		}
-		///check if user setting check show courses
-$check_nias_register = get_option('nias_check_unregister_message');
-
-if($check_nias_register === '1'){
-if( !is_user_logged_in() ){
-?>
-<div>
-	<p>برای مشاهده جلسات لطفاً</p>
-	<a href="/my-account">وارد شوید</a>
-</div>
-<?php
-}else{
 
 
 		global $product;
@@ -259,10 +247,10 @@ if ($lesson_single["private_lesson"] !== "no") {
 if ($bought_course) {
 echo wp_kses_post($lesson_single['lesson_content']);
 } else {
-echo esc_html($settings['nsprivatetextcontent']);
+echo wp_kses_post($settings['nsprivatetextcontent']);
 }
 } elseif ($lesson_single["private_lesson"] !== "yes") {
-echo esc_html($lesson_single['lesson_content']);
+echo wp_kses_post($lesson_single['lesson_content']);
 }
 ?>
 </div>
@@ -279,6 +267,5 @@ echo esc_html($lesson_single['lesson_content']);
  
     }
 }
-}
-}
+
 ?>

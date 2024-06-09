@@ -5,27 +5,27 @@ Donate link: https://nias.ir/
 Requires at least: 5.8
 Tested up to: 6.5.2
 Requires PHP: 7.4
-Stable tag: 1.1.2
+Stable tag: 1.1.3
 License: GPLv2
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
-This plug-in adds lessons widget, which is similar to Assistant Professor, to your store site, and you can convert your Elementor-compatible store template into an educational template.
-
+این افزونه ویجت دروس را به وب‌سایت فروشگاه شما اضافه می‌کند، که مشابه استادیار است، و شما می‌توانید قالب فروشگاه المنتوری خود را به یک قالب آموزشی تبدیل کنید.
 == Description ==
-Nias course widget A cool and professional plugin for elementor users who want to add a course section in every template they install that is SEO optimized.
-
+پلاگین دوره ساز نیاس در واقع یک ویجت حرفه ای را به المنتور شما اضافه میکند که به وسیله آن قادر خواهید بود بخش دوره را به صفحات محصول خود اضافه کنید
 = Facilities =
-* All departments are similar to assistant professor
-* Optimizing and fixing SEO problems and removing sections
-* Ability to use dynamic tags in all text fields
-* Ability to choose html tag for Dravi titles
-* The ability to sell courses and physical and virtual products simultaneously or separately
-* And other professional features
+*تمام بخش‌ها مشابه استادیار هستند
+*بهینه‌سازی و رفع مشکلات سئو و حذف بخش‌ها
+*قابلیت استفاده از برچسب‌های پویا در تمام فیلدهای متنی
+*قابلیت انتخاب برچسب HTML برای عنوان‌های درونیاب
+*قابلیت فروش دوره‌ها و محصولات فیزیکی و مجازی به طور همزمان یا جداگانه
+*استفاده از قابلیت محافظت لینک ووکامرس
+*و سایر امکانات حرفه‌ای
+
 
  
 
 = Support =
-* [Support in Nias] (https://nias.ir/)
+* [پشتیبانی نیاس] (https://nias.ir/)
 
 
 
@@ -37,6 +37,8 @@ Nias course widget A cool and professional plugin for elementor users who want t
 
 == Frequently Asked Questions ==
 پلاگین چه پیشنیازی دارد؟
+پیش نیاز فعالسازی و استفاده از پلاگین ووکامرس و المنتور است
+
 
 
 == Screenshots ==
@@ -45,6 +47,10 @@ Nias course widget A cool and professional plugin for elementor users who want t
 3. scrnias3
 
 == Changelog ==
+v1.1.3
+*woocommerce protected links added
+*fix style load
+*setting page added
 v1.1.1
 php error fixed
 v1.1.0
