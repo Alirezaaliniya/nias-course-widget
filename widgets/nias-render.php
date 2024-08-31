@@ -243,14 +243,24 @@ foreach ($woo_downloads as $download) {
 	<div class="nspanel-content">
 <div class="nspanel-content-inner">
 <?php
+$allowed_tags = array(
+    'iframe' => array(
+        'src'             => true,
+        'width'           => true,
+        'height'          => true,
+        'frameborder'     => true,
+        'allowfullscreen' => true,
+    ),
+    // Include other tags that you want to allow
+);
 if ($lesson_single["private_lesson"] !== "no") {
 if ($bought_course) {
-echo wp_kses_post($lesson_single['lesson_content']);
+echo wp_kses_post($lesson_single['lesson_content'], $allowed_tags);
 } else {
-echo wp_kses_post($settings['nsprivatetextcontent']);
+echo wp_kses_post($settings['nsprivatetextcontent'], $allowed_tags);
 }
 } elseif ($lesson_single["private_lesson"] !== "yes") {
-echo wp_kses_post($lesson_single['lesson_content']);
+echo wp_kses_post($lesson_single['lesson_content'], $allowed_tags);
 }
 ?>
 </div>

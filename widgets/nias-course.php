@@ -138,6 +138,14 @@ class Nias_course_widget extends \Elementor\Widget_Base {
 	 public function get_categories() {
 		return [ 'nias-widget-category' ];
 	}
+	
+	public function get_script_depends() {
+		return [ 'nscourse-js' ];
+	}
+
+	public function get_style_depends() {
+		return [ 'nscourse-css' ];
+	}
     // ارث‌بری از کلاس Nias_course_render
     use Nias_course_render;
 
