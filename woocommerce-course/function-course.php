@@ -15,7 +15,22 @@ div#nias_course_meta_box_id {
     border-radius: 15px;
     padding: 20px;
 }
-
+.toggle_section{
+    background-image: url(<?php echo plugin_dir_url(__File__) . 'arow.svg'; ?>);
+    font-size: 0;
+    width: 30px;
+    height: 30px;
+    background-position: center;
+    background-size: contain;
+    background-repeat: no-repeat;
+    transform: rotate(0);
+    transition: all 0.3s;
+    box-shadow: none !important;
+    outline: none !important;
+}
+a.toggle_section.active {
+    transform: rotate(-90deg);
+}
 #nias_course_meta_box_id .postbox-header {
     background: #005bff17;
     border-radius:10px;

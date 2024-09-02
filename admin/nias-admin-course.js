@@ -122,11 +122,14 @@ jQuery(document).ready(function($) {
     $(document).on('click', '.toggle_section', function(e) {
         e.preventDefault();
         $(this).closest('.nias_course_section_item').find('.section_content').toggle();
+        $(this).toggleClass("active");
     });
 
     // باز/بسته کردن محتوای درس
     $(document).on('click', '.toggle_lesson', function(e) {
         e.preventDefault();
         $(this).closest('.nias_course_lesson_item').find('.lesson_content').toggle();
+        $(this).toggleClass("active");
+
     });
 });
