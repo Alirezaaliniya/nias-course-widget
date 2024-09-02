@@ -2,7 +2,7 @@
 
 
 function nias_course_script_product(){
-    /*
+    
     ?>
         <script>
         
@@ -10,63 +10,104 @@ function nias_course_script_product(){
 
 </script>
 <style>
-#nias_course_meta_box {
-    margin-top: 20px;
+div#nias_course_meta_box_id {
+    border: none;
+    border-radius: 15px;
+    padding: 20px;
+}
+
+#nias_course_meta_box_id .postbox-header {
+    background: #005bff17;
+    border-radius:10px;
+    padding:10px 20px;
+    h2 , span{
+    color: #0067ff!important;
+        }
+}
+
+
+
+div#nias_course_meta_box {
+    h3 {
+        color:blue;
+    }
+    input{
+        border:none;
+        border-radius:10px
+    }
+}
+
+div#nias_course_sections_wrapper {
+    padding: 15px;
+    /* background-color: #ffffff00; */
+    border: 1px solid #f5f5f5;
+    border-radius: 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.nias_course_section_item {
+    padding: 10px;
+    background-color: #f8f8f8;
+    border-radius: 10px;
+    /* margin-bottom: 15px; */
+    /* margin: 10px 0; */
+    /* display: flex; */
+    /* flex-direction: column; */
+    /* gap: 20px; */
+}
+
+.section_header {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-around;
+    align-items: center;
+}
+
+.lessons_wrapper {
+    margin: 15px 0;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
 }
 
 .nias_course_lesson_item {
-    margin-bottom: 20px;
-    border: 1px solid #ddd;
-    padding: 10px;
-    background: #f9f9f9;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    justify-content: center;
 }
 
 .lesson_header {
     display: flex;
-    justify-content: space-between;
     align-items: center;
-    padding-bottom: 10px;
-    border-bottom: 1px solid #ddd;
-}
-
-.lesson_header label {
-    margin-right: 10px;
+    justify-content: flex-start;
+    gap: 20px;
+    background-color: #ededed;
+    padding: 10px;
+    border-radius: 8px;
 }
 
 .lesson_content {
-    padding-top: 10px;
+    display: flex;
+    flex-direction: column;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 10px;
 }
 
-.lesson_content label {
-    display: block;
-    margin-bottom: 5px;
-    font-weight: bold;
+.section_content {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
 }
-
-.lesson_content input,
-.lesson_content textarea {
-    width: 100%;
-    margin-bottom: 10px;
-    padding: 5px;
-}
-
-.toggle_lesson, .nias_course_remove_lesson {
-    color: #0073aa;
-    text-decoration: none;
-    cursor: pointer;
-    margin-left: 10px;
-}
-
-.toggle_lesson:hover, .nias_course_remove_lesson:hover {
-    color: #005177;
-}
-
 
 </style>
     
     
     <?php
-    */
+
 }
 
 add_action('admin_footer' , 'nias_course_script_product');
@@ -120,30 +161,6 @@ function nias_course_render_meta_box($post) {
 
                         <label><?php _e('برچسب', 'nias-course-widget'); ?></label>
                         <input type="text" name="nias_course_sections_list[section_label][]" value="<?php echo esc_attr($section['section_label']); ?>" />
-
-                        <label><?php _e('ویدیوی پیش‌نمایش', 'nias-course-widget'); ?></label>
-                        <input type="text" id="section_preview_video_<?php echo $index; ?>" name="nias_course_sections_list[section_preview_video][]" value="<?php echo esc_url($section['section_preview_video']); ?>" />
-                        <button class="upload_video_button" data-target="#section_preview_video_<?php echo $index; ?>"><?php _e('بارگذاری ویدیو', 'nias-course-widget'); ?></button>
-
-                        <label><?php _e('فایل خصوصی درس', 'nias-course-widget'); ?></label>
-                        <input type="text" name="nias_course_sections_list[section_download][]" value="<?php echo esc_url($section['section_download']); ?>" />
-
-                        <label><?php _e('محتوای درس', 'nias-course-widget'); ?></label>
-                        <?php
-                            $editor_id = 'nias_course_section_content_' . $index;
-                            $content = !empty($section['section_content']) ? $section['section_content'] : '';
-                            $settings = array(
-                                'textarea_name' => 'nias_course_sections_list[section_content][]',
-                                'textarea_rows' => 10,
-                                'media_buttons' => true,
-                                'tinymce' => true,
-                                'quicktags' => true,
-                            );
-
-                            wp_editor($content, $editor_id, $settings);
-                        ?>
-                        <label><?php _e('درس خصوصی است؟', 'nias-course-widget'); ?></label>
-                        <input type="checkbox" name="nias_course_sections_list[section_private][<?php echo $index; ?>]" value="yes" <?php checked(isset($section['section_private']) && $section['section_private'] === 'yes'); ?> />
                     </div>
                     <div class="lessons_wrapper">
                         <?php if (!empty($section['lessons'])) : ?>
@@ -226,10 +243,6 @@ function nias_course_save_meta_box($post_id) {
                 'section_subtitle' => sanitize_text_field($sections['section_subtitle'][$index]),
                 'section_icon' => sanitize_text_field($sections['section_icon'][$index]),
                 'section_label' => sanitize_text_field($sections['section_label'][$index]),
-                'section_preview_video' => sanitize_text_field($sections['section_preview_video'][$index]),
-                'section_download' => sanitize_text_field($sections['section_download'][$index]),
-                'section_content' => wp_kses_post($sections['section_content'][$index]),
-                'section_private' => isset($sections['section_private'][$index]) ? 'yes' : 'no',
                 'lessons' => array_map(function($lesson_title, $i) use ($sections, $index) {
                     return [
                         'lesson_title' => sanitize_text_field($lesson_title),

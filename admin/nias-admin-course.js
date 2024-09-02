@@ -54,18 +54,6 @@ jQuery(document).ready(function($) {
                     <label>${nias_course_ajax_object.section_label}</label>
                     <input type="text" name="nias_course_sections_list[section_label][]" value="" />
 
-                    <label>${nias_course_ajax_object.section_preview_video}</label>
-                    <input type="text" name="nias_course_sections_list[section_preview_video][]" value="" />
-                    <button class="upload_video_button" data-target="[name='nias_course_sections_list[section_preview_video][]']">${nias_course_ajax_object.upload_video}</button>
-
-                    <label>${nias_course_ajax_object.section_download}</label>
-                    <input type="text" name="nias_course_sections_list[section_download][]" value="" />
-
-                    <label>${nias_course_ajax_object.section_content}</label>
-                    <textarea name="nias_course_sections_list[section_content][]" rows="10"></textarea>
-                    <label>${nias_course_ajax_object.section_private}</label>
-                    <input type="checkbox" name="nias_course_sections_list[section_private][${newIndex}]" value="yes" />
-
                     <div class="lessons_wrapper"></div>
                     <a href="#" class="nias_course_add_lesson" data-section-index="${newIndex}">${nias_course_ajax_object.add_lesson}</a>
                 </div>
