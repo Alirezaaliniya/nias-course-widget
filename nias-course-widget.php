@@ -42,16 +42,26 @@ function nias_admin_course_enqueue_scripts() {
 
     wp_localize_script('nias-admin-course-js', 'nias_course_ajax_object', array(
         'ajax_url' => admin_url('admin-ajax.php'),
-        'lesson_title' => __('عنوان فصل', 'nias-course-widget'),
-        'lesson_subtitle' => __('زیرعنوان', 'nias-course-widget'),
-        'lesson_icon' => __('آیکون', 'nias-course-widget'),
-        'lesson_label' => __('برچسب', 'nias-course-widget'),
-        'lesson_preview_video' => __('ویدیوی پیش‌نمایش', 'nias-course-widget'),
+        'section_title' => __('عنوان فصل', 'nias-course-widget'),
+        'section_subtitle' => __('زیرعنوان فصل', 'nias-course-widget'),
+        'toggle_section' => __('باز/بسته', 'nias-course-widget'),
+        'remove_section' => __('حذف فصل', 'nias-course-widget'),
+        'upload_icon' => __('بارگذاری آیکون', 'nias-course-widget'),
+        'section_label' => __('برچسب فصل', 'nias-course-widget'),
+        'section_preview_video' => __('ویدیوی پیش‌نمایش فصل', 'nias-course-widget'),
+        'section_download' => __('فایل خصوصی فصل', 'nias-course-widget'),
+        'section_content' => __('محتوای فصل', 'nias-course-widget'),
+        'section_private' => __('فصل خصوصی است؟', 'nias-course-widget'),
+        'add_lesson' => __('اضافه کردن درس جدید', 'nias-course-widget'),
+        'lesson_title' => __('عنوان درس', 'nias-course-widget'),
+        'toggle_lesson' => __('باز/بسته', 'nias-course-widget'),
+        'remove_lesson' => __('حذف درس', 'nias-course-widget'),
+        'upload_video' => __('بارگذاری ویدیو', 'nias-course-widget'),
+        'lesson_label' => __('برچسب درس', 'nias-course-widget'),
+        'lesson_preview_video' => __('ویدیوی پیش‌نمایش درس', 'nias-course-widget'),
         'lesson_download' => __('فایل خصوصی درس', 'nias-course-widget'),
         'lesson_content' => __('محتوای درس', 'nias-course-widget'),
         'lesson_private' => __('درس خصوصی است؟', 'nias-course-widget'),
-        'toggle_lesson' => __('باز/بسته', 'nias-course-widget'),
-        'remove_lesson' => __('حذف فصل', 'nias-course-widget')
     ));
 }
 add_action('admin_enqueue_scripts', 'nias_admin_course_enqueue_scripts');
@@ -65,6 +75,10 @@ add_action( 'elementor/elements/categories_registered', 'nias_course_add_custom_
 //define setting panel
 define('NIAS_COURSE_PANEL',plugin_dir_path(__FILE__).'admin');
 require(NIAS_COURSE_PANEL.'/adminpannel.php');
+
+/* ----------------------- define woocommerce product ----------------------- */
+define('NIAS_WOOCOMMERCE' , plugin_dir_path(__FILE__).'woocommerce-course');
+require(NIAS_WOOCOMMERCE.'/function-course.php');
 
 //add setting to installed plugins
 add_filter('plugin_action_links_'.plugin_basename(__FILE__), 'nias_setting_link');
