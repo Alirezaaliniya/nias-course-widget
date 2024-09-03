@@ -1,9 +1,10 @@
 <?php
 namespace Nias_Course;
-
 if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Exit if accessed directly.
 }
+
+
 
 class Nias_course_woocommerce extends \Elementor\Widget_Base {
 
@@ -63,6 +64,26 @@ class Nias_course_woocommerce extends \Elementor\Widget_Base {
 
 	// Widget output
 	protected function render() {
+
+
+/* --------- for make sure that user bought product to add condition -------- */
+$bought_course = false;
+$current_user = wp_get_current_user();
+if( is_user_logged_in() ) {
+    $current_user = wp_get_current_user();
+    if( !empty($current_user->user_login) && !empty($current_user->ID) ) {
+        global $post;
+        if( isset($post) && !empty($post->ID) ) {
+            $product_id = $post->ID;
+            if ( wc_customer_bought_product( $current_user->user_login, $current_user->ID, $product_id ) ) {
+                $bought_course = true;
+            }
+        }
+    }
+}
+/* ------------------ end of condition to use in main code ------------------ */
+
+
         $post_id = get_the_ID();
         $sections = get_post_meta($post_id, 'nias_course_sections_list', true);
         
@@ -111,10 +132,17 @@ class Nias_course_woocommerce extends \Elementor\Widget_Base {
                                                 <button class="toggle_lesson"><?php _e('باز/بسته', 'nias-course-widget'); ?></button>
                                             </div>
                                             <div class="lesson_content" style="display: none;">
-                                                <p><?php echo wp_kses_post($lesson['lesson_content']); ?></p>
-                                                <?php if ($lesson['lesson_private'] === 'yes') : ?>
-                                                    <p><?php _e('این درس خصوصی است.', 'nias-course-widget'); ?></p>
-                                                <?php endif; ?>
+                                                <?php if ($lesson['lesson_private'] === 'yes'){
+                                                 if ($bought_course) {
+                                                 echo wp_kses_post($lesson['lesson_content']);
+                                                 }else{
+                                                     _e('این درس خصوصی است.', 'nias-course-widget'); 
+                                                 }
+                                                } elseif ($lesson['lesson_private'] !== 'yes') {
+                                                    echo wp_kses_post($lesson['lesson_content']);
+                                                    }
+                                                    
+                                                    ?>
                                             </div>
                                         </li>
                                     <?php endforeach; ?>
