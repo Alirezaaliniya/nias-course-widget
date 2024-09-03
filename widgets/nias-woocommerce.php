@@ -91,7 +91,7 @@ if( is_user_logged_in() ) {
             <div id="nias_course_sections">
                 <?php foreach ($sections as $index => $section) : ?>
                     <div class="nias_course_section">
-                        <div class="section_header">
+                        <div class="section_header toggle_section">
                             <h3 class="section_title"><?php echo esc_html($section['section_title']); ?></h3>
                             <p class="section_subtitle"><?php echo esc_html($section['section_subtitle']); ?></p>
                             <button class="toggle_section"><?php _e('باز/بسته', 'nias-course-widget'); ?></button>
@@ -101,7 +101,7 @@ if( is_user_logged_in() ) {
                                 <ul class="lessons_list">
                                     <?php foreach ($section['lessons'] as $lesson) : ?>
                                         <li class="lesson_item">
-                                            <div class="lesson_header">
+                                            <div class="lesson_header toggle_lesson">
                                                 <?php if (!empty($lesson['lesson_icon'])) : ?>
                                                     <img src="<?php echo esc_url($lesson['lesson_icon']); ?>" alt="<?php echo esc_attr($lesson['lesson_title']); ?>" />
                                                 <?php endif; ?>
@@ -251,8 +251,8 @@ if( is_user_logged_in() ) {
     display: none;
 }
 
-.toggle_section,
-.toggle_lesson {
+button.toggle_section,
+button.toggle_lesson {
     background-color: #0073aa;
     color: #fff;
     padding: 5px 10px;
