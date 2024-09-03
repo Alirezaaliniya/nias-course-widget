@@ -15,7 +15,7 @@ div#nias_course_meta_box_id {
     border-radius: 15px;
     padding: 20px;
 }
-.toggle_section{
+.toggle_section , .toggle_lesson{
     background-image: url(<?php echo plugin_dir_url(__File__) . 'arow.svg'; ?>);
     font-size: 0;
     width: 30px;
@@ -28,8 +28,32 @@ div#nias_course_meta_box_id {
     box-shadow: none !important;
     outline: none !important;
 }
-a.toggle_section.active {
+a.toggle_section.active , .toggle_lesson.active {
     transform: rotate(-90deg);
+}
+a.nias_course_remove_section , .nias_course_remove_lesson{
+    background-image: url(<?php echo plugin_dir_url(__File__) . 'remove.svg'; ?>);
+    font-size: 0;
+    width: 30px;
+    height: 30px;
+    background-position: center;
+    background-size: contain;
+    background-repeat: no-repeat;
+
+}
+a.nias_course_add_lesson , a#nias_course_add_section {
+    padding: 10px 15px;
+    background: #3858e9;
+    color: white;
+    text-decoration: none;
+    border-radius: 10px;
+    /* margin-bottom: 10px!important; */
+    /* content: ""; */
+}
+
+a.nias_course_add_lesson:after , a#nias_course_add_section:after{
+    content: "+";
+    margin-right: 10px;
 }
 #nias_course_meta_box_id .postbox-header {
     background: #005bff17;
@@ -50,6 +74,14 @@ div#nias_course_meta_box {
         border:none;
         border-radius:10px
     }
+    button {
+    background: #003dff17;
+    color: #3858e9;
+    border-radius: 10px;
+    padding: 10px;
+    border: none!important;
+    outline: none!important;
+}
 }
 
 div#nias_course_sections_wrapper {
@@ -204,19 +236,8 @@ function nias_course_render_meta_box($post) {
                                         <input type="text" name="nias_course_sections_list[sections][<?php echo $index; ?>][lessons][lesson_download][]" value="<?php echo esc_url($lesson['lesson_download']); ?>" />
 
                                         <label><?php _e('محتوای درس', 'nias-course-widget'); ?></label>
-                                        <?php
-                                            $editor_id = 'nias_course_lesson_content_' . $lesson_index;
-                                            $content = !empty($lesson['lesson_content']) ? $lesson['lesson_content'] : '';
-                                            $settings = array(
-                                                'textarea_name' => 'nias_course_sections_list[sections][<?php echo $index; ?>][lessons][lesson_content][]',
-                                                'textarea_rows' => 10,
-                                                'media_buttons' => true,
-                                                'tinymce' => true,
-                                                'quicktags' => true,
-                                            );
+                                        <input type="text" name="nias_course_sections_list[sections][<?php echo $index; ?>][lessons][lesson_content][]" value="<?php echo esc_attr($lesson['lesson_content']); ?>" />
 
-                                            wp_editor($content, $editor_id, $settings);
-                                        ?>
                                         <label><?php _e('درس خصوصی است؟', 'nias-course-widget'); ?></label>
                                         <input type="checkbox" name="nias_course_sections_list[sections][<?php echo $index; ?>][lessons][lesson_private][<?php echo $lesson_index; ?>]" value="yes" <?php checked(isset($lesson['lesson_private']) && $lesson['lesson_private'] === 'yes'); ?> />
                                     </div>
@@ -233,6 +254,9 @@ function nias_course_render_meta_box($post) {
     <?php
 }
 
+
+// ذخیره‌سازی داده‌های متاباکس
+// ذخیره‌سازی داده‌های متاباکس
 // ذخیره‌سازی داده‌های متاباکس
 add_action('save_post', 'nias_course_save_meta_box');
 function nias_course_save_meta_box($post_id) {
@@ -249,27 +273,32 @@ function nias_course_save_meta_box($post_id) {
     // ذخیره‌سازی داده‌های متا
     if (isset($_POST['nias_course_sections_list'])) {
         $sections = $_POST['nias_course_sections_list'];
-
-        // بررسی و پاکسازی داده‌ها
         $cleaned_sections = [];
+
+        // پردازش فصول
         foreach ($sections['section_title'] as $index => $title) {
             $cleaned_sections[$index] = [
                 'section_title' => sanitize_text_field($title),
                 'section_subtitle' => sanitize_text_field($sections['section_subtitle'][$index]),
-                'section_icon' => sanitize_text_field($sections['section_icon'][$index]),
+                'section_icon' => esc_url_raw($sections['section_icon'][$index]),
                 'section_label' => sanitize_text_field($sections['section_label'][$index]),
-                'lessons' => array_map(function($lesson_title, $i) use ($sections, $index) {
-                    return [
-                        'lesson_title' => sanitize_text_field($lesson_title),
-                        'lesson_icon' => sanitize_text_field($sections['sections'][$index]['lessons']['lesson_icon'][$i]),
-                        'lesson_label' => sanitize_text_field($sections['sections'][$index]['lessons']['lesson_label'][$i]),
-                        'lesson_preview_video' => sanitize_text_field($sections['sections'][$index]['lessons']['lesson_preview_video'][$i]),
-                        'lesson_download' => sanitize_text_field($sections['sections'][$index]['lessons']['lesson_download'][$i]),
-                        'lesson_content' => wp_kses_post($sections['sections'][$index]['lessons']['lesson_content'][$i]),
-                        'lesson_private' => isset($sections['sections'][$index]['lessons']['lesson_private'][$i]) ? 'yes' : 'no',
-                    ];
-                }, $sections['sections'][$index]['lessons']['lesson_title'], array_keys($sections['sections'][$index]['lessons']['lesson_title']))
+                'lessons' => []
             ];
+
+            // پردازش دروس
+            if (isset($sections['sections'][$index]['lessons'])) {
+                foreach ($sections['sections'][$index]['lessons']['lesson_title'] as $lesson_index => $lesson_title) {
+                    $cleaned_sections[$index]['lessons'][$lesson_index] = [
+                        'lesson_title' => sanitize_text_field($lesson_title),
+                        'lesson_icon' => esc_url_raw($sections['sections'][$index]['lessons']['lesson_icon'][$lesson_index]),
+                        'lesson_label' => sanitize_text_field($sections['sections'][$index]['lessons']['lesson_label'][$lesson_index]),
+                        'lesson_preview_video' => esc_url_raw($sections['sections'][$index]['lessons']['lesson_preview_video'][$lesson_index]),
+                        'lesson_download' => esc_url_raw($sections['sections'][$index]['lessons']['lesson_download'][$lesson_index]),
+                        'lesson_content' => sanitize_text_field($sections['sections'][$index]['lessons']['lesson_content'][$lesson_index]),
+                        'lesson_private' => isset($sections['sections'][$index]['lessons']['lesson_private'][$lesson_index]) ? 'yes' : 'no',
+                    ];
+                }
+            }
         }
 
         update_post_meta($post_id, 'nias_course_sections_list', $cleaned_sections);
@@ -277,3 +306,7 @@ function nias_course_save_meta_box($post_id) {
         delete_post_meta($post_id, 'nias_course_sections_list');
     }
 }
+
+
+
+
