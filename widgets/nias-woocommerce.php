@@ -90,6 +90,18 @@ class Nias_course_woocommerce extends \Elementor\Widget_Base {
 			]
 		);
 
+        $this->add_control(
+			'nspreviewtext',
+			[
+				'label' => esc_html__( 'متن دکمه پیش نمایش', 'nias-course-widget' ),
+				'type' => \Elementor\Controls_Manager::TEXT,
+				'default' => esc_html__( 'پیش نمایش', 'nias-course-widget' ),
+				'placeholder' => esc_html__( 'پیش نمایش', 'nias-course-widget' ),
+				'dynamic' => [
+                    'active' => true,
+                ],
+			]
+		);
 
 		$this->end_controls_section();
 	}
@@ -151,10 +163,12 @@ if( is_user_logged_in() ) {
                                                     <a href="<?php echo esc_url($lesson['lesson_preview_video']); ?>">
                                                     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                                                         <path d="M14.9694 10.2301L12.0694 8.56012C11.3494 8.14012 10.4794 8.14012 9.75938 8.56012C9.03938 8.98012 8.60938 9.72012 8.60938 10.5601V13.9101C8.60938 14.7401 9.03938 15.4901 9.75938 15.9101C10.1194 16.1201 10.5194 16.2201 10.9094 16.2201C11.3094 16.2201 11.6994 16.1201 12.0594 15.9101L14.9594 14.2401C15.6794 13.8201 16.1094 13.0801 16.1094 12.2401C16.1294 11.4001 15.6994 10.6501 14.9694 10.2301Z" fill="#FF0000"/>
-                                                    </svg>
                                                     <path opacity="0.4" d="M11.9707 22C17.4936 22 21.9707 17.5228 21.9707 12C21.9707 6.47715 17.4936 2 11.9707 2C6.44786 2 1.9707 6.47715 1.9707 12C1.9707 17.5228 6.44786 22 11.9707 22Z" fill="#FF0000"/>
-
+                                                    </svg>
                                                     </a>
+                                                    <span class="nsspanpreviewtext">
+		                                             <?php echo esc_html($settings['nspreviewtext']); ?>
+		                                             </span>
                                                 <?php endif; ?>
                                                 <?php if ($lesson['lesson_private'] === 'yes'){
                                                  if ($bought_course) {
@@ -163,9 +177,8 @@ if( is_user_logged_in() ) {
                                                             <a href="<?php echo esc_url($lesson['lesson_download']); ?>">
                                                             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                                                                 <path d="M15.8798 12.43L12.5298 15.78C12.2398 16.07 11.7598 16.07 11.4698 15.78L8.11984 12.43C7.82984 12.14 7.82984 11.66 8.11984 11.37C8.40984 11.08 8.88984 11.08 9.17984 11.37L11.2498 13.44V2.75C11.2498 2.34 11.5898 2 11.9998 2C12.4098 2 12.7498 2.34 12.7498 2.75V13.44L14.8198 11.37C14.9698 11.22 15.1598 11.15 15.3498 11.15C15.5398 11.15 15.7298 11.22 15.8798 11.37C16.1798 11.66 16.1798 12.13 15.8798 12.43Z" fill="#2666CF"/>
-                                                            </svg>
                                                             <path opacity="0.4" d="M16.8 9H7.2C4 9 2 11 2 14.2V16.79C2 20 4 22 7.2 22H16.79C19.99 22 21.99 20 21.99 16.8V14.2C22 11 20 9 16.8 9Z" fill="#2666CF"/>
-        
+                                                            </svg>
         
                                                             </a>
                                                             <?php
@@ -340,16 +353,7 @@ button.toggle_lesson {
         <?php
 	}
 
-	// Editor output
-	protected function _content_template() {
-		?>
-		<# if ( settings.title ) { #>
-			<div class="nias-course-widget">
-				<h2>{{{ settings.title }}}</h2>
-			</div>
-		<# } #>
-		<?php
-	}
+
 }
 
 // Register the widget
