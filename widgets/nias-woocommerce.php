@@ -126,7 +126,7 @@ if( is_user_logged_in() ) {
                         <div class="section_header toggle_section">
                         <?php echo '<img width="50" height="50" src="' . esc_url($settings['image_woocommerce']['url']) . '">'; ?>
                             <h3 class="section_title"><?php echo esc_html($section['section_title']); ?></h3>
-                            <p class="section_subtitle"><?php echo esc_html($section['section_subtitle']); ?></p>
+                            <span class="section_subtitle"><?php echo esc_html($section['section_subtitle']); ?></span>
                             	<i class="nsarrowicon">
 	                            <?php \Elementor\Icons_Manager::render_icon( $settings['nsarrowicon'], [ 'aria-hidden' => 'true' ] );
                                 ?>
@@ -138,14 +138,15 @@ if( is_user_logged_in() ) {
                                     <?php foreach ($section['lessons'] as $lesson) : ?>
                                         <li class="lesson_item">
                                             <div class="lesson_header toggle_lesson">
+
+                                                <div class="nias-right-head">
                                                 <?php if (!empty($lesson['lesson_icon'])) : ?>
                                                     <img src="<?php echo esc_url($lesson['lesson_icon']); ?>" alt="<?php echo esc_attr($lesson['lesson_title']); ?>" />
                                                 <?php endif; ?>
-                                                <div class="nias-right-head">
                                                 <h4 class="lesson_title"><?php echo esc_html($lesson['lesson_title']); ?></h4>
-                                                <p class="lesson_label"><?php echo esc_html($lesson['lesson_label']); ?></p>
+                                                <span class="lesson_label"><?php echo esc_html($lesson['lesson_label']); ?></span>
                                                 </div>
-
+                                                <div class="nias-left-head">
                                                 <?php if (!empty($lesson['lesson_preview_video'])) : ?>
                                                     <a href="<?php echo esc_url($lesson['lesson_preview_video']); ?>">
                                                     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -198,8 +199,11 @@ if( is_user_logged_in() ) {
                                                     }
 
                                                 ?>
-                                                <button class="nias-toggle-button"><?php _e('باز/بسته', 'nias-course-widget'); ?></button>
-                                                
+                            	<i class="nsarrowicon">
+	                            <?php \Elementor\Icons_Manager::render_icon( $settings['nsarrowicon'], [ 'aria-hidden' => 'true' ] );
+                                ?>
+                                </i>
+                                                </div>                                                
                                             </div>
                                             <div class="lesson_content" style="display: none;">
                                                 <?php if ($lesson['lesson_private'] === 'yes'){
@@ -223,7 +227,19 @@ if( is_user_logged_in() ) {
                 <?php endforeach; ?>
             </div>
         <?php endif; ?>
+
+
+
         <style>
+
+
+
+.nias-left-head , .nias-right-head , .nias-left-head *:not(a) , .nias-right-head *:not(a) {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 20px;
+}
             .nias_course_section {
     margin-bottom: 20px;
     border: 1px solid #ddd;
@@ -233,6 +249,7 @@ if( is_user_logged_in() ) {
     width:50px;
     height:50px;
 }
+
 
 .section_content li {
     list-style: none;
@@ -245,6 +262,7 @@ if( is_user_logged_in() ) {
     background-color: #f9f9f9;
     padding: 10px;
     cursor: pointer;
+    gap: 20px;
 }
 
 .section_title {
@@ -274,6 +292,7 @@ if( is_user_logged_in() ) {
     display: flex;
     justify-content: space-between;
     align-items: center;
+    gap: 20px;
 }
 
 .lesson_title {
@@ -312,6 +331,8 @@ button.toggle_lesson {
     // باز و بسته کردن دروس
     $('.toggle_lesson').on('click', function() {
         $(this).closest('.lesson_item').find('.lesson_content').slideToggle();
+        $(this).toggleClass('active');
+
     });
 });
 
