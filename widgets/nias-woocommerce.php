@@ -40,31 +40,63 @@ class Nias_course_woocommerce extends \Elementor\Widget_Base {
 
 	// Widget controls
 	protected function _register_controls() {
-		// Add your widget controls here
+
 		$this->start_controls_section(
-			'content_section',
+			'lesson_section',
 			[
-				'label' => esc_html__( 'Content', 'nias-course-widget' ),
-				'tab' => \Elementor\Controls_Manager::TAB_CONTENT,
+				'label' => esc_html__( 'تنظیمات فصل', 'nias-course-widget' ),
+				'type' => \Elementor\Controls_Manager::SECTION,
+	
 			]
 		);
 
 		$this->add_control(
-			'title',
+			'image_woocommerce',
 			[
-				'label' => esc_html__( 'Title', 'nias-course-widget' ),
-				'type' => \Elementor\Controls_Manager::TEXT,
-				'default' => esc_html__( 'WooCommerce Course', 'nias-course-widget' ),
-				'placeholder' => esc_html__( 'Enter your title here', 'nias-course-widget' ),
+			   'label' => __( 'آیکون فصل(عمومی)', 'nias-course-widget' ),
+			   'type' => \Elementor\Controls_Manager::MEDIA,
+			   'default' => [
+				  'url' => \Elementor\Utils::get_placeholder_image_src(),
+				   				                'dynamic' => [
+                    'active' => true,
+                ],
+			   ],
+			]
+		 );
+  
+
+		 		///nias custom icon for private leeson
+		$this->add_control(
+			'nsarrowicon',
+			[
+				'label' => esc_html__( 'آیکون باز و بسته شدن', 'nias-course-widget' ),
+				'type' => \Elementor\Controls_Manager::ICONS,
+				'default' => [
+					'value' => 'fas fa-chevron-down',
+					'library' => 'fa-solid',
+				],
+				'recommended' => [
+					'fa-solid' => [
+						'circle',
+						'dot-circle',
+						'square-full',
+					],
+					'fa-regular' => [
+						'circle',
+						'dot-circle',
+						'square-full',
+					],
+				],
 			]
 		);
+
 
 		$this->end_controls_section();
 	}
 
 	// Widget output
 	protected function render() {
-
+        $settings = $this->get_settings_for_display();
 
 /* --------- for make sure that user bought product to add condition -------- */
 $bought_course = false;
@@ -92,9 +124,13 @@ if( is_user_logged_in() ) {
                 <?php foreach ($sections as $index => $section) : ?>
                     <div class="nias_course_section">
                         <div class="section_header toggle_section">
+                        <?php echo '<img width="50" height="50" src="' . esc_url($settings['image_woocommerce']['url']) . '">'; ?>
                             <h3 class="section_title"><?php echo esc_html($section['section_title']); ?></h3>
                             <p class="section_subtitle"><?php echo esc_html($section['section_subtitle']); ?></p>
-                            <button class="toggle_section"><?php _e('باز/بسته', 'nias-course-widget'); ?></button>
+                            	<i class="nsarrowicon">
+	                            <?php \Elementor\Icons_Manager::render_icon( $settings['nsarrowicon'], [ 'aria-hidden' => 'true' ] );
+                                ?>
+                                </i>
                         </div>
                         <div class="section_content" style="display: none;">
                             <?php if (!empty($section['lessons'])) : ?>
@@ -162,7 +198,7 @@ if( is_user_logged_in() ) {
                                                     }
 
                                                 ?>
-                                                <button class="toggle_lesson"><?php _e('باز/بسته', 'nias-course-widget'); ?></button>
+                                                <button class="nias-toggle-button"><?php _e('باز/بسته', 'nias-course-widget'); ?></button>
                                                 
                                             </div>
                                             <div class="lesson_content" style="display: none;">
@@ -270,6 +306,7 @@ button.toggle_lesson {
     // باز و بسته کردن فصل‌ها
     $('.toggle_section').on('click', function() {
         $(this).closest('.nias_course_section').find('.section_content').slideToggle();
+        $(this).toggleClass('active');
     });
 
     // باز و بسته کردن دروس
