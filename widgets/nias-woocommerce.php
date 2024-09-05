@@ -324,6 +324,14 @@ class Nias_course_woocommerce extends \Elementor\Widget_Base
 
 
         <style>
+            @media only screen and (max-width:700px){
+    .nsspanpreviewtext{
+        display: none!important;
+    }
+}
+ul.lessons_list {
+    padding-right: 0;
+}
             .nias-left-head,
             .nias-right-head,
             .nias-left-head *:not(a),
