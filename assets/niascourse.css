@@ -480,7 +480,7 @@ p.ns-spotdltitle {
     font-weight: bold;
 }
 /*fix load svg*/
-.nias-course-icon svg{
+.nsarrowicon svg , .nscourse-panel-heading svg{
     width: 1em;
     height: 1em;
     position: relative;

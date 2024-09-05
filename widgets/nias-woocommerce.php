@@ -1,78 +1,111 @@
 <?php
+
 namespace Nias_Course;
-if ( ! defined( 'ABSPATH' ) ) {
-	exit; // Exit if accessed directly.
+
+if (! defined('ABSPATH')) {
+    exit; // Exit if accessed directly.
 }
 
 
 
-class Nias_course_woocommerce extends \Elementor\Widget_Base {
+class Nias_course_woocommerce extends \Elementor\Widget_Base
+{
 
-	// Widget name
-	public function get_name() {
-		return 'niaslessonswoo';
-	}
+    // Widget name
+    public function get_name()
+    {
+        return 'niaslessonswoo';
+    }
 
-	// Widget title
-	public function get_title() {
-		return esc_html__( 'دوره ووکامرس', 'nias-course-widget' );
-	}
+    // Widget title
+    public function get_title()
+    {
+        return esc_html__('دوره ووکامرس', 'nias-course-widget');
+    }
 
-	// Widget icon
-	public function get_icon() {
-		return 'eicon-navigator';
-	}
+    // Widget icon
+    public function get_icon()
+    {
+        return 'eicon-navigator';
+    }
 
-	// Widget categories
-	public function get_categories() {
-		return [ 'nias-widget-category' ];
-	}
+    // Widget categories
+    public function get_categories()
+    {
+        return ['nias-widget-category'];
+    }
 
-	// Script dependencies
-	public function get_script_depends() {
-		return [ 'nscourse-js' ];
-	}
+    // Script dependencies
+    public function get_script_depends()
+    {
+        return ['nscourse-js'];
+    }
 
-	// Style dependencies
-	public function get_style_depends() {
-		return [ 'nscourse-css' ];
-	}
+    // Style dependencies
+    public function get_style_depends()
+    {
+        return ['nscourse-css'];
+    }
 
-	// Widget controls
-	protected function _register_controls() {
+    // Widget controls
+    protected function _register_controls()
+    {
 
-		$this->start_controls_section(
-			'lesson_section',
-			[
-				'label' => esc_html__( 'تنظیمات فصل', 'nias-course-widget' ),
-				'type' => \Elementor\Controls_Manager::SECTION,
-	
-			]
-		);
+        $this->start_controls_section(
+            'lesson_section',
+            [
+                'label' => esc_html__('تنظیمات فصل', 'nias-course-widget'),
+                'type' => \Elementor\Controls_Manager::SECTION,
 
-		$this->add_control(
-			'image_woocommerce',
-			[
-			   'label' => __( 'آیکون فصل(عمومی)', 'nias-course-widget' ),
-			   'type' => \Elementor\Controls_Manager::MEDIA,
-			   'default' => [
-				  'url' => \Elementor\Utils::get_placeholder_image_src(),
-				   				                'dynamic' => [
-                    'active' => true,
+            ]
+        );
+
+        $this->add_control(
+            'image_woocommerce',
+            [
+                'label' => __('آیکون فصل(عمومی)', 'nias-course-widget'),
+                'type' => \Elementor\Controls_Manager::MEDIA,
+                'default' => [
+                    'url' => \Elementor\Utils::get_placeholder_image_src(),
+                    'dynamic' => [
+                        'active' => true,
+                    ],
                 ],
-			   ],
-			]
-		 );
-  
+            ]
+        );
 
-		 		///nias custom icon for private leeson
+
+        ///nias custom icon for private leeson
+        $this->add_control(
+            'nsarrowicon',
+            [
+                'label' => esc_html__('آیکون باز و بسته شدن', 'nias-course-widget'),
+                'type' => \Elementor\Controls_Manager::ICONS,
+                'default' => [
+                    'value' => 'fas fa-chevron-down',
+                    'library' => 'fa-solid',
+                ],
+                'recommended' => [
+                    'fa-solid' => [
+                        'circle',
+                        'dot-circle',
+                        'square-full',
+                    ],
+                    'fa-regular' => [
+                        'circle',
+                        'dot-circle',
+                        'square-full',
+                    ],
+                ],
+            ]
+        );
 		$this->add_control(
-			'nsarrowicon',
+			'nspreviewicon',
 			[
-				'label' => esc_html__( 'آیکون باز و بسته شدن', 'nias-course-widget' ),
+				'label' => esc_html__( 'آیکون پیش نمایش', 'nias-course-widget' ),
 				'type' => \Elementor\Controls_Manager::ICONS,
 				'default' => [
-					'value' => 'fas fa-chevron-down',
+					'value' => 'fa fa-play-circle',
 					'library' => 'fa-solid',
 				],
 				'recommended' => [
@@ -89,318 +122,327 @@ class Nias_course_woocommerce extends \Elementor\Widget_Base {
 				],
 			]
 		);
-
         $this->add_control(
-			'nspreviewtext',
-			[
-				'label' => esc_html__( 'متن دکمه پیش نمایش', 'nias-course-widget' ),
-				'type' => \Elementor\Controls_Manager::TEXT,
-				'default' => esc_html__( 'پیش نمایش', 'nias-course-widget' ),
-				'placeholder' => esc_html__( 'پیش نمایش', 'nias-course-widget' ),
-				'dynamic' => [
+            'nspreviewtext',
+            [
+                'label' => esc_html__('متن دکمه پیش نمایش', 'nias-course-widget'),
+                'type' => \Elementor\Controls_Manager::TEXT,
+                'default' => esc_html__('پیش نمایش', 'nias-course-widget'),
+                'placeholder' => esc_html__('پیش نمایش', 'nias-course-widget'),
+                'dynamic' => [
                     'active' => true,
                 ],
-			]
-		);
+            ]
+        );
 
         $this->add_control(
-			'nsprivatetextcontent',
-			[
-			   'label' => esc_html__( 'متن دوره خصوصی در محتوا', 'nias-course-widget' ),
-			   'type' => \Elementor\Controls_Manager::WYSIWYG,	
-				'dynamic' => [
+            'nsprivatetextcontent',
+            [
+                'label' => esc_html__('متن دوره خصوصی در محتوا', 'nias-course-widget'),
+                'type' => \Elementor\Controls_Manager::WYSIWYG,
+                'dynamic' => [
                     'active' => true,
                 ],
-				'default' => esc_html__( 'این دوره خصوصی است برای دسترسی کامل باید دوره را خریداری کنید', 'nias-course-widget' ),
-				'placeholder' => esc_html__( 'این دوره خصوصی است برای دسترسی کامل باید دوره را خریداری کنید', 'nias-course-widget' ),
-			]
-		 );
-         $this->add_control(
-			'singlelessonicon',
-			[
-				'label' => esc_html__( 'آیکن مخصوص این درس', 'nias-course-widget' ),
-				'type' => \Elementor\Controls_Manager::ICONS,
-				'default' => [
-					'value' => 'fas fa-book',
-					'library' => 'fa-solid',
-				],
-				'recommended' => [
-					'fa-solid' => [
-						'circle',
-						'dot-circle',
-						'square-full',
-					],
-					'fa-regular' => [
-						'circle',
-						'dot-circle',
-						'square-full',
-					],
-				],
-			]
-		);
+                'default' => esc_html__('این دوره خصوصی است برای دسترسی کامل باید دوره را خریداری کنید', 'nias-course-widget'),
+                'placeholder' => esc_html__('این دوره خصوصی است برای دسترسی کامل باید دوره را خریداری کنید', 'nias-course-widget'),
+            ]
+        );
+        $this->add_control(
+            'singlelessonicon',
+            [
+                'label' => esc_html__('آیکن مخصوص این درس', 'nias-course-widget'),
+                'type' => \Elementor\Controls_Manager::ICONS,
+                'default' => [
+                    'value' => 'fas fa-book',
+                    'library' => 'fa-solid',
+                ],
+                'recommended' => [
+                    'fa-solid' => [
+                        'circle',
+                        'dot-circle',
+                        'square-full',
+                    ],
+                    'fa-regular' => [
+                        'circle',
+                        'dot-circle',
+                        'square-full',
+                    ],
+                ],
+            ]
+        );
 
-		$this->end_controls_section();
-	}
+        $this->end_controls_section();
+    }
 
-	// Widget output
-	protected function render() {
+    // Widget output
+    protected function render()
+    {
 
-$settings = $this->get_settings_for_display();
+        $settings = $this->get_settings_for_display();
 
-/* --------- for make sure that user bought product to add condition -------- */
+        /* --------- for make sure that user bought product to add condition -------- */
 
-$bought_course = false;
-$current_user = wp_get_current_user();
-if( is_user_logged_in() ) {
-    $current_user = wp_get_current_user();
-    if( !empty($current_user->user_login) && !empty($current_user->ID) ) {
-        global $post;
-        if( isset($post) && !empty($post->ID) ) {
-            $product_id = $post->ID;
-            if ( wc_customer_bought_product( $current_user->user_login, $current_user->ID, $product_id ) ) {
-                $bought_course = true;
+        $bought_course = false;
+        $current_user = wp_get_current_user();
+        if (is_user_logged_in()) {
+            $current_user = wp_get_current_user();
+            if (!empty($current_user->user_login) && !empty($current_user->ID)) {
+                global $post;
+                if (isset($post) && !empty($post->ID)) {
+                    $product_id = $post->ID;
+                    if (wc_customer_bought_product($current_user->user_login, $current_user->ID, $product_id)) {
+                        $bought_course = true;
+                    }
+                }
             }
         }
-    }
-}
-/* ------------------ end of condition to use in main code ------------------ */
+        /* ------------------ end of condition to use in main code ------------------ */
 
         $post_id = get_the_ID();
         $sections = get_post_meta($post_id, 'nias_course_sections_list', true);
-        
-        if ($sections){ ?>
+
+        if ($sections) { ?>
             <div id="nias_course_sections">
- <?php foreach ($sections as $index => $section) {?>
+                <?php foreach ($sections as $index => $section) { ?>
 
                     <div class="nias_course_section">
                         <div class="section_header toggle_section">
-                        <?php echo '<img width="50" height="50" src="' . esc_url($settings['image_woocommerce']['url']) . '">'; ?>
+                            <?php echo '<img width="50" height="50" src="' . esc_url($settings['image_woocommerce']['url']) . '">'; ?>
                             <h3 class="section_title"><?php echo esc_html($section['section_title']); ?></h3>
                             <span class="section_subtitle"><?php echo esc_html($section['section_subtitle']); ?></span>
-                            	<i class="nsarrowicon nias-course-icon">
-	                            <?php \Elementor\Icons_Manager::render_icon( $settings['nsarrowicon'], [ 'aria-hidden' => 'true' ] );
+                            <i class="nsarrowicon nias-course-icon">
+                                <?php \Elementor\Icons_Manager::render_icon($settings['nsarrowicon'], ['aria-hidden' => 'true']);
                                 ?>
-                                </i>
+                            </i>
                         </div>
                         <div class="section_content" style="display: none;">
-                            <?php if (!empty($section['lessons'])){?>
+                            <?php if (!empty($section['lessons'])) { ?>
                                 <ul class="lessons_list">
-                                    <?php foreach ($section['lessons'] as $lesson){ ?>
+                                    <?php foreach ($section['lessons'] as $lesson) { ?>
                                         <li class="lesson_item">
                                             <div class="lesson_header toggle_lesson">
 
                                                 <div class="nias-right-head">
-                                                <?php if (!empty($lesson['lesson_icon'])){ ?>
-                                                    <img src="<?php echo esc_url($lesson['lesson_icon']); ?>" alt="<?php echo esc_attr($lesson['lesson_title']); ?>" />
-                                                <?php }else {?>
-                                                    		<i class="ns-icon-wrapper nias-course-icon">
-                                                            <?php \Elementor\Icons_Manager::render_icon( $settings['singlelessonicon'], [ 'aria-hidden' => 'true' ] ); 
-                                                    ?>
-                                                    </i>
+                                                    <?php if (!empty($lesson['lesson_icon'])) { ?>
+                                                        <img src="<?php echo esc_url($lesson['lesson_icon']); ?>" alt="<?php echo esc_attr($lesson['lesson_title']); ?>" />
+                                                    <?php } else { ?>
+                                                        <i class="ns-icon-wrapper nias-course-icon">
+                                                            <?php \Elementor\Icons_Manager::render_icon($settings['singlelessonicon'], ['aria-hidden' => 'true']);
+                                                            ?>
+                                                        </i>
 
                                                     <?php
-                                                    }?>
-                                                <h4 class="lesson_title"><?php echo esc_html($lesson['lesson_title']); ?></h4>
-                                                <span class="lesson_label"><?php echo esc_html($lesson['lesson_label']); ?></span>
+                                                    } ?>
+                                                    <h4 class="lesson_title"><?php echo esc_html($lesson['lesson_title']); ?></h4>
+                                                    <span class="lesson_label"><?php echo esc_html($lesson['lesson_label']); ?></span>
                                                 </div>
                                                 <div class="nias-left-head">
-                                                <?php if (!empty($lesson['lesson_preview_video'])) : ?>
-                                                    <a href="<?php echo esc_url($lesson['lesson_preview_video']); ?>">
-                                                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                                        <path d="M14.9694 10.2301L12.0694 8.56012C11.3494 8.14012 10.4794 8.14012 9.75938 8.56012C9.03938 8.98012 8.60938 9.72012 8.60938 10.5601V13.9101C8.60938 14.7401 9.03938 15.4901 9.75938 15.9101C10.1194 16.1201 10.5194 16.2201 10.9094 16.2201C11.3094 16.2201 11.6994 16.1201 12.0594 15.9101L14.9594 14.2401C15.6794 13.8201 16.1094 13.0801 16.1094 12.2401C16.1294 11.4001 15.6994 10.6501 14.9694 10.2301Z" fill="#FF0000"/>
-                                                    <path opacity="0.4" d="M11.9707 22C17.4936 22 21.9707 17.5228 21.9707 12C21.9707 6.47715 17.4936 2 11.9707 2C6.44786 2 1.9707 6.47715 1.9707 12C1.9707 17.5228 6.44786 22 11.9707 22Z" fill="#FF0000"/>
-                                                    </svg>
-                                                    </a>
-                                                    <span class="nsspanpreviewtext">
-		                                             <?php echo esc_html($settings['nspreviewtext']); ?>
-		                                             </span>
-                                                <?php endif; ?>
-                                                <?php if ($lesson['lesson_private'] === 'yes'){
-                                                 if ($bought_course) {
-                                                    if (!empty($lesson['lesson_download'])){
-                                                        ?>
-                                                            <a href="<?php echo esc_url($lesson['lesson_download']); ?>">
-                                                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                                                <path d="M15.8798 12.43L12.5298 15.78C12.2398 16.07 11.7598 16.07 11.4698 15.78L8.11984 12.43C7.82984 12.14 7.82984 11.66 8.11984 11.37C8.40984 11.08 8.88984 11.08 9.17984 11.37L11.2498 13.44V2.75C11.2498 2.34 11.5898 2 11.9998 2C12.4098 2 12.7498 2.34 12.7498 2.75V13.44L14.8198 11.37C14.9698 11.22 15.1598 11.15 15.3498 11.15C15.5398 11.15 15.7298 11.22 15.8798 11.37C16.1798 11.66 16.1798 12.13 15.8798 12.43Z" fill="#2666CF"/>
-                                                            <path opacity="0.4" d="M16.8 9H7.2C4 9 2 11 2 14.2V16.79C2 20 4 22 7.2 22H16.79C19.99 22 21.99 20 21.99 16.8V14.2C22 11 20 9 16.8 9Z" fill="#2666CF"/>
-                                                            </svg>
-        
-                                                            </a>
-                                                            <?php
-                                                        }
-                                                 }else{
-                                                    ?>
-                                                    <div class="ns-private-lesson">
-                                                    	<i class="ns-private-icon nias-course-icon">
-                                                    <svg width="25" height="25" viewBox="0 0 25 25" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                                    <path fill-rule="evenodd" clip-rule="evenodd" d="M16.0596 9.34865C15.0136 9.10565 13.7526 8.99465 12.2496 8.99465C10.7466 8.99465 9.4856 9.10565 8.4396 9.34865V7.91665C8.4726 5.84265 10.1236 4.19765 12.1996 4.17065C13.2306 4.14265 14.1816 4.54265 14.9106 5.25365C15.6386 5.96465 16.0476 6.91565 16.0596 7.92465V9.34865ZM12.9996 17.0477C12.9996 17.4617 12.6636 17.7977 12.2496 17.7977C11.8356 17.7977 11.4996 17.4617 11.4996 17.0477V14.8267C11.4996 14.4127 11.8356 14.0767 12.2496 14.0767C12.6636 14.0767 12.9996 14.4127 12.9996 14.8267V17.0477ZM17.5596 9.86165V7.91565C17.5416 6.49665 16.9736 5.16965 15.9566 4.17965C14.9416 3.18965 13.5876 2.69865 12.1796 2.67065C9.2886 2.70765 6.9866 5.00165 6.9396 7.90565V9.86265C4.9056 10.8327 4.0896 12.6837 4.0896 15.7657C4.0896 20.7657 6.2256 22.5377 12.2496 22.5377C18.2746 22.5377 20.4106 20.7657 20.4106 15.7657C20.4106 12.6837 19.5936 10.8317 17.5596 9.86165Z" fill="#737373"/>
-                                                    </svg>
-                                                    </i>
-                                                    <span>خصوصی</span>
-                                                    </div>
+                                                    <?php if (!empty($lesson['lesson_preview_video'])) : ?>
+                                                        <a href="<?php echo esc_url($lesson['lesson_preview_video']); ?>">
+                                                            <i class="nspreviewicon nias-course-icon">
+                                                                <?php
+                                                                //nias preview icon
+                                                                \Elementor\Icons_Manager::render_icon($settings['nspreviewicon'], ['aria-hidden' => 'true']);
+                                                                ?>
 
-                                                    <?php
-                                                 }
-                                                } elseif ($lesson['lesson_private'] !== 'yes') {
-                                                    if (!empty($lesson['lesson_download'])){
+                                                            </i>
+                                                        </a>
+                                                        <span class="nsspanpreviewtext">
+                                                            <?php echo esc_html($settings['nspreviewtext']); ?>
+                                                        </span>
+                                                    <?php endif; ?>
+                                                    <?php if ($lesson['lesson_private'] === 'yes') {
+                                                        if ($bought_course) {
+                                                            if (!empty($lesson['lesson_download'])) {
+                                                    ?>
+                                                                <a href="<?php echo esc_url($lesson['lesson_download']); ?>">
+                                                                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                                                        <path d="M15.8798 12.43L12.5298 15.78C12.2398 16.07 11.7598 16.07 11.4698 15.78L8.11984 12.43C7.82984 12.14 7.82984 11.66 8.11984 11.37C8.40984 11.08 8.88984 11.08 9.17984 11.37L11.2498 13.44V2.75C11.2498 2.34 11.5898 2 11.9998 2C12.4098 2 12.7498 2.34 12.7498 2.75V13.44L14.8198 11.37C14.9698 11.22 15.1598 11.15 15.3498 11.15C15.5398 11.15 15.7298 11.22 15.8798 11.37C16.1798 11.66 16.1798 12.13 15.8798 12.43Z" fill="#2666CF" />
+                                                                        <path opacity="0.4" d="M16.8 9H7.2C4 9 2 11 2 14.2V16.79C2 20 4 22 7.2 22H16.79C19.99 22 21.99 20 21.99 16.8V14.2C22 11 20 9 16.8 9Z" fill="#2666CF" />
+                                                                    </svg>
+
+                                                                </a>
+                                                            <?php
+                                                            }
+                                                        } else {
+                                                            ?>
+                                                            <div class="ns-private-lesson">
+                                                                <i class="ns-private-icon nias-course-icon">
+                                                                    <svg width="25" height="25" viewBox="0 0 25 25" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                                                        <path fill-rule="evenodd" clip-rule="evenodd" d="M16.0596 9.34865C15.0136 9.10565 13.7526 8.99465 12.2496 8.99465C10.7466 8.99465 9.4856 9.10565 8.4396 9.34865V7.91665C8.4726 5.84265 10.1236 4.19765 12.1996 4.17065C13.2306 4.14265 14.1816 4.54265 14.9106 5.25365C15.6386 5.96465 16.0476 6.91565 16.0596 7.92465V9.34865ZM12.9996 17.0477C12.9996 17.4617 12.6636 17.7977 12.2496 17.7977C11.8356 17.7977 11.4996 17.4617 11.4996 17.0477V14.8267C11.4996 14.4127 11.8356 14.0767 12.2496 14.0767C12.6636 14.0767 12.9996 14.4127 12.9996 14.8267V17.0477ZM17.5596 9.86165V7.91565C17.5416 6.49665 16.9736 5.16965 15.9566 4.17965C14.9416 3.18965 13.5876 2.69865 12.1796 2.67065C9.2886 2.70765 6.9866 5.00165 6.9396 7.90565V9.86265C4.9056 10.8327 4.0896 12.6837 4.0896 15.7657C4.0896 20.7657 6.2256 22.5377 12.2496 22.5377C18.2746 22.5377 20.4106 20.7657 20.4106 15.7657C20.4106 12.6837 19.5936 10.8317 17.5596 9.86165Z" fill="#737373" />
+                                                                    </svg>
+                                                                </i>
+                                                                <span>خصوصی</span>
+                                                            </div>
+
+                                                        <?php
+                                                        }
+                                                    } elseif ($lesson['lesson_private'] !== 'yes') {
+                                                        if (!empty($lesson['lesson_download'])) {
                                                         ?>
                                                             <a href="<?php echo esc_url($lesson['lesson_download']); ?>">
-                                                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                                                <path d="M15.8798 12.43L12.5298 15.78C12.2398 16.07 11.7598 16.07 11.4698 15.78L8.11984 12.43C7.82984 12.14 7.82984 11.66 8.11984 11.37C8.40984 11.08 8.88984 11.08 9.17984 11.37L11.2498 13.44V2.75C11.2498 2.34 11.5898 2 11.9998 2C12.4098 2 12.7498 2.34 12.7498 2.75V13.44L14.8198 11.37C14.9698 11.22 15.1598 11.15 15.3498 11.15C15.5398 11.15 15.7298 11.22 15.8798 11.37C16.1798 11.66 16.1798 12.13 15.8798 12.43Z" fill="#2666CF"/>
-                                                            </svg>
-                                                            <path opacity="0.4" d="M16.8 9H7.2C4 9 2 11 2 14.2V16.79C2 20 4 22 7.2 22H16.79C19.99 22 21.99 20 21.99 16.8V14.2C22 11 20 9 16.8 9Z" fill="#2666CF"/>
-        
-        
+                                                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                                                    <path d="M15.8798 12.43L12.5298 15.78C12.2398 16.07 11.7598 16.07 11.4698 15.78L8.11984 12.43C7.82984 12.14 7.82984 11.66 8.11984 11.37C8.40984 11.08 8.88984 11.08 9.17984 11.37L11.2498 13.44V2.75C11.2498 2.34 11.5898 2 11.9998 2C12.4098 2 12.7498 2.34 12.7498 2.75V13.44L14.8198 11.37C14.9698 11.22 15.1598 11.15 15.3498 11.15C15.5398 11.15 15.7298 11.22 15.8798 11.37C16.1798 11.66 16.1798 12.13 15.8798 12.43Z" fill="#2666CF" />
+                                                                </svg>
+                                                                <path opacity="0.4" d="M16.8 9H7.2C4 9 2 11 2 14.2V16.79C2 20 4 22 7.2 22H16.79C19.99 22 21.99 20 21.99 16.8V14.2C22 11 20 9 16.8 9Z" fill="#2666CF" />
+
+
                                                             </a>
-                                                            <?php
+                                                    <?php
                                                         }
                                                     }
 
-                                                ?>
-                            	<i class="nsarrowicon nias-course-icon">
-	                            <?php \Elementor\Icons_Manager::render_icon( $settings['nsarrowicon'], [ 'aria-hidden' => 'true' ] );
-                                ?>
-                                </i>
-                                                </div>                                                
+                                                    ?>
+                                                    <i class="nsarrowicon nias-course-icon">
+                                                        <?php \Elementor\Icons_Manager::render_icon($settings['nsarrowicon'], ['aria-hidden' => 'true']);
+                                                        ?>
+                                                    </i>
+                                                </div>
                                             </div>
                                             <div class="lesson_content" style="display: none;">
-                                                <?php if ($lesson['lesson_private'] === 'yes'){
-                                                 if ($bought_course) {
-                                                 echo wp_kses_post($lesson['lesson_content']);
-                                                 }else{
-                                                    echo wp_kses_post($settings['nsprivatetextcontent']);
-                                                 }
+                                                <?php if ($lesson['lesson_private'] === 'yes') {
+                                                    if ($bought_course) {
+                                                        echo wp_kses_post($lesson['lesson_content']);
+                                                    } else {
+                                                        echo wp_kses_post($settings['nsprivatetextcontent']);
+                                                    }
                                                 } elseif ($lesson['lesson_private'] !== 'yes') {
                                                     echo wp_kses_post($lesson['lesson_content']);
-                                                    }
-                                                    ?>
+                                                }
+                                                ?>
                                             </div>
                                         </li>
-                                    <?php }?>
+                                    <?php } ?>
                                 </ul>
                             <?php } ?>
                         </div>
                     </div>
                 <?php } ?>
             </div>
-        <?php }?>
+        <?php } ?>
 
 
 
         <style>
+            .nias-left-head,
+            .nias-right-head,
+            .nias-left-head *:not(a),
+            .nias-right-head *:not(a) {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                gap: 20px;
+            }
 
-
-
-.nias-left-head , .nias-right-head , .nias-left-head *:not(a) , .nias-right-head *:not(a) {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 20px;
-}
             .nias_course_section {
-    margin-bottom: 20px;
-    border: 1px solid #ddd;
-    padding: 10px;
-}
-.lesson_header img {
-    width:50px;
-    height:50px;
-}
+                margin-bottom: 20px;
+                border: 1px solid #ddd;
+                padding: 10px;
+            }
+
+            .lesson_header img {
+                width: 50px;
+                height: 50px;
+            }
 
 
-.section_content li {
-    list-style: none;
-}
+            .section_content li {
+                list-style: none;
+            }
 
-.section_header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    background-color: #f9f9f9;
-    padding: 10px;
-    cursor: pointer;
-    gap: 20px;
-}
+            .section_header {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                background-color: #f9f9f9;
+                padding: 10px;
+                cursor: pointer;
+                gap: 20px;
+            }
 
-.section_title {
-    margin: 0;
-    font-size: 18px;
-    font-weight: bold;
-}
+            .section_title {
+                margin: 0;
+                font-size: 18px;
+                font-weight: bold;
+            }
 
-.section_subtitle {
-    margin: 0;
-    font-size: 14px;
-    color: #777;
-}
+            .section_subtitle {
+                margin: 0;
+                font-size: 14px;
+                color: #777;
+            }
 
-.section_content {
-    padding: 10px;
-    border-top: 1px solid #ddd;
-}
+            .section_content {
+                padding: 10px;
+                border-top: 1px solid #ddd;
+            }
 
-.lesson_item {
-    margin-bottom: 15px;
-    border: 1px solid #eee;
-    padding: 10px;
-}
+            .lesson_item {
+                margin-bottom: 15px;
+                border: 1px solid #eee;
+                padding: 10px;
+            }
 
-.lesson_header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: 20px;
-}
+            .lesson_header {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                gap: 20px;
+            }
 
-.lesson_title {
-    margin: 0;
-    font-size: 16px;
-    font-weight: bold;
-}
+            .lesson_title {
+                margin: 0;
+                font-size: 16px;
+                font-weight: bold;
+            }
 
-.lesson_content {
-    margin-top: 10px;
-    display: none;
-}
+            .lesson_content {
+                margin-top: 10px;
+                display: none;
+            }
 
-button.toggle_section,
-button.toggle_lesson {
-    background-color: #0073aa;
-    color: #fff;
-    padding: 5px 10px;
-    border: none;
-    cursor: pointer;
-}
-.lesson_header:hover span {
-    opacity: 1;
-    transform: scale(1) rotate(0deg);
-}
+            button.toggle_section,
+            button.toggle_lesson {
+                background-color: #0073aa;
+                color: #fff;
+                padding: 5px 10px;
+                border: none;
+                cursor: pointer;
+            }
 
+            .lesson_header:hover span {
+                opacity: 1;
+                transform: scale(1) rotate(0deg);
+            }
+
+            .nias-course-icon svg {
+                width: 1em;
+                height: 1em;
+                position: relative;
+                display: block;
+            }
         </style>
         <script>
             jQuery(document).ready(function($) {
-    // باز و بسته کردن فصل‌ها
-    $('.toggle_section').on('click', function() {
-        $(this).closest('.nias_course_section').find('.section_content').slideToggle();
-        $(this).toggleClass('active');
-    });
+                // باز و بسته کردن فصل‌ها
+                $('.toggle_section').on('click', function() {
+                    $(this).closest('.nias_course_section').find('.section_content').slideToggle();
+                    $(this).toggleClass('active');
+                });
 
-    // باز و بسته کردن دروس
-    $('.toggle_lesson').on('click', function() {
-        $(this).closest('.lesson_item').find('.lesson_content').slideToggle();
-        $(this).toggleClass('active');
+                // باز و بسته کردن دروس
+                $('.toggle_lesson').on('click', function() {
+                    $(this).closest('.lesson_item').find('.lesson_content').slideToggle();
+                    $(this).toggleClass('active');
 
-    });
-});
-
+                });
+            });
         </script>
-        
-        <?php
 
-	}
+<?php
 
-
+    }
 }
 
 // Register the widget
-\Elementor\Plugin::instance()->widgets_manager->register_widget_type( new Nias_course_woocommerce() );
+\Elementor\Plugin::instance()->widgets_manager->register_widget_type(new Nias_course_woocommerce());
