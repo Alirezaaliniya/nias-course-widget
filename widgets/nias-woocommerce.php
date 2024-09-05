@@ -115,6 +115,29 @@ class Nias_course_woocommerce extends \Elementor\Widget_Base {
 				'placeholder' => esc_html__( 'این دوره خصوصی است برای دسترسی کامل باید دوره را خریداری کنید', 'nias-course-widget' ),
 			]
 		 );
+         $this->add_control(
+			'singlelessonicon',
+			[
+				'label' => esc_html__( 'آیکن مخصوص این درس', 'nias-course-widget' ),
+				'type' => \Elementor\Controls_Manager::ICONS,
+				'default' => [
+					'value' => 'fas fa-book',
+					'library' => 'fa-solid',
+				],
+				'recommended' => [
+					'fa-solid' => [
+						'circle',
+						'dot-circle',
+						'square-full',
+					],
+					'fa-regular' => [
+						'circle',
+						'dot-circle',
+						'square-full',
+					],
+				],
+			]
+		);
 
 		$this->end_controls_section();
 	}
@@ -154,7 +177,7 @@ if( is_user_logged_in() ) {
                         <?php echo '<img width="50" height="50" src="' . esc_url($settings['image_woocommerce']['url']) . '">'; ?>
                             <h3 class="section_title"><?php echo esc_html($section['section_title']); ?></h3>
                             <span class="section_subtitle"><?php echo esc_html($section['section_subtitle']); ?></span>
-                            	<i class="nsarrowicon">
+                            	<i class="nsarrowicon nias-course-icon">
 	                            <?php \Elementor\Icons_Manager::render_icon( $settings['nsarrowicon'], [ 'aria-hidden' => 'true' ] );
                                 ?>
                                 </i>
@@ -169,7 +192,14 @@ if( is_user_logged_in() ) {
                                                 <div class="nias-right-head">
                                                 <?php if (!empty($lesson['lesson_icon'])){ ?>
                                                     <img src="<?php echo esc_url($lesson['lesson_icon']); ?>" alt="<?php echo esc_attr($lesson['lesson_title']); ?>" />
-                                                <?php } ?>
+                                                <?php }else {?>
+                                                    		<i class="ns-icon-wrapper nias-course-icon">
+                                                            <?php \Elementor\Icons_Manager::render_icon( $settings['singlelessonicon'], [ 'aria-hidden' => 'true' ] ); 
+                                                    ?>
+                                                    </i>
+
+                                                    <?php
+                                                    }?>
                                                 <h4 class="lesson_title"><?php echo esc_html($lesson['lesson_title']); ?></h4>
                                                 <span class="lesson_label"><?php echo esc_html($lesson['lesson_label']); ?></span>
                                                 </div>
@@ -201,7 +231,7 @@ if( is_user_logged_in() ) {
                                                  }else{
                                                     ?>
                                                     <div class="ns-private-lesson">
-                                                    	<i class="ns-private-icon">
+                                                    	<i class="ns-private-icon nias-course-icon">
                                                     <svg width="25" height="25" viewBox="0 0 25 25" fill="none" xmlns="http://www.w3.org/2000/svg">
                                                     <path fill-rule="evenodd" clip-rule="evenodd" d="M16.0596 9.34865C15.0136 9.10565 13.7526 8.99465 12.2496 8.99465C10.7466 8.99465 9.4856 9.10565 8.4396 9.34865V7.91665C8.4726 5.84265 10.1236 4.19765 12.1996 4.17065C13.2306 4.14265 14.1816 4.54265 14.9106 5.25365C15.6386 5.96465 16.0476 6.91565 16.0596 7.92465V9.34865ZM12.9996 17.0477C12.9996 17.4617 12.6636 17.7977 12.2496 17.7977C11.8356 17.7977 11.4996 17.4617 11.4996 17.0477V14.8267C11.4996 14.4127 11.8356 14.0767 12.2496 14.0767C12.6636 14.0767 12.9996 14.4127 12.9996 14.8267V17.0477ZM17.5596 9.86165V7.91565C17.5416 6.49665 16.9736 5.16965 15.9566 4.17965C14.9416 3.18965 13.5876 2.69865 12.1796 2.67065C9.2886 2.70765 6.9866 5.00165 6.9396 7.90565V9.86265C4.9056 10.8327 4.0896 12.6837 4.0896 15.7657C4.0896 20.7657 6.2256 22.5377 12.2496 22.5377C18.2746 22.5377 20.4106 20.7657 20.4106 15.7657C20.4106 12.6837 19.5936 10.8317 17.5596 9.86165Z" fill="#737373"/>
                                                     </svg>
@@ -227,7 +257,7 @@ if( is_user_logged_in() ) {
                                                     }
 
                                                 ?>
-                            	<i class="nsarrowicon">
+                            	<i class="nsarrowicon nias-course-icon">
 	                            <?php \Elementor\Icons_Manager::render_icon( $settings['nsarrowicon'], [ 'aria-hidden' => 'true' ] );
                                 ?>
                                 </i>
@@ -341,7 +371,7 @@ button.toggle_lesson {
     border: none;
     cursor: pointer;
 }
-.ns-private-lesson:hover span {
+.lesson_header:hover span {
     opacity: 1;
     transform: scale(1) rotate(0deg);
 }
