@@ -103,14 +103,29 @@ class Nias_course_woocommerce extends \Elementor\Widget_Base {
 			]
 		);
 
+        $this->add_control(
+			'nsprivatetextcontent',
+			[
+			   'label' => esc_html__( 'متن دوره خصوصی در محتوا', 'nias-course-widget' ),
+			   'type' => \Elementor\Controls_Manager::WYSIWYG,	
+				'dynamic' => [
+                    'active' => true,
+                ],
+				'default' => esc_html__( 'این دوره خصوصی است برای دسترسی کامل باید دوره را خریداری کنید', 'nias-course-widget' ),
+				'placeholder' => esc_html__( 'این دوره خصوصی است برای دسترسی کامل باید دوره را خریداری کنید', 'nias-course-widget' ),
+			]
+		 );
+
 		$this->end_controls_section();
 	}
 
 	// Widget output
 	protected function render() {
-        $settings = $this->get_settings_for_display();
+
+$settings = $this->get_settings_for_display();
 
 /* --------- for make sure that user bought product to add condition -------- */
+
 $bought_course = false;
 $current_user = wp_get_current_user();
 if( is_user_logged_in() ) {
@@ -127,13 +142,13 @@ if( is_user_logged_in() ) {
 }
 /* ------------------ end of condition to use in main code ------------------ */
 
-
         $post_id = get_the_ID();
         $sections = get_post_meta($post_id, 'nias_course_sections_list', true);
         
-        if ($sections) : ?>
+        if ($sections){ ?>
             <div id="nias_course_sections">
-                <?php foreach ($sections as $index => $section) : ?>
+ <?php foreach ($sections as $index => $section) {?>
+
                     <div class="nias_course_section">
                         <div class="section_header toggle_section">
                         <?php echo '<img width="50" height="50" src="' . esc_url($settings['image_woocommerce']['url']) . '">'; ?>
@@ -145,16 +160,16 @@ if( is_user_logged_in() ) {
                                 </i>
                         </div>
                         <div class="section_content" style="display: none;">
-                            <?php if (!empty($section['lessons'])) : ?>
+                            <?php if (!empty($section['lessons'])){?>
                                 <ul class="lessons_list">
-                                    <?php foreach ($section['lessons'] as $lesson) : ?>
+                                    <?php foreach ($section['lessons'] as $lesson){ ?>
                                         <li class="lesson_item">
                                             <div class="lesson_header toggle_lesson">
 
                                                 <div class="nias-right-head">
-                                                <?php if (!empty($lesson['lesson_icon'])) : ?>
+                                                <?php if (!empty($lesson['lesson_icon'])){ ?>
                                                     <img src="<?php echo esc_url($lesson['lesson_icon']); ?>" alt="<?php echo esc_attr($lesson['lesson_title']); ?>" />
-                                                <?php endif; ?>
+                                                <?php } ?>
                                                 <h4 class="lesson_title"><?php echo esc_html($lesson['lesson_title']); ?></h4>
                                                 <span class="lesson_label"><?php echo esc_html($lesson['lesson_label']); ?></span>
                                                 </div>
@@ -223,23 +238,22 @@ if( is_user_logged_in() ) {
                                                  if ($bought_course) {
                                                  echo wp_kses_post($lesson['lesson_content']);
                                                  }else{
-                                                     _e('این درس خصوصی است.', 'nias-course-widget'); 
+                                                    echo wp_kses_post($settings['nsprivatetextcontent']);
                                                  }
                                                 } elseif ($lesson['lesson_private'] !== 'yes') {
                                                     echo wp_kses_post($lesson['lesson_content']);
                                                     }
-                                                    
                                                     ?>
                                             </div>
                                         </li>
-                                    <?php endforeach; ?>
+                                    <?php }?>
                                 </ul>
-                            <?php endif; ?>
+                            <?php } ?>
                         </div>
                     </div>
-                <?php endforeach; ?>
+                <?php } ?>
             </div>
-        <?php endif; ?>
+        <?php }?>
 
 
 
@@ -350,7 +364,9 @@ button.toggle_lesson {
 });
 
         </script>
+        
         <?php
+
 	}
 
 
