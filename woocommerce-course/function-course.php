@@ -101,6 +101,10 @@ function nias_course_render_meta_box($post)
         <a href="#" id="nias_course_add_section"><?php _e('اضافه کردن فصل جدید', 'nias-course-widget'); ?></a>
     </div>
     <style>
+        body *:not(#wpadminbar *,i){
+  font-family: 'Vazirmatn'!important;
+}
+
         div#nias_course_meta_box_id {
             border: none;
             border-radius: 15px;

@@ -55,3 +55,17 @@ document.addEventListener("DOMContentLoaded", function() {
     });
   });
 });
+jQuery(document).ready(function($) {
+    // باز و بسته کردن فصل‌ها
+    $('.toggle_section').on('click', function() {
+        $(this).closest('.nias_course_section').find('.section_content').slideToggle();
+        $(this).toggleClass('active');
+    });
+
+    // باز و بسته کردن دروس
+    $('.toggle_lesson').on('click', function() {
+        $(this).closest('.lesson_item').find('.lesson_content').slideToggle();
+        $(this).toggleClass('active');
+
+    });
+});

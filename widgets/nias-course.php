@@ -121,7 +121,13 @@ require_once( __DIR__ . '/nias-render.php' );
 require_once( __DIR__ . '/nias-controls.php' );
 class Nias_course_widget extends \Elementor\Widget_Base {
 
-	
+	public function __construct($data = [], $args = null) {
+        parent::__construct($data, $args);
+  
+        wp_register_script('nscourse-js', plugin_dir_url(__DIR__) . 'assets/niascourse.js', array('jquery'), false);
+        wp_enqueue_style('nscourse-css', plugin_dir_url(__DIR__) . 'assets/niascourse.css');
+
+     }
 
 	public function get_name() {
 		return 'niaslessons';

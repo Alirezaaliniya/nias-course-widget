@@ -27,15 +27,7 @@ if (! defined('ABSPATH')) {
  * @return void
  */
 
-function nias_course_enqueue_course_asset()
-{
-    // Check if the current page is a WooCommerce product page
-    // Enqueue JavaScript file
-    wp_enqueue_script('nscourse-js', plugin_dir_url(__FILE__) . 'assets/niascourse.js', array('jquery'), false);
-    // Enqueue CSS file
-    wp_enqueue_style('nscourse-css', plugin_dir_url(__FILE__) . 'assets/niascourse.css');
-}
-add_action('wp_enqueue_scripts', 'nias_course_enqueue_course_asset');
+
 
 /* ---------------------------- script for admin ---------------------------- */
 function nias_admin_course_enqueue_scripts()

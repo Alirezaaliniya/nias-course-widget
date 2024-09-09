@@ -10,7 +10,16 @@ if (! defined('ABSPATH')) {
 
 class Nias_course_woocommerce extends \Elementor\Widget_Base
 {
+    public function __construct($data = [], $args = null) {
+        parent::__construct($data, $args);
+  
+        wp_register_script('nscourse-js', plugin_dir_url(__DIR__) . 'assets/niascourse.js', array('jquery'), false);
+        wp_enqueue_style('nscourse-css', plugin_dir_url(__DIR__) . 'assets/niascourse.css');
 
+     }
+
+
+    
     // Widget name
     public function get_name()
     {
@@ -662,144 +671,6 @@ $this->end_controls_section();
                 <?php } ?>
             </div>
         <?php }
-
-
-        ?>
-
-
-
-        <style>
-            .nias-lesson-text {
-                flex-direction: column;
-                gap: 5px !important;
-                align-items: flex-start !important;
-            }
-
-            @media only screen and (max-width:700px) {
-                .nsspanpreviewtext {
-                    display: none !important;
-                }
-            }
-
-            ul.lessons_list {
-                padding-right: 0;
-            }
-
-            .nias-left-head,
-            .nias-right-head,
-            .nias-left-head *:not(a),
-            .nias-right-head *:not(a) {
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                gap: 20px;
-            }
-
-            .nias_course_section {
-                margin-bottom: 20px;
-                border: 1px solid #ddd;
-            }
-
-            .lesson_header img {
-                width: 30px;
-                height: 30px;
-            }
-
-
-            .section_content li {
-                list-style: none;
-            }
-
-            .section_header {
-                display: flex;
-                justify-content: space-between;
-                align-items: center;
-                background-color: #f9f9f9;
-                padding: 10px;
-                cursor: pointer;
-                gap: 20px;
-            }
-
-            .section_title {
-                margin: 0;
-                font-size: 18px;
-                font-weight: bold;
-            }
-
-            .section_subtitle {
-                margin: 0;
-                font-size: 14px;
-                color: #777;
-            }
-
-            .section_content {
-                padding: 10px;
-                border-top: 1px solid #ddd;
-            }
-
-            .lesson_item {
-                margin-bottom: 15px;
-                border: 1px solid #eee;
-                padding: 10px;
-            }
-
-            .lesson_header {
-                display: flex;
-                justify-content: space-between;
-                align-items: center;
-                gap: 20px;
-            }
-
-            .lesson_title {
-                margin: 0;
-                font-size: 16px;
-                font-weight: bold;
-            }
-
-            .lesson_content {
-                margin-top: 10px;
-                display: none;
-            }
-
-            button.toggle_section,
-            button.toggle_lesson {
-                background-color: #0073aa;
-                color: #fff;
-                padding: 5px 10px;
-                border: none;
-                cursor: pointer;
-            }
-
-            .lesson_header:hover span {
-                opacity: 1;
-                transform: scale(1) rotate(0deg);
-            }
-
-            .nias-course-icon svg {
-                width: 1em;
-                height: 1em;
-                position: relative;
-                display: block;
-            }
-        </style>
-        <script>
-            jQuery(document).ready(function($) {
-                // باز و بسته کردن فصل‌ها
-                $('.toggle_section').on('click', function() {
-                    $(this).closest('.nias_course_section').find('.section_content').slideToggle();
-                    $(this).toggleClass('active');
-                });
-
-                // باز و بسته کردن دروس
-                $('.toggle_lesson').on('click', function() {
-                    $(this).closest('.lesson_item').find('.lesson_content').slideToggle();
-                    $(this).toggleClass('active');
-
-                });
-            });
-        </script>
-
-<?php
 
     }
 }
