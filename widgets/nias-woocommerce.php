@@ -676,4 +676,4 @@ $this->end_controls_section();
 }
 
 // Register the widget
-\Elementor\Plugin::instance()->widgets_manager->register_widget_type(new Nias_course_woocommerce());
+\Elementor\Plugin::instance()->widgets_manager->register(new Nias_course_woocommerce());

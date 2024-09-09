@@ -291,8 +291,8 @@ function nias_course_save_meta_box($post_id)
         }
 
         update_post_meta($post_id, 'nias_course_sections_list', $cleaned_sections);
-    } //else {
-    //   delete_post_meta($post_id, 'nias_course_sections_list');
-    // }
+    } else {
+       delete_post_meta($post_id, 'nias_course_sections_list');
+     }
 }
 add_action('save_post', 'nias_course_save_meta_box');
