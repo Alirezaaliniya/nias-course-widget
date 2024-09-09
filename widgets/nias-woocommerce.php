@@ -363,6 +363,7 @@ $this->add_control(
         'selectors' => [
             '{{WRAPPER}} .section_header .nsarrowicon i' => 'font-size: {{SIZE}}{{UNIT}};',
             '{{WRAPPER}} .section_header .nsarrowicon svg' => 'height: {{SIZE}}{{UNIT}};',
+            '{{WRAPPER}} .section_header .nsarrowicon svg' => 'width: {{SIZE}}{{UNIT}};',
 
 
 
@@ -444,6 +445,65 @@ $this->add_control(
 );
 
 $this->end_controls_section();
+
+$this->start_controls_section(
+    'nsstyle_eachlessoncourse',
+    [
+        'label' => esc_html__( 'استایل درس', 'nias-course-widget' ),
+        'tab' => \Elementor\Controls_Manager::TAB_STYLE,
+    ]
+);
+
+$this->add_group_control(
+    \Elementor\Group_Control_Typography::get_type(),
+    [
+        'label' => esc_html__( 'فونت عنوان درس', 'nias-course-widget' ),
+        'name' => 'nsbadgtypograpy_insidehead',
+        'selector' => '{{WRAPPER}} .lesson_title',
+    ]
+);
+$this->add_control(
+    'nsbadge-itemcolor_insidehead',
+    [
+        'label' => esc_html__( 'رنگ عنوان درس', 'nias-course-widget' ),
+        'type' => \Elementor\Controls_Manager::COLOR,
+        'selectors' => [
+            '{{WRAPPER}} .lesson_title' => 'color: {{VALUE}}',
+        ],
+    ]
+);
+$this->add_control(
+    'nsbadge-itembackcolor_insidehead',
+    [
+        'label' => esc_html__( 'رنگ بک گراند عنوان درس', 'nias-course-widget' ),
+        'type' => \Elementor\Controls_Manager::COLOR,
+        'selectors' => [
+            '{{WRAPPER}} .lesson_title' => 'background-color: {{VALUE}}',
+        ],
+    ]
+);
+
+$this->add_group_control(
+    \Elementor\Group_Control_Typography::get_type(),
+    [
+        'label' => esc_html__( 'فونت  زیر عنوان درس', 'nias-course-widget' ),
+        'name' => 'nsstitl_sub_ecoursetypography_insidehead',
+        'selector' => '{{WRAPPER}} .lesson_label',
+    ]
+);
+$this->add_control(
+    'nsbadge-sub-itemcolor_insidehead',
+    [
+        'label' => esc_html__( 'رنگ زیر عنوان درس', 'nias-course-widget' ),
+        'type' => \Elementor\Controls_Manager::COLOR,
+        'selectors' => [
+            '{{WRAPPER}} .lesson_label' => 'color: {{VALUE}}',
+        ],
+    ]
+);
+
+$this->end_controls_section();
+
     }
 
     // Widget output
