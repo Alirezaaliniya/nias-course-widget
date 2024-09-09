@@ -52,24 +52,12 @@ function nias_course_render_settings_page() {
             <?php submit_button(); ?>
         </form>
     </div>
-    <style>  @font-face {
-    font-family: 'niasyekan';
-    src:url('https://cdn.font-store.ir/fonts/yekan/Yekan-Regular.woff2') format('woff2'),
-    url('https://cdn.font-store.ir/fonts/yekan/Yekan-Regular.woff') format('woff'),
-    url('https://cdn.font-store.ir/fonts/yekan/Yekan-Regular.ttf') format('truetype'),
-	url('https://cdn.font-store.ir/fonts/yekan/Yekan-Regular.otf') format('opentype');
-    font-weight: normal;
-    font-style: normal;
+    <style> 
+        body *:not(#wpadminbar *,i){
+  font-family: 'Vazirmatn'!important;
 }
-@font-face {
-    font-family: 'niasyekan';
-    src:url('https://cdn.font-store.ir/fonts/yekan/Yekan-Bold.woff2') format('woff2'),
-    url('https://cdn.font-store.ir/fonts/yekan/Yekan-Bold.woff') format('woff'),
-    url('https://cdn.font-store.ir/fonts/yekan/Yekan-Bold.ttf') format('truetype'),
-	url('https://cdn.font-store.ir/fonts/yekan/Yekan-Bold.otf') format('opentype');
-    font-weight: bold;
-    font-style: normal;
-}</style>
+
+    </style>
 
 
     <?php

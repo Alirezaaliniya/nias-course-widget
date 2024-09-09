@@ -528,3 +528,6 @@ p.ns-spotdltitle {
     gap: 8px;
     color: unset;
 }
+.nsdownload-button{
+    color: white;
+}

@@ -1,172 +1,9 @@
 <?php
 
-
-
-function nias_course_script_product(){
-    
-    ?>
-        <script>
-        
- 
-
-</script>
-<style>
-div#nias_course_meta_box_id {
-    border: none;
-    border-radius: 15px;
-    padding: 20px;
-}
-.toggle_section , .toggle_lesson{
-    background-image: url(<?php echo plugin_dir_url(__File__) . 'arow.svg'; ?>);
-    font-size: 0;
-    width: 30px;
-    height: 30px;
-    background-position: center;
-    background-size: contain;
-    background-repeat: no-repeat;
-    transform: rotate(0);
-    transition: all 0.3s;
-    box-shadow: none !important;
-    outline: none !important;
-}
-a.toggle_section.active , .toggle_lesson.active {
-    transform: rotate(-90deg);
-}
-a.nias_course_remove_section , .nias_course_remove_lesson{
-    background-image: url(<?php echo plugin_dir_url(__File__) . 'remove.svg'; ?>);
-    font-size: 0;
-    width: 30px;
-    height: 30px;
-    background-position: center;
-    background-size: contain;
-    background-repeat: no-repeat;
-
-}
-a.nias_course_add_lesson , a#nias_course_add_section {
-    padding: 10px 15px;
-    background: #3858e9;
-    color: white;
-    text-decoration: none;
-    border-radius: 10px;
-    /* margin-bottom: 10px!important; */
-    /* content: ""; */
-}
-
-a.nias_course_add_lesson:after , a#nias_course_add_section:after{
-    content: "+";
-    margin-right: 10px;
-}
-#nias_course_meta_box_id .postbox-header {
-    background: #005bff17;
-    border-radius:10px;
-    padding:10px 20px;
-    h2 , span{
-    color: #0067ff!important;
-        }
-}
-
-
-
-div#nias_course_meta_box {
-    h3 {
-        color:blue;
-    }
-    input{
-        border:none;
-        border-radius:10px
-    }
-    button {
-    background: #003dff17;
-    color: #3858e9;
-    border-radius: 10px;
-    padding: 10px;
-    border: none!important;
-    outline: none!important;
-}
-}
-
-div#nias_course_sections_wrapper {
-    padding: 15px;
-    /* background-color: #ffffff00; */
-    border: 1px solid #f5f5f5;
-    border-radius: 10px;
-    display: flex;
-    flex-direction: column;
-    gap: 20px;
-}
-
-.nias_course_section_item {
-    padding: 10px;
-    background-color: #f8f8f8;
-    border-radius: 10px;
-    /* margin-bottom: 15px; */
-    /* margin: 10px 0; */
-    /* display: flex; */
-    /* flex-direction: column; */
-    /* gap: 20px; */
-}
-
-.section_header {
-    display: flex;
-    flex-direction: row;
-    justify-content: space-around;
-    align-items: center;
-}
-
-.lessons_wrapper {
-    margin: 15px 0;
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-}
-
-.nias_course_lesson_item {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    justify-content: center;
-}
-
-.lesson_header {
-    display: flex;
-    align-items: center;
-    justify-content: flex-start;
-    gap: 20px;
-    background-color: #ededed;
-    padding: 10px;
-    border-radius: 8px;
-}
-
-.lesson_content {
-    display: flex;
-    flex-direction: column;
-    flex-wrap: wrap;
-    justify-content: center;
-    gap: 10px;
-}
-
-.section_content {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-}
-
-</style>
-    
-    
-    <?php
-
-}
-
-add_action('admin_footer' , 'nias_course_script_product');
-
-
-
-
-
 // افزودن متاباکس به صفحه محصولات
 add_action('add_meta_boxes', 'nias_course_add_custom_meta_box');
-function nias_course_add_custom_meta_box() {
+function nias_course_add_custom_meta_box()
+{
     add_meta_box(
         'nias_course_meta_box_id',
         __('تنظیمات دوره', 'nias-course-widget'),
@@ -179,14 +16,15 @@ function nias_course_add_custom_meta_box() {
 
 // نمایش متاباکس در صفحه ویرایش محصول
 // نمایش متاباکس در صفحه ویرایش محصول
-function nias_course_render_meta_box($post) {
+function nias_course_render_meta_box($post)
+{
     // اضافه کردن nonce برای امنیت
     wp_nonce_field('nias_course_meta_box_nonce', 'nias_course_meta_box_nonce');
 
     // بازیابی داده‌های ذخیره‌شده
     $sections = get_post_meta($post->ID, 'nias_course_sections_list', true) ?: [];
 
-    ?>
+?>
     <div id="nias_course_meta_box">
         <h3><?php _e('فصل‌ها', 'nias-course-widget'); ?></h3>
         <div id="nias_course_sections_wrapper">
@@ -206,9 +44,12 @@ function nias_course_render_meta_box($post) {
                         <label><?php _e('آیکون', 'nias-course-widget'); ?></label>
                         <input type="text" id="section_icon_<?php echo $index; ?>" name="nias_course_sections_list[section_icon][]" value="<?php echo esc_url($section['section_icon']); ?>" />
                         <button class="upload_image_button" data-target="#section_icon_<?php echo $index; ?>"><?php _e('بارگذاری آیکون', 'nias-course-widget'); ?></button>
-
+                        <?php
+                        /*
                         <label><?php _e('برچسب', 'nias-course-widget'); ?></label>
                         <input type="text" name="nias_course_sections_list[section_label][]" value="<?php echo esc_attr($section['section_label']); ?>" />
+                    */
+                        ?>
                     </div>
                     <div class="lessons_wrapper">
                         <?php if (!empty($section['lessons'])) : ?>
@@ -241,12 +82,12 @@ function nias_course_render_meta_box($post) {
                                         <input type="checkbox" name="nias_course_sections_list[sections][<?php echo $index; ?>][lessons][lesson_private][<?php echo $lesson_index; ?>]" value="yes" <?php checked(isset($lesson['lesson_private']) && $lesson['lesson_private'] === 'yes'); ?> />
                                         <label><?php _e('محتوای درس', 'nias-course-widget'); ?></label>
                                         <?php
-                                            $content = isset($lesson['lesson_content']) ? htmlspecialchars_decode($lesson['lesson_content']) : '';
-                                            wp_editor($content, 'lesson_content_' . $index . '_' . $lesson_index, array(
-                                                'textarea_name' => "nias_course_sections_list[sections][$index][lessons][lesson_content_$lesson_index]",
-                                                'textarea_rows' => 5,
-                                                'media_buttons' => true,
-                                            ));
+                                        $content = isset($lesson['lesson_content']) ? $lesson['lesson_content'] : '';
+                                        wp_editor($content, 'lesson_content_' . $index . '_' . $lesson_index, array(
+                                            'textarea_name' => "nias_course_sections_list[sections][$index][lessons][lesson_content_$lesson_index]",
+                                            'textarea_rows' => 5,
+                                            'media_buttons' => true,
+                                        ));
                                         ?>
                                     </div>
                                 </div>
@@ -259,14 +100,161 @@ function nias_course_render_meta_box($post) {
         </div>
         <a href="#" id="nias_course_add_section"><?php _e('اضافه کردن فصل جدید', 'nias-course-widget'); ?></a>
     </div>
-    <?php
+    <style>
+        div#nias_course_meta_box_id {
+            border: none;
+            border-radius: 15px;
+            padding: 20px;
+        }
+
+        .toggle_section,
+        .toggle_lesson {
+            background-image: url(<?php echo plugin_dir_url(__File__) . 'arow.svg'; ?>);
+            font-size: 0;
+            width: 30px;
+            height: 30px;
+            background-position: center;
+            background-size: contain;
+            background-repeat: no-repeat;
+            transform: rotate(0);
+            transition: all 0.3s;
+            box-shadow: none !important;
+            outline: none !important;
+        }
+
+        a.toggle_section.active,
+        .toggle_lesson.active {
+            transform: rotate(-90deg);
+        }
+
+        a.nias_course_remove_section,
+        .nias_course_remove_lesson {
+            background-image: url(<?php echo plugin_dir_url(__File__) . 'remove.svg'; ?>);
+            font-size: 0;
+            width: 30px;
+            height: 30px;
+            background-position: center;
+            background-size: contain;
+            background-repeat: no-repeat;
+
+        }
+
+        a.nias_course_add_lesson,
+        a#nias_course_add_section {
+            padding: 10px 15px;
+            background: #3858e9;
+            color: white;
+            text-decoration: none;
+            border-radius: 10px;
+        }
+
+        a.nias_course_add_lesson:after,
+        a#nias_course_add_section:after {
+            content: "+";
+            margin-right: 10px;
+        }
+
+        #nias_course_meta_box_id .postbox-header {
+            background: #005bff17;
+            border-radius: 10px;
+            padding: 10px 20px;
+
+            h2,
+            span {
+                color: #0067ff !important;
+            }
+        }
+
+
+
+        div#nias_course_meta_box {
+            h3 {
+                color: blue;
+            }
+
+            input {
+                border: none;
+                border-radius: 10px
+            }
+
+            button {
+                background: #003dff17;
+                color: #3858e9;
+                border-radius: 10px;
+                padding: 10px;
+                border: none !important;
+                outline: none !important;
+            }
+        }
+
+        div#nias_course_sections_wrapper {
+            padding: 15px;
+            border: 1px solid #f5f5f5;
+            border-radius: 10px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .nias_course_section_item {
+            padding: 10px;
+            background-color: #f8f8f8;
+            border-radius: 10px;
+        }
+
+        .section_header {
+            display: flex;
+            flex-direction: row;
+            justify-content: space-around;
+            align-items: center;
+        }
+
+        .lessons_wrapper {
+            margin: 15px 0;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .nias_course_lesson_item {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            justify-content: center;
+        }
+
+        .lesson_header {
+            display: flex;
+            align-items: center;
+            justify-content: flex-start;
+            gap: 20px;
+            background-color: #ededed;
+            padding: 10px;
+            border-radius: 8px;
+        }
+
+        .lesson_content {
+            display: flex;
+            flex-direction: column;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .section_content {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+    </style>
+<?php
 }
 
 
 // ذخیره‌سازی داده‌های متاباکس
-// ذخیره‌سازی داده‌های متاباکس
-// ذخیره‌سازی داده‌های متاباکس
-function nias_course_save_meta_box($post_id) {
+
+function nias_course_save_meta_box($post_id)
+{
     // حذف nonce و بررسی‌های امنیتی برای ساده‌سازی کد
 
     if (isset($_POST['nias_course_sections_list'])) {
@@ -278,7 +266,7 @@ function nias_course_save_meta_box($post_id) {
                 'section_title' => sanitize_text_field($title),
                 'section_subtitle' => sanitize_text_field($sections['section_subtitle'][$index]),
                 'section_icon' => esc_url_raw($sections['section_icon'][$index]),
-                'section_label' => sanitize_text_field($sections['section_label'][$index]),
+                // 'section_label' => sanitize_text_field($sections['section_label'][$index]),
                 'lessons' => []
             ];
 
@@ -291,7 +279,7 @@ function nias_course_save_meta_box($post_id) {
                         'lesson_preview_video' => esc_url_raw($sections['sections'][$index]['lessons']['lesson_preview_video'][$lesson_index]),
                         'lesson_download' => esc_url_raw($sections['sections'][$index]['lessons']['lesson_download'][$lesson_index]),
                         // خارج کردن از حالت آرایه
-                        'lesson_content' => htmlspecialchars($_POST['nias_course_sections_list']['sections'][$index]['lessons']["lesson_content_$lesson_index"]),
+                        'lesson_content' => $_POST['nias_course_sections_list']['sections'][$index]['lessons']["lesson_content_$lesson_index"],
                         'lesson_private' => isset($sections['sections'][$index]['lessons']['lesson_private'][$lesson_index]) ? 'yes' : 'no',
                     ];
                 }
@@ -299,13 +287,8 @@ function nias_course_save_meta_box($post_id) {
         }
 
         update_post_meta($post_id, 'nias_course_sections_list', $cleaned_sections);
-    } else {
-        delete_post_meta($post_id, 'nias_course_sections_list');
-    }
+    } //else {
+    //   delete_post_meta($post_id, 'nias_course_sections_list');
+    // }
 }
 add_action('save_post', 'nias_course_save_meta_box');
-
-
-
-
-

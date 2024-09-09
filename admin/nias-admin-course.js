@@ -51,9 +51,6 @@ jQuery(document).ready(function($) {
                     <input type="text" name="nias_course_sections_list[section_icon][]" value="" />
                     <button class="upload_image_button" data-target="[name='nias_course_sections_list[section_icon][]']">${nias_course_ajax_object.upload_icon}</button>
 
-                    <label>${nias_course_ajax_object.section_label}</label>
-                    <input type="text" name="nias_course_sections_list[section_label][]" value="" />
-
                     <div class="lessons_wrapper"></div>
                     <a href="#" class="nias_course_add_lesson" data-section-index="${newIndex}">${nias_course_ajax_object.add_lesson}</a>
                 </div>
@@ -96,7 +93,7 @@ jQuery(document).ready(function($) {
                     <input type="text" name="nias_course_sections_list[sections][${sectionIndex}][lessons][lesson_download][]" value="" />
 
                     <label>${nias_course_ajax_object.lesson_content}</label>
-                    <textarea name="nias_course_sections_list[sections][${sectionIndex}][lessons][lesson_content][]" rows="10"></textarea>
+                    <textarea placeholder="لطفاً محصول را ذخیره و سپس صفحه را رفرش کنید تا ویرایشگر به درستی لود شود" name="nias_course_sections_list[sections][${sectionIndex}][lessons][lesson_content][]" rows="10"></textarea>
                     <label>${nias_course_ajax_object.lesson_private}</label>
                     <input type="checkbox" name="nias_course_sections_list[sections][${sectionIndex}][lessons][lesson_private][${newLessonIndex}]" value="yes" />
                 </div>
