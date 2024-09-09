@@ -132,7 +132,7 @@ class Nias_course_widget extends \Elementor\Widget_Base {
 	 }
   
 	 public function get_icon() {
-		  return 'eicon-navigator';
+		  return 'nias-course-maker';
 	 }
   
 	 public function get_categories() {

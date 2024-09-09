@@ -20,13 +20,13 @@ class Nias_course_woocommerce extends \Elementor\Widget_Base
     // Widget title
     public function get_title()
     {
-        return esc_html__('دوره ووکامرس', 'nias-course-widget');
+        return esc_html__('نمایش دوره ووکامرس', 'nias-course-widget');
     }
 
     // Widget icon
     public function get_icon()
     {
-        return 'eicon-navigator';
+        return 'nias-course-woo';
     }
 
     // Widget categories
