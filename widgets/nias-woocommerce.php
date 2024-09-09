@@ -99,29 +99,29 @@ class Nias_course_woocommerce extends \Elementor\Widget_Base
                 ],
             ]
         );
-		$this->add_control(
-			'nspreviewicon',
-			[
-				'label' => esc_html__( 'آیکون پیش نمایش', 'nias-course-widget' ),
-				'type' => \Elementor\Controls_Manager::ICONS,
-				'default' => [
-					'value' => 'fa fa-play-circle',
-					'library' => 'fa-solid',
-				],
-				'recommended' => [
-					'fa-solid' => [
-						'circle',
-						'dot-circle',
-						'square-full',
-					],
-					'fa-regular' => [
-						'circle',
-						'dot-circle',
-						'square-full',
-					],
-				],
-			]
-		);
+        $this->add_control(
+            'nspreviewicon',
+            [
+                'label' => esc_html__('آیکون پیش نمایش', 'nias-course-widget'),
+                'type' => \Elementor\Controls_Manager::ICONS,
+                'default' => [
+                    'value' => 'fa fa-play-circle',
+                    'library' => 'fa-solid',
+                ],
+                'recommended' => [
+                    'fa-solid' => [
+                        'circle',
+                        'dot-circle',
+                        'square-full',
+                    ],
+                    'fa-regular' => [
+                        'circle',
+                        'dot-circle',
+                        'square-full',
+                    ],
+                ],
+            ]
+        );
         $this->add_control(
             'nspreviewtext',
             [
@@ -233,12 +233,14 @@ class Nias_course_woocommerce extends \Elementor\Widget_Base
 
                                                     <?php
                                                     } ?>
-                                                    <h4 class="lesson_title"><?php echo esc_html($lesson['lesson_title']); ?></h4>
-                                                    <span class="lesson_label"><?php echo esc_html($lesson['lesson_label']); ?></span>
+                                                    <div class="nias-lesson-text">
+                                                        <h4 class="lesson_title"><?php echo esc_html($lesson['lesson_title']); ?></h4>
+                                                        <span class="lesson_label"><?php echo esc_html($lesson['lesson_label']); ?></span>
+                                                    </div>
                                                 </div>
                                                 <div class="nias-left-head">
                                                     <?php if (!empty($lesson['lesson_preview_video'])) : ?>
-                                                        <a href="<?php echo esc_url($lesson['lesson_preview_video']); ?>">
+                                                        <a target="_blank" href="<?php echo esc_url($lesson['lesson_preview_video']); ?>">
                                                             <i class="nspreviewicon nias-course-icon">
                                                                 <?php
                                                                 //nias preview icon
@@ -255,7 +257,7 @@ class Nias_course_woocommerce extends \Elementor\Widget_Base
                                                         if ($bought_course) {
                                                             if (!empty($lesson['lesson_download'])) {
                                                     ?>
-                                                                <a href="<?php echo esc_url($lesson['lesson_download']); ?>">
+                                                                <a target="_blank" href="<?php echo esc_url($lesson['lesson_download']); ?>">
                                                                     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                                                                         <path d="M15.8798 12.43L12.5298 15.78C12.2398 16.07 11.7598 16.07 11.4698 15.78L8.11984 12.43C7.82984 12.14 7.82984 11.66 8.11984 11.37C8.40984 11.08 8.88984 11.08 9.17984 11.37L11.2498 13.44V2.75C11.2498 2.34 11.5898 2 11.9998 2C12.4098 2 12.7498 2.34 12.7498 2.75V13.44L14.8198 11.37C14.9698 11.22 15.1598 11.15 15.3498 11.15C15.5398 11.15 15.7298 11.22 15.8798 11.37C16.1798 11.66 16.1798 12.13 15.8798 12.43Z" fill="#2666CF" />
                                                                         <path opacity="0.4" d="M16.8 9H7.2C4 9 2 11 2 14.2V16.79C2 20 4 22 7.2 22H16.79C19.99 22 21.99 20 21.99 16.8V14.2C22 11 20 9 16.8 9Z" fill="#2666CF" />
@@ -280,11 +282,16 @@ class Nias_course_woocommerce extends \Elementor\Widget_Base
                                                     } elseif ($lesson['lesson_private'] !== 'yes') {
                                                         if (!empty($lesson['lesson_download'])) {
                                                         ?>
-                                                            <a href="<?php echo esc_url($lesson['lesson_download']); ?>">
-                                                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                                                    <path d="M15.8798 12.43L12.5298 15.78C12.2398 16.07 11.7598 16.07 11.4698 15.78L8.11984 12.43C7.82984 12.14 7.82984 11.66 8.11984 11.37C8.40984 11.08 8.88984 11.08 9.17984 11.37L11.2498 13.44V2.75C11.2498 2.34 11.5898 2 11.9998 2C12.4098 2 12.7498 2.34 12.7498 2.75V13.44L14.8198 11.37C14.9698 11.22 15.1598 11.15 15.3498 11.15C15.5398 11.15 15.7298 11.22 15.8798 11.37C16.1798 11.66 16.1798 12.13 15.8798 12.43Z" fill="#2666CF" />
-                                                                </svg>
-                                                                <path opacity="0.4" d="M16.8 9H7.2C4 9 2 11 2 14.2V16.79C2 20 4 22 7.2 22H16.79C19.99 22 21.99 20 21.99 16.8V14.2C22 11 20 9 16.8 9Z" fill="#2666CF" />
+                                                            <a target="_blank" href="<?php echo esc_url($lesson['lesson_download']); ?>">
+                                                                <div class="nsdownload-button gray">
+
+                                                                    <i>
+                                                                        <?php
+                                                                        //nias download icon
+                                                                        \Elementor\Icons_Manager::render_icon($settings['nsdownloadicon'], ['aria-hidden' => 'true']);
+                                                                        ?>
+                                                                    </i>
+                                                                </div>
 
 
                                                             </a>
@@ -319,19 +326,30 @@ class Nias_course_woocommerce extends \Elementor\Widget_Base
                     </div>
                 <?php } ?>
             </div>
-        <?php } ?>
+        <?php }
+
+
+        ?>
 
 
 
         <style>
-            @media only screen and (max-width:700px){
-    .nsspanpreviewtext{
-        display: none!important;
-    }
-}
-ul.lessons_list {
-    padding-right: 0;
-}
+            .nias-lesson-text {
+                flex-direction: column;
+                gap: 5px !important;
+                align-items: flex-start !important;
+            }
+
+            @media only screen and (max-width:700px) {
+                .nsspanpreviewtext {
+                    display: none !important;
+                }
+            }
+
+            ul.lessons_list {
+                padding-right: 0;
+            }
+
             .nias-left-head,
             .nias-right-head,
             .nias-left-head *:not(a),
@@ -345,12 +363,11 @@ ul.lessons_list {
             .nias_course_section {
                 margin-bottom: 20px;
                 border: 1px solid #ddd;
-                padding: 10px;
             }
 
             .lesson_header img {
-                width: 50px;
-                height: 50px;
+                width: 30px;
+                height: 30px;
             }
 
 

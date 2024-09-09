@@ -111,5 +111,3 @@ add_action( 'elementor/widgets/register', 'nias_course_register_widget' );
 
 
 
-
-

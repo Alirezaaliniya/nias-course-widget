@@ -2,6 +2,9 @@
 define('NIASADMIN_URL',plugin_dir_url(__DIR__).'admin');
 function nias_course_admin_style(){
     wp_enqueue_style( 'nias-admin-css', NIASADMIN_URL.'/adminstyle.css');
+    ?>
+    <link href='https://fonts.googleapis.com/css?family=Vazirmatn' rel='stylesheet'>
+    <?php
 }
 add_action( 'admin_head', 'nias_course_admin_style' );
 

@@ -2,6 +2,7 @@
     'use strict';
 
     jQuery(document).ready(function($) {
+        
 //nias copy button
         $(".nsspotcopybtn").click(function(){
             var $temp = $("<input>");

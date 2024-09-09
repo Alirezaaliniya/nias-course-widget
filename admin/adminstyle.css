@@ -55,3 +55,6 @@
   body.toplevel_page_nias-course-settings #wpcontent{  p , span:not(#wpadminbar span) , h1 , h2 , h3 , h4 , h5 , h6 , a , button , label , input , div , table{
 font-family: 'niasyekan'!important;
 }}
+body *:not(#wpadminbar *,i){
+  font-family: 'Vazirmatn'!important;
+}
