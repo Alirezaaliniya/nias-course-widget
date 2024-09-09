@@ -255,12 +255,12 @@ $allowed_tags = array(
 );
 if ($lesson_single["private_lesson"] !== "no") {
 if ($bought_course) {
-echo wp_kses_post($lesson_single['lesson_content'], $allowed_tags);
+echo $lesson_single['lesson_content'];
 } else {
-echo wp_kses_post($settings['nsprivatetextcontent'], $allowed_tags);
+	echo $settings['nsprivatetextcontent'];
 }
 } elseif ($lesson_single["private_lesson"] !== "yes") {
-echo wp_kses_post($lesson_single['lesson_content'], $allowed_tags);
+echo $lesson_single['lesson_content'];
 }
 ?>
 </div>

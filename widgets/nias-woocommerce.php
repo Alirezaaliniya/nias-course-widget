@@ -644,12 +644,12 @@ $this->end_controls_section();
                                             <div class="lesson_content" style="display: none;">
                                                 <?php if ($lesson['lesson_private'] === 'yes') {
                                                     if ($bought_course) {
-                                                        echo wp_kses_post($lesson['lesson_content']);
+                                                        echo $lesson['lesson_content'];
                                                     } else {
-                                                        echo wp_kses_post($settings['nsprivatetextcontent']);
+                                                        echo $settings['nsprivatetextcontent'];
                                                     }
                                                 } elseif ($lesson['lesson_private'] !== 'yes') {
-                                                    echo wp_kses_post($lesson['lesson_content']);
+                                                    echo $lesson['lesson_content'];
                                                 }
                                                 ?>
                                             </div>
