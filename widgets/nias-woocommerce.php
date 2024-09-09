@@ -196,6 +196,124 @@ class Nias_course_woocommerce extends \Elementor\Widget_Base
         );
 
         $this->end_controls_section();
+
+
+        /* -------------------------------------------------------------------------- */
+        /*                                  style tab                                 */
+        /* -------------------------------------------------------------------------- */
+
+        /* ----------------------------- each box style ----------------------------- */
+        
+		 $this->start_controls_section(
+			'nsstylewidget',
+			[
+				'label' => esc_html__( 'استایل باکس', 'nias-course-widget' ),
+				'tab' => \Elementor\Controls_Manager::TAB_STYLE,
+			]
+		);
+		$this->add_group_control(
+			\Elementor\Group_Control_Background::get_type(),
+			[
+				'name' => 'backgroundnscourse-section',
+				'types' => [ 'classic', 'gradient', 'video' ],
+				'selector' => '{{WRAPPER}} .nias_course_section',
+			]
+		);
+		$this->add_group_control(
+			\Elementor\Group_Control_Border::get_type(),
+			[
+				'name' => 'bordernscourse-section',
+				'selector' => '{{WRAPPER}} .nias_course_section',
+			]
+		);
+
+		$this->add_responsive_control(
+			'nsmainradius',
+			[
+				'label' => esc_html__( 'نرمی حاشیه', 'nias-course-widget' ),
+				'type' => \Elementor\Controls_Manager::DIMENSIONS,
+				'size_units' => [ 'px', '%', 'em', 'rem', 'custom' ],
+				'default' => [
+					'isLinked' => true,
+				],
+				'selectors' => [
+					'{{WRAPPER}} .nias_course_section' => 'border-radius: {{TOP}}{{UNIT}} {{RIGHT}}{{UNIT}} {{BOTTOM}}{{UNIT}} {{LEFT}}{{UNIT}};',
+				],
+			]
+		);
+
+		$this->add_responsive_control(
+			'nsmainpadding',
+			[
+				'label' => esc_html__( 'فاصله داخلی', 'nias-course-widget' ),
+				'type' => \Elementor\Controls_Manager::DIMENSIONS,
+				'size_units' => [ 'px', '%', 'em', 'rem', 'custom' ],
+				'default' => [
+					'isLinked' => true,
+				],
+				'selectors' => [
+					'{{WRAPPER}} .nias_course_section' => 'padding: {{TOP}}{{UNIT}} {{RIGHT}}{{UNIT}} {{BOTTOM}}{{UNIT}} {{LEFT}}{{UNIT}};',
+				],
+			]
+		);
+		$this->end_controls_section();
+
+        /* -------------------------- each head part style -------------------------- */
+        $this->start_controls_section(
+			'nsstylewidget',
+			[
+				'label' => esc_html__( 'استایل هد/فصل', 'nias-course-widget' ),
+				'tab' => \Elementor\Controls_Manager::TAB_STYLE,
+			]
+		);
+		$this->add_group_control(
+			\Elementor\Group_Control_Background::get_type(),
+			[
+				'name' => 'backgroundnscourse-section',
+				'types' => [ 'classic', 'gradient', 'video' ],
+				'selector' => '{{WRAPPER}} .section_header',
+			]
+		);
+		$this->add_group_control(
+			\Elementor\Group_Control_Border::get_type(),
+			[
+				'name' => 'bordernscourse-section',
+				'selector' => '{{WRAPPER}} .section_header',
+			]
+		);
+
+		$this->add_responsive_control(
+			'nsmainradius',
+			[
+				'label' => esc_html__( 'نرمی حاشیه', 'nias-course-widget' ),
+				'type' => \Elementor\Controls_Manager::DIMENSIONS,
+				'size_units' => [ 'px', '%', 'em', 'rem', 'custom' ],
+				'default' => [
+					'isLinked' => true,
+				],
+				'selectors' => [
+					'{{WRAPPER}} .section_header' => 'border-radius: {{TOP}}{{UNIT}} {{RIGHT}}{{UNIT}} {{BOTTOM}}{{UNIT}} {{LEFT}}{{UNIT}};',
+				],
+			]
+		);
+
+		$this->add_responsive_control(
+			'nsmainpadding',
+			[
+				'label' => esc_html__( 'فاصله داخلی', 'nias-course-widget' ),
+				'type' => \Elementor\Controls_Manager::DIMENSIONS,
+				'size_units' => [ 'px', '%', 'em', 'rem', 'custom' ],
+				'default' => [
+					'isLinked' => true,
+				],
+				'selectors' => [
+					'{{WRAPPER}} .section_header' => 'padding: {{TOP}}{{UNIT}} {{RIGHT}}{{UNIT}} {{BOTTOM}}{{UNIT}} {{LEFT}}{{UNIT}};',
+				],
+			]
+		);
+		$this->end_controls_section();
+
+
     }
 
     // Widget output
