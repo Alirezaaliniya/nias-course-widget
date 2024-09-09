@@ -300,13 +300,46 @@ span.nsspanpreviewtext {
   margin-bottom: 0;
 }
 
-.nscourse-section.active .nsarrowicon , .toggle_section.active .nsarrowicon , .toggle_lesson.active .nsarrowicon {
-    -webkit-transform: rotate(180deg);
-    -moz-transform: rotate(180deg);
-    -ms-transform: rotate(180deg);
-    -o-transform: rotate(180deg);
-    transform: rotate(180deg);
-	
+@keyframes rotateIconnias {
+    0% {
+        transform: rotate(0deg) scale(1);
+    }
+    50% {
+        transform: rotate(90deg) scale(0.5);
+    }
+    100% {
+        transform: rotate(180deg) scale(1);
+    }
+}
+@keyframes rotateIconbacknias {
+    0% {
+        transform: rotate(180deg) scale(1);
+    }
+    50% {
+        transform: rotate(90deg) scale(0.5);
+    }
+    100% {
+        transform: rotate(0deg) scale(1);
+    }
+}
+.nscourse-section .nsarrowicon, 
+.toggle_section .nsarrowicon, 
+.toggle_lesson .nsarrowicon {
+    animation: rotateIconbacknias 0.5s forwards;
+    -webkit-animation: rotateIconbacknias 0.5s forwards; /* برای مرورگرهای قدیمی‌تر */
+    -moz-animation: rotateIconbacknias 0.5s forwards;    /* برای مرورگرهای قدیمی‌تر */
+    -ms-animation: rotateIconbacknias 0.5s forwards;     /* برای مرورگرهای قدیمی‌تر */
+    -o-animation: rotateIconbacknias 0.5s forwards;      /* برای مرورگرهای قدیمی‌تر */
+}
+
+.nscourse-section.active .nsarrowicon, 
+.toggle_section.active .nsarrowicon, 
+.toggle_lesson.active .nsarrowicon {
+    animation: rotateIconnias 0.5s forwards;
+    -webkit-animation: rotateIconnias 0.5s forwards; /* برای مرورگرهای قدیمی‌تر */
+    -moz-animation: rotateIconnias 0.5s forwards;    /* برای مرورگرهای قدیمی‌تر */
+    -ms-animation: rotateIconnias 0.5s forwards;     /* برای مرورگرهای قدیمی‌تر */
+    -o-animation: rotateIconnias 0.5s forwards;      /* برای مرورگرهای قدیمی‌تر */
 }
 .nselementory-section .nscourse-section {
 	background: #fff;
