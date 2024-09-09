@@ -260,7 +260,7 @@ class Nias_course_woocommerce extends \Elementor\Widget_Base
 
         /* -------------------------- each head part style -------------------------- */
         $this->start_controls_section(
-			'nsstylewidget',
+			'nsstylewidget_head',
 			[
 				'label' => esc_html__( 'استایل هد/فصل', 'nias-course-widget' ),
 				'tab' => \Elementor\Controls_Manager::TAB_STYLE,
@@ -269,7 +269,7 @@ class Nias_course_woocommerce extends \Elementor\Widget_Base
 		$this->add_group_control(
 			\Elementor\Group_Control_Background::get_type(),
 			[
-				'name' => 'backgroundnscourse-section',
+				'name' => 'backgroundnscourse_head-section',
 				'types' => [ 'classic', 'gradient', 'video' ],
 				'selector' => '{{WRAPPER}} .section_header',
 			]
@@ -277,13 +277,13 @@ class Nias_course_woocommerce extends \Elementor\Widget_Base
 		$this->add_group_control(
 			\Elementor\Group_Control_Border::get_type(),
 			[
-				'name' => 'bordernscourse-section',
+				'name' => 'bordernscourse_head-section',
 				'selector' => '{{WRAPPER}} .section_header',
 			]
 		);
 
 		$this->add_responsive_control(
-			'nsmainradius',
+			'nsmainradius_head',
 			[
 				'label' => esc_html__( 'نرمی حاشیه', 'nias-course-widget' ),
 				'type' => \Elementor\Controls_Manager::DIMENSIONS,
@@ -298,7 +298,7 @@ class Nias_course_woocommerce extends \Elementor\Widget_Base
 		);
 
 		$this->add_responsive_control(
-			'nsmainpadding',
+			'nsmainpadding_head',
 			[
 				'label' => esc_html__( 'فاصله داخلی', 'nias-course-widget' ),
 				'type' => \Elementor\Controls_Manager::DIMENSIONS,
@@ -313,7 +313,137 @@ class Nias_course_woocommerce extends \Elementor\Widget_Base
 		);
 		$this->end_controls_section();
 
+/* ---------------------------- inside head style --------------------------- */
+$this->start_controls_section(
+    'nsstyle_eachcourse_insidehead',
+    [
+        'label' => esc_html__( 'استایل داخل فصل', 'nias-course-widget' ),
+        'tab' => \Elementor\Controls_Manager::TAB_STYLE,
+    ]
+);
 
+$this->add_control(
+    'nslessoniconsize_insidehead',
+    [
+        'label' => esc_html__( 'اندازه عکس فصل ها', 'nias-course-widget' ),
+        'type' => \Elementor\Controls_Manager::SLIDER,
+        'size_units' => [ 'px', 'em', 'rem', 'custom' ],
+        'range' => [
+            'px' => [
+                'min' => 0,
+                'max' => 100,
+                'step' => 1,
+            ],
+        ],
+        
+        'selectors' => [
+            '{{WRAPPER}} .section_header img' => 'height: {{SIZE}}{{UNIT}};',
+            '{{WRAPPER}} .section_header img' => 'width: {{SIZE}}{{UNIT}};',
+
+
+
+        ],
+    ]
+);
+
+$this->add_control(
+    'nstoggleiconsize_insidehead',
+    [
+        'label' => esc_html__( 'اندازه آیکن باز و بسته شدن', 'nias-course-widget' ),
+        'type' => \Elementor\Controls_Manager::SLIDER,
+        'size_units' => [ 'px', 'em', 'rem', 'custom' ],
+        'range' => [
+            'px' => [
+                'min' => 0,
+                'max' => 100,
+                'step' => 1,
+            ],
+        ],
+        
+        'selectors' => [
+            '{{WRAPPER}} .section_header .nsarrowicon i' => 'font-size: {{SIZE}}{{UNIT}};',
+            '{{WRAPPER}} .section_header .nsarrowicon svg' => 'height: {{SIZE}}{{UNIT}};',
+
+
+
+        ],
+    ]
+);
+
+
+$this->add_control(
+    'nslessonicon_color_insidehead',
+    [
+        'label' => esc_html__( 'رنگ آیکن باز و بسته شدن', 'nias-course-widget' ),
+        'type' => \Elementor\Controls_Manager::COLOR,
+        'selectors' => [
+            '{{WRAPPER}} .section_header .nsarrowicon i' => 'color: {{VALUE}}',
+            '{{WRAPPER}} .section_header .nsarrowicon i svg' => 'fill: {{VALUE}}',
+
+        ],
+    ]
+);
+
+
+$this->add_group_control(
+    \Elementor\Group_Control_Typography::get_type(),
+    [
+        'label' => esc_html__( 'فونت عنوان فصل', 'nias-course-widget' ),
+        'name' => 'nsbadgtypograpy_insidehead',
+        'selector' => '{{WRAPPER}} .section_title',
+    ]
+);
+$this->add_control(
+    'nsbadge-itemcolor_insidehead',
+    [
+        'label' => esc_html__( 'رنگ عنوان فصل', 'nias-course-widget' ),
+        'type' => \Elementor\Controls_Manager::COLOR,
+        'selectors' => [
+            '{{WRAPPER}} .section_title' => 'color: {{VALUE}}',
+        ],
+    ]
+);
+$this->add_control(
+    'nsbadge-itembackcolor_insidehead',
+    [
+        'label' => esc_html__( 'رنگ بک گراند عنوان فصل', 'nias-course-widget' ),
+        'type' => \Elementor\Controls_Manager::COLOR,
+        'selectors' => [
+            '{{WRAPPER}} .section_title' => 'background-color: {{VALUE}}',
+        ],
+    ]
+);
+
+$this->add_group_control(
+    \Elementor\Group_Control_Typography::get_type(),
+    [
+        'label' => esc_html__( 'فونت لیبل فصل', 'nias-course-widget' ),
+        'name' => 'nsstitlecoursetypography_insidehead',
+        'selector' => '{{WRAPPER}} .section_subtitle',
+    ]
+);
+$this->add_control(
+    'nsbadge-itemcolor_label_insidehead',
+    [
+        'label' => esc_html__( 'رنگ لیبل فصل', 'nias-course-widget' ),
+        'type' => \Elementor\Controls_Manager::COLOR,
+        'selectors' => [
+            '{{WRAPPER}} .section_subtitle' => 'color: {{VALUE}}',
+        ],
+    ]
+);
+$this->add_control(
+    'nsbadge-itembackcolor_label_insidehead',
+    [
+        'label' => esc_html__( 'رنگ بک گراند لیبل فصل', 'nias-course-widget' ),
+        'type' => \Elementor\Controls_Manager::COLOR,
+        'selectors' => [
+            '{{WRAPPER}} .section_subtitle' => 'background-color: {{VALUE}}',
+        ],
+    ]
+);
+
+$this->end_controls_section();
     }
 
     // Widget output
