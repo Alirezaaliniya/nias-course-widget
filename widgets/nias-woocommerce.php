@@ -264,7 +264,7 @@ class Nias_course_woocommerce extends \Elementor\Widget_Base
                                                 </div>
                                                 <div class="nias-left-head">
                                                     <?php if (!empty($lesson['lesson_preview_video'])) : ?>
-                                                        <a target="_blank" href="<?php echo esc_url($lesson['lesson_preview_video']); ?>">
+                                                        <a class="nias-preview-tag" target="_blank" href="<?php echo esc_url($lesson['lesson_preview_video']); ?>">
                                                             <i class="nspreviewicon nias-course-icon">
                                                                 <?php
                                                                 //nias preview icon
@@ -272,10 +272,11 @@ class Nias_course_woocommerce extends \Elementor\Widget_Base
                                                                 ?>
 
                                                             </i>
-                                                        </a>
-                                                        <span class="nsspanpreviewtext">
+                                                            <span class="nsspanpreviewtext">
                                                             <?php echo esc_html($settings['nspreviewtext']); ?>
                                                         </span>
+                                                        </a>
+
                                                     <?php endif; ?>
                                                     <?php if ($lesson['lesson_private'] === 'yes') {
                                                         if ($bought_course) {

@@ -519,3 +519,12 @@ p.ns-spotdltitle {
     position: relative;
     display: block;
 }
+
+.nias-preview-tag{
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: row;
+    gap: 8px;
+    color: unset;
+}
