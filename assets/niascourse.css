@@ -91,14 +91,17 @@
     background-color: #4ece3d;
     color: #fff;
     height: 34px;
-    border-radius: 30px
+    border-radius: 30px;
+    svg{
+        fill:#fff;
+    }
 }
 
 .nsdownload-button.gray {
     background-color: #bac2c5;
     margin-right: 8px;
     color: #fff;
-    border-radius: 30px
+    border-radius: 30px;
 }
 
 
