@@ -399,12 +399,12 @@ $this->add_group_control(
     \Elementor\Group_Control_Typography::get_type(),
     [
         'label' => esc_html__( 'فونت عنوان فصل', 'nias-course-widget' ),
-        'name' => 'nsbadgtypograpy_insidehead',
+        'name' => 'nsbadgtypograpy_insidehead_season',
         'selector' => '{{WRAPPER}} .section_title',
     ]
 );
 $this->add_control(
-    'nsbadge-itemcolor_insidehead',
+    'nsbadge-itemcolor_insidehead_season',
     [
         'label' => esc_html__( 'رنگ عنوان فصل', 'nias-course-widget' ),
         'type' => \Elementor\Controls_Manager::COLOR,
@@ -414,7 +414,7 @@ $this->add_control(
     ]
 );
 $this->add_control(
-    'nsbadge-itembackcolor_insidehead',
+    'nsbadge-itembackcolor_insidehead_season',
     [
         'label' => esc_html__( 'رنگ بک گراند عنوان فصل', 'nias-course-widget' ),
         'type' => \Elementor\Controls_Manager::COLOR,
