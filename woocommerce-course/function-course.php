@@ -26,6 +26,7 @@ function nias_course_render_meta_box($post)
 
 ?>
     <div id="nias_course_meta_box">
+    <input type="hidden" name="nias_course_meta_box_submitted" value="1">
         <h3><?php _e('فصل‌ها', 'nias-course-widget'); ?></h3>
         <div id="nias_course_sections_wrapper">
             <?php foreach ($sections as $index => $section) : ?>
@@ -255,11 +256,14 @@ function nias_course_render_meta_box($post)
 }
 
 
-// ذخیره‌سازی داده‌های متاباکس
-
 function nias_course_save_meta_box($post_id)
 {
     // حذف nonce و بررسی‌های امنیتی برای ساده‌سازی کد
+
+    // بررسی کنید آیا فرم متاباکس ارسال شده است یا خیر
+    if (!isset($_POST['nias_course_meta_box_submitted'])) {
+        return;
+    }
 
     if (isset($_POST['nias_course_sections_list'])) {
         $sections = $_POST['nias_course_sections_list'];
@@ -282,7 +286,6 @@ function nias_course_save_meta_box($post_id)
                         'lesson_label' => sanitize_text_field($sections['sections'][$index]['lessons']['lesson_label'][$lesson_index]),
                         'lesson_preview_video' => esc_url_raw($sections['sections'][$index]['lessons']['lesson_preview_video'][$lesson_index]),
                         'lesson_download' => esc_url_raw($sections['sections'][$index]['lessons']['lesson_download'][$lesson_index]),
-                        // خارج کردن از حالت آرایه
                         'lesson_content' => $_POST['nias_course_sections_list']['sections'][$index]['lessons']["lesson_content_$lesson_index"],
                         'lesson_private' => isset($sections['sections'][$index]['lessons']['lesson_private'][$lesson_index]) ? 'yes' : 'no',
                     ];
@@ -293,6 +296,7 @@ function nias_course_save_meta_box($post_id)
         update_post_meta($post_id, 'nias_course_sections_list', $cleaned_sections);
     } else {
        delete_post_meta($post_id, 'nias_course_sections_list');
-     }
+    }
 }
 add_action('save_post', 'nias_course_save_meta_box');
+
