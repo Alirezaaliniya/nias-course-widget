@@ -5,27 +5,34 @@ Donate link: https://nias.ir/
 Requires at least: 5.8
 Tested up to: 6.5.2
 Requires PHP: 7.4
-Stable tag: 1.1.31
+Stable tag: 1.2.0
 License: GPLv2
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
-این افزونه ویجت دروس را به وب‌سایت فروشگاه شما اضافه می‌کند، که مشابه استادیار است، و شما می‌توانید قالب فروشگاه المنتوری خود را به یک قالب آموزشی تبدیل کنید.
+This plugin adds a tutorial widget to your store website, similar to Assistant, and you can convert your Elementor store Theme to a
+Make it educational.
+
+
 == Description ==
-پلاگین دوره ساز نیاس در واقع یک ویجت حرفه ای را به المنتور شما اضافه میکند که به وسیله آن قادر خواهید بود بخش دوره را به صفحات محصول خود اضافه کنید
-= Facilities =
-*تمام بخش‌ها مشابه استادیار هستند
-*بهینه‌سازی و رفع مشکلات سئو و حذف بخش‌ها
-*قابلیت استفاده از برچسب‌های پویا در تمام فیلدهای متنی
-*قابلیت انتخاب برچسب HTML برای عنوان‌های درونیاب
-*قابلیت فروش دوره‌ها و محصولات فیزیکی و مجازی به طور همزمان یا جداگانه
-*استفاده از قابلیت محافظت لینک ووکامرس
-*و سایر امکانات حرفه‌ای
+The Nias course builder plugin actually adds a professional widget to your Elementor by which you will be able to add the course section to your product pages.
+
+
+== Facilities ==
+* All departments are similar to assistant professor
+* Optimizing and fixing SEO problems and removing sections
+* The ability to use dynamic labels in all text fields
+* The ability to select HTML tags for search engine titles
+* Ability to sell physical and virtual courses and products simultaneously or separately
+*Using WooCommerce link protection feature
+* Course creator within WooCommerce product editing
+* The ability to display iframe
+* Two dedicated widgets with customization capabilities
 
 
  
 
-= Support =
-* [پشتیبانی نیاس] (https://nias.ir/)
+== Support ==
+* [Nias website support] (https://nias.ir/)
 
 
 
@@ -36,8 +43,23 @@ License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
 
 == Frequently Asked Questions ==
-پلاگین چه پیشنیازی دارد؟
-پیش نیاز فعالسازی و استفاده از پلاگین ووکامرس و المنتور است
+
+= What is the prerequisite for using this plugin? =
+
+To use this plugin, it is necessary to install Elementor and WooCommerce and it will not work without them
+
+= What formats is this plugin compatible with? =
+
+This plugin is compatible with all Themes that support Elementor and WooCommerce
+
+= Are all plugin features free? =
+
+Yes, using this plugin will not cost anything
+
+= If there is a problem or ambiguity, how can I submit it? =
+
+You can report the problem through Telegram: [T.me/niasir](https://T.me/niasir)
+
 
 
 
@@ -47,13 +69,21 @@ License URI: https://www.gnu.org/licenses/gpl-2.0.html
 3. scrnias3
 
 == Changelog ==
-v1.1.3
+
+=v1.2.0=
+* The ability to display iframe was added
+* The ability to create lessons from WooCommerce product editing
+* Creating a special widget to display added content from product editing
+
+=v1.1.3=
 *woocommerce protected links added
 *fix style load
 *setting page added
-v1.1.1
+
+=v1.1.1=
 php error fixed
-v1.1.0
+
+=v1.1.0=
 * code problems fixed
 * style tab added
 * spot config added
