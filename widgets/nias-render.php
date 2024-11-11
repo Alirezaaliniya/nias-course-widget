@@ -241,29 +241,20 @@ foreach ($woo_downloads as $download) {
 	</div>
   
 	<div class="nspanel-content">
-<div class="nspanel-content-inner">
+	<div class="nspanel-content-inner">
 <?php
-$allowed_tags = array(
-    'iframe' => array(
-        'src'             => true,
-        'width'           => true,
-        'height'          => true,
-        'frameborder'     => true,
-        'allowfullscreen' => true,
-    ),
-    // Include other tags that you want to allow
-);
 if ($lesson_single["private_lesson"] !== "no") {
-if ($bought_course) {
-echo $lesson_single['lesson_content'];
-} else {
-	echo $settings['nsprivatetextcontent'];
-}
+    if ($bought_course) {
+        echo $lesson_single['lesson_content'];
+    } else {
+        echo $settings['nsprivatetextcontent'];
+    }
 } elseif ($lesson_single["private_lesson"] !== "yes") {
-echo $lesson_single['lesson_content'];
+    echo $lesson_single['lesson_content'];
 }
 ?>
 </div>
+
    </div>
  
  

@@ -44,10 +44,16 @@ function nias_course_render_settings_page() {
             <p>لطفاً در صورت وجود مشکل یا سوال از طریق تلگرام با بنده در ارتباط باشید</p>
             <a href="https://T.me/niasir">T.me/niasir</a>
 
+            <h2 style="color: red;">نحوه درج ایفریم در محتوا</h2>
+            <p style="color: red;">قسمتی که محتوای متنی دوره را درج میکنید یک تب دیداری و یک تب متن دارد از انجایی که ایفریم کدhtml است باید در تب متن وارد کنید</p>
+
             <h2>آموزش استفاده از پلاگین را از اینجا ببینید</h2>
 <div style="max-width: 363px;">
+    <h3>پارت 1</h3>
     <style>.h_iframe-aparat_embed_frame{position:relative;}.h_iframe-aparat_embed_frame .ratio{display:block;width:100%;height:auto;}.h_iframe-aparat_embed_frame iframe{position:absolute;top:0;left:0;width:100%;height:100%;}</style><div class="h_iframe-aparat_embed_frame"><span style="display: block;padding-top: 57%"></span><iframe src="https://www.aparat.com/video/video/embed/videohash/b90c8sh/vt/frame?titleShow=true&recom=self"  allowFullScreen="true" webkitallowfullscreen="true" mozallowfullscreen="true"></iframe></div>
-        </div>
+        <h3>پارت 2</h3>
+        <style>.h_iframe-aparat_embed_frame{position:relative;}.h_iframe-aparat_embed_frame .ratio{display:block;width:100%;height:auto;}.h_iframe-aparat_embed_frame iframe{position:absolute;top:0;left:0;width:100%;height:100%;}</style><div class="h_iframe-aparat_embed_frame"><span style="display: block;padding-top: 57%"></span><iframe src="https://www.aparat.com/video/video/embed/videohash/lcd5qbk/vt/frame"  allowFullScreen="true" webkitallowfullscreen="true" mozallowfullscreen="true"></iframe></div>
+    </div>
 
             <?php submit_button(); ?>
         </form>

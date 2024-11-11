@@ -68,4 +68,6 @@ jQuery(document).ready(function($) {
         $(this).toggleClass('active');
 
     });
+    // مقداردهی Plyr برای ویدیو
+
 });

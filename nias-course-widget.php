@@ -4,7 +4,7 @@
  * Plugin Name: Nias course | دوره ساز نیاس
  * Description:   پلاگین دوره ساز نیاس ویجت "دوره ساز نیاس" را به ویرایشگر المنتور شما اضافه میکند که میتوانید دوره مورد نظر خود را درون تمپلیت محصول بسازیدو قالب خود را به یک قالب فروش دوره و فایل تبدیل کنید | این پلاگین بصورت رایگان منتشر شده و رایگان هم خواهد ماند❤️
  * Plugin URI:  https://nias.ir/product/nias-course-widget/
- * Version:     1.2.0
+ * Version:     1.2.1
  * Author:      Alireza aliniya
  * Author URI:  https://nias.ir/
  * Text Domain: nias-course-widget
@@ -69,6 +69,9 @@ require(NIAS_COURSE_PANEL . '/adminpannel.php');
 /* ----------------------- define woocommerce product ----------------------- */
 define('NIAS_WOOCOMMERCE', plugin_dir_path(__FILE__) . 'woocommerce-course');
 require(NIAS_WOOCOMMERCE . '/function-course.php');
+
+
+require(__DIR__ . '/widgets/videomodal.php');
 
 //add setting to installed plugins
 add_filter('plugin_action_links_' . plugin_basename(__FILE__), 'nias_setting_link');
