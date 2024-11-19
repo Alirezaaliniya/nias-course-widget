@@ -19,7 +19,7 @@ This plugin adds a tutorial widget to your store website, similar to Assistant. 
 The Nias Course Builder plugin adds a professional widget to Elementor, enabling you to incorporate a course section into your product pages.
 
 == Features ==
-* All sections styled similarly to Assistant Professor
+* All sections styled similarly to persian studiar
 * SEO optimization and removal of unnecessary sections
 * Dynamic labels available in all text fields
 * Ability to select HTML tags for search engine titles
