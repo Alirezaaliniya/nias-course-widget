@@ -18,6 +18,11 @@ function nias_course_add_custom_meta_box()
 // نمایش متاباکس در صفحه ویرایش محصول
 function nias_course_render_meta_box($post)
 {
+    // Add capability check here
+    if (!current_user_can('edit_posts')) {
+        wp_die(__('You do not have sufficient permissions to access this page.'));
+    }
+
     // اضافه کردن nonce برای امنیت
     wp_nonce_field('nias_course_meta_box_nonce', 'nias_course_meta_box_nonce');
 
@@ -258,8 +263,19 @@ function nias_course_render_meta_box($post)
 
 function nias_course_save_meta_box($post_id)
 {
-    // حذف nonce و بررسی‌های امنیتی برای ساده‌سازی کد
+    // Add capability check here
+    if (!current_user_can('edit_posts')) {
+        wp_die(__('You do not have sufficient permissions to access this page.'));
+    }
 
+    // حذف nonce و بررسی‌های امنیتی برای ساده‌سازی کد
+    // Verify nonce
+    if (
+        !isset($_POST['nias_course_meta_box_nonce']) ||
+        !wp_verify_nonce($_POST['nias_course_meta_box_nonce'], 'nias_course_meta_box_nonce')
+    ) {
+        return;
+    }
     // بررسی کنید آیا فرم متاباکس ارسال شده است یا خیر
     if (!isset($_POST['nias_course_meta_box_submitted'])) {
         return;
