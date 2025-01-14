@@ -35,7 +35,7 @@ function nias_course_render_meta_box($post)
         <h3><?php _e('فصل‌ها', 'nias-course-widget'); ?></h3>
         <div id="nias_course_sections_wrapper">
             <?php foreach ($sections as $index => $section) : ?>
-                <div class="nias_course_section_item" data-index="<?php echo $index; ?>">
+                <div class="nias_course_section_item" data-index="<?php echo esc_attr($index); ?>">
                     <div class="section_header">
                         <label><?php _e('عنوان فصل', 'nias-course-widget'); ?></label>
                         <input type="text" name="nias_course_sections_list[section_title][]" value="<?php echo esc_attr($section['section_title']); ?>" />
