@@ -26,7 +26,7 @@ function nias_course_render_meta_box($post)
 
 ?>
     <div id="nias_course_meta_box">
-    <input type="hidden" name="nias_course_meta_box_submitted" value="1">
+        <input type="hidden" name="nias_course_meta_box_submitted" value="1">
         <h3><?php _e('فصل‌ها', 'nias-course-widget'); ?></h3>
         <div id="nias_course_sections_wrapper">
             <?php foreach ($sections as $index => $section) : ?>
@@ -102,9 +102,9 @@ function nias_course_render_meta_box($post)
         <a href="#" id="nias_course_add_section"><?php _e('اضافه کردن فصل جدید', 'nias-course-widget'); ?></a>
     </div>
     <style>
-        body *:not(#wpadminbar *,i){
-  font-family: 'Vazirmatn'!important;
-}
+        body *:not(#wpadminbar *, i) {
+            font-family: 'Vazirmatn' !important;
+        }
 
         div#nias_course_meta_box_id {
             border: none;
@@ -295,8 +295,7 @@ function nias_course_save_meta_box($post_id)
 
         update_post_meta($post_id, 'nias_course_sections_list', $cleaned_sections);
     } else {
-       delete_post_meta($post_id, 'nias_course_sections_list');
+        delete_post_meta($post_id, 'nias_course_sections_list');
     }
 }
 add_action('save_post', 'nias_course_save_meta_box');
-
