@@ -302,7 +302,7 @@ function nias_course_save_meta_box($post_id)
                         'lesson_label' => sanitize_text_field($sections['sections'][$index]['lessons']['lesson_label'][$lesson_index]),
                         'lesson_preview_video' => esc_url_raw($sections['sections'][$index]['lessons']['lesson_preview_video'][$lesson_index]),
                         'lesson_download' => esc_url_raw($sections['sections'][$index]['lessons']['lesson_download'][$lesson_index]),
-                        'lesson_content' => $_POST['nias_course_sections_list']['sections'][$index]['lessons']["lesson_content_$lesson_index"],
+                        'lesson_content' => wp_kses_post($_POST['nias_course_sections_list']['sections'][$index]['lessons']["lesson_content_$lesson_index"]),
                         'lesson_private' => isset($sections['sections'][$index]['lessons']['lesson_private'][$lesson_index]) ? 'yes' : 'no',
                     ];
                 }
