@@ -17,6 +17,15 @@ if (! defined('ABSPATH')) {
     exit; // Exit if accessed directly.
 }
 
+if (file_exists(__DIR__ . '/vendor/autoload.php')) {
+    require_once __DIR__ . '/vendor/autoload.php';
+}
+
+/*
+if ( ! class_exists( 'CMB2' ) ) {
+    require_once  __DIR__.'/vendor/cmb2/cmb2/init.php';
+}
+*/
 /**
  * Register List Widget.
  *

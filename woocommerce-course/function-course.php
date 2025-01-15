@@ -18,11 +18,6 @@ function nias_course_add_custom_meta_box()
 // نمایش متاباکس در صفحه ویرایش محصول
 function nias_course_render_meta_box($post)
 {
-    // Add capability check here
-    if (!current_user_can('edit_posts')) {
-        wp_die(__('You do not have sufficient permissions to access this page.'));
-    }
-
     // اضافه کردن nonce برای امنیت
     wp_nonce_field('nias_course_meta_box_nonce', 'nias_course_meta_box_nonce');
 
@@ -31,11 +26,11 @@ function nias_course_render_meta_box($post)
 
 ?>
     <div id="nias_course_meta_box">
-        <input type="hidden" name="nias_course_meta_box_submitted" value="1">
+    <input type="hidden" name="nias_course_meta_box_submitted" value="1">
         <h3><?php _e('فصل‌ها', 'nias-course-widget'); ?></h3>
         <div id="nias_course_sections_wrapper">
             <?php foreach ($sections as $index => $section) : ?>
-                <div class="nias_course_section_item" data-index="<?php echo esc_attr($index); ?>">
+                <div class="nias_course_section_item" data-index="<?php echo $index; ?>">
                     <div class="section_header">
                         <label><?php _e('عنوان فصل', 'nias-course-widget'); ?></label>
                         <input type="text" name="nias_course_sections_list[section_title][]" value="<?php echo esc_attr($section['section_title']); ?>" />
@@ -107,9 +102,9 @@ function nias_course_render_meta_box($post)
         <a href="#" id="nias_course_add_section"><?php _e('اضافه کردن فصل جدید', 'nias-course-widget'); ?></a>
     </div>
     <style>
-        body *:not(#wpadminbar *, i) {
-            font-family: 'Vazirmatn' !important;
-        }
+        body *:not(#wpadminbar *,i){
+  font-family: 'Vazirmatn'!important;
+}
 
         div#nias_course_meta_box_id {
             border: none;
@@ -263,19 +258,8 @@ function nias_course_render_meta_box($post)
 
 function nias_course_save_meta_box($post_id)
 {
-    // Add capability check here
-    if (!current_user_can('edit_posts')) {
-        wp_die(__('You do not have sufficient permissions to access this page.'));
-    }
-
     // حذف nonce و بررسی‌های امنیتی برای ساده‌سازی کد
-    // Verify nonce
-    if (
-        !isset($_POST['nias_course_meta_box_nonce']) ||
-        !wp_verify_nonce($_POST['nias_course_meta_box_nonce'], 'nias_course_meta_box_nonce')
-    ) {
-        return;
-    }
+
     // بررسی کنید آیا فرم متاباکس ارسال شده است یا خیر
     if (!isset($_POST['nias_course_meta_box_submitted'])) {
         return;
@@ -302,7 +286,7 @@ function nias_course_save_meta_box($post_id)
                         'lesson_label' => sanitize_text_field($sections['sections'][$index]['lessons']['lesson_label'][$lesson_index]),
                         'lesson_preview_video' => esc_url_raw($sections['sections'][$index]['lessons']['lesson_preview_video'][$lesson_index]),
                         'lesson_download' => esc_url_raw($sections['sections'][$index]['lessons']['lesson_download'][$lesson_index]),
-                        'lesson_content' => wp_kses_post($_POST['nias_course_sections_list']['sections'][$index]['lessons']["lesson_content_$lesson_index"]),
+                        'lesson_content' => $_POST['nias_course_sections_list']['sections'][$index]['lessons']["lesson_content_$lesson_index"],
                         'lesson_private' => isset($sections['sections'][$index]['lessons']['lesson_private'][$lesson_index]) ? 'yes' : 'no',
                     ];
                 }
@@ -311,7 +295,8 @@ function nias_course_save_meta_box($post_id)
 
         update_post_meta($post_id, 'nias_course_sections_list', $cleaned_sections);
     } else {
-        delete_post_meta($post_id, 'nias_course_sections_list');
+       delete_post_meta($post_id, 'nias_course_sections_list');
     }
 }
 add_action('save_post', 'nias_course_save_meta_box');
+
