@@ -19,25 +19,23 @@ if (! defined('ABSPATH')) {
 // اتوماتیک‌لود کردن کتابخانه‌های Composer
 require_once plugin_dir_path(__FILE__) . 'vendor/autoload.php';
 
-// استفاده از Carbon Fields
-use Carbon_Fields\Container;
-use Carbon_Fields\Field;
-
-// ثبت فیلدهای Carbon Fields
-add_action('carbon_fields_register_fields', 'my_plugin_register_fields');
-function my_plugin_register_fields() {
-    Container::make('theme_options', __('تنظیمات قالب', 'my-plugin'))
-        ->add_fields(array(
-            Field::make('text', 'my_plugin_text', 'فیلد متنی'),
-            Field::make('textarea', 'my_plugin_textarea', 'فیلد متنی چندخطی'),
-        ));
-}
 
 // بارگذاری Carbon Fields
 add_action('after_setup_theme', 'my_plugin_load_carbon_fields');
 function my_plugin_load_carbon_fields() {
     \Carbon_Fields\Carbon_Fields::boot();
 }
+
+// Add this to your theme's functions.php or a separate translation file
+add_filter('carbon_fields_translate_strings', 'translate_carbon_fields_strings');
+function translate_carbon_fields_strings($texts) {
+    $texts['There are no entries yet.'] = __('هنوز موردی ثبت نشده است.', 'your-text-domain');
+    $texts['Add Entry'] = __('افزودن مورد', 'your-text-domain');
+    $texts['Collapse All'] = __('بستن همه', 'your-text-domain');
+    
+    return $texts;
+}
+
 
 /**
  * Register List Widget.

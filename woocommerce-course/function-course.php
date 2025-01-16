@@ -114,69 +114,108 @@ function create_course_metabox() {
 // Migration Function
 function migrate_course_data_to_carbon() {
     global $wpdb;
-
     // Check if migration has already been done
     $products = get_posts([
         'post_type' => 'product',
         'posts_per_page' => -1,
     ]);
-
+    
     foreach ($products as $product) {
         if (get_post_meta($product->ID, '_course_data_migrated', true) === 'yes') {
             continue; // Skip if already migrated
         }
-
+        
         // Retrieve old data
-        $old_data = [];
         $meta_rows = $wpdb->get_results($wpdb->prepare(
-            "SELECT meta_key, meta_value FROM {$wpdb->postmeta} 
+            "SELECT meta_key, meta_value FROM {$wpdb->postmeta}
             WHERE post_id = %d AND meta_key = %s",
             $product->ID, 'nias_course_sections_list'
         ));
-
+        
         foreach ($meta_rows as $row) {
             // Unserialize the data
             $sections = maybe_unserialize($row->meta_value);
-
             if (!is_array($sections)) {
                 error_log("Invalid data for post ID {$product->ID}");
                 continue;
             }
-
+            
             // Prepare data for Carbon Fields
             $carbon_fields_data = [];
             foreach ($sections as $section_index => $section) {
                 $section_data = [
                     'section_title'    => $section['section_title'] ?? '',
                     'section_subtitle' => $section['section_subtitle'] ?? '',
-                    'section_icon'     => $section['section_icon'] ?? '',
+                    'section_icon'     => [
+                        [
+                            'icon_type' => 'url',
+                            'icon_url'  => $section['section_icon'] ?? '',
+                        ]
+                    ],
                     'lessons'          => [],
                 ];
-
+                
                 if (isset($section['lessons'])) {
                     foreach ($section['lessons'] as $lesson_index => $lesson) {
-                        $section_data['lessons'][] = [
+                        $lesson_data = [
                             'lesson_title'    => $lesson['lesson_title'] ?? '',
-                            'lesson_icon'     => $lesson['lesson_icon'] ?? '',
+                            'lesson_icon'     => [
+                                [
+                                    'icon_type' => 'url',
+                                    'icon_url'  => $lesson['lesson_icon'] ?? '',
+                                ]
+                            ],
                             'lesson_label'    => $lesson['lesson_label'] ?? '',
-                            'lesson_preview_video' => $lesson['lesson_preview_video'] ?? '',
-                            'lesson_download' => $lesson['lesson_download'] ?? '',
-                            'lesson_content'  => $lesson['lesson_content'] ?? null,
-                            'lesson_private'  => $lesson['lesson_private'] ?? 'no',
+                            'lesson_preview_video' => [
+                                [
+                                    'video_type' => 'url',
+                                    'video_url'  => $lesson['lesson_preview_video'] ?? '',
+                                ]
+                            ],
+                            'lesson_download' => [
+                                [
+                                    'file_type' => 'url',
+                                    'file_url'  => $lesson['lesson_download'] ?? '',
+                                ]
+                            ],
+                            'lesson_content'  => $lesson['lesson_content'] ?? '',
+                            'lesson_private'  => $lesson['lesson_private'] ?? false,
                         ];
+                        
+                        // Clean up empty media fields
+                        if (empty($lesson_data['lesson_icon'][0]['icon_url'])) {
+                            $lesson_data['lesson_icon'] = [];
+                        }
+                        if (empty($lesson_data['lesson_preview_video'][0]['video_url'])) {
+                            $lesson_data['lesson_preview_video'] = [];
+                        }
+                        if (empty($lesson_data['lesson_download'][0]['file_url'])) {
+                            $lesson_data['lesson_download'] = [];
+                        }
+                        
+                        $section_data['lessons'][] = $lesson_data;
                     }
                 }
-
+                
+                // Clean up empty section icon
+                if (empty($section_data['section_icon'][0]['icon_url'])) {
+                    $section_data['section_icon'] = [];
+                }
+                
                 $carbon_fields_data[] = $section_data;
             }
-
+            
             // Save data to Carbon Fields meta key
             carbon_set_post_meta($product->ID, 'course_sections', $carbon_fields_data);
         }
-
+        
         // Mark migration as completed
         update_post_meta($product->ID, '_course_data_migrated', 'yes');
+        
+        error_log("Successfully migrated course data for product ID: {$product->ID}");
     }
+    
+    error_log("Course data migration completed");
 }
 // Add Migration Button
 add_action('admin_menu', 'add_migration_menu');
@@ -207,3 +246,4 @@ function render_migration_page() {
     </div>
     <?php
 }
+
