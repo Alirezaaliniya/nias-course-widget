@@ -1,5 +1,5 @@
 {
     "require": {
-        "cmb2/cmb2": "^2.10"
+        "htmlburger/carbon-fields": "^3.6"
     }
 }

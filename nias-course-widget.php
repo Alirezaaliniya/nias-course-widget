@@ -16,16 +16,29 @@
 if (! defined('ABSPATH')) {
     exit; // Exit if accessed directly.
 }
+// اتوماتیک‌لود کردن کتابخانه‌های Composer
+require_once plugin_dir_path(__FILE__) . 'vendor/autoload.php';
 
-if (file_exists(__DIR__ . '/vendor/autoload.php')) {
-    require_once __DIR__ . '/vendor/autoload.php';
+// استفاده از Carbon Fields
+use Carbon_Fields\Container;
+use Carbon_Fields\Field;
+
+// ثبت فیلدهای Carbon Fields
+add_action('carbon_fields_register_fields', 'my_plugin_register_fields');
+function my_plugin_register_fields() {
+    Container::make('theme_options', __('تنظیمات قالب', 'my-plugin'))
+        ->add_fields(array(
+            Field::make('text', 'my_plugin_text', 'فیلد متنی'),
+            Field::make('textarea', 'my_plugin_textarea', 'فیلد متنی چندخطی'),
+        ));
 }
 
-/*
-if ( ! class_exists( 'CMB2' ) ) {
-    require_once  __DIR__.'/vendor/cmb2/cmb2/init.php';
+// بارگذاری Carbon Fields
+add_action('after_setup_theme', 'my_plugin_load_carbon_fields');
+function my_plugin_load_carbon_fields() {
+    \Carbon_Fields\Carbon_Fields::boot();
 }
-*/
+
 /**
  * Register List Widget.
  *

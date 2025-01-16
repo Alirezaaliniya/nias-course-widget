@@ -1,302 +1,209 @@
 <?php
+use Carbon_Fields\Container\Container;
+use Carbon_Fields\Field\Field;
 
-// افزودن متاباکس به صفحه محصولات
-add_action('add_meta_boxes', 'nias_course_add_custom_meta_box');
-function nias_course_add_custom_meta_box()
-{
-    add_meta_box(
-        'nias_course_meta_box_id',
-        __('تنظیمات دوره', 'nias-course-widget'),
-        'nias_course_render_meta_box',
-        'product',  // نوع پست هدف: محصولات
-        'normal',
-        'high'
+// Register Course Fields
+add_action('carbon_fields_register_fields', 'create_course_metabox');
+function create_course_metabox() {
+    Container::make('post_meta', __('تنظیمات دوره', 'nias-course-widget'))
+        ->where('post_type', '=', 'product')
+        ->set_priority('high')
+        ->add_fields([
+            Field::make('complex', 'course_sections', __('فصل‌ها', 'nias-course-widget'))
+                ->set_layout('tabbed-vertical')
+                ->add_fields([
+                    Field::make('text', 'section_title', __('عنوان فصل', 'nias-course-widget'))
+                        ->set_required(true),
+                    Field::make('text', 'section_subtitle', __('زیرعنوان', 'nias-course-widget')),
+                    Field::make('complex', 'section_icon', __('آیکون', 'nias-course-widget'))
+                        ->add_fields([
+                            Field::make('select', 'icon_type', __('نوع آیکون', 'nias-course-widget'))
+                                ->set_options([
+                                    'upload' => __('آپلود فایل', 'nias-course-widget'),
+                                    'url' => __('لینک مستقیم', 'nias-course-widget')
+                                ]),
+                            Field::make('image', 'icon_upload', __('آپلود آیکون', 'nias-course-widget'))
+                                ->set_value_type('url')
+                                ->set_conditional_logic([
+                                    'relation' => 'AND',
+                                    ['field' => 'icon_type', 'value' => 'upload']
+                                ]),
+                            Field::make('text', 'icon_url', __('لینک آیکون', 'nias-course-widget'))
+                                ->set_conditional_logic([
+                                    'relation' => 'AND',
+                                    ['field' => 'icon_type', 'value' => 'url']
+                                ])
+                        ])
+                        ->set_max(1),
+                    Field::make('complex', 'lessons', __('درس‌ها', 'nias-course-widget'))
+                        ->set_layout('tabbed-horizontal')
+                        ->add_fields([
+                            Field::make('text', 'lesson_title', __('عنوان درس', 'nias-course-widget'))
+                                ->set_required(true),
+                            Field::make('complex', 'lesson_icon', __('آیکون', 'nias-course-widget'))
+                                ->add_fields([
+                                    Field::make('select', 'icon_type', __('نوع آیکون', 'nias-course-widget'))
+                                        ->set_options([
+                                            'upload' => __('آپلود فایل', 'nias-course-widget'),
+                                            'url' => __('لینک مستقیم', 'nias-course-widget')
+                                        ]),
+                                    Field::make('image', 'icon_upload', __('آپلود آیکون', 'nias-course-widget'))
+                                        ->set_value_type('url')
+                                        ->set_conditional_logic([
+                                            'relation' => 'AND',
+                                            ['field' => 'icon_type', 'value' => 'upload']
+                                        ]),
+                                    Field::make('text', 'icon_url', __('لینک آیکون', 'nias-course-widget'))
+                                        ->set_conditional_logic([
+                                            'relation' => 'AND',
+                                            ['field' => 'icon_type', 'value' => 'url']
+                                        ])
+                                ])
+                                ->set_max(1),
+                            Field::make('text', 'lesson_label', __('برچسب', 'nias-course-widget')),
+                            Field::make('complex', 'lesson_preview_video', __('ویدیوی پیش‌نمایش', 'nias-course-widget'))
+                                ->add_fields([
+                                    Field::make('select', 'video_type', __('نوع ویدیو', 'nias-course-widget'))
+                                        ->set_options([
+                                            'upload' => __('آپلود فایل', 'nias-course-widget'),
+                                            'url' => __('لینک مستقیم', 'nias-course-widget')
+                                        ]),
+                                    Field::make('file', 'video_upload', __('آپلود ویدیو', 'nias-course-widget'))
+                                        ->set_type(['video'])
+                                        ->set_value_type('url')
+                                        ->set_conditional_logic([
+                                            'relation' => 'AND',
+                                            ['field' => 'video_type', 'value' => 'upload']
+                                        ]),
+                                    Field::make('text', 'video_url', __('لینک ویدیو', 'nias-course-widget'))
+                                        ->set_conditional_logic([
+                                            'relation' => 'AND',
+                                            ['field' => 'video_type', 'value' => 'url']
+                                        ])
+                                ])
+                                ->set_max(1),
+                            Field::make('complex', 'lesson_download', __('فایل خصوصی درس', 'nias-course-widget'))
+                                ->add_fields([
+                                    Field::make('select', 'file_type', __('نوع فایل', 'nias-course-widget'))
+                                        ->set_options([
+                                            'upload' => __('آپلود فایل', 'nias-course-widget'),
+                                            'url' => __('لینک مستقیم', 'nias-course-widget')
+                                        ]),
+                                    Field::make('file', 'file_upload', __('آپلود فایل', 'nias-course-widget'))
+                                        ->set_value_type('url')
+                                        ->set_conditional_logic([
+                                            'relation' => 'AND',
+                                            ['field' => 'file_type', 'value' => 'upload']
+                                        ]),
+                                    Field::make('text', 'file_url', __('لینک فایل', 'nias-course-widget'))
+                                        ->set_conditional_logic([
+                                            'relation' => 'AND',
+                                            ['field' => 'file_type', 'value' => 'url']
+                                        ])
+                                ])
+                                ->set_max(1),
+                            Field::make('checkbox', 'lesson_private', __('درس خصوصی است؟', 'nias-course-widget')),
+                            Field::make('rich_text', 'lesson_content', __('محتوای درس', 'nias-course-widget'))
+                        ])
+                        ->set_header_template('<%- lesson_title %>'),
+                ])
+                ->set_header_template('<%- section_title %>'),
+        ]);
+}
+
+// Migration Function
+function migrate_course_data_to_carbon() {
+    global $wpdb;
+
+    // Check if migration has already been done
+    $products = get_posts([
+        'post_type' => 'product',
+        'posts_per_page' => -1,
+    ]);
+
+    foreach ($products as $product) {
+        if (get_post_meta($product->ID, '_course_data_migrated', true) === 'yes') {
+            continue; // Skip if already migrated
+        }
+
+        // Retrieve old data
+        $old_data = [];
+        $meta_rows = $wpdb->get_results($wpdb->prepare(
+            "SELECT meta_key, meta_value FROM {$wpdb->postmeta} 
+            WHERE post_id = %d AND meta_key = %s",
+            $product->ID, 'nias_course_sections_list'
+        ));
+
+        foreach ($meta_rows as $row) {
+            // Unserialize the data
+            $sections = maybe_unserialize($row->meta_value);
+
+            if (!is_array($sections)) {
+                error_log("Invalid data for post ID {$product->ID}");
+                continue;
+            }
+
+            // Prepare data for Carbon Fields
+            $carbon_fields_data = [];
+            foreach ($sections as $section_index => $section) {
+                $section_data = [
+                    'section_title'    => $section['section_title'] ?? '',
+                    'section_subtitle' => $section['section_subtitle'] ?? '',
+                    'section_icon'     => $section['section_icon'] ?? '',
+                    'lessons'          => [],
+                ];
+
+                if (isset($section['lessons'])) {
+                    foreach ($section['lessons'] as $lesson_index => $lesson) {
+                        $section_data['lessons'][] = [
+                            'lesson_title'    => $lesson['lesson_title'] ?? '',
+                            'lesson_icon'     => $lesson['lesson_icon'] ?? '',
+                            'lesson_label'    => $lesson['lesson_label'] ?? '',
+                            'lesson_preview_video' => $lesson['lesson_preview_video'] ?? '',
+                            'lesson_download' => $lesson['lesson_download'] ?? '',
+                            'lesson_content'  => $lesson['lesson_content'] ?? null,
+                            'lesson_private'  => $lesson['lesson_private'] ?? 'no',
+                        ];
+                    }
+                }
+
+                $carbon_fields_data[] = $section_data;
+            }
+
+            // Save data to Carbon Fields meta key
+            carbon_set_post_meta($product->ID, 'course_sections', $carbon_fields_data);
+        }
+
+        // Mark migration as completed
+        update_post_meta($product->ID, '_course_data_migrated', 'yes');
+    }
+}
+// Add Migration Button
+add_action('admin_menu', 'add_migration_menu');
+function add_migration_menu() {
+    add_submenu_page(
+        'edit.php?post_type=product',
+        __('Migrate Course Data', 'nias-course-widget'),
+        __('Migrate Course Data', 'nias-course-widget'),
+        'manage_options',
+        'migrate-course-data',
+        'render_migration_page'
     );
 }
 
-// نمایش متاباکس در صفحه ویرایش محصول
-// نمایش متاباکس در صفحه ویرایش محصول
-function nias_course_render_meta_box($post)
-{
-    // اضافه کردن nonce برای امنیت
-    wp_nonce_field('nias_course_meta_box_nonce', 'nias_course_meta_box_nonce');
-
-    // بازیابی داده‌های ذخیره‌شده
-    $sections = get_post_meta($post->ID, 'nias_course_sections_list', true) ?: [];
-
-?>
-    <div id="nias_course_meta_box">
-    <input type="hidden" name="nias_course_meta_box_submitted" value="1">
-        <h3><?php _e('فصل‌ها', 'nias-course-widget'); ?></h3>
-        <div id="nias_course_sections_wrapper">
-            <?php foreach ($sections as $index => $section) : ?>
-                <div class="nias_course_section_item" data-index="<?php echo $index; ?>">
-                    <div class="section_header">
-                        <label><?php _e('عنوان فصل', 'nias-course-widget'); ?></label>
-                        <input type="text" name="nias_course_sections_list[section_title][]" value="<?php echo esc_attr($section['section_title']); ?>" />
-
-                        <label><?php _e('زیرعنوان', 'nias-course-widget'); ?></label>
-                        <input type="text" name="nias_course_sections_list[section_subtitle][]" value="<?php echo esc_attr($section['section_subtitle']); ?>" />
-
-                        <a href="#" class="toggle_section"><?php _e('باز/بسته', 'nias-course-widget'); ?></a>
-                        <a href="#" class="nias_course_remove_section"><?php _e('حذف فصل', 'nias-course-widget'); ?></a>
-                    </div>
-                    <div class="section_content" style="display: none;">
-                        <label><?php _e('آیکون', 'nias-course-widget'); ?></label>
-                        <input type="text" id="section_icon_<?php echo $index; ?>" name="nias_course_sections_list[section_icon][]" value="<?php echo esc_url($section['section_icon']); ?>" />
-                        <button class="upload_image_button" data-target="#section_icon_<?php echo $index; ?>"><?php _e('بارگذاری آیکون', 'nias-course-widget'); ?></button>
-                        <?php
-                        /*
-                        <label><?php _e('برچسب', 'nias-course-widget'); ?></label>
-                        <input type="text" name="nias_course_sections_list[section_label][]" value="<?php echo esc_attr($section['section_label']); ?>" />
-                    */
-                        ?>
-                    </div>
-                    <div class="lessons_wrapper">
-                        <?php if (!empty($section['lessons'])) : ?>
-                            <?php foreach ($section['lessons'] as $lesson_index => $lesson) : ?>
-                                <div class="nias_course_lesson_item" data-index="<?php echo $lesson_index; ?>">
-                                    <div class="lesson_header">
-                                        <label><?php _e('عنوان درس', 'nias-course-widget'); ?></label>
-                                        <input type="text" name="nias_course_sections_list[sections][<?php echo $index; ?>][lessons][lesson_title][]" value="<?php echo esc_attr($lesson['lesson_title']); ?>" />
-
-                                        <a href="#" class="toggle_lesson"><?php _e('باز/بسته', 'nias-course-widget'); ?></a>
-                                        <a href="#" class="nias_course_remove_lesson"><?php _e('حذف درس', 'nias-course-widget'); ?></a>
-                                    </div>
-                                    <div class="lesson_content" style="display: none;">
-                                        <label><?php _e('آیکون', 'nias-course-widget'); ?></label>
-                                        <input type="text" id="lesson_icon_<?php echo $lesson_index; ?>" name="nias_course_sections_list[sections][<?php echo $index; ?>][lessons][lesson_icon][]" value="<?php echo esc_url($lesson['lesson_icon']); ?>" />
-                                        <button class="upload_image_button" data-target="#lesson_icon_<?php echo $lesson_index; ?>"><?php _e('بارگذاری آیکون', 'nias-course-widget'); ?></button>
-
-                                        <label><?php _e('برچسب', 'nias-course-widget'); ?></label>
-                                        <input type="text" name="nias_course_sections_list[sections][<?php echo $index; ?>][lessons][lesson_label][]" value="<?php echo esc_attr($lesson['lesson_label']); ?>" />
-
-                                        <label><?php _e('ویدیوی پیش‌نمایش', 'nias-course-widget'); ?></label>
-                                        <input type="text" id="lesson_preview_video_<?php echo $lesson_index; ?>" name="nias_course_sections_list[sections][<?php echo $index; ?>][lessons][lesson_preview_video][]" value="<?php echo esc_url($lesson['lesson_preview_video']); ?>" />
-                                        <button class="upload_video_button" data-target="#lesson_preview_video_<?php echo $lesson_index; ?>"><?php _e('بارگذاری ویدیو', 'nias-course-widget'); ?></button>
-
-                                        <label><?php _e('فایل خصوصی درس', 'nias-course-widget'); ?></label>
-                                        <input type="text" name="nias_course_sections_list[sections][<?php echo $index; ?>][lessons][lesson_download][]" value="<?php echo esc_url($lesson['lesson_download']); ?>" />
-
-
-                                        <label><?php _e('درس خصوصی است؟', 'nias-course-widget'); ?></label>
-                                        <input type="checkbox" name="nias_course_sections_list[sections][<?php echo $index; ?>][lessons][lesson_private][<?php echo $lesson_index; ?>]" value="yes" <?php checked(isset($lesson['lesson_private']) && $lesson['lesson_private'] === 'yes'); ?> />
-                                        <label><?php _e('محتوای درس', 'nias-course-widget'); ?></label>
-                                        <?php
-                                        $content = isset($lesson['lesson_content']) ? $lesson['lesson_content'] : '';
-                                        wp_editor($content, 'lesson_content_' . $index . '_' . $lesson_index, array(
-                                            'textarea_name' => "nias_course_sections_list[sections][$index][lessons][lesson_content_$lesson_index]",
-                                            'textarea_rows' => 5,
-                                            'media_buttons' => true,
-                                        ));
-                                        ?>
-                                    </div>
-                                </div>
-                            <?php endforeach; ?>
-                        <?php endif; ?>
-                    </div>
-                    <a href="#" class="nias_course_add_lesson" data-section-index="<?php echo $index; ?>"><?php _e('اضافه کردن درس جدید', 'nias-course-widget'); ?></a>
-                </div>
-            <?php endforeach; ?>
-        </div>
-        <a href="#" id="nias_course_add_section"><?php _e('اضافه کردن فصل جدید', 'nias-course-widget'); ?></a>
+function render_migration_page() {
+    if (isset($_POST['migrate_courses']) && check_admin_referer('migrate_courses_nonce')) {
+        migrate_course_data_to_carbon();
+        echo '<div class="notice notice-success"><p>' . __('Migration completed successfully!', 'nias-course-widget') . '</p></div>';
+    }
+    ?>
+    <div class="wrap">
+        <h1><?php _e('Migrate Course Data to Carbon Fields', 'nias-course-widget'); ?></h1>
+        <form method="post">
+            <?php wp_nonce_field('migrate_courses_nonce'); ?>
+            <p><?php _e('Click the button below to migrate existing course data to the new format:', 'nias-course-widget'); ?></p>
+            <input type="submit" name="migrate_courses" class="button button-primary" value="<?php _e('Start Migration', 'nias-course-widget'); ?>">
+        </form>
     </div>
-    <style>
-        body *:not(#wpadminbar *,i){
-  font-family: 'Vazirmatn'!important;
+    <?php
 }
-
-        div#nias_course_meta_box_id {
-            border: none;
-            border-radius: 15px;
-            padding: 20px;
-        }
-
-        .toggle_section,
-        .toggle_lesson {
-            background-image: url(<?php echo plugin_dir_url(__File__) . 'arow.svg'; ?>);
-            font-size: 0;
-            width: 30px;
-            height: 30px;
-            background-position: center;
-            background-size: contain;
-            background-repeat: no-repeat;
-            transform: rotate(0);
-            transition: all 0.3s;
-            box-shadow: none !important;
-            outline: none !important;
-        }
-
-        a.toggle_section.active,
-        .toggle_lesson.active {
-            transform: rotate(-90deg);
-        }
-
-        a.nias_course_remove_section,
-        .nias_course_remove_lesson {
-            background-image: url(<?php echo plugin_dir_url(__File__) . 'remove.svg'; ?>);
-            font-size: 0;
-            width: 30px;
-            height: 30px;
-            background-position: center;
-            background-size: contain;
-            background-repeat: no-repeat;
-
-        }
-
-        a.nias_course_add_lesson,
-        a#nias_course_add_section {
-            padding: 10px 15px;
-            background: #3858e9;
-            color: white;
-            text-decoration: none;
-            border-radius: 10px;
-        }
-
-        a.nias_course_add_lesson:after,
-        a#nias_course_add_section:after {
-            content: "+";
-            margin-right: 10px;
-        }
-
-        #nias_course_meta_box_id .postbox-header {
-            background: #005bff17;
-            border-radius: 10px;
-            padding: 10px 20px;
-
-            h2,
-            span {
-                color: #0067ff !important;
-            }
-        }
-
-
-
-        div#nias_course_meta_box {
-            h3 {
-                color: blue;
-            }
-
-            input {
-                border: none;
-                border-radius: 10px
-            }
-
-            button {
-                background: #003dff17;
-                color: #3858e9;
-                border-radius: 10px;
-                padding: 10px;
-                border: none !important;
-                outline: none !important;
-            }
-        }
-
-        div#nias_course_sections_wrapper {
-            padding: 15px;
-            border: 1px solid #f5f5f5;
-            border-radius: 10px;
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
-        }
-
-        .nias_course_section_item {
-            padding: 10px;
-            background-color: #f8f8f8;
-            border-radius: 10px;
-        }
-
-        .section_header {
-            display: flex;
-            flex-direction: row;
-            justify-content: space-around;
-            align-items: center;
-        }
-
-        .lessons_wrapper {
-            margin: 15px 0;
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-        }
-
-        .nias_course_lesson_item {
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-            justify-content: center;
-        }
-
-        .lesson_header {
-            display: flex;
-            align-items: center;
-            justify-content: flex-start;
-            gap: 20px;
-            background-color: #ededed;
-            padding: 10px;
-            border-radius: 8px;
-        }
-
-        .lesson_content {
-            display: flex;
-            flex-direction: column;
-            flex-wrap: wrap;
-            justify-content: center;
-            gap: 10px;
-        }
-
-        .section_content {
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-        }
-    </style>
-<?php
-}
-
-
-function nias_course_save_meta_box($post_id)
-{
-    // حذف nonce و بررسی‌های امنیتی برای ساده‌سازی کد
-
-    // بررسی کنید آیا فرم متاباکس ارسال شده است یا خیر
-    if (!isset($_POST['nias_course_meta_box_submitted'])) {
-        return;
-    }
-
-    if (isset($_POST['nias_course_sections_list'])) {
-        $sections = $_POST['nias_course_sections_list'];
-        $cleaned_sections = [];
-
-        foreach ($sections['section_title'] as $index => $title) {
-            $cleaned_sections[$index] = [
-                'section_title' => sanitize_text_field($title),
-                'section_subtitle' => sanitize_text_field($sections['section_subtitle'][$index]),
-                'section_icon' => esc_url_raw($sections['section_icon'][$index]),
-                // 'section_label' => sanitize_text_field($sections['section_label'][$index]),
-                'lessons' => []
-            ];
-
-            if (isset($sections['sections'][$index]['lessons'])) {
-                foreach ($sections['sections'][$index]['lessons']['lesson_title'] as $lesson_index => $lesson_title) {
-                    $cleaned_sections[$index]['lessons'][$lesson_index] = [
-                        'lesson_title' => sanitize_text_field($lesson_title),
-                        'lesson_icon' => esc_url_raw($sections['sections'][$index]['lessons']['lesson_icon'][$lesson_index]),
-                        'lesson_label' => sanitize_text_field($sections['sections'][$index]['lessons']['lesson_label'][$lesson_index]),
-                        'lesson_preview_video' => esc_url_raw($sections['sections'][$index]['lessons']['lesson_preview_video'][$lesson_index]),
-                        'lesson_download' => esc_url_raw($sections['sections'][$index]['lessons']['lesson_download'][$lesson_index]),
-                        'lesson_content' => $_POST['nias_course_sections_list']['sections'][$index]['lessons']["lesson_content_$lesson_index"],
-                        'lesson_private' => isset($sections['sections'][$index]['lessons']['lesson_private'][$lesson_index]) ? 'yes' : 'no',
-                    ];
-                }
-            }
-        }
-
-        update_post_meta($post_id, 'nias_course_sections_list', $cleaned_sections);
-    } else {
-       delete_post_meta($post_id, 'nias_course_sections_list');
-    }
-}
-add_action('save_post', 'nias_course_save_meta_box');
-
