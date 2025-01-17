@@ -4,7 +4,7 @@
  * Plugin Name: Nias course | دوره ساز نیاس
  * Description:   پلاگین دوره ساز نیاس ویجت "دوره ساز نیاس" را به ویرایشگر المنتور شما اضافه میکند که میتوانید دوره مورد نظر خود را درون تمپلیت محصول بسازیدو قالب خود را به یک قالب فروش دوره و فایل تبدیل کنید | این پلاگین بصورت رایگان منتشر شده و رایگان هم خواهد ماند❤️
  * Plugin URI:  https://nias.ir/product/nias-course-widget/
- * Version:     1.2.1
+ * Version:     1.2.2
  * Author:      Alireza aliniya
  * Author URI:  https://nias.ir/
  * Text Domain: nias-course-widget
@@ -16,6 +16,7 @@
 if (! defined('ABSPATH')) {
     exit; // Exit if accessed directly.
 }
+
 // اتوماتیک‌لود کردن کتابخانه‌های Composer
 require_once plugin_dir_path(__FILE__) . 'vendor/autoload.php';
 
@@ -163,3 +164,34 @@ function change_category_nias_course()
 }
 
 add_action('elementor/editor/after_enqueue_styles', 'change_category_nias_course');
+
+
+
+
+/*call funtion to migrate when plugin install*/
+
+
+// Hook for plugin activation
+register_activation_hook(__FILE__, 'nias_corse_plugin_activation');
+
+// Hook for plugin update
+add_action('upgrader_process_complete', 'nias_corse_plugin_update', 10, 2);
+
+/**
+ * Plugin activation callback
+ */
+function nias_corse_plugin_activation() {
+    migrate_course_data_to_carbon();
+}
+
+/**
+ * Plugin update callback
+ */
+function nias_corse_plugin_update($upgrader_object, $options) {
+    if ($options['action'] === 'update' && $options['type'] === 'plugin') {
+        // Check if the current plugin is being updated
+        if (isset($options['plugins']) && in_array(plugin_basename(__FILE__), $options['plugins'])) {
+            migrate_course_data_to_carbon();
+        }
+    }
+}
