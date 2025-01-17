@@ -160,108 +160,143 @@ add_action( 'admin_init', 'nias_course_settings_register');
 // Migration Function
 function migrate_course_data_to_carbon() {
     global $wpdb;
-    // Check if migration has already been done
+    
+    // بررسی تمام حالت‌های ممکن برای پست
     $products = get_posts([
         'post_type' => 'product',
         'posts_per_page' => -1,
+        'post_status' => [
+            'publish',     // منتشر شده
+            'draft',       // پیش‌نویس
+            'pending',     // در انتظار بررسی
+            'private',     // خصوصی
+            'future',      // زمان‌بندی شده
+            'auto-draft',  // پیش‌نویس خودکار
+            'inherit',     // برای revision ها
+            'trash'        // در سطل زباله
+        ]
     ]);
     
+    // ثبت شروع فرآیند مهاجرت
+    error_log("Starting migration process. Total products found: " . count($products));
+    
     foreach ($products as $product) {
-        if (get_post_meta($product->ID, '_course_data_migrated', true) === 'yes') {
-            continue; // Skip if already migrated
-        }
-        
-        // Retrieve old data
-        $meta_rows = $wpdb->get_results($wpdb->prepare(
-            "SELECT meta_key, meta_value FROM {$wpdb->postmeta}
-            WHERE post_id = %d AND meta_key = %s",
-            $product->ID, 'nias_course_sections_list'
-        ));
-        
-        foreach ($meta_rows as $row) {
-            // Unserialize the data
-            $sections = maybe_unserialize($row->meta_value);
-            if (!is_array($sections)) {
-                error_log("Invalid data for post ID {$product->ID}");
+        try {
+            // بررسی وضعیت مهاجرت
+            if (get_post_meta($product->ID, '_course_data_migrated', true) === 'yes') {
+                error_log("Skipping product ID {$product->ID} - Already migrated");
                 continue;
             }
             
-            // Prepare data for Carbon Fields
-            $carbon_fields_data = [];
-            foreach ($sections as $section_index => $section) {
-                $section_data = [
-                    'section_title'    => $section['section_title'] ?? '',
-                    'section_subtitle' => $section['section_subtitle'] ?? '',
-                    'section_icon'     => [
-                        [
-                            'icon_type' => 'url',
-                            'icon_url'  => $section['section_icon'] ?? '',
-                        ]
-                    ],
-                    'lessons'          => [],
-                ];
-                
-                if (isset($section['lessons'])) {
-                    foreach ($section['lessons'] as $lesson_index => $lesson) {
-                        $lesson_data = [
-                            'lesson_title'    => $lesson['lesson_title'] ?? '',
-                            'lesson_icon'     => [
-                                [
-                                    'icon_type' => 'url',
-                                    'icon_url'  => $lesson['lesson_icon'] ?? '',
-                                ]
-                            ],
-                            'lesson_label'    => $lesson['lesson_label'] ?? '',
-                            'lesson_preview_video' => [
-                                [
-                                    'video_type' => 'url',
-                                    'video_url'  => $lesson['lesson_preview_video'] ?? '',
-                                ]
-                            ],
-                            'lesson_download' => [
-                                [
-                                    'file_type' => 'url',
-                                    'file_url'  => $lesson['lesson_download'] ?? '',
-                                ]
-                            ],
-                            'lesson_content'  => $lesson['lesson_content'] ?? '',
-                            'lesson_private'  => $lesson['lesson_private'] ?? false,
-                        ];
-                        
-                        // Clean up empty media fields
-                        if (empty($lesson_data['lesson_icon'][0]['icon_url'])) {
-                            $lesson_data['lesson_icon'] = [];
-                        }
-                        if (empty($lesson_data['lesson_preview_video'][0]['video_url'])) {
-                            $lesson_data['lesson_preview_video'] = [];
-                        }
-                        if (empty($lesson_data['lesson_download'][0]['file_url'])) {
-                            $lesson_data['lesson_download'] = [];
-                        }
-                        
-                        $section_data['lessons'][] = $lesson_data;
-                    }
-                }
-                
-                // Clean up empty section icon
-                if (empty($section_data['section_icon'][0]['icon_url'])) {
-                    $section_data['section_icon'] = [];
-                }
-                
-                $carbon_fields_data[] = $section_data;
+            error_log("Processing product ID: {$product->ID}, Status: {$product->post_status}");
+            
+            // دریافت داده‌های قدیمی
+            $meta_rows = $wpdb->get_results($wpdb->prepare(
+                "SELECT meta_key, meta_value FROM {$wpdb->postmeta}
+                WHERE post_id = %d AND meta_key = %s",
+                $product->ID, 'nias_course_sections_list'
+            ));
+            
+            if (empty($meta_rows)) {
+                error_log("No course data found for product ID {$product->ID}");
+                continue;
             }
             
-            // Save data to Carbon Fields meta key
-            carbon_set_post_meta($product->ID, 'course_sections', $carbon_fields_data);
+            foreach ($meta_rows as $row) {
+                // تبدیل داده‌های سریالایز شده
+                $sections = maybe_unserialize($row->meta_value);
+                
+                // اعتبارسنجی داده‌ها
+                if (!is_array($sections)) {
+                    error_log("Invalid data format for product ID {$product->ID}");
+                    continue;
+                }
+                
+                // آماده‌سازی داده‌ها برای Carbon Fields
+                $carbon_fields_data = [];
+                foreach ($sections as $section_index => $section) {
+                    $section_data = [
+                        'section_title'    => sanitize_text_field($section['section_title'] ?? ''),
+                        'section_subtitle' => sanitize_text_field($section['section_subtitle'] ?? ''),
+                        'section_icon'     => [
+                            [
+                                'icon_type' => 'url',
+                                'icon_url'  => esc_url_raw($section['section_icon'] ?? ''),
+                            ]
+                        ],
+                        'lessons'          => [],
+                    ];
+                    
+                    if (isset($section['lessons']) && is_array($section['lessons'])) {
+                        foreach ($section['lessons'] as $lesson_index => $lesson) {
+                            $lesson_data = [
+                                'lesson_title'    => sanitize_text_field($lesson['lesson_title'] ?? ''),
+                                'lesson_icon'     => [
+                                    [
+                                        'icon_type' => 'url',
+                                        'icon_url'  => esc_url_raw($lesson['lesson_icon'] ?? ''),
+                                    ]
+                                ],
+                                'lesson_label'    => sanitize_text_field($lesson['lesson_label'] ?? ''),
+                                'lesson_preview_video' => [
+                                    [
+                                        'video_type' => 'url',
+                                        'video_url'  => esc_url_raw($lesson['lesson_preview_video'] ?? ''),
+                                    ]
+                                ],
+                                'lesson_download' => [
+                                    [
+                                        'file_type' => 'url',
+                                        'file_url'  => esc_url_raw($lesson['lesson_download'] ?? ''),
+                                    ]
+                                ],
+                                'lesson_content'  => wp_kses_post($lesson['lesson_content'] ?? ''),
+                                'lesson_private'  => (bool) ($lesson['lesson_private'] ?? false),
+                            ];
+                            
+                            // پاکسازی فیلدهای رسانه خالی
+                            if (empty($lesson_data['lesson_icon'][0]['icon_url'])) {
+                                $lesson_data['lesson_icon'] = [];
+                            }
+                            if (empty($lesson_data['lesson_preview_video'][0]['video_url'])) {
+                                $lesson_data['lesson_preview_video'] = [];
+                            }
+                            if (empty($lesson_data['lesson_download'][0]['file_url'])) {
+                                $lesson_data['lesson_download'] = [];
+                            }
+                            
+                            $section_data['lessons'][] = $lesson_data;
+                        }
+                    }
+                    
+                    // پاکسازی آیکون بخش اگر خالی است
+                    if (empty($section_data['section_icon'][0]['icon_url'])) {
+                        $section_data['section_icon'] = [];
+                    }
+                    
+                    $carbon_fields_data[] = $section_data;
+                }
+                
+                // ذخیره داده‌ها در Carbon Fields
+                try {
+                    carbon_set_post_meta($product->ID, 'course_sections', $carbon_fields_data);
+                    update_post_meta($product->ID, '_course_data_migrated', 'yes');
+                    error_log("Successfully migrated course data for product ID: {$product->ID}");
+                } catch (Exception $e) {
+                    error_log("Error saving Carbon Fields data for product ID {$product->ID}: " . $e->getMessage());
+                    continue;
+                }
+            }
+            
+        } catch (Exception $e) {
+            error_log("Error processing product ID {$product->ID}: " . $e->getMessage());
+            continue;
         }
-        
-        // Mark migration as completed
-        update_post_meta($product->ID, '_course_data_migrated', 'yes');
-        
-        error_log("Successfully migrated course data for product ID: {$product->ID}");
     }
     
     error_log("Course data migration completed");
+    
+    // برگرداندن تعداد محصولات پردازش شده
+    return count($products);
 }
-
 
