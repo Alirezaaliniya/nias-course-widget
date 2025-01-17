@@ -37,15 +37,15 @@ function nias_course_render_settings_page() {
 
         if (isset($_POST['migrate_courses']) && check_admin_referer('migrate_courses_nonce')) {
         migrate_course_data_to_carbon();
-        echo '<div class="notice notice-success"><p>' . __('Migration completed successfully!', 'nias-course-widget') . '</p></div>';
+        echo '<div class="notice notice-success"><p>' . __('انتقال و همگام سازی اطلاعات موفق بود لطفاً صفحات را پس از پاکسازی کش بررسی کنید', 'nias-course-widget') . '</p></div>';
     }
     ?>
     <div class="wrap">
         <h1><?php _e('Migrate Course Data to Carbon Fields', 'nias-course-widget'); ?></h1>
         <form method="post">
             <?php wp_nonce_field('migrate_courses_nonce'); ?>
-            <p><?php _e('Click the button below to migrate existing course data to the new format:', 'nias-course-widget'); ?></p>
-            <input type="submit" name="migrate_courses" class="button button-primary" value="<?php _e('Start Migration', 'nias-course-widget'); ?>">
+            <p><?php _e('چنانچه از ویجت ووکامرس دوره ساز استفاده میکردید و مشکلاتی را در آپدیت جدید مشاهده میکنید جهت انتقال داده ها به ویرایشگر جدید کلیک کنید توجه کنید حتماً از سایت بک اپ تهیه کنید :', 'nias-course-widget'); ?></p>
+            <input type="submit" name="migrate_courses" class="button button-primary" value="<?php _e('شروع انتقال و همگام سازی', 'nias-course-widget'); ?>">
         </form>
     </div>
 
