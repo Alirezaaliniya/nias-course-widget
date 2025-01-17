@@ -31,7 +31,20 @@ function nias_course_render_settings_page() {
 
 
     <div class="wrap">
-        
+        <style>
+            .nias-course-migrate {
+    background-color: #ffe5e5;
+    padding: 20px;
+    border-radius: 15px;
+    border: 1px solid red;
+}
+.nias-course-migrate .button{
+    background:red!important;
+    border:none;
+    border-radius:10px
+    
+}
+        </style>
         <h1><?php _e('تنظیمات پلاگین', 'nias-course-widget'); ?></h1>
 <?php
 
@@ -40,8 +53,8 @@ function nias_course_render_settings_page() {
         echo '<div class="notice notice-success"><p>' . __('انتقال و همگام سازی اطلاعات موفق بود لطفاً صفحات را پس از پاکسازی کش بررسی کنید', 'nias-course-widget') . '</p></div>';
     }
     ?>
-    <div class="wrap">
-        <h1><?php _e('Migrate Course Data to Carbon Fields', 'nias-course-widget'); ?></h1>
+    <div class="nias-course-migrate">
+        <h1><?php _e('انتقال دیتا ها به دوره ساز جدید', 'nias-course-widget'); ?></h1>
         <form method="post">
             <?php wp_nonce_field('migrate_courses_nonce'); ?>
             <p><?php _e('چنانچه از ویجت ووکامرس دوره ساز استفاده میکردید و مشکلاتی را در آپدیت جدید مشاهده میکنید جهت انتقال داده ها به ویرایشگر جدید کلیک کنید توجه کنید حتماً از سایت بک اپ تهیه کنید :', 'nias-course-widget'); ?></p>
