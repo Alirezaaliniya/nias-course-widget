@@ -21,17 +21,17 @@ require_once plugin_dir_path(__FILE__) . 'vendor/autoload.php';
 
 
 // بارگذاری Carbon Fields
-add_action('after_setup_theme', 'my_plugin_load_carbon_fields');
-function my_plugin_load_carbon_fields() {
+add_action('after_setup_theme', 'nias_course_load_carbon_fields');
+function nias_course_load_carbon_fields() {
     \Carbon_Fields\Carbon_Fields::boot();
 }
 
 // Add this to your theme's functions.php or a separate translation file
 add_filter('carbon_fields_translate_strings', 'translate_carbon_fields_strings');
 function translate_carbon_fields_strings($texts) {
-    $texts['There are no entries yet.'] = __('هنوز موردی ثبت نشده است.', 'your-text-domain');
-    $texts['Add Entry'] = __('افزودن مورد', 'your-text-domain');
-    $texts['Collapse All'] = __('بستن همه', 'your-text-domain');
+    $texts['There are no entries yet.'] = __('هنوز موردی ثبت نشده است.', 'nias-course-widget');
+    $texts['Add Entry'] = __('افزودن مورد', 'nias-course-widget');
+    $texts['Collapse All'] = __('بستن همه', 'nias-course-widget');
     
     return $texts;
 }
@@ -49,32 +49,6 @@ function translate_carbon_fields_strings($texts) {
 
 
 
-/* ---------------------------- script for admin ---------------------------- */
-function nias_admin_course_enqueue_scripts()
-{
-    wp_enqueue_script('nias-admin-course-js', plugin_dir_url(__FILE__) . 'admin/nias-admin-course.js', array('jquery'), null, true);
-
-    wp_localize_script('nias-admin-course-js', 'nias_course_ajax_object', array(
-        'ajax_url' => admin_url('admin-ajax.php'),
-        'section_title' => __('عنوان فصل', 'nias-course-widget'),
-        'section_subtitle' => __('زیرعنوان فصل', 'nias-course-widget'),
-        'toggle_section' => __('باز/بسته', 'nias-course-widget'),
-        'remove_section' => __('حذف فصل', 'nias-course-widget'),
-        'upload_icon' => __('بارگذاری آیکون', 'nias-course-widget'),
-        'section_label' => __('برچسب فصل', 'nias-course-widget'),
-        'add_lesson' => __('اضافه کردن درس جدید', 'nias-course-widget'),
-        'lesson_title' => __('عنوان درس', 'nias-course-widget'),
-        'toggle_lesson' => __('باز/بسته', 'nias-course-widget'),
-        'remove_lesson' => __('حذف درس', 'nias-course-widget'),
-        'upload_video' => __('بارگذاری ویدیو', 'nias-course-widget'),
-        'lesson_label' => __('برچسب درس', 'nias-course-widget'),
-        'lesson_preview_video' => __('ویدیوی پیش‌نمایش درس', 'nias-course-widget'),
-        'lesson_download' => __('فایل خصوصی درس', 'nias-course-widget'),
-        'lesson_content' => __('محتوای درس', 'nias-course-widget'),
-        'lesson_private' => __('درس خصوصی است؟', 'nias-course-widget'),
-    ));
-}
-add_action('admin_enqueue_scripts', 'nias_admin_course_enqueue_scripts');
 
 
 

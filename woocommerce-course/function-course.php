@@ -1,12 +1,86 @@
 <?php
 use Carbon_Fields\Container\Container;
 use Carbon_Fields\Field\Field;
+// Add custom CSS for Carbon Fields styling
+add_action('admin_head', 'custom_carbon_fields_styles');
+function custom_carbon_fields_styles() {
+    $logo_url = plugin_dir_url(__DIR__) . 'admin/nias-course.png';
 
+    ?>
+    <style>
+
+       .nias-course-product-option .cf-container__fields:before {
+            content: '';
+            background-image: url('<?php echo $logo_url; ?>');
+            background-size: contain;
+            background-repeat: no-repeat;
+            width: 70px;
+    height: 70px;
+    display: block;
+        }
+        .nias-course-product-option ul.cf-complex__tabs-list.ui-sortable li {
+    border-radius:8px;
+    background-color:#e2e9ff;
+    color:#5573ff;
+    transition:0.3s;
+    padding: 12px;
+    
+}
+.nias-course-product-option ul.cf-complex__tabs-list.ui-sortable .cf-complex__tabs-item--current {
+    border-radius:8px;
+    background-color:#5573ff;
+    color:#ffffff;
+    border:1px solid!important;
+    
+}
+.nias-course-product-option .cf-complex__tabs--tabbed-vertical ul.cf-complex__tabs-list.ui-sortable{
+    display:flex;
+    flex-direction:column;
+    gap:5px;
+}
+
+.nias-course-product-option .cf-complex--tabbed-vertical>.cf-field__body{
+    gap:5px
+}
+
+.nias-course-product-option .cf-complex--tabbed-vertical button.button.cf-complex__inserter-button:not(.cf-complex__tabs--tabbed-horizontal button) {
+    margin-top:10px;
+    color:#5573ff!important;
+    border:none;
+    background-color:#f1f1f1;
+    border-radius:8px;
+}
+.cf-complex__tabs--tabbed-horizontal button{
+    color:#5573ff!important;
+    border:none!important;
+    background-color:#f1f1f1!important;
+    border-radius:8px!important; 
+    margin-right: 10px!important;
+}
+
+.nias-course-product-option .cf-text__input{
+    border:1px solid #dcdcdc!important;
+    border-radius:8px!important;
+    padding: 8px 10px!important;
+}
+
+.nias-course-product-option h1, .nias-course-product-option h2, .nias-course-product-option h3, .nias-course-product-option h4, .nias-course-product-option h5, .nias-course-product-option h6 {
+    font-family: vazirmatn!important;
+    font-weight: 600;
+}
+.nias-course-product-option {
+    font-family: vazirmatn!important;
+}
+
+    </style>
+    <?php
+}
 // Register Course Fields
 add_action('carbon_fields_register_fields', 'create_course_metabox');
 function create_course_metabox() {
-    Container::make('post_meta', __('تنظیمات دوره', 'nias-course-widget'))
+    Container::make('post_meta', __(' تنظیمات دوره ساز نیاس', 'nias-course-widget'))
         ->where('post_type', '=', 'product')
+        ->set_classes('nias-course-product-option')
         ->set_priority('high')
         ->add_fields([
             Field::make('complex', 'course_sections', __('فصل‌ها', 'nias-course-widget'))
