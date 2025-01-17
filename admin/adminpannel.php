@@ -33,6 +33,29 @@ function nias_course_render_settings_page() {
     <div class="wrap">
         
         <h1><?php _e('تنظیمات پلاگین', 'nias-course-widget'); ?></h1>
+<?php
+
+        if (isset($_POST['migrate_courses']) && check_admin_referer('migrate_courses_nonce')) {
+        migrate_course_data_to_carbon();
+        echo '<div class="notice notice-success"><p>' . __('Migration completed successfully!', 'nias-course-widget') . '</p></div>';
+    }
+    ?>
+    <div class="wrap">
+        <h1><?php _e('Migrate Course Data to Carbon Fields', 'nias-course-widget'); ?></h1>
+        <form method="post">
+            <?php wp_nonce_field('migrate_courses_nonce'); ?>
+            <p><?php _e('Click the button below to migrate existing course data to the new format:', 'nias-course-widget'); ?></p>
+            <input type="submit" name="migrate_courses" class="button button-primary" value="<?php _e('Start Migration', 'nias-course-widget'); ?>">
+        </form>
+    </div>
+
+
+
+
+
+
+
+
         <p>بزودی:تنظیمات وامکانات بیشتر...</p>
         <form method="post" action="options.php">
             <?php settings_fields('nias_course_settings_group'); ?>
@@ -75,3 +98,114 @@ register_setting( 'nias_course_settings_group', 'nias_check_unregister_message' 
 register_setting('nias_course_settings_group' , 'nias_signin_link');
 }
 add_action( 'admin_init', 'nias_course_settings_register');
+
+
+
+
+
+// Migration Function
+function migrate_course_data_to_carbon() {
+    global $wpdb;
+    // Check if migration has already been done
+    $products = get_posts([
+        'post_type' => 'product',
+        'posts_per_page' => -1,
+    ]);
+    
+    foreach ($products as $product) {
+        if (get_post_meta($product->ID, '_course_data_migrated', true) === 'yes') {
+            continue; // Skip if already migrated
+        }
+        
+        // Retrieve old data
+        $meta_rows = $wpdb->get_results($wpdb->prepare(
+            "SELECT meta_key, meta_value FROM {$wpdb->postmeta}
+            WHERE post_id = %d AND meta_key = %s",
+            $product->ID, 'nias_course_sections_list'
+        ));
+        
+        foreach ($meta_rows as $row) {
+            // Unserialize the data
+            $sections = maybe_unserialize($row->meta_value);
+            if (!is_array($sections)) {
+                error_log("Invalid data for post ID {$product->ID}");
+                continue;
+            }
+            
+            // Prepare data for Carbon Fields
+            $carbon_fields_data = [];
+            foreach ($sections as $section_index => $section) {
+                $section_data = [
+                    'section_title'    => $section['section_title'] ?? '',
+                    'section_subtitle' => $section['section_subtitle'] ?? '',
+                    'section_icon'     => [
+                        [
+                            'icon_type' => 'url',
+                            'icon_url'  => $section['section_icon'] ?? '',
+                        ]
+                    ],
+                    'lessons'          => [],
+                ];
+                
+                if (isset($section['lessons'])) {
+                    foreach ($section['lessons'] as $lesson_index => $lesson) {
+                        $lesson_data = [
+                            'lesson_title'    => $lesson['lesson_title'] ?? '',
+                            'lesson_icon'     => [
+                                [
+                                    'icon_type' => 'url',
+                                    'icon_url'  => $lesson['lesson_icon'] ?? '',
+                                ]
+                            ],
+                            'lesson_label'    => $lesson['lesson_label'] ?? '',
+                            'lesson_preview_video' => [
+                                [
+                                    'video_type' => 'url',
+                                    'video_url'  => $lesson['lesson_preview_video'] ?? '',
+                                ]
+                            ],
+                            'lesson_download' => [
+                                [
+                                    'file_type' => 'url',
+                                    'file_url'  => $lesson['lesson_download'] ?? '',
+                                ]
+                            ],
+                            'lesson_content'  => $lesson['lesson_content'] ?? '',
+                            'lesson_private'  => $lesson['lesson_private'] ?? false,
+                        ];
+                        
+                        // Clean up empty media fields
+                        if (empty($lesson_data['lesson_icon'][0]['icon_url'])) {
+                            $lesson_data['lesson_icon'] = [];
+                        }
+                        if (empty($lesson_data['lesson_preview_video'][0]['video_url'])) {
+                            $lesson_data['lesson_preview_video'] = [];
+                        }
+                        if (empty($lesson_data['lesson_download'][0]['file_url'])) {
+                            $lesson_data['lesson_download'] = [];
+                        }
+                        
+                        $section_data['lessons'][] = $lesson_data;
+                    }
+                }
+                
+                // Clean up empty section icon
+                if (empty($section_data['section_icon'][0]['icon_url'])) {
+                    $section_data['section_icon'] = [];
+                }
+                
+                $carbon_fields_data[] = $section_data;
+            }
+            
+            // Save data to Carbon Fields meta key
+            carbon_set_post_meta($product->ID, 'course_sections', $carbon_fields_data);
+        }
+        
+        // Mark migration as completed
+        update_post_meta($product->ID, '_course_data_migrated', 'yes');
+        
+        error_log("Successfully migrated course data for product ID: {$product->ID}");
+    }
+    
+    error_log("Course data migration completed");
+}
