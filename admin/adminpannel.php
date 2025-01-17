@@ -23,6 +23,47 @@ function nias_course_add_menu() {
 }
 add_action('admin_menu', 'nias_course_add_menu');
 
+// Add to your main plugin file
+add_action('admin_notices', 'show_course_issue_notice');
+add_action('wp_ajax_dismiss_course_issue_notice', 'dismiss_course_issue_notice');
+
+function show_course_issue_notice() {
+    // Check if notice was already dismissed
+    if (get_option('course_issue_notice_dismissed')) {
+        return;
+    }
+    
+    ?>
+    <div class="notice notice-error is-dismissible" id="course-issue-notice">
+        <p>
+            <?php _e('در صورت وجود مشکل در نمایش دوره ها', 'nias-course-widget'); ?> 
+            <a href="<?php echo admin_url('admin.php?page=nias-course-settings'); ?>">
+                <?php _e('اینجا کلیک کنید', 'nias-course-widget'); ?>
+            </a>
+        </p>
+    </div>
+    <script>
+    jQuery(document).ready(function($) {
+        $('#course-issue-notice').on('click', '.notice-dismiss', function() {
+            $.ajax({
+                url: ajaxurl,
+                data: {
+                    action: 'dismiss_course_issue_notice'
+                },
+                success: function() {
+                    $('#course-issue-notice').remove();
+                }
+            });
+        });
+    });
+    </script>
+    <?php
+}
+
+function dismiss_course_issue_notice() {
+    update_option('course_issue_notice_dismissed', true);
+    wp_die();
+}
 
 // نمایش صفحه تنظیمات
 function nias_course_render_settings_page() {

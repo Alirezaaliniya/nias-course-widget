@@ -170,7 +170,6 @@ add_action('elementor/editor/after_enqueue_styles', 'change_category_nias_course
 
 /*call funtion to migrate when plugin install*/
 
-
 // Hook for plugin activation
 register_activation_hook(__FILE__, 'nias_corse_plugin_activation');
 
@@ -181,17 +180,38 @@ add_action('upgrader_process_complete', 'nias_corse_plugin_update', 10, 2);
  * Plugin activation callback
  */
 function nias_corse_plugin_activation() {
-    migrate_course_data_to_carbon();
+    // Add error logging to debug
+    error_log('Plugin activation triggered');
+    
+    // Check if function exists before calling
+    if (function_exists('migrate_course_data_to_carbon')) {
+        migrate_course_data_to_carbon();
+    } else {
+        error_log('Migration function not found during activation');
+    }
 }
 
 /**
  * Plugin update callback
  */
 function nias_corse_plugin_update($upgrader_object, $options) {
+    // Add error logging to debug
+    error_log('Plugin update process started');
+    
     if ($options['action'] === 'update' && $options['type'] === 'plugin') {
-        // Check if the current plugin is being updated
-        if (isset($options['plugins']) && in_array(plugin_basename(__FILE__), $options['plugins'])) {
-            migrate_course_data_to_carbon();
+        // Get the current plugin base name
+        $current_plugin = plugin_basename(__FILE__);
+        
+        // Check if our plugin is being updated
+        if (isset($options['plugins']) && in_array($current_plugin, $options['plugins'])) {
+            error_log('Plugin update confirmed for: ' . $current_plugin);
+            
+            // Check if function exists before calling
+            if (function_exists('migrate_course_data_to_carbon')) {
+                migrate_course_data_to_carbon();
+            } else {
+                error_log('Migration function not found during update');
+            }
         }
     }
 }
