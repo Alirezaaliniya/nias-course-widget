@@ -1,36 +1,32 @@
 === Nias course | دوره ساز نیاس ===
 Contributors: Niasir
-Tags: assistant professor, LMS elementor, Elementor course widget, Nias widget
+Tags: course maker, LMS elementor, Elementor course widget, Nias widget
 Donate link: https://nias.ir/
 Requires at least: 5.8
-Tested up to: 6.5.2
+Tested up to: 6.7.1
 Requires PHP: 7.4
-Stable tag: 1.2.1
+Stable tag: 1.2.2
 License: GPLv2
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
-Here’s the updated version with your addition included:
 
----
-
-This plugin adds a tutorial widget to your store website, similar to Assistant. It allows you to transform your Elementor store theme into an educational experience.
+دوره ساز نیاس سازگار با المنتور جهت ساخت سایت آموزشی
 
 == Description ==
-The Nias Course Builder plugin adds a professional widget to Elementor, enabling you to incorporate a course section into your product pages.
+دوره ساز نیاس یک پلاگین ساخت دوره آموزشی بسیار ساده است به کمک آن میتوانید هر نوع قالب المنتوری را به راحتی به سایت فروش دوره تبدیل کنید
 
-== Features ==
-* All sections styled similarly to persian studiar
-* SEO optimization and removal of unnecessary sections
-* Dynamic labels available in all text fields
-* Ability to select HTML tags for search engine titles
-* Option to sell physical and virtual courses and products simultaneously or separately
-* WooCommerce link protection feature
-* Course creator within WooCommerce product editing
-* iframe display support
-* Two dedicated, customizable widgets
+== ویژگی ها ==
+* امکان افزودن بینهایت فصل و درس
+* امکان افزودن درس و فصل از ویرایش محصول ووکامرس
+* امکان افزودن درس و فصل از ویرایشگر المنتور
+* بهینه شده برای سئو
+* دو ویجت اختصاصی برای افزودن
+* امکان فروش محصولات فیزیکی و دانلودی در کنار هم با توجه به طراحی شما
+* امکان استفاده از لینک های امن ووکامرس برای ویجت ویرایش المنتوری
+* پشتیبانی از ایفریم
 
-== Support ==
-* [Nias Website Support](https://nias.ir/)
+== پشتیبانی ==
+* [پشتیبانی در سایت نیاس](https://nias.ir/)
 
 == Installation ==
 1. Upload the `nias-course-widget` folder to the `/wp-content/plugins/` directory.
@@ -38,17 +34,17 @@ The Nias Course Builder plugin adds a professional widget to Elementor, enabling
 
 == Frequently Asked Questions ==
 
-= What is required to use this plugin? =
-To use this plugin, you must have Elementor and WooCommerce installed. The plugin will not function without them.
+= پیشنیاز های نصب و استفاده از این پلاگین چه مواردی است؟ =
+پلاگین ووکامرس جهت فروش و پلاگین المنتور جهت استفاده از ویجت ها ضروری است  و پلاگین بدون این موارد فعال نخواهد شد
 
-= Which themes are compatible with this plugin? =
-This plugin is compatible with all themes that support Elementor and WooCommerce.
+= دوره ساز نیاس با چه قالبی سازگار است؟ =
+دوره ساز با تمام قالب هایی که از المنتور و ووکامرس پشتیبانی میکنند سازگار است اما قالب پبشنهادی ما قالب Hello elementor میباشد که به صورت رایگان در مخزن موجود است
 
-= Are all plugin features free? =
-Yes, using this plugin is completely free.
+= آیا تمام امکانات پلاگین رایگان است؟ =
+بله ، این پلاگین هیچ هزینه ای ندارد با اینحال حمایت شما و معرفی ما انگیزه ای جهت . انتشار آپدیت های منظم و توسعه افزونه است
 
-= How can I report a problem or ask a question? =
-You can report issues or ask questions through Telegram: [T.me/niasir](https://T.me/niasir).
+= چطور میتونم سوالات و درخواست های خودم رو اعلام کنم؟ =
+شما میتونید سوالات خودتون رو در کانال و گروه تلگرام ما مطرح کنید: [T.me/niasir](https://T.me/niasir).
 
 == Screenshots ==
 1. Screenshot 1
@@ -56,6 +52,11 @@ You can report issues or ask questions through Telegram: [T.me/niasir](https://T
 3. Screenshot 3
 
 == Changelog ==
+=v1.2.2=
+*تمام فیلد های ویرایشگر ووکامرس به نسخه مدرن تغییر کرد
+*باگ مربوط به فیلد ها رفع شد
+*پاراگراف بندی متون اصلاح شد
+*گزینه ای جهت همگام سازی ورژن قبلی با ورژن جدید اضافه شد
 
 =v1.2.1=
 * Added a modal video player to the preview button
