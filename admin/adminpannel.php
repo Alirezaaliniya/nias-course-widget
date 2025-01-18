@@ -76,7 +76,7 @@ function nias_course_admin_style()
             border-radius: 10px;
         }
 
-        body *:not(#wpadminbar *, i) {
+        body *:not(#wpadminbar *, i , [role=treeitem] span[aria-hidden]) {
             font-family: 'Vazirmatn' !important;
         }
 
@@ -116,12 +116,22 @@ function handle_course_migration()
     }
 }
 
-
+function crb_load() {
+    try {
+        \Carbon_Fields\Carbon_Fields::boot();
+    } catch (Exception $e) {
+        error_log("Failed to initialize Carbon Fields: " . $e->getMessage());
+    }
+}
 
 
 // Migration Function
-function migrate_course_data_to_carbon()
-{
+function migrate_course_data_to_carbon() {
+    // First verify Carbon Fields is available
+    if (!function_exists('carbon_set_post_meta')) {
+        error_log("Carbon Fields not properly initialized - migration cancelled");
+        return false;
+    }
     global $wpdb;
 
     // بررسی تمام حالت‌های ممکن برای پست
