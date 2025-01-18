@@ -17,17 +17,17 @@ if (! defined('ABSPATH')) {
     exit; // Exit if accessed directly.
 }
 
-// اتوماتیک‌لود کردن کتابخانه‌های Composer
+//  Composer
 require_once plugin_dir_path(__FILE__) . 'vendor/autoload.php';
 
 
-// بارگذاری Carbon Fields
+// Carbon Fields
 add_action('after_setup_theme', 'nias_course_load_carbon_fields');
 function nias_course_load_carbon_fields() {
     \Carbon_Fields\Carbon_Fields::boot();
 }
-
-// Add this to your theme's functions.php or a separate translation file
+/*
+// separate translation file
 add_filter('carbon_fields_translate_strings', 'translate_carbon_fields_strings');
 function translate_carbon_fields_strings($texts) {
     $texts['There are no entries yet.'] = __('هنوز موردی ثبت نشده است.', 'nias-course-widget');
@@ -36,7 +36,7 @@ function translate_carbon_fields_strings($texts) {
     
     return $texts;
 }
-
+*/
 
 /**
  * Register List Widget.
