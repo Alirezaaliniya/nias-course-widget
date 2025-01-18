@@ -672,12 +672,12 @@ class Nias_course_woocommerce extends \Elementor\Widget_Base
                                                 <?php
                                                 if ($lesson['lesson_private']) {
                                                     if ($bought_course) {
-                                                        echo wp_kses_post($lesson['lesson_content']);
+                                                        echo wpautop($lesson['lesson_content']);
                                                     } else {
-                                                        echo wp_kses_post($settings['nsprivatetextcontent']);
+                                                        echo wpautop($settings['nsprivatetextcontent']);
                                                     }
                                                 } else {
-                                                    echo wp_kses_post($lesson['lesson_content']);
+                                                    echo wpautop($lesson['lesson_content']);
                                                 }
                                                 ?>
                                             </div>
