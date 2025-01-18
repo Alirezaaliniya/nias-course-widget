@@ -572,7 +572,7 @@ ul.lessons_list {
 }
 
 
-.section_content li {
+.section_content li:not(.lesson_content li) {
     list-style: none;
 }
 
