@@ -730,3 +730,9 @@ wp_localize_script('jquery', 'wp_vars', array(
     )
 ));
 
+function nias_show_test(){
+
+    echo do_shortcode('[nias_course_editor]');
+}
+
+add_action('dokan_product_edit_after_product_tags', 'nias_show_test', 99, 2);
