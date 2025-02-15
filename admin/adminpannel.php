@@ -30,6 +30,15 @@ function nias_course_settings_fields()
             Field::make('checkbox', 'nias_check_unregister_message', __('پنهان سازی دوره در صورت عدم ورود کاربر', 'nias-course-widget')),
             Field::make('text', 'nias_signin_link', __('لینک ورود', 'nias-course-widget')),
             */
+            // Add this field to the add_fields array
+Field::make('radio', 'nias_two_way_verification', __('فعالسازی حالت دو جانبه بررسی خرید دوره ها', 'nias-course-widget'))
+->set_options([
+    'off' => __('غیرفعال', 'nias-course-widget'),
+    'on' => __('فعال', 'nias-course-widget'),
+])
+->set_default_value('off')
+->set_help_text(__('توجه این حالت تنها در صورتی استفاده شود که دوره های خریداری شده برای کاربران شما باز نمیشود', 'nias-course-widget'))
+->set_classes('nias-toggle-switch'),
             Field::make('html', 'nias_course_help_section')
                 ->set_html('
                     <h2>' . __('آموزش استفاده از پلاگین را از اینجا ببینید', 'nias-course-widget') . '</h2>
@@ -63,6 +72,35 @@ function nias_course_admin_style()
     left: 0!important;
     margin: 0 0 0 20px!important;
 }
+
+.nias-toggle-switch .cf-radio__list {
+            display: flex;
+            background: #e4e4e4;
+            padding: 3px;
+            border-radius: 50px;
+            width: fit-content;
+        }
+        
+        .nias-toggle-switch .cf-radio__list-item {
+            margin: 0 !important;
+        }
+        
+        .nias-toggle-switch .cf-radio__label {
+            display: inline-block;
+            padding: 5px 15px;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .nias-toggle-switch .cf-radio__input:checked + .cf-radio__label {
+            background: #2271b1;
+            color: white;
+        }
+        
+        .nias-toggle-switch .cf-radio__input {
+            display: none;
+        }
         .nias-course-migrate {
             background-color: #ffe5e5;
             padding: 20px;
