@@ -552,8 +552,7 @@ if (is_user_logged_in()) {
             }
             
             // Course is considered purchased only if both methods confirm
-            $bought_course = ($wc_bought && $order_bought);
-            
+$bought_course = ($wc_bought || $order_bought);            
         } else {
             // Normal mode - one method confirmation is sufficient
             if (wc_customer_bought_product($current_user->user_login, $current_user->ID, $product_id)) {
