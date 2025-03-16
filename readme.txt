@@ -5,7 +5,7 @@ Donate link: https://nias.ir/
 Requires at least: 5.8
 Tested up to: 6.7.1
 Requires PHP: 7.4
-Stable tag: 1.2.5
+Stable tag: 1.2.6
 License: GPLv2
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -52,6 +52,9 @@ License URI: https://www.gnu.org/licenses/gpl-2.0.html
 3. Screenshot 3
 
 == Changelog ==
+=v1.2.6=
+*رفع برخی مشکلات امنیتی
+
 =v1.2.4=
 *جهت رفع مشکل موقت عدم نمایش دوره ها به دانشجویان دوره حالت بررسی دو جانبه به تنظیمات پلاگین اضافه شده که باید فعال شود
 
