@@ -114,7 +114,7 @@ function nias_course_admin_style()
             border-radius: 10px;
         }
 
-        body *:not(#wpadminbar *, i , [role=treeitem] span[aria-hidden]) {
+        body *:not(#wpadminbar *, i , [role=treeitem] span[aria-hidden] , .dashicons) {
             font-family: 'Vazirmatn' !important;
         }
 
