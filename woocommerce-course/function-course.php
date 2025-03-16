@@ -78,6 +78,12 @@ function custom_carbon_fields_styles() {
 // Register Course Fields
 add_action('carbon_fields_register_fields', 'create_course_metabox');
 function create_course_metabox() {
+
+        // بررسی سطح دسترسی - فقط مدیران می‌توانند به تنظیمات دسترسی داشته باشند
+        if (!current_user_can('manage_options')) {
+            return; // خروج از تابع اگر کاربر دسترسی لازم را ندارد
+        }
+
     Container::make('post_meta', __(' تنظیمات دوره ساز نیاس', 'nias-course-widget'))
         ->where('post_type', '=', 'product')
         ->set_classes('nias-course-product-option')
@@ -201,6 +207,7 @@ function create_frontend_course_editor() {
     if (!is_user_logged_in()) {
         return;
     }
+    
 
     $allowed_roles = array('administrator', 'shop_manager', 'vendor');
     $user = wp_get_current_user();
