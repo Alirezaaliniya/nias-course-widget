@@ -11,6 +11,11 @@ define('NIASADMIN_URL', plugin_dir_url(__DIR__) . 'admin');
 add_action('carbon_fields_register_fields', 'nias_course_settings_fields');
 function nias_course_settings_fields()
 {
+
+        // بررسی سطح دسترسی - فقط مدیران می‌توانند به تنظیمات دسترسی داشته باشند
+        if (!current_user_can('manage_options')) {
+            return; // خروج از تابع اگر کاربر دسترسی لازم را ندارد
+        }
     Container::make('theme_options', __('تنظیمات دوره ساز نیاس', 'nias-course-widget'))
         ->set_page_file('nias-course-settings')
         ->set_icon(NIASADMIN_URL . '/nias-course.png')
@@ -63,6 +68,7 @@ Field::make('radio', 'nias_two_way_verification', __('فعالسازی حالت 
 // Add the necessary styles
 function nias_course_admin_style()
 {
+    
     wp_enqueue_style('nias-admin-css', NIASADMIN_URL . '/adminstyle.css');
 ?>
     <link href='https://fonts.googleapis.com/css?family=Vazirmatn' rel='stylesheet'>
@@ -165,6 +171,12 @@ function crb_load() {
 
 // Migration Function
 function migrate_course_data_to_carbon() {
+
+        // بررسی سطح دسترسی - فقط مدیران می‌توانند به تنظیمات دسترسی داشته باشند
+        if (!current_user_can('manage_options')) {
+            return; // خروج از تابع اگر کاربر دسترسی لازم را ندارد
+        } 
+        
     // First verify Carbon Fields is available
     if (!function_exists('carbon_set_post_meta')) {
         error_log("Carbon Fields not properly initialized - migration cancelled");
@@ -188,6 +200,7 @@ function migrate_course_data_to_carbon() {
         ]
     ]);
 
+    
     // ثبت شروع فرآیند مهاجرت
     error_log("Starting migration process. Total products found: " . count($products));
 
