@@ -178,7 +178,7 @@ function create_course_metabox() {
                                 ->set_max(1),
                             Field::make('checkbox', 'lesson_private', __('درس خصوصی است؟', 'nias-course-widget')),
                             Field::make('rich_text', 'lesson_content', __('محتوای درس', 'nias-course-widget'))
-                        ])
+                            ->set_help_text('<strong style="color: red;">توجه مهم:</strong> ' . __('برای درج ایفریم یوتیوب و ... از تب بالا بخش متن را انتخاب کنید و کد را وارد کنید', 'nias-course-widget')),                        ])
                         ->set_header_template('<%- lesson_title %>'),
                 ])
                 ->set_header_template('<%- section_title %>'),
