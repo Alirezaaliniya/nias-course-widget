@@ -83,31 +83,43 @@ class Nias_course_woocommerce extends \Elementor\Widget_Base
             ]
         );
 
-
-        ///nias custom icon for private leeson
         $this->add_control(
-            'nsarrowicon',
-            [
-                'label' => esc_html__('آیکون باز و بسته شدن', 'nias-course-widget'),
-                'type' => \Elementor\Controls_Manager::ICONS,
-                'default' => [
-                    'value' => 'fas fa-chevron-down',
-                    'library' => 'fa-solid',
-                ],
-                'recommended' => [
-                    'fa-solid' => [
-                        'circle',
-                        'dot-circle',
-                        'square-full',
-                    ],
-                    'fa-regular' => [
-                        'circle',
-                        'dot-circle',
-                        'square-full',
-                    ],
-                ],
-            ]
-        );
+			'nias_openorclose',
+			[
+			   'label' => __( 'قابلیت باز و بسته شدن؟', 'nias-course-widget' ),
+			   'type' => \Elementor\Controls_Manager::SWITCHER,
+			   'label_on' => esc_html__("بله", 'nias-course-widget'),
+					   'label_off' => esc_html__("خیر", 'nias-course-widget'),
+			   'default' => 'yes'
+  
+			]
+		 );
+        $this->add_control(
+			'nsarrowicon',
+			[
+				'condition' => [
+					'nias_openorclose' => 'yes',
+				],
+				'label' => esc_html__( 'آیکون باز و بسته شدن', 'nias-course-widget' ),
+				'type' => \Elementor\Controls_Manager::ICONS,
+				'default' => [
+					'value' => 'fas fa-chevron-down',
+					'library' => 'fa-solid',
+				],
+				'recommended' => [
+					'fa-solid' => [
+						'circle',
+						'dot-circle',
+						'square-full',
+					],
+					'fa-regular' => [
+						'circle',
+						'dot-circle',
+						'square-full',
+					],
+				],
+			]
+		);
         $this->add_control(
             'nspreviewicon',
             [
@@ -585,7 +597,7 @@ $bought_course = ($wc_bought || $order_bought);
             <div id="nias_course_sections">
                 <?php foreach ($sections as $index => $section) { ?>
                     <div class="nias_course_section">
-                        <div class="section_header toggle_section">
+                        <div class="section_header toggle_section" >
                             <?php
                             // Handle section icon
                             if (!empty($section['section_icon'])) {
@@ -610,7 +622,7 @@ $bought_course = ($wc_bought || $order_bought);
                                 <?php \Elementor\Icons_Manager::render_icon($settings['nsarrowicon'], ['aria-hidden' => 'true']); ?>
                             </i>
                         </div>
-                        <div class="section_content" style="display: none;">
+                        <div class="section_content" style="display: <?php echo ('yes' == $settings['nias_openorclose']) ? 'none' : 'block'; ?>">
                             <?php if (!empty($section['lessons'])) { ?>
                                 <ul class="lessons_list">
                                     <?php foreach ($section['lessons'] as $lesson) { ?>
