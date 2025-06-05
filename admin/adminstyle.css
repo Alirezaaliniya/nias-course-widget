@@ -67,6 +67,60 @@
           width: 100%;
           height: 100%;
       }
+      .nias-course-product-option ul.cf-complex__tabs-list.ui-sortable li {
+        border-radius:8px;
+        background-color:#e2e9ff;
+        color:#5573ff;
+        transition:0.3s;
+        padding: 12px;
+        
+    }
+    .nias-course-product-option ul.cf-complex__tabs-list.ui-sortable .cf-complex__tabs-item--current {
+        border-radius:8px;
+        background-color:#5573ff;
+        color:#ffffff;
+        border:1px solid!important;
+        
+    }
+    .nias-course-product-option .cf-complex__tabs--tabbed-vertical ul.cf-complex__tabs-list.ui-sortable{
+        display:flex;
+        flex-direction:column;
+        gap:5px;
+    }
+    
+    .nias-course-product-option .cf-complex--tabbed-vertical>.cf-field__body{
+        gap:5px
+    }
+    
+    .nias-course-product-option .cf-complex--tabbed-vertical button.button.cf-complex__inserter-button:not(.cf-complex__tabs--tabbed-horizontal button) {
+        margin-top:10px;
+        color:#5573ff!important;
+        border:none;
+        background-color:#f1f1f1;
+        border-radius:8px;
+    }
+    .cf-complex__tabs--tabbed-horizontal button{
+        color:#5573ff!important;
+        border:none!important;
+        background-color:#f1f1f1!important;
+        border-radius:8px!important; 
+        margin-right: 10px!important;
+    }
+    
+    .nias-course-product-option .cf-text__input{
+        border:1px solid #dcdcdc!important;
+        border-radius:8px!important;
+        padding: 8px 10px!important;
+    }
+    
+    .nias-course-product-option h1, .nias-course-product-option h2, .nias-course-product-option h3, .nias-course-product-option h4, .nias-course-product-option h5, .nias-course-product-option h6 {
+        font-family: vazirmatn!important;
+        font-weight: 600;
+    }
+    .nias-course-product-option {
+        font-family: vazirmatn!important;
+    }
+    
 .toplevel_page_nias-course-settings .toplevel_page_nias-course-settings img{
     width: 22px;
     height: 22px;
