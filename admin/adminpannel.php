@@ -71,6 +71,24 @@ Field::make('radio', 'nias_two_way_verification', __('فعالسازی حالت 
                 ->set_help_text(__('با فعال کردن این گزینه، ظاهر مدرن دوره ساز فعال خواهد شد', 'nias-course-widget'))
                 ->set_classes('nias-toggle-switch'),
 
+            Field::make('radio', 'nias_course_account_display', __('فعالسازی نمایش دوره در حساب کاربری', 'nias-course-widget'))
+                ->set_options([
+                    'off' => __('غیرفعال', 'nias-course-widget'),
+                    'on' => __('فعال', 'nias-course-widget'),
+                ])
+                ->set_default_value('off')
+                ->set_help_text(__('این گزینه فقط در صورتی که حساب کاربری شما یک حساب کاربری استاندارد باشد عمل خواهد کرد', 'nias-course-widget'))
+                ->set_classes('nias-toggle-switch'),
+
+            Field::make('radio', 'nias_course_certificate', __('فعالسازی مدرک دوره با قابلیت استعلام', 'nias-course-widget'))
+                ->set_options([
+                    'off' => __('غیرفعال', 'nias-course-widget'),
+                    'on' => __('فعال', 'nias-course-widget'),
+                ])
+                ->set_default_value('off')
+                ->set_help_text(__('با فعال کردن این گزینه، امکان صدور و استعلام مدرک دوره فعال خواهد شد', 'nias-course-widget'))
+                ->set_classes('nias-toggle-switch'),
+
         ]);
 }
 
