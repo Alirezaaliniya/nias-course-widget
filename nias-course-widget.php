@@ -65,6 +65,9 @@ require(NIAS_COURSE_PANEL . '/adminpannel.php');
 define('NIAS_WOOCOMMERCE', plugin_dir_path(__FILE__) . 'woocommerce-course');
 require(NIAS_WOOCOMMERCE . '/function-course.php');
 
+require(NIAS_WOOCOMMERCE . '/spotplayer.php');
+
+
 
 require(__DIR__ . '/widgets/videomodal.php');
 
@@ -96,6 +99,7 @@ function nias_course_register_widget($widgets_manager)
     require_once(__DIR__ . '/widgets/nias-render.php');
     require_once(__DIR__ . '/widgets/nias-controls.php');
     require_once(__DIR__ . '/widgets/nias-woocommerce.php');
+    
 
     $widgets_manager->register(new \Nias_Course\Nias_course_widget());
     $widgets_manager->register(new \Nias_Course\Nias_course_woocommerce());
