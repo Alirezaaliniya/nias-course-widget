@@ -90,6 +90,46 @@ Field::make('radio', 'nias_two_way_verification', __('فعالسازی حالت 
                 ->set_classes('nias-toggle-switch'),
 
         ]);
+
+    // Add certificate settings container
+    if (carbon_get_theme_option('nias_course_certificate') === 'on') {
+        Container::make('theme_options', __('تنظیمات مدرک دوره', 'nias-course-widget'))
+            ->set_page_parent('nias-course-settings')
+            ->add_fields([
+                Field::make('image', 'certificate_signature', __('تصویر امضا', 'nias-course-widget'))
+                    ->set_help_text(__('تصویر امضای مسئول صدور مدرک را آپلود کنید', 'nias-course-widget'))
+                    ->set_value_type('url')
+                    ->set_width(50),
+
+                Field::make('image', 'certificate_logo', __('تصویر لوگو', 'nias-course-widget'))
+                    ->set_help_text(__('لوگوی موسسه یا مرکز آموزشی را آپلود کنید', 'nias-course-widget'))
+                    ->set_value_type('url')
+                    ->set_width(50),
+
+                Field::make('image', 'certificate_seal', __('تصویر مهر', 'nias-course-widget'))
+                    ->set_help_text(__('تصویر مهر موسسه را آپلود کنید', 'nias-course-widget'))
+                    ->set_value_type('url')
+                    ->set_width(50),
+
+                Field::make('image', 'certificate_watermark', __('تصویر مارک مدرک', 'nias-course-widget'))
+                    ->set_help_text(__('تصویر مارک یا واترمارک مدرک را آپلود کنید', 'nias-course-widget'))
+                    ->set_value_type('url')
+                    ->set_width(50),
+
+                Field::make('rich_text', 'certificate_description', __('توضیحات مدرک', 'nias-course-widget'))
+                    ->set_help_text(__('توضیحات و متن مدرک را وارد کنید. می‌توانید از متغیرهای زیر استفاده کنید:', 'nias-course-widget') . 
+                        '<br>{student_name} - ' . __('نام دانشجو', 'nias-course-widget') .
+                        '<br>{course_name} - ' . __('نام دوره', 'nias-course-widget') .
+                        '<br>{completion_date} - ' . __('تاریخ تکمیل دوره', 'nias-course-widget') .
+                        '<br>{certificate_id} - ' . __('شماره مدرک', 'nias-course-widget'))
+                    ->set_settings([
+                        'media_buttons' => true,
+                        'textarea_rows' => 10,
+                        'teeny' => false,
+                        'quicktags' => true
+                    ])
+            ]);
+    }
 }
 
 // Add the necessary styles
