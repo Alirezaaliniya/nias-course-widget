@@ -1,7 +1,26 @@
 <?php
+// Make sure we are in WordPress context
+if (!defined('ABSPATH')) {
+    exit;
+}
 
+// Include required WordPress files
+require_once(ABSPATH . 'wp-load.php');
+require_once(ABSPATH . 'wp-admin/includes/plugin.php');
+require_once(ABSPATH . 'wp-includes/pluggable.php');
+require_once(ABSPATH . 'wp-includes/post.php');
+require_once(ABSPATH . 'wp-includes/functions.php');
+
+// Include Carbon Fields
 use Carbon_Fields\Container;
 use Carbon_Fields\Field;
+
+// Initialize Carbon Fields
+add_action('after_setup_theme', 'crb_load');
+function crb_load() {
+    require_once(dirname(__DIR__) . '/vendor/autoload.php');
+    \Carbon_Fields\Carbon_Fields::boot();
+}
 
 define('NIASADMIN_URL', plugin_dir_url(__DIR__) . 'admin');
 // Add the menu
@@ -96,6 +115,56 @@ Field::make('radio', 'nias_two_way_verification', __('فعالسازی حالت 
         Container::make('theme_options', __('تنظیمات مدرک دوره', 'nias-course-widget'))
             ->set_page_parent('nias-course-settings')
             ->add_fields([
+                Field::make('radio', 'certificate_display_type', __('نحوه نمایش مدرک', 'nias-course-widget'))
+                    ->set_options([
+                        'all' => __('همه محصولات', 'nias-course-widget'),
+                        'selected' => __('محصول انتخابی', 'nias-course-widget'),
+                        'category' => __('محصول از دسته بندی', 'nias-course-widget'),
+                        'none' => __('هیچکدام', 'nias-course-widget'),
+                    ])
+                    ->set_default_value('none')
+                    ->set_help_text(__('نحوه نمایش مدرک برای محصولات را انتخاب کنید', 'nias-course-widget')),
+
+                Field::make('multiselect', 'certificate_selected_products', __('محصولات انتخابی', 'nias-course-widget'))
+                    ->set_conditional_logic([
+                        'relation' => 'AND',
+                        ['field' => 'certificate_display_type', 'value' => 'selected', 'compare' => '=']
+                    ])
+                    ->add_options(function() {
+                        $products = get_posts([
+                            'post_type' => 'product',
+                            'posts_per_page' => -1,
+                            'orderby' => 'title',
+                            'order' => 'ASC'
+                        ]);
+                        $options = [];
+                        foreach ($products as $product) {
+                            $options[$product->ID] = $product->post_title;
+                        }
+                        return $options;
+                    })
+                    ->set_help_text(__('محصولاتی که می‌خواهید مدرک برای آنها نمایش داده شود را انتخاب کنید', 'nias-course-widget')),
+
+                Field::make('multiselect', 'certificate_selected_categories', __('دسته‌بندی‌های انتخابی', 'nias-course-widget'))
+                    ->set_conditional_logic([
+                        'relation' => 'AND',
+                        ['field' => 'certificate_display_type', 'value' => 'category', 'compare' => '=']
+                    ])
+                    ->add_options(function() {
+                        $categories = get_terms([
+                            'taxonomy' => 'product_cat',
+                            'hide_empty' => false,
+                        ]);
+                        $options = [];
+                        if (!is_wp_error($categories)) {
+                            foreach ($categories as $category) {
+                                $options[$category->term_id] = $category->name;
+                            }
+                        }
+                        return $options;
+                    })
+                    ->set_help_text(__('دسته‌بندی‌هایی که می‌خواهید مدرک برای محصولات آنها نمایش داده شود را انتخاب کنید', 'nias-course-widget')),
+
                 Field::make('image', 'certificate_signature', __('تصویر امضا', 'nias-course-widget'))
                     ->set_help_text(__('تصویر امضای مسئول صدور مدرک را آپلود کنید', 'nias-course-widget'))
                     ->set_value_type('url')
@@ -224,14 +293,6 @@ function handle_course_migration()
                 __('انتقال و همگام سازی اطلاعات موفق بود لطفاً صفحات را پس از پاکسازی کش بررسی کنید', 'nias-course-widget') .
                 '</p></div>';
         });
-    }
-}
-
-function crb_load() {
-    try {
-        \Carbon_Fields\Carbon_Fields::boot();
-    } catch (Exception $e) {
-        error_log("Failed to initialize Carbon Fields: " . $e->getMessage());
     }
 }
 
