@@ -208,76 +208,7 @@ function nias_course_admin_style()
     wp_enqueue_style('nias-admin-css', NIASADMIN_URL . '/adminstyle.css');
 ?>
     <link href='https://fonts.googleapis.com/css?family=Vazirmatn' rel='stylesheet'>
-    <style>
-        [dir=rtl] .carbon-network #post-body.columns-2 #postbox-container-1.fixed, [dir=rtl] .carbon-theme-options #post-body.columns-2 #postbox-container-1.fixed {
-    right: auto!important;
-    left: 0!important;
-    margin: 0 0 0 20px!important;
-}
 
-.nias-toggle-switch .cf-radio__list {
-            display: flex;
-            background: #e4e4e4;
-            padding: 3px;
-            border-radius: 50px;
-            width: fit-content;
-        }
-        
-        .nias-toggle-switch .cf-radio__list-item {
-            margin: 0 !important;
-        }
-        
-        .nias-toggle-switch .cf-radio__label {
-            display: inline-block;
-            padding: 5px 15px;
-            border-radius: 50px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-        
-        .nias-toggle-switch .cf-radio__input:checked + .cf-radio__label {
-            background: #2271b1;
-            color: white;
-        }
-        
-        .nias-toggle-switch .cf-radio__input {
-            display: none;
-        }
-        .nias-course-migrate {
-            background-color: #ffe5e5;
-            padding: 20px;
-            border-radius: 15px;
-            border: 1px solid red;
-        }
-
-        .nias-course-migrate .button {
-            background: red !important;
-            border: none;
-            border-radius: 10px;
-        }
-
-        body *:not(#wpadminbar *, i , [role=treeitem] span[aria-hidden] , .dashicons) {
-            font-family: 'Vazirmatn' !important;
-        }
-
-        .h_iframe-aparat_embed_frame {
-            position: relative;
-        }
-
-        .h_iframe-aparat_embed_frame .ratio {
-            display: block;
-            width: 100%;
-            height: auto;
-        }
-
-        .h_iframe-aparat_embed_frame iframe {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-        }
-    </style>
 <?php
 }
 add_action('admin_head', 'nias_course_admin_style');
