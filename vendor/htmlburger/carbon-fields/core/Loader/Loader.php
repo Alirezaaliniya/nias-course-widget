@@ -100,7 +100,14 @@ class Loader {
 
 		foreach ( $translations->entries as $msgid => $entry ) {
 			$locale[ $msgid ] = $entry->translations;
+		
+			if ( $entry->is_plural ) {
+				$locale[ $entry->plural ] = $entry->translations;
+			} else {
+				$locale[ $entry->singular ] = $entry->translations;
+			}
 		}
+		
 
 		return $locale;
 	}

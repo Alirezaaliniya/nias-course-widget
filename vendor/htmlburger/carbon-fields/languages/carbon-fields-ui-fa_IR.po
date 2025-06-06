@@ -1,0 +1,255 @@
+msgid ""
+msgstr ""
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: Poedit 2.2\n"
+"Project-Id-Version: carbon\n"
+"Language: fa\n"
+"POT-Creation-Date: \n"
+"PO-Revision-Date: \n"
+"Last-Translator: \n"
+"Language-Team: \n"
+
+#: packages/blocks/components/block-edit/index.js:214
+msgid "Show preview"
+msgstr "نمایش پیش‌نمایش"
+
+#: packages/blocks/components/block-edit/index.js:215
+msgid "Hide preview"
+msgstr "پنهان کردن پیش‌نمایش"
+
+#: packages/blocks/components/block-edit/index.js:286
+msgid "Fields"
+msgstr "فیلدها"
+
+#: packages/blocks/components/server-side-render/index.js:129
+msgid "Error loading block: %s"
+msgstr "خطا در بارگیری بلوک: %s"
+
+#: packages/blocks/components/server-side-render/index.js:135
+msgid "No results found."
+msgstr "هیچ نتیجه‌ای یافت نشد."
+
+#: packages/blocks/fields/datetime/index.js:59
+#: packages/core/fields/date/index.js:15
+#: packages/metaboxes/fields/datetime/index.js:9
+msgid "Select Date"
+msgstr "تاریخ را انتخاب کنید"
+
+#: packages/blocks/fields/file/index.js:16
+#: packages/metaboxes/fields/file/index.js:11
+msgid "Use File"
+msgstr "استفاده از فایل"
+
+#: packages/blocks/fields/file/index.js:17
+#: packages/metaboxes/fields/file/index.js:12
+msgid "Select File"
+msgstr "انتخاب فایل"
+
+#: packages/blocks/fields/image/index.js:11
+#: packages/metaboxes/fields/image/index.js:11
+msgid "Use Image"
+msgstr "از تصویر استفاده کنید"
+
+#: packages/blocks/fields/image/index.js:12
+#: packages/metaboxes/fields/image/index.js:12
+msgid "Select Image"
+msgstr "انتخاب تصویر"
+
+#: packages/blocks/fields/media-gallery/index.js:16
+#: packages/metaboxes/fields/media-gallery/index.js:16
+msgid "Use Attachments"
+msgstr "از پیوست‌ها استفاده کنید"
+
+#: packages/blocks/fields/media-gallery/index.js:17
+#: packages/metaboxes/fields/media-gallery/index.js:17
+msgid "Select Attachments"
+msgstr "پیوست‌ها را انتخاب کنید"
+
+#: packages/core/components/no-options/index.js:14
+msgid "No options."
+msgstr "هیچ گزینه‌ای وجود ندارد."
+
+#: packages/core/components/search-input/index.js:30
+msgid "Search..."
+msgstr "جستجو..."
+
+#: packages/core/fields/association/index.js:169
+msgid "Maximum number of items reached (%s items)"
+msgstr "حداکثر تعداد اقلام رسیده (%s مورد)"
+
+#: packages/core/fields/association/index.js:269
+msgid "Showing %1$d of %2$d results"
+msgstr "نمایش %1$d از %2$d نتیجه"
+
+#: packages/core/fields/association/index.js:283
+msgid "Thumbnail"
+msgstr "تصویر بندانگشتی"
+
+#: packages/core/fields/association/index.js:305
+msgid "Edit"
+msgstr "ویرایش"
+
+#: packages/core/fields/association/index.js:313
+msgid "Add"
+msgstr "اضافه کردن"
+
+#: packages/core/fields/association/index.js:365
+#: packages/core/fields/complex/group.js:163
+msgid "Remove"
+msgstr "حذف"
+
+#: packages/core/fields/association/index.js:466
+msgid "An error occurred while trying to fetch association options."
+msgstr "هنگام تلاش برای دریافت گزینه‌های ارتباط، خطایی روی داد."
+
+#: packages/core/fields/association/index.js:519
+#: packages/core/fields/complex/index.js:428
+#: packages/core/hocs/with-validation/required.js:20
+msgid "This field is required."
+msgstr "این فیلد الزامی است."
+
+#: packages/core/fields/association/index.js:523
+msgid "Minimum number of items not reached (%s items)"
+msgstr "حداقل تعداد اقلامی که به دست نیامده است (%s مورد)"
+
+#: packages/core/fields/color/index.js:106
+msgid "Clear"
+msgstr "پاک کردن"
+
+#: packages/core/fields/color/index.js:92
+msgid "Select a color"
+msgstr "یک رنگ انتخاب کنید"
+
+#: packages/core/fields/complex/group.js:154
+msgid "Duplicate"
+msgstr "تکراری"
+
+#: packages/core/fields/complex/group.js:172
+msgid "Collapse"
+msgstr "جمع کردن"
+
+#: packages/core/fields/complex/index.js:146
+msgid "Couldn't create the label of group - %s"
+msgstr "نتوانستم برچسب گروه را ایجاد کنم - %s"
+
+#: packages/core/fields/complex/index.js:344
+msgid "There are no entries yet."
+msgstr "چیزی وارد نشده."
+
+#: packages/core/fields/complex/index.js:401
+msgid "Expand All"
+msgstr "همه را باز کنید"
+
+#: packages/core/fields/complex/index.js:401
+msgid "Collapse All"
+msgstr "همه را جمع کن"
+
+#: packages/core/fields/complex/index.js:435
+msgid "Minimum number of rows not reached (%1$d %2$s)"
+msgstr "حداقل تعداد ردیف‌ها حاصل نشده است (%1$d %2$s)"
+
+#: packages/core/fields/complex/index.js:82
+msgid "Add %s"
+msgstr "اضافه کردن %s"
+
+#: packages/core/fields/map/index.js:165
+msgid "The address could not be found."
+msgstr "آدرس پیدا نشد."
+
+#: packages/core/fields/map/index.js:167
+msgid "Geocode was not successful for the following reason: "
+msgstr "Geocode به دلایل زیر موفقیت‌آمیز نبود: "
+
+#: packages/core/fields/map/index.js:185
+msgid "Error alert"
+msgstr "هشدار خطا"
+
+#: packages/core/fields/oembed/index.js:187
+msgid "An error occurred while trying to fetch oembed preview."
+msgstr "هنگام تلاش برای دریافت پیش‌نمایش oembed خطایی روی داد."
+
+#: packages/core/fields/oembed/index.js:202
+msgid "Not Found"
+msgstr "یافت نشد"
+
+#: packages/core/fields/rich-text/index.js:126
+msgid "Visual"
+msgstr "بصری"
+
+#: packages/core/fields/rich-text/index.js:130
+msgid "Text"
+msgstr "متن"
+
+#: packages/core/fields/set/index.js:110
+msgid "Show All Options"
+msgstr "نمایش همه گزینه‌ها"
+
+#: packages/core/fields/set/index.js:111
+msgid "Show Less Options"
+msgstr "نمایش گزینه‌های کمتر"
+
+#: packages/core/fields/sidebar/index.js:110
+msgid "Please enter the name of the new sidebar:"
+msgstr "لطفا نام نوار کناری جدید را وارد کنید:"
+
+#: packages/core/fields/sidebar/index.js:128
+msgid "An error occurred while trying to create the sidebar."
+msgstr "هنگام ایجاد نوار کناری خطایی روی داد."
+
+#: packages/core/fields/sidebar/index.js:58
+msgid "Please choose"
+msgstr "لطفا انتخاب کنید"
+
+#: packages/core/fields/time/index.js:16
+msgid "Select Time"
+msgstr "زمان را انتخاب کنید"
+
+#: packages/core/hocs/with-conditional-logic/index.js:87
+msgid "An unknown field is used in condition - \"%s\""
+msgstr "یک فیلد ناشناخته در شرط \"%s\" استفاده شده است."
+
+#: packages/core/registry/index.js:40
+msgid "%1$s type must be a string."
+msgstr "نوع %1$s باید رشته باشد."
+
+#: packages/core/registry/index.js:46
+msgid "%1$s %2$s is already registered."
+msgstr "%1$s %2$s قبلاً ثبت شده است."
+
+#: packages/core/registry/index.js:54
+msgid "The \"component\" param must be a function."
+msgstr "پارامتر \"component\" باید یک تابع باشد."
+
+#: packages/core/registry/index.js:79
+msgid "The provided context isn't a valid one. Must be one of - %s ."
+msgstr "متن ارائه شده معتبر نیست. باید یکی از موارد زیر باشد - %s."
+
+#: packages/core/registry/index.js:89
+msgid "%s %s isn't registered."
+msgstr "%s %s ثبت نشده است."
+
+#: packages/core/utils/api-fetch.js:19
+msgid "An error occured."
+msgstr "خطایی رخ داده است."
+
+#: packages/core/utils/fetch-attachments-data.js:24
+msgid "An error occurred while trying to fetch files data."
+msgstr "هنگام تلاش برای دریافت داده‌های فایل‌ها، خطایی روی داد."
+
+#: packages/metaboxes/containers/index.js:65
+msgid "Could not find DOM element for container \"%1$s\"."
+msgstr "عنصر DOM برای کانتینر \"%1$s\" یافت نشد."
+
+#: packages/metaboxes/monitors/conditional-display/conditions/base.js:52
+msgid "Unsupported container condition comparison operator used - \"%1$s\"."
+msgstr "عملگر مقایسه شرایط کانتینر پشتیبانی نشده - \"%1$s\" استفاده شده است."
+
+#: packages/metaboxes/monitors/conditional-display/handler/index.js:57
+msgid "Unsupported container condition - \"%1$s\"."
+msgstr "وضعیت کانتینر پشتیبانی نشده - \"%1$s\"."
+
+#: packages/metaboxes/monitors/conditional-display/handler/index.js:75
+msgid "Unsupported container condition relation used - \"%1$s\"."
+msgstr "رابطه‌ی شرط کانتینر پشتیبانی نشده استفاده شده است - \"%1$s\"."
