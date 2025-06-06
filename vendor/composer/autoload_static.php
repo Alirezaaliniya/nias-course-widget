@@ -4,32 +4,57 @@
 
 namespace Composer\Autoload;
 
-class ComposerStaticInit24e41bbaee1332276f826502c7093d78
+class ComposerStaticInit1aa62b11b2fbcfda9fa8ef6dadc4f527
 {
     public static $prefixLengthsPsr4 = array (
+        'E' => 
+        array (
+            'Endroid\\QrCode\\' => 15,
+        ),
+        'D' => 
+        array (
+            'DASPRiD\\Enum\\' => 13,
+        ),
         'C' => 
         array (
             'Carbon_Fields\\' => 14,
         ),
+        'B' => 
+        array (
+            'BaconQrCode\\' => 12,
+        ),
     );
 
     public static $prefixDirsPsr4 = array (
+        'Endroid\\QrCode\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/endroid/qr-code/src',
+        ),
+        'DASPRiD\\Enum\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/dasprid/enum/src',
+        ),
         'Carbon_Fields\\' => 
         array (
             0 => __DIR__ . '/..' . '/htmlburger/carbon-fields/core',
+        ),
+        'BaconQrCode\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/bacon/bacon-qr-code/src',
         ),
     );
 
     public static $classMap = array (
         'Composer\\InstalledVersions' => __DIR__ . '/..' . '/composer/InstalledVersions.php',
+        'FPDF' => __DIR__ . '/..' . '/setasign/fpdf/fpdf.php',
     );
 
     public static function getInitializer(ClassLoader $loader)
     {
         return \Closure::bind(function () use ($loader) {
-            $loader->prefixLengthsPsr4 = ComposerStaticInit24e41bbaee1332276f826502c7093d78::$prefixLengthsPsr4;
-            $loader->prefixDirsPsr4 = ComposerStaticInit24e41bbaee1332276f826502c7093d78::$prefixDirsPsr4;
-            $loader->classMap = ComposerStaticInit24e41bbaee1332276f826502c7093d78::$classMap;
+            $loader->prefixLengthsPsr4 = ComposerStaticInit1aa62b11b2fbcfda9fa8ef6dadc4f527::$prefixLengthsPsr4;
+            $loader->prefixDirsPsr4 = ComposerStaticInit1aa62b11b2fbcfda9fa8ef6dadc4f527::$prefixDirsPsr4;
+            $loader->classMap = ComposerStaticInit1aa62b11b2fbcfda9fa8ef6dadc4f527::$classMap;
 
         }, null, ClassLoader::class);
     }
