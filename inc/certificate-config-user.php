@@ -1,4 +1,26 @@
 <?php
+// Make sure we are in WordPress context
+if (!defined('ABSPATH')) {
+    exit;
+}
+
+// Include required WordPress files
+require_once(ABSPATH . 'wp-load.php');
+require_once(ABSPATH . 'wp-admin/includes/plugin.php');
+require_once(ABSPATH . 'wp-includes/pluggable.php');
+require_once(ABSPATH . 'wp-includes/post.php');
+require_once(ABSPATH . 'wp-includes/functions.php');
+
+// Include Carbon Fields
+use Carbon_Fields\Container;
+use Carbon_Fields\Field;
+use Carbon_Fields\Carbon_Fields;
+
+// Make sure WooCommerce is active
+if (!class_exists('WooCommerce')) {
+    return;
+}
+
 /**
  * Generate a random certificate code
  * 
@@ -144,6 +166,41 @@ add_action('edit_user_profile_update', 'save_certificate_code_field');
  * Helper function to check if user has purchased the certificate product
  */
 function has_user_purchased_certificate($user_id) {
+    $display_type = carbon_get_theme_option('certificate_display_type');
+    
+    // Get allowed product IDs based on display type setting
+    $allowed_product_ids = array();
+    
+    if ($display_type === 'all') {
+        // All products are allowed
+        return true;
+    } elseif ($display_type === 'selected') {
+        // Get specifically selected products
+        $allowed_product_ids = carbon_get_theme_option('certificate_selected_products');
+    } elseif ($display_type === 'category') {
+        // Get products from selected categories
+        $selected_categories = carbon_get_theme_option('certificate_selected_categories');
+        if (!empty($selected_categories)) {
+            $products = get_posts(array(
+                'post_type' => 'product',
+                'posts_per_page' => -1,
+                'tax_query' => array(
+                    array(
+                        'taxonomy' => 'product_cat',
+                        'field' => 'term_id',
+                        'terms' => $selected_categories
+                    )
+                )
+            ));
+            $allowed_product_ids = wp_list_pluck($products, 'ID');
+        }
+    }
+
+    // If no products are configured, return false
+    if ($display_type !== 'all' && empty($allowed_product_ids)) {
+        return false;
+    }
+
     $customer = new WC_Customer($user_id);
     $orders = wc_get_orders(array(
         'customer_id' => $user_id,
@@ -155,7 +212,9 @@ function has_user_purchased_certificate($user_id) {
         $items = $order->get_items();
         
         foreach ($items as $item) {
-            if ($item->get_product_id() == 1819) {
+            $product_id = $item->get_product_id();
+            // For "all" display type or if the product is in allowed products list
+            if ($display_type === 'all' || in_array($product_id, $allowed_product_ids)) {
                 return true;
             }
         }
