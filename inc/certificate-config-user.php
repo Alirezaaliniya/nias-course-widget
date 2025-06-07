@@ -3,23 +3,10 @@
 if (!defined('ABSPATH')) {
     exit;
 }
-
-// Include required WordPress files
-require_once(ABSPATH . 'wp-load.php');
-require_once(ABSPATH . 'wp-admin/includes/plugin.php');
-require_once(ABSPATH . 'wp-includes/pluggable.php');
-require_once(ABSPATH . 'wp-includes/post.php');
-require_once(ABSPATH . 'wp-includes/functions.php');
-
 // Include Carbon Fields
 use Carbon_Fields\Container;
 use Carbon_Fields\Field;
 use Carbon_Fields\Carbon_Fields;
-
-// Make sure WooCommerce is active
-if (!class_exists('WooCommerce')) {
-    return;
-}
 
 /**
  * Generate a random certificate code
@@ -106,8 +93,8 @@ function add_certificate_meta_to_existing_product_purchasers() {
 
 // Display the certificate field in the user profile admin section
 function display_certificate_code_field($user) {
-    // Check if current user has permission to edit users
-    if (!current_user_can('edit_users')) {
+    // Check if current user has permission to edit users or is viewing their own profile
+    if (!current_user_can('edit_users') && get_current_user_id() != $user->ID) {
         return;
     }
     
@@ -123,13 +110,13 @@ function display_certificate_code_field($user) {
                 <input type="text" name="usercertificate_code" id="usercertificate_code" 
                     value="<?php echo esc_attr($certificate_code); ?>" class="regular-text" />
                 <?php if (empty($certificate_code)) : ?>
-                    <p class="description"><?php _e('No certificate code assigned yet.', 'your-text-domain'); ?></p>
+                    <p class="description"><?php _e('هنوز کد گواهی اختصاص داده نشده است.', 'your-text-domain'); ?></p>
                     <button type="button" class="button" id="generate_certificate" 
                         onclick="document.getElementById('usercertificate_code').value='<?php echo esc_attr(generate_certificate_code()); ?>';">
-                        <?php _e('Generate Code', 'your-text-domain'); ?>
+                        <?php _e('تولید کد', 'your-text-domain'); ?>
                     </button>
                 <?php else : ?>
-                    <p class="description"><?php _e('This code was automatically generated when the user purchased the certificate product.', 'your-text-domain'); ?></p>
+                    <p class="description"><?php _e('این کد به طور خودکار هنگام خرید محصول گواهی توسط کاربر ایجاد شد.', 'your-text-domain'); ?></p>
                 <?php endif; ?>
             </td>
         </tr>
@@ -138,11 +125,10 @@ function display_certificate_code_field($user) {
 }
 add_action('show_user_profile', 'display_certificate_code_field');
 add_action('edit_user_profile', 'display_certificate_code_field');
-
 // Save the certificate field when the user profile is updated
 function save_certificate_code_field($user_id) {
-    // Check if current user has permission to edit users
-    if (!current_user_can('edit_users')) {
+    // Check if current user has permission to edit users or is editing their own profile
+    if (!current_user_can('edit_users') && get_current_user_id() != $user_id) {
         return false;
     }
     
