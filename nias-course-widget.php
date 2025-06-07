@@ -32,10 +32,10 @@ require(NIAS_WOOCOMMERCE . '/spotplayer.php');
 require(__DIR__ . '/widgets/videomodal.php');
 
 // Include certificate files only if the feature is enabled
-if (function_exists('carbon_get_theme_option') && carbon_get_theme_option('nias_course_certificate') === 'on') {
+
     require(NIAS_COURSE_INC . '/certificate-config-user.php');
     require(NIAS_COURSE_INC . '/certificate-show.php');
-}
+
 
 //  Composer
 require_once plugin_dir_path(__FILE__) . 'vendor/autoload.php';

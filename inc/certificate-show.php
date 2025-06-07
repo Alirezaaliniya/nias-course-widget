@@ -1,4 +1,15 @@
 <?php
+// If this file is called directly, abort.
+if (!defined('WPINC')) {
+    die;
+}
+
+// Check if WooCommerce is active
+if (!class_exists('WooCommerce')) {
+    return;
+}
+
+require_once __DIR__ . '/../vendor/setasign/fpdf/fpdf.php';
 use Endroid\QrCode\QrCode;
 use Endroid\QrCode\Writer\PngWriter;
 use Endroid\QrCode\Logos\LogoInterface;
