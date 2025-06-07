@@ -234,7 +234,7 @@ function nias_corse_plugin_update($upgrader_object, $options) {
  * @return string URL of the certificate verification page
  */
 function get_certificate_verification_page_url() {
-    $page_id = carbon_get_theme_option('certificate_page');
+    $page_id = get_option('certificate_page');
     if (!$page_id) {
         return home_url('/verify-certificate'); // fallback to default
     }
