@@ -101,22 +101,22 @@ function display_certificate_code_field($user) {
     // Get the certificate code if it exists
     $certificate_code = get_user_meta($user->ID, 'usercertificate_code', true);
     ?>
-    <h3><?php _e('Certificate Information', 'your-text-domain'); ?></h3>
+    <h3><?php _e('Certificate Information', 'nias-course-widget'); ?></h3>
     
     <table class="form-table">
         <tr>
-            <th><label for="usercertificate_code"><?php _e('Certificate Code', 'your-text-domain'); ?></label></th>
+            <th><label for="usercertificate_code"><?php _e('Certificate Code', 'nias-course-widget'); ?></label></th>
             <td>
                 <input type="text" name="usercertificate_code" id="usercertificate_code" 
                     value="<?php echo esc_attr($certificate_code); ?>" class="regular-text" />
                 <?php if (empty($certificate_code)) : ?>
-                    <p class="description"><?php _e('هنوز کد گواهی اختصاص داده نشده است.', 'your-text-domain'); ?></p>
+                    <p class="description"><?php _e('هنوز کد گواهی اختصاص داده نشده است.', 'nias-course-widget'); ?></p>
                     <button type="button" class="button" id="generate_certificate" 
                         onclick="document.getElementById('usercertificate_code').value='<?php echo esc_attr(generate_certificate_code()); ?>';">
-                        <?php _e('تولید کد', 'your-text-domain'); ?>
+                        <?php _e('تولید کد', 'nias-course-widget'); ?>
                     </button>
                 <?php else : ?>
-                    <p class="description"><?php _e('این کد به طور خودکار هنگام خرید محصول گواهی توسط کاربر ایجاد شد.', 'your-text-domain'); ?></p>
+                    <p class="description"><?php _e('این کد به طور خودکار هنگام خرید محصول گواهی توسط کاربر ایجاد شد.', 'nias-course-widget'); ?></p>
                 <?php endif; ?>
             </td>
         </tr>
@@ -213,7 +213,7 @@ function has_user_purchased_certificate($user_id) {
  * Add a column to show certificate code in the users list table
  */
 function add_certificate_column($columns) {
-    $columns['certificate_code'] = __('Certificate', 'your-text-domain');
+    $columns['certificate_code'] = __('Certificate', 'nias-course-widget');
     return $columns;
 }
 add_filter('manage_users_columns', 'add_certificate_column');
@@ -278,7 +278,7 @@ function generate_certificate_verification_button($user_id) {
     $button_html = sprintf(
         '<a href="%s" class="certificate-verification-button button" target="_blank">%s</a>',
         esc_url($verification_link),
-        __('Verify Certificate', 'your-text-domain')
+        __('Verify Certificate', 'nias-course-widget')
     );
     
     return $button_html;
@@ -319,7 +319,7 @@ function userbutton_certificate_shortcode($atts) {
     $button_html = sprintf(
         '<a href="%s" class="certificate-verification-button button" target="_blank" style="padding: 20px;">%s</a>',
         esc_url($verification_link),
-        __('دریافت مدرک  دارای qrcode', 'your-text-domain')
+        __('دریافت مدرک  دارای qrcode', 'nias-course-widget')
     );
     
     return $button_html;
