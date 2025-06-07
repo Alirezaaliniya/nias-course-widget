@@ -17,6 +17,26 @@ if (! defined('ABSPATH')) {
     exit; // Exit if accessed directly.
 }
 
+//define plugin version
+define('NIAS_COURSE_VERSION', '1.2.6');
+
+define('NIAS_COURSE', plugin_dir_path(__FILE__) );
+//define setting panel
+define('NIAS_COURSE_PANEL', plugin_dir_path(__FILE__) . 'admin');
+define('NIAS_WOOCOMMERCE', plugin_dir_path(__FILE__) . 'woocommerce-course');
+define('NIAS_COURSE_INC', plugin_dir_path(__FILE__) . 'INC');
+
+require(NIAS_COURSE_PANEL . '/adminpannel.php');
+require(NIAS_WOOCOMMERCE . '/function-course.php');
+require(NIAS_WOOCOMMERCE . '/spotplayer.php');
+require(__DIR__ . '/widgets/videomodal.php');
+
+// Include certificate files only if the feature is enabled
+if (function_exists('carbon_get_theme_option') && carbon_get_theme_option('nias_course_certificate') === 'on') {
+    require(NIAS_COURSE_INC . '/certificate-config-user.php');
+    require(NIAS_COURSE_INC . '/certificate-show.php');
+}
+
 //  Composer
 require_once plugin_dir_path(__FILE__) . 'vendor/autoload.php';
 
@@ -56,22 +76,6 @@ function translate_carbon_fields_strings($texts) {
 
 
 add_action('elementor/elements/categories_registered', 'nias_course_add_custom_category_widget');
-
-define('NIAS_COURSE', plugin_dir_path(__FILE__) );
-//define setting panel
-define('NIAS_COURSE_PANEL', plugin_dir_path(__FILE__) . 'admin');
-require(NIAS_COURSE_PANEL . '/adminpannel.php');
-
-/* ----------------------- define woocommerce product ----------------------- */
-define('NIAS_WOOCOMMERCE', plugin_dir_path(__FILE__) . 'woocommerce-course');
-require(NIAS_WOOCOMMERCE . '/function-course.php');
-
-require(NIAS_WOOCOMMERCE . '/spotplayer.php');
-
-
-
-require(__DIR__ . '/widgets/videomodal.php');
-
 //add setting to installed plugins
 add_filter('plugin_action_links_' . plugin_basename(__FILE__), 'nias_setting_link');
 function nias_setting_link($links)
