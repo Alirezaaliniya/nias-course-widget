@@ -57,6 +57,7 @@ function translate_carbon_fields_strings($texts) {
 
 add_action('elementor/elements/categories_registered', 'nias_course_add_custom_category_widget');
 
+define('NIAS_COURSE', plugin_dir_path(__FILE__) );
 //define setting panel
 define('NIAS_COURSE_PANEL', plugin_dir_path(__FILE__) . 'admin');
 require(NIAS_COURSE_PANEL . '/adminpannel.php');
