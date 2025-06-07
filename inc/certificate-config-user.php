@@ -271,14 +271,14 @@ function generate_certificate_verification_button($user_id) {
             'code' => $certificate_code,
             'user_id' => $user_id
         ), 
-        home_url('/verify-certificate')
+        get_certificate_verification_page_url()
     );
     
     // Create a button HTML
     $button_html = sprintf(
-        '<a href="%s" class="certificate-verification-button button" target="_blank">%s</a>',
+        '<a href="%s" class="certificate-verification-button button" target="_blank" style="padding: 20px;">%s</a>',
         esc_url($verification_link),
-        __('Verify Certificate', 'nias-course-widget')
+        __('دریافت مدرک  دارای qrcode', 'nias-course-widget')
     );
     
     return $button_html;
@@ -353,14 +353,13 @@ function user_certificate_iframe_shortcode($atts) {
     }
     
     // Generate the verification link
-    // Assumes the page with the shortcode is at /verify-certificate
-$verification_link = add_query_arg(
-    array(
-        'code' => $certificate_code,
-        'user_id' => $user_id // مقدار مستقیماً از URL دریافت شده است
-    ), 
-    home_url('/verify-certificate')
-);
+    $verification_link = add_query_arg(
+        array(
+            'code' => $certificate_code,
+            'user_id' => $user_id
+        ), 
+        get_certificate_verification_page_url()
+    );
     
     // Create an iframe HTML
     $iframe_html = sprintf(

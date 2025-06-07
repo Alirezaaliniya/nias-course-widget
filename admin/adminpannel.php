@@ -111,19 +111,28 @@ Field::make('radio', 'nias_two_way_verification', __('فعالسازی حالت 
         ]);
 
     // Add certificate settings container
-    if (carbon_get_theme_option('nias_course_certificate') === 'on') {
+    if (get_option('_nias_course_certificate') === 'on') {
         Container::make('theme_options', __('تنظیمات مدرک دوره', 'nias-course-widget'))
-            ->set_page_parent('nias-course-settings')
+            ->set_page_menu_position(20)
             ->add_fields([
-                Field::make('radio', 'certificate_display_type', __('نحوه نمایش مدرک', 'nias-course-widget'))
-                    ->set_options([
+                Field::make('select', 'certificate_display_type', __('نحوه نمایش مدرک', 'nias-course-widget'))
+                    ->add_options([
                         'all' => __('همه محصولات', 'nias-course-widget'),
                         'selected' => __('محصول انتخابی', 'nias-course-widget'),
                         'category' => __('محصول از دسته بندی', 'nias-course-widget'),
                         'none' => __('هیچکدام', 'nias-course-widget'),
-                    ])
-                    ->set_default_value('none')
-                    ->set_help_text(__('نحوه نمایش مدرک برای محصولات را انتخاب کنید', 'nias-course-widget')),
+                    ]),
+
+                Field::make('select', 'certificate_page', __('برگه نمایش مدرک', 'nias-course-widget'))
+                    ->set_options(function() {
+                        $pages = get_pages();
+                        $options = ['' => __('انتخاب برگه', 'nias-course-widget')];
+                        foreach ($pages as $page) {
+                            $options[$page->ID] = $page->post_title;
+                        }
+                        return $options;
+                    })
+                    ->set_help_text(__('برگه‌ای که می‌خواهید مدرک در آن نمایش داده شود را انتخاب کنید', 'nias-course-widget')),
 
                 Field::make('multiselect', 'certificate_selected_products', __('محصولات انتخابی', 'nias-course-widget'))
                     ->set_conditional_logic([

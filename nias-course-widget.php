@@ -1,5 +1,8 @@
 <?php
 
+use Carbon_Fields\Carbon_Fields;
+use function Carbon_Fields\get_theme_option as carbon_get_theme_option;
+
 /**
  * Plugin Name: Nias course | دوره ساز نیاس
  * Description:   پلاگین دوره ساز نیاس ویجت "دوره ساز نیاس" را به ویرایشگر المنتور شما اضافه میکند که میتوانید دوره مورد نظر خود را درون تمپلیت محصول بسازیدو قالب خود را به یک قالب فروش دوره و فایل تبدیل کنید | این پلاگین بصورت رایگان منتشر شده و رایگان هم خواهد ماند❤️
@@ -223,4 +226,17 @@ function nias_corse_plugin_update($upgrader_object, $options) {
             }
         }
     }
+}
+
+/**
+ * Helper function to get the certificate verification page URL
+ * 
+ * @return string URL of the certificate verification page
+ */
+function get_certificate_verification_page_url() {
+    $page_id = carbon_get_theme_option('certificate_page');
+    if (!$page_id) {
+        return home_url('/verify-certificate'); // fallback to default
+    }
+    return get_permalink($page_id);
 }
