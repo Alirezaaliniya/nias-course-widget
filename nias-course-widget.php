@@ -45,10 +45,24 @@ require_once plugin_dir_path(__FILE__) . 'vendor/autoload.php';
 
 
 // Carbon Fields
-add_action('after_setup_theme', 'nias_course_load_carbon_fields');
-function nias_course_load_carbon_fields() {
+add_action('after_setup_theme', 'niascourse_load_carbon_fields');
+function niascourse_load_carbon_fields() {
+    require_once(__DIR__ . '/vendor/autoload.php');
     \Carbon_Fields\Carbon_Fields::boot();
 }
+
+// Use carbon_get_theme_option function after Carbon Fields is booted
+add_action('carbon_fields_fields_registered', 'niascourse_initialize_carbon_fields_functions');
+function niascourse_initialize_carbon_fields_functions() {
+    function get_certificate_verification_page_url() {
+        $page_id = carbon_get_theme_option('certificate_page');
+        if (!$page_id) {
+            return home_url('/verify-certificate'); // fallback to default
+        }
+        return get_permalink($page_id);
+    }
+}
+
 /*
 // separate translation file
 add_filter('carbon_fields_translate_strings', 'translate_carbon_fields_strings');
@@ -226,17 +240,4 @@ function nias_corse_plugin_update($upgrader_object, $options) {
             }
         }
     }
-}
-
-/**
- * Helper function to get the certificate verification page URL
- * 
- * @return string URL of the certificate verification page
- */
-function get_certificate_verification_page_url() {
-    $page_id = get_option('certificate_page');
-    if (!$page_id) {
-        return home_url('/verify-certificate'); // fallback to default
-    }
-    return get_permalink($page_id);
 }

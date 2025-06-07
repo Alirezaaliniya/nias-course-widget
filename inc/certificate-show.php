@@ -190,21 +190,17 @@ function showCertificate() {
         wp_die('No certificate code found');
     }
 
-function get_certificate_verification_page_url() {
-    $page_id = carbon_get_theme_option('certificate_page');
-    if (!$page_id) {
-        return home_url('/verify-certificate'); // fallback to default
-    }
-    return get_permalink($page_id);
-}
+    // Get the configured certificate page ID
+    $certificate_page_id = carbon_get_theme_option('certificate_page');
+    $verification_url = $certificate_page_id ? get_permalink($certificate_page_id) : home_url('/verify-certificate');
 
-$verification_link = add_query_arg(
-    array(
-        'code' => $certificate_code,
-        'user_id' => $user_id
-    ), 
-    get_certificate_verification_page_url()
-);
+    $verification_link = add_query_arg(
+        array(
+            'code' => $certificate_code,
+            'user_id' => $user_id
+        ), 
+        $verification_url
+    );
 
     $certificate = new CertificateWithQRCode();
     
