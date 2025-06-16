@@ -76,7 +76,7 @@ Field::make('radio', 'nias_two_way_verification', __('فعالسازی حالت 
                     <p>' . __('لطفاً در صورت وجود مشکل یا سوال از طریق تلگرام با بنده در ارتباط باشید', 'nias-course-widget') . '</p>
                     <a href="https://T.me/niasir">T.me/niasir</a>
                 '),
-            Field::make('radio', 'nias_course_modern_setting', __('فعالسازی حالت مدرن دوره ساز', 'nias-course-widget'))
+         /*   Field::make('radio', 'nias_course_modern_setting', __('فعالسازی حالت مدرن دوره ساز', 'nias-course-widget'))
                 ->set_options([
                     'off' => __('غیرفعال', 'nias-course-widget'),
                     'on' => __('فعال', 'nias-course-widget'),
@@ -84,7 +84,7 @@ Field::make('radio', 'nias_two_way_verification', __('فعالسازی حالت 
                 ->set_default_value('off')
                 ->set_help_text(__('با فعال کردن این گزینه، ظاهر مدرن دوره ساز فعال خواهد شد', 'nias-course-widget'))
                 ->set_classes('nias-toggle-switch'),
-
+*/
             Field::make('radio', 'nias_course_account_display', __('فعالسازی نمایش دوره در حساب کاربری', 'nias-course-widget'))
                 ->set_options([
                     'off' => __('غیرفعال', 'nias-course-widget'),

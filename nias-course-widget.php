@@ -40,6 +40,8 @@ require(__DIR__ . '/widgets/videomodal.php');
 require(NIAS_COURSE_INC . '/certificate-show.php');
 require(NIAS_COURSE_INC . '/certificate-config-user.php');
 
+require(NIAS_WOOCOMMERCE . '/my-account.php');
+
 
 
 
