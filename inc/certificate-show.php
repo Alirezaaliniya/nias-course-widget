@@ -11,7 +11,7 @@ function get_certificate_settings() {
         'footer_bg' => carbon_get_theme_option('certificate_footer_bg') ?: NIAS_IMAGE . '/footer.png',
         'certificate_icon' => carbon_get_theme_option('certificate_icon') ?: NIAS_IMAGE . '/certificate.png',
         'first_title' => carbon_get_theme_option('certificate_first_title') ?: 'گواهی تکمیل دوره',
-        'before_name_title' => carbon_get_theme_option('certificate_before_name_title') ?: 'این گواهی‌نامه تأیید می‌کند که',
+        'before_name_title' => carbon_get_theme_option('certificate_before_name_title') ?: 'این گواهی تأیید میکند که',
         'after_name_title' => carbon_get_theme_option('certificate_after_name_title') ?: 'با موفقیت دوره زیر را تکمیل نمود:',
         'show_date' => carbon_get_theme_option('certificate_show_date') !== 'off',
         'seal_image' => carbon_get_theme_option('certificate_seal_image') ?: NIAS_IMAGE . '/stamp.png',
@@ -286,6 +286,9 @@ function nias_certificate_shortcode($atts)
             });
         </script>
         <style>
+            .certificate-download-container{
+                font-family: initial;
+            }
             .progress-container {
                 margin-top: 10px;
                 background: #f0f0f0;
@@ -392,17 +395,17 @@ function nias_certificate_shortcode($atts)
             // کد معتبر است - تنظیم پیام موفقیت
             $nias_course_certificate_verify = true;
             $verification_message = '<div class="certificate-success">
-                        <h3>✅ گواهی‌نامه معتبر است</h3>
+                        <h3>✅ گواهی‌ معتبر است</h3>
                         <p><strong>کد گواهی:</strong> ' . esc_html($code_param) . '</p>
                         <p><strong>شناسه کاربر:</strong> ' . esc_html($user_id_param) . '</p>
-                        <p>این گواهی‌نامه معتبر و قابل اعتماد است.</p>
+                        <p>این گواهی معتبر و قابل اعتماد است.</p>
                     </div>';
         } else {
             $nias_course_certificate_verify = false;
 
             // کد نامعتبر است - تنظیم پیام خطا
             $verification_message = '<div class="certificate-error">
-                        <h3>❌ گواهی‌نامه نامعتبر است</h3>
+                        <h3>❌ گواهی نامعتبر است</h3>
                         <p>کدی که وارد کرده‌اید در سیستم یافت نشد.</p>
                     </div>';
         }
@@ -432,12 +435,12 @@ function nias_certificate_shortcode($atts)
 
     if (empty($eligible_courses)) {
         return '<div class="certificate-download-container" style="max-width: 800px; margin: auto; padding: 20px; background-color: #f9f9f9; border-radius: 10px;">
-                    <h2>گواهی‌نامه‌های دوره‌ها</h2>
+                    <h2>مدارک دوره</h2>
                     <div class="no-certificate-message" style="text-align: center; padding: 30px; background: #fff3cd; border: 1px solid #ffeaa7; border-radius: 5px; color: #856404;">
-                        <h3>هیچ گواهی‌نامه‌ای یافت نشد</h3>
-                        <p>' . esc_html($user_data->display_name) . ' عزیز، هنوز هیچ دوره‌ای که شامل گواهی‌نامه باشد را تکمیل نکرده‌اید یا دوره‌های شما شامل گواهی‌نامه نمی‌شود.</p>
+                        <h3>هیچ مدرکی یافت نشد</h3>
+                        <p>' . esc_html($user_data->display_name) . ' عزیز، هنوز هیچ دوره‌ای که شامل مدرک باشد را تکمیل نکرده‌اید یا دوره‌های شما شامل مدرک نمیشود.</p>
                         <p><strong>شناسه کاربر:</strong> ' . esc_html($user_id) . '</p>
-                        <p><em>اگر فکر می‌کنید این اشتباه است، لطفاً با پشتیبانی تماس بگیرید.</em></p>
+                        <p><em>اگر فکر میکنید این اشتباه است، لطفاً با پشتیبانی تماس بگیرید.</em></p>
                     </div>
                 </div>';
     }
@@ -447,14 +450,14 @@ function nias_certificate_shortcode($atts)
     if ($nias_course_certificate_verify) {
         $output = '<div class="certificate-download-container" style="max-width: 800px; margin: auto; padding: 20px; background-color: #f9f9f9; border-radius: 10px; z-index: 99;position:relative;">
         ' . $verification_message . '
-        <h2>گواهی‌نامه‌های دوره‌ها</h2>
+        <h2>مدارک دوره‌ها</h2>
         <p><strong>کاربر:</strong> ' . esc_html($user_data->display_name) . ' (ID: ' . esc_html($user_id) . ')</p>
         <table class="certificate-table">
             <thead>
                 <tr>
                     <th>نام دوره</th>
                     <th>تاریخ تکمیل</th>
-                    <th>کد گواهی‌نامه</th>
+                    <th>کد گواهی</th>
                     <th>دانلود گواهی</th>
                 </tr>
             </thead>
@@ -475,7 +478,7 @@ function nias_certificate_shortcode($atts)
                         <input type="hidden" name="date" value="%s">
                         <input type="hidden" name="certificate_code" value="%s">
                         <input type="hidden" name="nonce" value="%s">
-                        <button type="submit" class="button">دانلود گواهی‌نامه</button>
+                        <button type="submit" class="button">دانلود گواهی</button>
                     </form>
                     <div class="progress-container" style="display: none;">
                         <div class="progress-bar"></div>
@@ -504,10 +507,10 @@ function nias_certificate_shortcode($atts)
         return $output;
     } else {
         return '<div class="certificate-download-container" style="max-width: 800px; margin: auto; padding: 20px; background-color: #f9f9f9; border-radius: 10px; z-index: 99;position:relative;">
-        <h2>گواهی‌نامه‌های دوره‌ها</h2>
+        <h2>گواهی دوره‌ها</h2>
         <p><strong>کاربر:</strong> ' . esc_html($user_data->display_name) . ' (ID: ' . esc_html($user_id) . ')</p>
         <div class="certificate-error">
-            <h3>❌ گواهی‌نامه نامعتبر است</h3>
+            <h3>❌ گواهی نامعتبر است</h3>
             <p>کدی که وارد کرده‌اید در سیستم یافت نشد.</p>
         </div>
     </div>';
@@ -583,7 +586,7 @@ function handle_certificate_generation()
 
         $certificate->output('certificate.pdf', 'I');
     } catch (Exception $e) {
-        wp_die('Error generating certificate: ' . $e->getMessage() . ' / خطا در تولید گواهی‌نامه');
+        wp_die('Error generating certificate: ' . $e->getMessage() . ' / خطا در تولید گواهی');
     }
 
     exit;
