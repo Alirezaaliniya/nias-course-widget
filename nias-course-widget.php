@@ -1,8 +1,5 @@
 <?php
 
-use Carbon_Fields\Carbon_Fields;
-use function Carbon_Fields\get_theme_option as carbon_get_theme_option;
-
 /**
  * Plugin Name: Nias course | دوره ساز نیاس
  * Description:   پلاگین دوره ساز نیاس ویجت "دوره ساز نیاس" را به ویرایشگر المنتور شما اضافه میکند که میتوانید دوره مورد نظر خود را درون تمپلیت محصول بسازیدو قالب خود را به یک قالب فروش دوره و فایل تبدیل کنید | این پلاگین بصورت رایگان منتشر شده و رایگان هم خواهد ماند❤️
@@ -28,6 +25,10 @@ define('NIAS_COURSE', plugin_dir_path(__FILE__) );
 define('NIAS_COURSE_PANEL', plugin_dir_path(__FILE__) . 'admin');
 define('NIAS_WOOCOMMERCE', plugin_dir_path(__FILE__) . 'woocommerce-course');
 define('NIAS_COURSE_INC', plugin_dir_path(__FILE__) . 'INC');
+define('NIAS_IMAGE', plugin_dir_url(__FILE__) . 'assets/images/');
+
+//  Composer
+require plugin_dir_path(__FILE__) . 'vendor/autoload.php';
 
 require(NIAS_COURSE_PANEL . '/adminpannel.php');
 require(NIAS_WOOCOMMERCE . '/function-course.php');
@@ -36,33 +37,18 @@ require(__DIR__ . '/widgets/videomodal.php');
 
 // Include certificate files only if the feature is enabled
 
-    require(NIAS_COURSE_INC . '/certificate-config-user.php');
-    require(NIAS_COURSE_INC . '/certificate-show.php');
+require(NIAS_COURSE_INC . '/certificate-show.php');
+require(NIAS_COURSE_INC . '/certificate-config-user.php');
 
 
-//  Composer
-require_once plugin_dir_path(__FILE__) . 'vendor/autoload.php';
+
 
 
 // Carbon Fields
-add_action('after_setup_theme', 'niascourse_load_carbon_fields');
-function niascourse_load_carbon_fields() {
-    require_once(__DIR__ . '/vendor/autoload.php');
+add_action('after_setup_theme', 'nias_course_load_carbon_fields');
+function nias_course_load_carbon_fields() {
     \Carbon_Fields\Carbon_Fields::boot();
 }
-
-// Use carbon_get_theme_option function after Carbon Fields is booted
-add_action('carbon_fields_fields_registered', 'niascourse_initialize_carbon_fields_functions');
-function niascourse_initialize_carbon_fields_functions() {
-    function get_certificate_verification_page_url() {
-        $page_id = carbon_get_theme_option('certificate_page');
-        if (!$page_id) {
-            return home_url('/verify-certificate'); // fallback to default
-        }
-        return get_permalink($page_id);
-    }
-}
-
 /*
 // separate translation file
 add_filter('carbon_fields_translate_strings', 'translate_carbon_fields_strings');
