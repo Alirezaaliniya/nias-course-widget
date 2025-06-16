@@ -105,7 +105,7 @@ class CertificateMPDF
         // تشخیص زبان متن نام
         $nameClass = 'english-text';
 
-        $html = '
+        $html = '<div class="nias-course-pdf">
 <table style="width: 100%; border-collapse: collapse; font-family: Arial, sans-serif; text-align: center; direction: rtl;">
     <!-- لوگو -->
     <tr>
@@ -178,7 +178,8 @@ class CertificateMPDF
             </table>
         </td>
     </tr>
-</table>';
+</table>
+';
 
         return $html;
     }
@@ -191,7 +192,7 @@ class CertificateMPDF
         body {
     background-image: url("' . NIAS_IMAGE . '/background.png");
     background-repeat: no-repeat;
-    background-position: center;ّ
+    background-position: center;
     background-size: cover;
 }
         </style>';
