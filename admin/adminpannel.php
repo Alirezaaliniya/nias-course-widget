@@ -155,6 +155,18 @@ Field::make('radio', 'nias_two_way_verification', __('فعالسازی حالت 
                     })
                     ->set_help_text(__('صفحه‌ای که می‌خواهید مدرک در آن نمایش داده شود را انتخاب کنید', 'nias-course-widget')),
 
+                    Field::make('html', 'nias_certificate_shortcode_info')
+                    ->set_html('
+                        <div style="margin-top: -10px; background: #fff3cd; padding: 10px; border: 1px solid #ffeeba; border-radius: 4px;">
+                            <strong>شورت‌کدها:</strong><br><br>
+                            <span style="color: #856404;">از شورت کد در صفحه ای که انتخاب کردی استفاده کن </span><br><br>
+
+                            <code>[nias_certificate]</code> برای نمایش مدرک<br><br>
+                            <code>[nias_certificate_preview]</code> برای پیش‌نمایش<br><br>
+                            <span style="color: #856404;">حواست باشه بعد از تست، شورت‌کد پیش‌نمایش رو برداری </span>
+                        </div>
+                    '),
+
                 Field::make('multiselect', 'certificate_selected_categories', __('دسته‌بندی‌های انتخابی', 'nias-course-widget'))
                     ->set_conditional_logic([
                         'relation' => 'AND',
