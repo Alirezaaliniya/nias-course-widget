@@ -91,22 +91,45 @@ class CertificateMPDF
         $nameClass = 'english-text';
 
         $html = '
-        <div class="certificate-container">
-            <!-- لوگو -->
-            <div class="logo">
-                <img src="' . NIAS_IMAGE . '/certificate.png" alt="Certificate Logo" width="180" height="180"/>
-            </div>
-            
-            <!-- محتوای اصلی گواهی -->
-            <div class="certificate-content">
-                <h1 class="certificate-title-farsi">گواهی تکمیل دوره</h1>
-                                <p class="intro-text-farsi">این گواهی‌نامه تأیید می‌کند که</p>
-                
-                <h2 class="student-name ' . $nameClass . '">' . htmlspecialchars($name) . '</h2>
-                                <p class="completion-text-farsi">با موفقیت دوره زیر را تکمیل نمود:</p>
-                <h3 class="course-name">' . htmlspecialchars($course) . '</h3>
-                <p class="completion-date-farsi">در تاریخ ' . $this->convertToJalali($date) . '</p>
-            </div>
+<table style="width: 100%; border-collapse: collapse; font-family: Arial, sans-serif; text-align: center; direction: rtl;">
+    <!-- لوگو -->
+    <tr>
+        <td style="padding: 20px;">
+            <img src="' . NIAS_IMAGE . '/certificate.png" alt="Certificate Logo" style="width: 180px; height: 180px;"/>
+        </td>
+    </tr>
+<!-- محتوای اصلی گواهی -->
+    <tr>
+        <td style="padding: 20px;">
+            <h1 style="font-size: 28px; color: #333; margin: 10px 0;">گواهی تکمیل دوره</h1>
+        </td>
+    </tr>
+    <tr>
+        <td style="padding: 20px;">
+            <p style="font-size: 16px; color: #555; margin: 10px 0;">این گواهی‌نامه تأیید می‌کند که</p>
+        </td>
+    </tr>
+    <tr>
+        <td style="padding: 20px;">
+            <h2 style="font-size: 24px; color: #000; margin: 10px 0; font-weight: bold;" class="' . $nameClass . '">' . htmlspecialchars($name) . '</h2>
+        </td>
+    </tr>
+    <tr>
+        <td style="padding: 20px;">
+            <p style="font-size: 16px; color: #555; margin: 10px 0;">با موفقیت دوره زیر را تکمیل نمود:</p>
+        </td>
+    </tr>
+    <tr>
+        <td style="padding: 20px;">
+            <h3 style="font-size: 20px; color: #333; margin: 10px 0;">' . htmlspecialchars($course) . '</h3>
+        </td>
+    </tr>
+    <tr>
+        <td style="padding: 20px;">
+            <p style="font-size: 16px; color: #555; margin: 10px 0;">در تاریخ ' . $this->convertToJalali($date) . '</p>
+        </td>
+    </tr>
+</table>
             
             <!-- امضا و مهر -->
 <table style="width: 100%; border-collapse: collapse;">
@@ -154,199 +177,13 @@ class CertificateMPDF
     {
         return '
         <style>
-        @page {
-            margin: 0;
-            size: A4 Portrait;
-        }
-        
-        body {
-            margin: 0;
-            padding: 0;
-            font-family: vazir;
-            direction: rtl;
-            width: 100%;
-        }
-            body, * {
-  letter-spacing: 0 !important; /* جلوگیری از فاصله افتادن بین حروف فارسی */
-}
+
         body {
     background-image: url("' . NIAS_IMAGE . '/background.png");
     background-repeat: no-repeat;
     background-position: center;ّ
     background-size: cover;
 }
-    .logo{
-    text-align:center;
-    display: flex;
-     justify-content: center;
-      align-items: center;
-       width: 100%;
-    }
-
-        .certificate-container {
-            position: relative;
-            width: 297mm;
-            height: 210mm;
-            overflow: hidden;
-                        display: flex;
-            justify-content: center;
-            align-items: center;
-        }
-        
-
-        
-        .certificate-content {
-            top: 60mm; /* کاهش فاصله از بالا */
-            left: 0;
-            width: 100%;
-            text-align: center;
-            z-index: 3;
-            transform: scale(0.9); /* کوچک‌تر کردن محتوا */
-        }
-        
-        .certificate-title {
-            font-size: 24pt;
-            font-weight: bold;
-            color: #2c3e50;
-            margin: 0 0 5mm 0;
-            direction: rtl;
-        }
-        
-        .certificate-title-farsi {
-            font-family: vazir;
-            font-size: 20pt;
-            font-weight: bold;
-            color: #34495e;
-            margin: 10mm 0 10mm 0;
-            direction: rtl;
-             unicode-bidi: embed;
-        }
-        
-        .intro-text, .completion-text {
-            font-size: 16pt;
-            color: #2c3e50;
-            margin: 5mm 0;
-                        direction: rtl;
-             unicode-bidi: embed;
-        }
-        
-        .intro-text-farsi, .completion-text-farsi {
-            font-family: vazir;
-            font-size: 14pt;
-            color: #34495e;
-            direction: rtl;
-        }
-        
-        .student-name {
-            font-size: 22pt;
-            font-weight: bold;
-            color: #e74c3c;
-            margin: 8mm 0;
-            text-decoration: underline;
-        }
-        
-        .farsi-text, 
-        .certificate-title-farsi, 
-        .intro-text-farsi, 
-        .completion-text-farsi,
-        .course-description-farsi,
-        .completion-date-farsi,
-        .signature-text-farsi,
-        .instructor-text-farsi {
-            font-family: vazir;
-            direction: rtl;
-            text-align: center;
-        }
-        
-        .course-description {
-            font-size: 16pt;
-            color: #2c3e50;
-            margin: 5mm 0;
-        }
-        
-        .course-description-farsi {
-            font-family: vazir;
-            font-size: 14pt;
-            color: #34495e;
-            margin: 3mm 0;
-            direction: rtl;
-        }
-        
-        .course-name {
-            font-size: 18pt;
-            font-weight: bold;
-            color: #27ae60;
-            margin: 8mm 0;
-        }
-        
-        .completion-date {
-            font-size: 16pt;
-            color: #2c3e50;
-            margin: 5mm 0;
-        }
-        
-        .completion-date-farsi {
-            font-family: vazir;
-            font-size: 14pt;
-            color: #34495e;
-            margin: 3mm 0;
-            direction: rtl;
-        }
-        
-        .signature-section {
-            z-index: 3;
-        }
-        
-        .signature {
-            text-align: center;
-            margin-bottom: 10mm;
-        }
-        
-        .signature img {
-            width: 60mm;
-            height: 40mm;
-        }
-        
-        .signature-text {
-            font-size: 12pt;
-            color: #2c3e50;
-            margin: 2mm 0;
-        }
-        
-        .signature-text-farsi {
-            font-family: vazir;
-            font-size: 11pt;
-            color: #34495e;
-            margin: 1mm 0;
-            direction: rtl;
-        }
-    
-        
-        .stamp img {
-            width: 50mm;
-            height: 50mm;
-        }
-        
-        .instructor-info {
-            text-align: right;
-            z-index: 3;
-        }
-        
-        .instructor-text {
-            font-size: 12pt;
-            font-style: italic;
-            color: #2c3e50;
-            margin: 2mm 0;
-        }
-        
-        .instructor-text-farsi {
-            font-family: vazir;
-            font-size: 11pt;
-            font-style: italic;
-            color: #34495e;
-            margin: 1mm 0;
-            direction: rtl;
-        }
         </style>';
     }
 
