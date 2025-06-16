@@ -176,22 +176,22 @@ Field::make('radio', 'nias_two_way_verification', __('فعالسازی حالت 
                     ->set_help_text(__('دسته‌بندی‌هایی که می‌خواهید مدرک برای محصولات آنها نمایش داده شود را انتخاب کنید', 'nias-course-widget')),
 
                 Field::make('image', 'certificate_watermark', __('تصویر مارک مدرک', 'nias-course-widget'))
-                    ->set_help_text(__('تصویر مارک یا واترمارک مدرک را آپلود کنید', 'nias-course-widget'))
+                    ->set_help_text(__('تصویر مارک یا واترمارک مدرک را آپلود کنید. توجه کنید تصویر انتخاب شده از نوع svg نباشد!', 'nias-course-widget'))
                     ->set_value_type('url')
                     ->set_width(50),
 
                 Field::make('image', 'certificate_header_bg', __('تصویر پس زمینه هدر', 'nias-course-widget'))
-                    ->set_help_text(__('تصویر پس زمینه بخش بالای مدرک را آپلود کنید', 'nias-course-widget'))
+                    ->set_help_text(__('تصویر پس زمینه بخش بالای مدرک را آپلود کنید. توجه کنید تصویر انتخاب شده از نوع svg نباشد!', 'nias-course-widget'))
                     ->set_value_type('url')
                     ->set_width(50),
 
                 Field::make('image', 'certificate_footer_bg', __('تصویر پس زمینه فوتر', 'nias-course-widget'))
-                    ->set_help_text(__('تصویر پس زمینه بخش پایین مدرک را آپلود کنید', 'nias-course-widget'))
+                    ->set_help_text(__('تصویر پس زمینه بخش پایین مدرک را آپلود کنید. توجه کنید تصویر انتخاب شده از نوع svg نباشد!', 'nias-course-widget'))
                     ->set_value_type('url')
                     ->set_width(50),
 
                 Field::make('image', 'certificate_icon', __('نماد سرتیفیکت', 'nias-course-widget'))
-                    ->set_help_text(__('نماد یا آیکون مدرک را آپلود کنید', 'nias-course-widget'))
+                    ->set_help_text(__('نماد یا آیکون مدرک را آپلود کنید. توجه کنید تصویر انتخاب شده از نوع svg نباشد!', 'nias-course-widget'))
                     ->set_value_type('url')
                     ->set_width(50),
 
@@ -216,12 +216,12 @@ Field::make('radio', 'nias_two_way_verification', __('فعالسازی حالت 
                     ->set_width(50),
 
                 Field::make('image', 'certificate_seal_image', __('تصویر مهر شما', 'nias-course-widget'))
-                    ->set_help_text(__('تصویر مهر رسمی خود را آپلود کنید', 'nias-course-widget'))
+                    ->set_help_text(__('تصویر مهر رسمی خود را آپلود کنید. توجه کنید تصویر انتخاب شده از نوع svg نباشد!', 'nias-course-widget'))
                     ->set_value_type('url')
                     ->set_width(50),
 
                 Field::make('image', 'certificate_signature_image', __('تصویر امضا', 'nias-course-widget'))
-                    ->set_help_text(__('تصویر امضای مسئول صدور مدرک را آپلود کنید', 'nias-course-widget'))
+                    ->set_help_text(__('تصویر امضای مسئول صدور مدرک را آپلود کنید. توجه کنید تصویر انتخاب شده از نوع svg نباشد!', 'nias-course-widget'))
                     ->set_value_type('url')
                     ->set_width(50),
 
