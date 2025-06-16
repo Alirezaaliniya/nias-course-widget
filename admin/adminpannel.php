@@ -175,38 +175,59 @@ Field::make('radio', 'nias_two_way_verification', __('فعالسازی حالت 
                     })
                     ->set_help_text(__('دسته‌بندی‌هایی که می‌خواهید مدرک برای محصولات آنها نمایش داده شود را انتخاب کنید', 'nias-course-widget')),
 
-                Field::make('image', 'certificate_signature', __('تصویر امضا', 'nias-course-widget'))
-                    ->set_help_text(__('تصویر امضای مسئول صدور مدرک را آپلود کنید', 'nias-course-widget'))
-                    ->set_value_type('url')
-                    ->set_width(50),
-
-                Field::make('image', 'certificate_logo', __('تصویر لوگو', 'nias-course-widget'))
-                    ->set_help_text(__('لوگوی موسسه یا مرکز آموزشی را آپلود کنید', 'nias-course-widget'))
-                    ->set_value_type('url')
-                    ->set_width(50),
-
-                Field::make('image', 'certificate_seal', __('تصویر مهر', 'nias-course-widget'))
-                    ->set_help_text(__('تصویر مهر موسسه را آپلود کنید', 'nias-course-widget'))
-                    ->set_value_type('url')
-                    ->set_width(50),
-
                 Field::make('image', 'certificate_watermark', __('تصویر مارک مدرک', 'nias-course-widget'))
                     ->set_help_text(__('تصویر مارک یا واترمارک مدرک را آپلود کنید', 'nias-course-widget'))
                     ->set_value_type('url')
                     ->set_width(50),
 
-                Field::make('rich_text', 'certificate_description', __('توضیحات مدرک', 'nias-course-widget'))
-                    ->set_help_text(__('توضیحات و متن مدرک را وارد کنید. می‌توانید از متغیرهای زیر استفاده کنید:', 'nias-course-widget') . 
-                        '<br>{student_name} - ' . __('نام دانشجو', 'nias-course-widget') .
-                        '<br>{course_name} - ' . __('نام دوره', 'nias-course-widget') .
-                        '<br>{completion_date} - ' . __('تاریخ تکمیل دوره', 'nias-course-widget') .
-                        '<br>{certificate_id} - ' . __('شماره مدرک', 'nias-course-widget'))
-                    ->set_settings([
-                        'media_buttons' => true,
-                        'textarea_rows' => 10,
-                        'teeny' => false,
-                        'quicktags' => true
+                Field::make('image', 'certificate_header_bg', __('تصویر پس زمینه هدر', 'nias-course-widget'))
+                    ->set_help_text(__('تصویر پس زمینه بخش بالای مدرک را آپلود کنید', 'nias-course-widget'))
+                    ->set_value_type('url')
+                    ->set_width(50),
+
+                Field::make('image', 'certificate_footer_bg', __('تصویر پس زمینه فوتر', 'nias-course-widget'))
+                    ->set_help_text(__('تصویر پس زمینه بخش پایین مدرک را آپلود کنید', 'nias-course-widget'))
+                    ->set_value_type('url')
+                    ->set_width(50),
+
+                Field::make('image', 'certificate_icon', __('نماد سرتیفیکت', 'nias-course-widget'))
+                    ->set_help_text(__('نماد یا آیکون مدرک را آپلود کنید', 'nias-course-widget'))
+                    ->set_value_type('url')
+                    ->set_width(50),
+
+                Field::make('text', 'certificate_first_title', __('تایتل اول مدرک', 'nias-course-widget'))
+                    ->set_help_text(__('عنوان اصلی که در بالای مدرک نمایش داده می‌شود', 'nias-course-widget'))
+                    ->set_width(50),
+
+                Field::make('text', 'certificate_before_name_title', __('تایتل قبل از نام دانشجو', 'nias-course-widget'))
+                    ->set_help_text(__('متنی که قبل از نام دانشجو نمایش داده می‌شود', 'nias-course-widget'))
+                    ->set_width(50),
+
+                Field::make('text', 'certificate_after_name_title', __('تایتل بعد از نام دانشجو', 'nias-course-widget'))
+                    ->set_help_text(__('متنی که بعد از نام دانشجو نمایش داده می‌شود', 'nias-course-widget'))
+                    ->set_width(50),
+
+                Field::make('radio', 'certificate_show_date', __('نمایش تاریخ', 'nias-course-widget'))
+                    ->set_options([
+                        'on' => __('فعال', 'nias-course-widget'),
+                        'off' => __('غیرفعال', 'nias-course-widget'),
                     ])
+                    ->set_default_value('on')
+                    ->set_width(50),
+
+                Field::make('image', 'certificate_seal_image', __('تصویر مهر شما', 'nias-course-widget'))
+                    ->set_help_text(__('تصویر مهر رسمی خود را آپلود کنید', 'nias-course-widget'))
+                    ->set_value_type('url')
+                    ->set_width(50),
+
+                Field::make('image', 'certificate_signature_image', __('تصویر امضا', 'nias-course-widget'))
+                    ->set_help_text(__('تصویر امضای مسئول صدور مدرک را آپلود کنید', 'nias-course-widget'))
+                    ->set_value_type('url')
+                    ->set_width(50),
+
+                Field::make('text', 'certificate_signer_name', __('نام امضا کننده', 'nias-course-widget'))
+                    ->set_help_text(__('نام شخص امضا کننده مدرک', 'nias-course-widget'))
+                    ->set_width(50),
             ]);
     }
 }
