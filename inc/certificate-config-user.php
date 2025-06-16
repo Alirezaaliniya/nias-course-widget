@@ -111,11 +111,11 @@ function display_certificate_code_field($user) {
     // Get the certificate code if it exists
     $certificate_code = get_user_meta($user->ID, 'usercertificate_code', true);
     ?>
-    <h3><?php _e('Certificate Information', 'nias-course-widget'); ?></h3>
+    <h3><?php _e('اطلاعات مدرک', 'nias-course-widget'); ?></h3>
     
     <table class="form-table">
         <tr>
-            <th><label for="usercertificate_code"><?php _e('Certificate Code', 'nias-course-widget'); ?></label></th>
+            <th><label for="usercertificate_code"><?php _e('کد گواهی', 'nias-course-widget'); ?></label></th>
             <td>
                 <input type="text" name="usercertificate_code" id="usercertificate_code" 
                     value="<?php echo esc_attr($certificate_code); ?>" class="regular-text" />
@@ -296,7 +296,7 @@ function generate_certificate_verification_button($user_id) {
     $button_html = sprintf(
         '<a href="%s" class="certificate-verification-button button" target="_blank">%s</a>',
         esc_url($verification_link),
-        __('Verify Certificate', 'nias-course-widget')
+        __('تایید مدرک', 'nias-course-widget')
     );
     
     return $button_html;
@@ -507,18 +507,18 @@ try {
     
     ?>
     <div class="certificate-verification-container">
-        <h2>Certificate Verification</h2>
+        <h2>تاییدیه مدرک</h2>
         <div class="certificate-details">
-            <p><strong>Name:</strong> <?php echo esc_html($name); ?></p>
-            <p><strong>Certificate Code:</strong> <?php echo esc_html($certificate_code); ?></p>
-            <p><strong>User ID:</strong> <?php echo esc_html($user->ID); ?></p>
-            <p><strong>Course:</strong> <?php echo esc_html($course); ?></p>
-            <p><strong>Issue Date:</strong> <?php echo esc_html($date); ?></p>
+            <p><strong>نام:</strong> <?php echo esc_html($name); ?></p>
+            <p><strong>کد مدرک:</strong> <?php echo esc_html($certificate_code); ?></p>
+            <p><strong>شناسه کاربری:</strong> <?php echo esc_html($user->ID); ?></p>
+            <p><strong>دوره:</strong> <?php echo esc_html($course); ?></p>
+            <p><strong>تاریخ صدور:</strong> <?php echo esc_html($date); ?></p>
             
-            <p><strong>Verification Status:</strong> <span class="verification-status verified">Verified</span></p>
+            <p><strong>وضعیت تأیید:</strong> <span class="verification-status verified">تأیید شده</span></p>
             
             <div class="certificate-actions">
-                <button onclick="generateCertificate()">View Certificate</button>
+                <button onclick="generateCertificate()">مشاهده گواهی</button>
             </div>
         </div>
     </div>
@@ -571,17 +571,17 @@ try {
     // If certificate generation fails, show basic verification info
     ?>
     <div class="certificate-verification-container">
-        <h2>Certificate Verification</h2>
+        <h2>تاییدیه مدرک</h2>
         <div class="certificate-details">
-            <p><strong>Name:</strong> <?php echo esc_html($name); ?></p>
-            <p><strong>Certificate Code:</strong> <?php echo esc_html($certificate_code); ?></p>
-            <p><strong>User ID:</strong> <?php echo esc_html($user->ID); ?></p>
-            <p><strong>Course:</strong> <?php echo esc_html($course); ?></p>
-            <p><strong>Issue Date:</strong> <?php echo esc_html($date); ?></p>
+            <p><strong>نام:</strong> <?php echo esc_html($name); ?></p>
+            <p><strong>کد مدرک:</strong> <?php echo esc_html($certificate_code); ?></p>
+            <p><strong>شناسه کاربری:</strong> <?php echo esc_html($user->ID); ?></p>
+            <p><strong>دوره:</strong> <?php echo esc_html($course); ?></p>
+            <p><strong>تاریخ صدور:</strong> <?php echo esc_html($date); ?></p>
             
-            <p><strong>Verification Status:</strong> <span class="verification-status verified">Verified</span></p>
+            <p><strong>وضعیت تأیید:</strong> <span class="verification-status verified">تأیید شده</span></p>
             
-            <p class="info-message">Certificate verified successfully. Certificate generation temporarily unavailable.</p>
+            <p class="info-message">گواهی با موفقیت تأیید شد. تولید گواهی به طور موقت در دسترس نیست.</p>
         </div>
     </div>
     
@@ -630,13 +630,13 @@ function add_certificate_verification_button_to_profile($user) {
     
     if (!empty($verification_button)) {
         ?>
-        <h3>Certificate Verification</h3>
+        <h3>تاییدیه مدرک</h3>
         <table class="form-table">
             <tr>
-                <th>Verification Link</th>
+                <th>لینک تاییدیه</th>
                 <td>
                     <?php echo $verification_button; ?>
-                    <p class="description">Share this link to verify your certificate online.</p>
+                    <p class="description">این لینک را میتوانید به اشتراک بگذارید.</p>
                 </td>
             </tr>
         </table>
