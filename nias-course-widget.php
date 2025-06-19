@@ -22,6 +22,7 @@ define('NIAS_COURSE_VERSION', '1.2.6');
 
 define('NIAS_COURSE', plugin_dir_path(__FILE__) );
 //define setting panel
+define('NIAS_CLASS' , plugin_dir_path(__FILE__).'class');
 define('NIAS_COURSE_PANEL', plugin_dir_path(__FILE__) . 'admin');
 define('NIAS_WOOCOMMERCE', plugin_dir_path(__FILE__) . 'woocommerce-course');
 define('NIAS_COURSE_INC', plugin_dir_path(__FILE__) . 'INC');
@@ -29,7 +30,7 @@ define('NIAS_IMAGE', plugin_dir_url(__FILE__) . 'assets/images/');
 
 //  Composer
 require plugin_dir_path(__FILE__) . 'vendor/autoload.php';
-
+require(NIAS_CLASS . '/ClassCourse.php');
 require(NIAS_COURSE_PANEL . '/adminpannel.php');
 require(NIAS_WOOCOMMERCE . '/function-course.php');
 require(NIAS_WOOCOMMERCE . '/spotplayer.php');
