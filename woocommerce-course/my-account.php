@@ -40,6 +40,7 @@ function nias_course_endpoint_content() {
     
     echo '<h2>دوره های من</h2>';
     // You can add your course listing logic here
+    include_once (NIAS_WOOCOMMERCE . '/show-course-account.php');
 }
 
 // Add settings field to WooCommerce Advanced tab
