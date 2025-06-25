@@ -4,90 +4,41 @@ namespace Nias_Course;
 // nias-render.php
 trait Nias_course_render {
     protected function render() {
+        include_once NIAS_FUNCTIONS;
 
-		// get our input from the widget settings.
-		$settings = $this->get_settings_for_display();
-		   $tag = $settings['tag_selector_titlelesson'];
-		 $tagsub = $settings['tag_selector_subtitlelesson'];
-// Check if user has purchased the course
-$bought_course = false;
-$current_user = wp_get_current_user();
-if (is_user_logged_in()) {
-    global $post;
-    if (!empty($current_user->ID) && isset($post) && !empty($post->ID)) {
-        $product_id = $post->ID;
-        
-        // Check two-way verification toggle status
-        $two_way_verification = carbon_get_theme_option('nias_two_way_verification');
-        
-        if ($two_way_verification === 'on') {
-            // Two-way verification mode is active
-            // Check using both methods
-            $wc_bought = wc_customer_bought_product($current_user->user_login, $current_user->ID, $product_id);
-            $order_bought = false;
-            
-            // Check orders with 'wc-completed' status
-            $args = [
-                'customer_id' => $current_user->ID,
-                'limit'       => -1,
-                'status'      => 'wc-completed',
-            ];
-            $orders = wc_get_orders($args);
-            foreach ($orders as $order) {
-                foreach ($order->get_items() as $item) {
-                    if ($item->get_product_id() == $product_id) {
-                        $order_bought = true;
-                        break 2; // Exit both loops after finding the purchase
-                    }
-                }
-            }
-            
-            // Course is considered purchased only if both methods confirm
-$bought_course = ($wc_bought || $order_bought);            
-        } else {
-            // Normal mode - one method confirmation is sufficient
-            if (wc_customer_bought_product($current_user->user_login, $current_user->ID, $product_id)) {
-                $bought_course = true;
-            } else {
-                // Check orders with 'wc-completed' status
-                $args = [
-                    'customer_id' => $current_user->ID,
-                    'limit'       => -1,
-                    'status'      => 'wc-completed',
-                ];
-                $orders = wc_get_orders($args);
-                foreach ($orders as $order) {
-                    foreach ($order->get_items() as $item) {
-                        if ($item->get_product_id() == $product_id) {
-                            $bought_course = true;
-                            break 2; // Exit both loops after finding the purchase
-                        }
-                    }
-                }
+        $settings = $this->get_settings_for_display();
+        $tag = $settings['tag_selector_titlelesson'];
+        $tagsub = $settings['tag_selector_subtitlelesson'];
+
+        $bought_course = false;
+        $current_user = wp_get_current_user();
+
+        if (is_user_logged_in()) {
+            global $post;
+            if (!empty($current_user->ID) && isset($post) && !empty($post->ID)) {
+                $product_id = $post->ID;
+                $bought_course = nias_has_bought_course($current_user->ID, $current_user->user_login, $product_id);
             }
         }
-    }
-}
 
+        global $product;
 
-		global $product;
-		if (  'yes' == $settings['ns_show_spot'] ) {
+        if ('yes' == $settings['ns_show_spot']) {
             $current_user_id = get_current_user_id();
             $current_product_id = get_the_ID();
             $meta_values = get_user_orders_meta_values($current_user_id, $current_product_id);
-            showspotlisence($meta_values);		}
+            showspotlisence($meta_values);
+        }
 
-if (  'yes' == $settings['ns_show_spotdl'] ) {
-    $current_user_id = get_current_user_id();
-    $current_product_id = get_the_ID();
-    $meta_values = get_user_orders_meta_values($current_user_id, $current_product_id);
-    showspotdlbox($meta_values);
-}
+        if ('yes' == $settings['ns_show_spotdl']) {
+            $current_user_id = get_current_user_id();
+            $current_product_id = get_the_ID();
+            $meta_values = get_user_orders_meta_values($current_user_id, $current_product_id);
+            showspotdlbox($meta_values);
+        }
 
 
-
-
-	?>  
+?>
   <div class="nselementory-section">
   <div class="nscourse-section">
   
