@@ -74,13 +74,15 @@ function nias_course_endpoint_content() {
     // نمایش هر دوره و محتوای آن
     foreach ($purchased_courses as $course_id) {
         $course = get_post($course_id);
-        if ($course && $course->post_type === 'product') {
+        $sections = carbon_get_post_meta($course_id, 'course_sections');
+        
+        if ($course && $course->post_type === 'product' && !empty($sections)) {
             echo '<div class="nias-purchased-course">';
             echo '<h3>' . esc_html($course->post_title) . '</h3>';
             
             // تنظیم post ID برای تابع show_course_account
             global $post;
-            $original_post = $post; // ذخیره پست اصلی
+            $original_post = $post;
             $post = $course;
             setup_postdata($post);
             
