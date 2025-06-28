@@ -310,7 +310,43 @@ function nias_course_display_content($product_id) {
                                         <div class="lesson_content">
                                             <?php
                                             if ($lesson['lesson_private']) {
-                                                echo wpautop($lesson['lesson_content']);
+                                                if ($bought_course) {
+                                                    $content = $lesson['lesson_content'];
+                                                    if (preg_match('/\[embed\](.+?)\[\/embed\]/', $content, $matches)) {
+                                                        // Extract URL from embed shortcode
+                                                        $url = $matches[1];
+                                                        echo nias_handle_video_url($url);
+                                                    } elseif (filter_var($content, FILTER_VALIDATE_URL)) {
+                                                        // If content is just a URL
+                                                        if (strpos($content, '.mp3') !== false || strpos($content, '.wav') !== false) {
+                                                            echo '<audio controls><source src="' . esc_url(trim($content)) . '" type="audio/mpeg">Your browser does not support the audio element.</audio>';
+                                                        } else {
+                                                            echo nias_handle_video_url($content);
+                                                        }
+                                                    } elseif (strpos($content, '<iframe') !== false) {
+                                                        echo '<div class="iframe-wrapper">' . $content . '</div>';
+                                                    } else {
+                                                        echo wpautop($content);
+                                                    }
+                                                } else {
+                                                    echo wpautop($private_content_text);
+                                                }
+                                            } else {
+                                                $content = $lesson['lesson_content'];
+                                                if (preg_match('/\[embed\](.+?)\[\/embed\]/', $content, $matches)) {
+                                                    $url = $matches[1];
+                                                    echo nias_handle_video_url($url);
+                                                } elseif (filter_var($content, FILTER_VALIDATE_URL)) {
+                                                    if (strpos($content, '.mp3') !== false || strpos($content, '.wav') !== false) {
+                                                        echo '<audio controls><source src="' . esc_url(trim($content)) . '" type="audio/mpeg">Your browser does not support the audio element.</audio>';
+                                                    } else {
+                                                        echo nias_handle_video_url($content);
+                                                    }
+                                                } elseif (strpos($content, '<iframe') !== false) {
+                                                    echo '<div class="iframe-wrapper">' . $content . '</div>';
+                                                } else {
+                                                    echo wpautop($content);
+                                                }
                                             }
                                             ?>
                                         </div>
@@ -363,3 +399,43 @@ register_activation_hook(__FILE__, function() {
 register_deactivation_hook(__FILE__, function() {
     flush_rewrite_rules();
 });
+
+// Add this function at the top
+add_filter('wp_kses_allowed_html', 'nias_course_allowed_html', 10, 2);
+function nias_course_allowed_html($allowed_tags, $context) {
+    if ($context === 'post') {
+        $allowed_tags['iframe'] = array(
+            'src'             => true,
+            'width'          => true,
+            'height'         => true,
+            'frameborder'    => true,
+            'allowfullscreen' => true,
+            'allow'          => true,
+            'style'          => true,
+            'class'          => true,
+        );
+        $allowed_tags['audio'] = array(
+            'autoplay' => true,
+            'controls' => true,
+            'loop'     => true,
+            'muted'    => true,
+            'preload'  => true,
+            'src'      => true,
+        );
+        $allowed_tags['source'] = array(
+            'src'  => true,
+            'type' => true,
+        );
+    }
+    return $allowed_tags;
+}
+
+function nias_handle_video_url($url) {
+    $video_extensions = array('.mp4', '.webm', '.ogg');
+    foreach ($video_extensions as $ext) {
+        if (strpos($url, $ext) !== false) {
+            return '<video width="100%" controls><source src="' . esc_url(trim($url)) . '" type="video/' . str_replace('.', '', $ext) . '">Your browser does not support the video tag.</video>';
+        }
+    }
+    return '<div class="video-container"><iframe src="' . esc_url(trim($url)) . '" frameborder="0" allowfullscreen></iframe></div>';
+}
