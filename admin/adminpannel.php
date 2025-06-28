@@ -58,28 +58,6 @@ Field::make('radio', 'nias_two_way_verification', __('فعالسازی حالت 
 ->set_default_value('off')
 ->set_help_text(__('توجه این حالت تنها در صورتی استفاده شود که دوره های خریداری شده برای کاربران شما باز نمیشود', 'nias-course-widget'))
 ->set_classes('nias-toggle-switch'),
-            Field::make('html', 'nias_course_help_section')
-                ->set_html('
-                    <h2>' . __('آموزش استفاده از پلاگین را از اینجا ببینید', 'nias-course-widget') . '</h2>
-                    <div style="max-width: 100%; display: flex; gap: 20px;">
-                        <div style="flex: 1; max-width: 363px;">
-                            <h3>پارت 1</h3>
-                            <div class="h_iframe-aparat_embed_frame">
-                                <span style="display: block;padding-top: 57%"></span>
-                                <iframe src="https://www.aparat.com/video/video/embed/videohash/b90c8sh/vt/frame?titleShow=true&recom=self" allowFullScreen="true" webkitallowfullscreen="true" mozallowfullscreen="true"></iframe>
-                            </div>
-                        </div>
-                        <div style="flex: 1; max-width: 363px;">
-                            <h3>پارت 2</h3>
-                            <div class="h_iframe-aparat_embed_frame">
-                                <span style="display: block;padding-top: 57%"></span>
-                                <iframe src="https://www.aparat.com/video/video/embed/videohash/lcd5qbk/vt/frame" allowFullScreen="true" webkitallowfullscreen="true" mozallowfullscreen="true"></iframe>
-                            </div>
-                        </div>
-                    </div>
-                    <p>' . __('لطفاً در صورت وجود مشکل یا سوال از طریق تلگرام با بنده در ارتباط باشید', 'nias-course-widget') . '</p>
-                    <a href="https://T.me/niasir">T.me/niasir</a>
-                '),
          /*   Field::make('radio', 'nias_course_modern_setting', __('فعالسازی حالت مدرن دوره ساز', 'nias-course-widget'))
                 ->set_options([
                     'off' => __('غیرفعال', 'nias-course-widget'),
@@ -107,6 +85,40 @@ Field::make('radio', 'nias_two_way_verification', __('فعالسازی حالت 
                 ->set_default_value('off')
                 ->set_help_text(__('با فعال کردن این گزینه، امکان صدور و استعلام مدرک دوره فعال خواهد شد', 'nias-course-widget'))
                 ->set_classes('nias-toggle-switch'),
+                
+                Field::make('html', 'nias_course_help_section')
+                ->set_html('
+                    <h2>' . __('آموزش استفاده از پلاگین را از اینجا ببینید', 'nias-course-widget') . '</h2>
+                    <div style="max-width: 100%; display: flex; gap: 20px;">
+                        <div style="flex: 1; max-width: 363px;">
+                            <h3>پارت 1</h3>
+                            <div class="h_iframe-aparat_embed_frame">
+                                <span style="display: block;padding-top: 57%"></span>
+                                <iframe src="https://www.aparat.com/video/video/embed/videohash/b90c8sh/vt/frame?titleShow=true&recom=self" allowFullScreen="true" webkitallowfullscreen="true" mozallowfullscreen="true"></iframe>
+                            </div>
+                        </div>
+                        <div style="flex: 1; max-width: 363px;">
+                            <h3>پارت 2</h3>
+                            <div class="h_iframe-aparat_embed_frame">
+                                <span style="display: block;padding-top: 57%"></span>
+                                <iframe src="https://www.aparat.com/video/video/embed/videohash/lcd5qbk/vt/frame" allowFullScreen="true" webkitallowfullscreen="true" mozallowfullscreen="true"></iframe>
+                            </div>
+                        </div>
+                    </div>
+                    <p>' . __('لطفاً در صورت وجود مشکل یا سوال از طریق تلگرام با بنده در ارتباط باشید', 'nias-course-widget') . '</p>
+                    <a href="https://T.me/niasir">T.me/niasir</a>
+                '),
+            Field::make('html', 'nias_partners_section')
+                ->set_html('
+                    <div style="display: flex; gap: 20px; margin: 20px 0; align-items: center;justify-content: space-between;">
+                        <a href="https://nias.ir" target="_blank" rel="noopener">
+                            <img src="' . plugin_dir_url(__DIR__) . 'assets/images/nias.webp" alt="Nias" style=" height: auto;">
+                        </a>
+                        <a href="https://proelement.ir" target="_blank" rel="noopener">
+                            <img src="' . plugin_dir_url(__DIR__) . 'assets/images/proelement.webp" alt="Pro Element" style=" height: auto;">
+                        </a>
+                    </div>
+                '),
 
         ]);
 
