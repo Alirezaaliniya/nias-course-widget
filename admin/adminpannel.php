@@ -61,16 +61,20 @@ Field::make('radio', 'nias_two_way_verification', __('فعالسازی حالت 
             Field::make('html', 'nias_course_help_section')
                 ->set_html('
                     <h2>' . __('آموزش استفاده از پلاگین را از اینجا ببینید', 'nias-course-widget') . '</h2>
-                    <div style="max-width: 363px;">
-                        <h3>پارت 1</h3>
-                        <div class="h_iframe-aparat_embed_frame">
-                            <span style="display: block;padding-top: 57%"></span>
-                            <iframe src="https://www.aparat.com/video/video/embed/videohash/b90c8sh/vt/frame?titleShow=true&recom=self" allowFullScreen="true" webkitallowfullscreen="true" mozallowfullscreen="true"></iframe>
+                    <div style="max-width: 100%; display: flex; gap: 20px;">
+                        <div style="flex: 1; max-width: 363px;">
+                            <h3>پارت 1</h3>
+                            <div class="h_iframe-aparat_embed_frame">
+                                <span style="display: block;padding-top: 57%"></span>
+                                <iframe src="https://www.aparat.com/video/video/embed/videohash/b90c8sh/vt/frame?titleShow=true&recom=self" allowFullScreen="true" webkitallowfullscreen="true" mozallowfullscreen="true"></iframe>
+                            </div>
                         </div>
-                        <h3>پارت 2</h3>
-                        <div class="h_iframe-aparat_embed_frame">
-                            <span style="display: block;padding-top: 57%"></span>
-                            <iframe src="https://www.aparat.com/video/video/embed/videohash/lcd5qbk/vt/frame" allowFullScreen="true" webkitallowfullscreen="true" mozallowfullscreen="true"></iframe>
+                        <div style="flex: 1; max-width: 363px;">
+                            <h3>پارت 2</h3>
+                            <div class="h_iframe-aparat_embed_frame">
+                                <span style="display: block;padding-top: 57%"></span>
+                                <iframe src="https://www.aparat.com/video/video/embed/videohash/lcd5qbk/vt/frame" allowFullScreen="true" webkitallowfullscreen="true" mozallowfullscreen="true"></iframe>
+                            </div>
                         </div>
                     </div>
                     <p>' . __('لطفاً در صورت وجود مشکل یا سوال از طریق تلگرام با بنده در ارتباط باشید', 'nias-course-widget') . '</p>
@@ -92,7 +96,8 @@ Field::make('radio', 'nias_two_way_verification', __('فعالسازی حالت 
                 ])
                 ->set_default_value('off')
                 ->set_help_text(__('این گزینه فقط در صورتی که حساب کاربری شما یک حساب کاربری استاندارد باشد عمل خواهد کرد', 'nias-course-widget'))
-                ->set_classes('nias-toggle-switch'),
+                ->set_classes('nias-toggle-switch')
+                ->set_help_text(__('این گزینه فقط در صورتی که حساب کاربری شما یک حساب کاربری استاندارد باشد عمل خواهد کرد.<br>اگه تغییری حاصل نشد یکبار روی ذخیره تغییرات در صفحه <a href="/wp-admin/options-permalink.php">پیوندهای یکتا</a> کلیک کنید', 'nias-course-widget')),
 
             Field::make('radio', 'nias_course_certificate', __('فعالسازی مدرک دوره با قابلیت استعلام', 'nias-course-widget'))
                 ->set_options([
