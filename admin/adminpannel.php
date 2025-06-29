@@ -17,8 +17,6 @@ function crb_load() {
     \Carbon_Fields\Carbon_Fields::boot();
 }
 
-define('NIASADMIN_URL', plugin_dir_url(__DIR__) . 'admin');
-// Add the menu
 
 
 // Register Carbon Fields for settings
@@ -276,8 +274,7 @@ Field::make('radio', 'nias_two_way_verification', __('فعالسازی حالت 
 // Add the necessary styles
 function nias_course_admin_style()
 {
-    
-    wp_enqueue_style('nias-admin-css', NIASADMIN_URL . '/adminstyle.css');
+    wp_enqueue_style('nias-admin-css', NIASADMIN_URL . '/adminstyle.css', array(), NIAS_COURSE_VERSION);
 ?>
     <link href='https://fonts.googleapis.com/css?family=Vazirmatn' rel='stylesheet'>
 

@@ -14,8 +14,21 @@ class Nias_course_woocommerce extends \Elementor\Widget_Base
     {
         parent::__construct($data, $args);
 
-        wp_register_script('nscourse-js', plugin_dir_url(__DIR__) . 'assets/niascourse.js', array('jquery'), false);
-        wp_enqueue_style('nscourse-css', plugin_dir_url(__DIR__) . 'assets/niascourse.css');
+        wp_register_script(
+            'nscourse-js',
+            plugin_dir_url(__DIR__) . 'assets/niascourse.js',
+            array('jquery'),
+            NIAS_COURSE_VERSION,
+            true // اجرا در فوتر
+        );
+        wp_enqueue_script('nscourse-js');
+        
+        wp_enqueue_style(
+            'nscourse-css',
+            plugin_dir_url(__DIR__) . 'assets/niascourse.css',
+            array(),
+            NIAS_COURSE_VERSION
+        );
     }
 
 

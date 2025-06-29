@@ -28,7 +28,7 @@ define('NIAS_COURSE_PANEL', plugin_dir_path(__FILE__) . 'admin');
 define('NIAS_WOOCOMMERCE', plugin_dir_path(__FILE__) . 'woocommerce-course');
 define('NIAS_COURSE_INC', plugin_dir_path(__FILE__) . 'INC');
 define('NIAS_IMAGE', plugin_dir_url(__FILE__) . 'assets/images/');
-
+define('NIASADMIN_URL', plugin_dir_url(__DIR__) . 'admin');
 
 //  Composer
 require plugin_dir_path(__FILE__) . 'vendor/autoload.php';

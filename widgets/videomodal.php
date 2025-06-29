@@ -25,8 +25,8 @@ function nias_modal_player() {
 function nias_modal_player_script() {
     ?>
     <!-- استایل و اسکریپت‌های Plyr -->
-    <link rel="stylesheet" href="<?php echo plugin_dir_url(__DIR__) . 'assets/niasplyr.css';?>" />
-    <script src="<?php echo plugin_dir_url(__DIR__) . 'assets/niasplyrscript.js';?>"></script>
+    <link rel="stylesheet" href="<?php echo plugin_dir_url(__DIR__) . 'assets/niasplyr.css',NIAS_COURSE_VERSION;?>" />
+    <script src="<?php echo plugin_dir_url(__DIR__) . 'assets/niasplyrscript.js',NIAS_COURSE_VERSION;?>"></script>
     <script>
     jQuery(document).ready(function($) {
         // صبر تا Plyr بارگذاری شود
