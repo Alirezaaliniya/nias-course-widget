@@ -16,19 +16,16 @@
 if (! defined('ABSPATH')) {
     exit; // Exit if accessed directly.
 }
-define('NIAS_FUNCTIONS' , plugin_dir_path(__FILE__).'inc/functions.php');
-
-//define plugin version
 define('NIAS_COURSE_VERSION', '1.2.7');
 
+define('NIAS_FUNCTIONS' , plugin_dir_path(__FILE__).'inc/functions.php');
 define('NIAS_COURSE', plugin_dir_path(__FILE__) );
-//define setting panel
-define('NIAS_CLASS' , plugin_dir_path(__FILE__).'class');
 define('NIAS_COURSE_PANEL', plugin_dir_path(__FILE__) . 'admin');
 define('NIAS_WOOCOMMERCE', plugin_dir_path(__FILE__) . 'woocommerce-course');
 define('NIAS_COURSE_INC', plugin_dir_path(__FILE__) . 'INC');
+
 define('NIAS_IMAGE', plugin_dir_url(__FILE__) . 'assets/images/');
-define('NIASADMIN_URL', plugin_dir_url(__DIR__) . 'admin');
+define('NIASADMIN_URL', plugin_dir_url(__FILE__) . 'admin');
 
 //  Composer
 require plugin_dir_path(__FILE__) . 'vendor/autoload.php';
