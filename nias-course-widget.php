@@ -22,7 +22,7 @@ define('NIAS_FUNCTIONS' , plugin_dir_path(__FILE__).'inc/functions.php');
 define('NIAS_COURSE', plugin_dir_path(__FILE__) );
 define('NIAS_COURSE_PANEL', plugin_dir_path(__FILE__) . 'admin');
 define('NIAS_WOOCOMMERCE', plugin_dir_path(__FILE__) . 'woocommerce-course');
-define('NIAS_COURSE_INC', plugin_dir_path(__FILE__) . 'INC');
+define('NIAS_COURSE_INC', plugin_dir_path(__FILE__) . 'inc');
 
 define('NIAS_IMAGE', plugin_dir_url(__FILE__) . 'assets/images/');
 define('NIASADMIN_URL', plugin_dir_url(__FILE__) . 'admin');
