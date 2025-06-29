@@ -204,8 +204,8 @@ Field::make('radio', 'nias_two_way_verification', __('فعالسازی حالت 
                     })
                     ->set_help_text(__('دسته‌بندی‌هایی که می‌خواهید مدرک برای محصولات آنها نمایش داده شود را انتخاب کنید', 'nias-course-widget')),
 
-                Field::make('image', 'certificate_watermark', __('تصویر مارک مدرک', 'nias-course-widget'))
-                    ->set_help_text(__('تصویر مارک یا واترمارک مدرک را آپلود کنید. توجه کنید تصویر انتخاب شده از نوع svg نباشد!', 'nias-course-widget'))
+                Field::make('image', 'certificate_watermark', __('تصویر لوگوی شما', 'nias-course-widget'))
+                    ->set_help_text(__('تصویر مارک یا لوگوی مدرک را آپلود کنید. توجه کنید تصویر انتخاب شده از نوع svg نباشد!', 'nias-course-widget'))
                     ->set_value_type('url')
                     ->set_width(50),
 
@@ -223,6 +223,18 @@ Field::make('radio', 'nias_two_way_verification', __('فعالسازی حالت 
                     ->set_help_text(__('نماد یا آیکون مدرک را آپلود کنید. توجه کنید تصویر انتخاب شده از نوع svg نباشد!', 'nias-course-widget'))
                     ->set_value_type('url')
                     ->set_width(50),
+
+                Field::make('html', 'certificate_sample_images')
+                    ->set_html('
+                        <div style="background: #e5f6ff; padding: 15px; border: 1px solid #b8e6ff; border-radius: 4px; margin: 10px 0;">
+                            <h3 style="margin-top: 0;">دانلود نمونه تصاویر مدرک</h3>
+                            <p>برای دانلود نمونه تصاویر آماده مدرک (شامل هدر، فوتر، واترمارک و آیکون) روی لینک زیر کلیک کنید:</p>
+                            <p><a href="' . plugin_dir_url(__DIR__) . 'assets/images/certificate.zip" class="button button-secondary">
+                                <span class="dashicons dashicons-download" style="vertical-align: middle;"></span> 
+                                دانلود نمونه تصاویر مدرک
+                            </a></p>
+                        </div>
+                    '),
 
                 Field::make('text', 'certificate_first_title', __('تایتل اول مدرک', 'nias-course-widget'))
                     ->set_help_text(__('عنوان اصلی که در بالای مدرک نمایش داده می‌شود', 'nias-course-widget'))

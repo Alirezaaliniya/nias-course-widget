@@ -7,15 +7,16 @@ use Endroid\QrCode\Writer\PngWriter;
 // Get certificate settings from Carbon Fields
 function get_certificate_settings() {
     return [
-        'header_bg' => carbon_get_theme_option('certificate_header_bg') ?: NIAS_IMAGE . '/header.png',
-        'footer_bg' => carbon_get_theme_option('certificate_footer_bg') ?: NIAS_IMAGE . '/footer.png',
-        'certificate_icon' => carbon_get_theme_option('certificate_icon') ?: NIAS_IMAGE . '/certificate.png',
+        'header_bg' => carbon_get_theme_option('certificate_header_bg'),
+        'footer_bg' => carbon_get_theme_option('certificate_footer_bg'),
+        'certificate_watermark' => carbon_get_theme_option('certificate_watermark'),
+        'certificate_icon' => carbon_get_theme_option('certificate_icon'),
         'first_title' => carbon_get_theme_option('certificate_first_title') ?: 'گواهی تکمیل دوره',
         'before_name_title' => carbon_get_theme_option('certificate_before_name_title') ?: 'این گواهی تأیید میکند که',
         'after_name_title' => carbon_get_theme_option('certificate_after_name_title') ?: 'با موفقیت دوره زیر را تکمیل نمود:',
         'show_date' => carbon_get_theme_option('certificate_show_date') !== 'off',
-        'seal_image' => carbon_get_theme_option('certificate_seal_image') ?: NIAS_IMAGE . '/stamp.png',
-        'signature_image' => carbon_get_theme_option('certificate_signature_image') ?: NIAS_IMAGE . '/signature.png',
+        'seal_image' => carbon_get_theme_option('certificate_seal_image'),
+        'signature_image' => carbon_get_theme_option('certificate_signature_image'),
         'signer_name' => carbon_get_theme_option('certificate_signer_name') ?: 'مدیرعامل و مدرس: علیرضا علی‌نیا'
     ];
 }
@@ -69,17 +70,21 @@ class CertificateMPDF
         $this->mpdf->SetDefaultBodyCSS('background-position', 'center');
         $this->mpdf->SetDefaultBodyCSS('background-size', 'cover');
 
-        // Set HTML Header with custom header background
-        $headerHtml = '<div style="text-align: center; width: 100%; height: 30mm;">
-            <img src="' . $this->settings['header_bg'] . '" style="width: 100%; height: 30mm; object-fit: cover;" />
-        </div>';
-        $this->mpdf->SetHTMLHeader($headerHtml);
+        // Only set header if header image exists
+        if (!empty($this->settings['header_bg'])) {
+            $headerHtml = '<div style="text-align: center; width: 100%; height: 30mm;">
+                <img src="' . $this->settings['header_bg'] . '" style="width: 100%; height: 30mm; object-fit: cover;" />
+            </div>';
+            $this->mpdf->SetHTMLHeader($headerHtml);
+        }
 
-        // Set HTML Footer with custom footer background
-        $footerHtml = '<div style="text-align: center; width: 100%; height: 30mm;">
-            <img src="' . $this->settings['footer_bg'] . '" style="width: 100%; height: 30mm; object-fit: cover;" />
-        </div>';
-        $this->mpdf->SetHTMLFooter($footerHtml);
+        // Only set footer if footer image exists
+        if (!empty($this->settings['footer_bg'])) {
+            $footerHtml = '<div style="text-align: center; width: 100%; height: 30mm;">
+                <img src="' . $this->settings['footer_bg'] . '" style="width: 100%; height: 30mm; object-fit: cover;" />
+            </div>';
+            $this->mpdf->SetHTMLFooter($footerHtml);
+        }
     }
 
     public function createCertificate($name, $course, $date, $certificate_code = '', $qr_image = '')
@@ -102,43 +107,46 @@ class CertificateMPDF
 
     public function generateCertificateHTML($name, $course, $date, $certificate_code = '', $qr_image = '')
     {
-        // تشخیص زبان متن نام
         $nameClass = 'english-text';
 
         $html = '<div class="nias-course-pdf">
-<table style="width: 100%; border-collapse: collapse; font-family: Arial, sans-serif; text-align: center; direction: rtl;">
-    <!-- لوگو -->
-    <tr>
-        <td style="padding: 20px;">
-            <img src="' . $this->settings['certificate_icon'] . '" alt="Certificate Logo" style="width: 150px; height: 150px;"/>
-        </td>
-    </tr>
-    <!-- محتوای اصلی گواهی -->
-    <tr>
-        <td style="padding: 20px;">
-            <h1 style="font-size: 28px; color: #333; margin: 10px 0;">' . $this->settings['first_title'] . '</h1>
-        </td>
-    </tr>
-    <tr>
-        <td style="padding: 20px;">
-            <p style="font-size: 16px; color: #555; margin: 10px 0;">' . $this->settings['before_name_title'] . '</p>
-        </td>
-    </tr>
-    <tr>
-        <td style="padding: 20px;">
-            <h2 style="font-size: 24px; color: #000; margin: 10px 0; font-weight: bold;" class="' . $nameClass . '">' . htmlspecialchars($name) . '</h2>
-        </td>
-    </tr>
-    <tr>
-        <td style="padding: 20px;">
-            <p style="font-size: 16px; color: #555; margin: 10px 0;">' . $this->settings['after_name_title'] . '</p>
-        </td>
-    </tr>
-    <tr>
-        <td style="padding: 20px;">
-            <h3 style="font-size: 20px; color: #333; margin: 10px 0;">' . htmlspecialchars($course) . '</h3>
-        </td>
-    </tr>';
+<table style="width: 100%; border-collapse: collapse; font-family: Arial, sans-serif; text-align: center; direction: rtl;">';
+
+        // Only show certificate icon if available
+        if (!empty($this->settings['certificate_icon'])) {
+            $html .= '<tr>
+                <td style="padding: 20px;">
+                    <img src="' . $this->settings['certificate_icon'] . '" alt="Certificate Logo" style="width: 150px; height: 150px;"/>
+                </td>
+            </tr>';
+        }
+
+        // <!-- محتوای اصلی گواهی -->
+        $html .= '<tr>
+            <td style="padding: 20px;">
+                <h1 style="font-size: 28px; color: #333; margin: 10px 0;">' . $this->settings['first_title'] . '</h1>
+            </td>
+        </tr>
+        <tr>
+            <td style="padding: 20px;">
+                <p style="font-size: 16px; color: #555; margin: 10px 0;">' . $this->settings['before_name_title'] . '</p>
+            </td>
+        </tr>
+        <tr>
+            <td style="padding: 20px;">
+                <h2 style="font-size: 24px; color: #000; margin: 10px 0; font-weight: bold;" class="' . $nameClass . '">' . htmlspecialchars($name) . '</h2>
+            </td>
+        </tr>
+        <tr>
+            <td style="padding: 20px;">
+                <p style="font-size: 16px; color: #555; margin: 10px 0;">' . $this->settings['after_name_title'] . '</p>
+            </td>
+        </tr>
+        <tr>
+            <td style="padding: 20px;">
+                <h3 style="font-size: 20px; color: #333; margin: 10px 0;">' . htmlspecialchars($course) . '</h3>
+            </td>
+        </tr>';
 
         // Add date section if enabled
         if ($this->settings['show_date']) {
@@ -152,22 +160,32 @@ class CertificateMPDF
         $html .= '</table>
             
 <!-- امضا و مهر -->
-<table style="width: 100%; border-collapse: collapse;">
-    <tr>
-        <td style="text-align: center;">
-            <img src="' . $this->settings['signature_image'] . '" alt="Signature" width="120" height="120" />
-            <p style="font-size: 13px;">' . $this->settings['signer_name'] . '</p>
-        </td>
-        <td style="text-align: center;">
-            <img src="' . $this->settings['seal_image'] . '" alt="Stamp" width="120" height="120" />
-        </td>
-    </tr>
-</table>
+<table style="width: 100%; border-collapse: collapse;"><tr>';
+        
+        if (!empty($this->settings['certificate_watermark'])) {
+            $html .= '<td style="text-align: center; width: 33%;">
+                <img src="' . $this->settings['certificate_watermark'] . '" alt="Watermark" width="100" height="100" style="opacity: 0.7;" />
+            </td>';
+        }
+        
+        if (!empty($this->settings['signature_image'])) {
+            $html .= '<td style="text-align: center;">
+                <img src="' . $this->settings['signature_image'] . '" alt="Signature" width="120" height="120" />
+                <p style="font-size: 13px;">' . $this->settings['signer_name'] . '</p>
+            </td>';
+        }
+        
+        if (!empty($this->settings['seal_image'])) {
+            $html .= '<td style="text-align: center;">
+                <img src="' . $this->settings['seal_image'] . '" alt="Stamp" width="120" height="120" />
+            </td>';
+        }
+        
+        $html .= '</tr></table>';
 
-<table style="width: 100%; border-collapse: collapse; margin-top:20px;">
-    <tr>
-        <td style="text-align: center;">
-            <table style="width: 100%; border-collapse: collapse; margin-top:20px;">
+        // Only show QR code if available
+        if (!empty($qr_image)) {
+            $html .= '<table style="width: 100%; border-collapse: collapse; margin-top:20px;">
                 <tr>
                     <td style="text-align: center;">
                         <img src="' . $qr_image . '" alt="QR Code" width="85" height="85" />
@@ -175,12 +193,10 @@ class CertificateMPDF
                         <p>' . htmlspecialchars($certificate_code) . '</p>
                     </td>
                 </tr>
-            </table>
-        </td>
-    </tr>
-</table>
-';
+            </table>';
+        }
 
+        $html .= '</div>';
         return $html;
     }
 
