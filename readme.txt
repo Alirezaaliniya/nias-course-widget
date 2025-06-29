@@ -5,7 +5,7 @@ Donate link: https://nias.ir/
 Requires at least: 5.8
 Tested up to: 6.7.1
 Requires PHP: 7.4
-Stable tag: 1.2.6
+Stable tag: 1.2.7
 License: GPLv2
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -24,6 +24,9 @@ License URI: https://www.gnu.org/licenses/gpl-2.0.html
 * امکان فروش محصولات فیزیکی و دانلودی در کنار هم با توجه به طراحی شما
 * امکان استفاده از لینک های امن ووکامرس برای ویجت ویرایش المنتوری
 * پشتیبانی از ایفریم
+*قابلیت نمایش ویدیو در مودال
+*قابلیت صدور مدرک برای دانشجویان با بارکد اختصاصی و قابلیت پیگیری وضعیت مدرک
+*نمایش دوره در پنل کاربری ووکامرس
 
 == پشتیبانی ==
 * [پشتیبانی در سایت نیاس](https://nias.ir/)
@@ -50,8 +53,18 @@ License URI: https://www.gnu.org/licenses/gpl-2.0.html
 1. Screenshot 1
 2. Screenshot 2
 3. Screenshot 3
+4. Screenshot 4
+5. Screenshot 5
+6. Screenshot 6
+
 
 == Changelog ==
+=v1.2.7=
+*رفع برخی مشکلات امنیتی
+*قابلیت صدور مدرک برای دانشجویان با بارکد اختصاصی و قابلیت پیگیری وضعیت مدرک
+*نمایش دوره در پنل کاربری ووکامرس
+*قابلیت باز بودن پیشفرض فصل ها در ویجت
+
 =v1.2.6=
 *رفع برخی مشکلات امنیتی
 
