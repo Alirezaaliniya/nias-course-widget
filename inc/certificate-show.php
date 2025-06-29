@@ -413,7 +413,6 @@ function nias_certificate_shortcode($atts)
             $nias_course_certificate_verify = true;
             $verification_message = '<div class="certificate-success">
                         <h3>✅ گواهی‌ معتبر است</h3>
-                        <p><strong>کد گواهی:</strong> ' . esc_html($code_param) . '</p>
                         <p><strong>شناسه کاربر:</strong> ' . esc_html($user_id_param) . '</p>
                         <p>این گواهی معتبر و قابل اعتماد است.</p>
                     </div>';

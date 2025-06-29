@@ -71,9 +71,8 @@ Field::make('radio', 'nias_two_way_verification', __('فعالسازی حالت 
                     'on' => __('فعال', 'nias-course-widget'),
                 ])
                 ->set_default_value('off')
-                ->set_help_text(__('این گزینه فقط در صورتی که حساب کاربری شما یک حساب کاربری استاندارد باشد عمل خواهد کرد', 'nias-course-widget'))
                 ->set_classes('nias-toggle-switch')
-                ->set_help_text(__('این گزینه فقط در صورتی که حساب کاربری شما یک حساب کاربری استاندارد باشد عمل خواهد کرد.<br>اگه تغییری حاصل نشد یکبار روی ذخیره تغییرات در صفحه <a href="/wp-admin/options-permalink.php">پیوندهای یکتا</a> کلیک کنید', 'nias-course-widget')),
+                ->set_help_text(__('این گزینه فقط در صورتی که حساب کاربری شما یک حساب کاربری استاندارد باشد عمل خواهد کرد همچنین حتماً باید از ویجت ووکامرسی استفاده کرده باشید.<br>اگه تغییری حاصل نشد یکبار روی ذخیره تغییرات در صفحه <a href="/wp-admin/options-permalink.php">پیوندهای یکتا</a> کلیک کنید', 'nias-course-widget')),
 
             Field::make('radio', 'nias_course_certificate', __('فعالسازی مدرک دوره با قابلیت استعلام', 'nias-course-widget'))
                 ->set_options([
