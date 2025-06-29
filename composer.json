@@ -2,6 +2,7 @@
     "require": {
         "htmlburger/carbon-fields": "^3.6",
         "endroid/qr-code": "^4.6",
-        "mpdf/mpdf": "8.1"
+        "mpdf/mpdf": "8.1",
+        "setasign/fpdi": "~2.3.0"
     }
 }
