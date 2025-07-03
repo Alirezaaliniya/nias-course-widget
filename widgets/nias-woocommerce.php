@@ -742,12 +742,12 @@ $bought_course = ($wc_bought || $order_bought);
                                                 <?php
                                                 if ($lesson['lesson_private']) {
                                                     if ($bought_course) {
-                                                        echo wpautop($lesson['lesson_content']);
+                                                        echo $lesson['lesson_content'];
                                                     } else {
-                                                        echo wpautop($settings['nsprivatetextcontent']);
+                                                        echo $settings['nsprivatetextcontent'];
                                                     }
                                                 } else {
-                                                    echo wpautop($lesson['lesson_content']);
+                                                    echo $lesson['lesson_content'];
                                                 }
                                                 ?>
                                             </div>
