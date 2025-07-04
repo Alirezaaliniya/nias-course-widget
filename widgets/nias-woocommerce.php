@@ -133,6 +133,30 @@ class Nias_course_woocommerce extends \Elementor\Widget_Base
                 ],
             ]
         );
+
+        $this->add_control(
+            'nsarrowicon_part',
+            [
+                'label' => esc_html__('آیکون باز و بسته شدن درس ها', 'nias-course-widget'),
+                'type' => \Elementor\Controls_Manager::ICONS,
+                'default' => [
+                    'value' => 'fas fa-chevron-down',
+                    'library' => 'fa-solid',
+                ],
+                'recommended' => [
+                    'fa-solid' => [
+                        'circle',
+                        'dot-circle',
+                        'square-full',
+                    ],
+                    'fa-regular' => [
+                        'circle',
+                        'dot-circle',
+                        'square-full',
+                    ],
+                ],
+            ]
+        );
         $this->add_control(
             'nspreviewicon',
             [
@@ -734,7 +758,7 @@ class Nias_course_woocommerce extends \Elementor\Widget_Base
                                                         }
                                                     } ?>
                                                     <i class="nsarrowicon nias-course-icon">
-                                                        <?php \Elementor\Icons_Manager::render_icon($settings['nsarrowicon'], ['aria-hidden' => 'true']); ?>
+                                                        <?php \Elementor\Icons_Manager::render_icon($settings['nsarrowicon_part'], ['aria-hidden' => 'true']); ?>
                                                     </i>
                                                 </div>
                                             </div>
@@ -742,12 +766,12 @@ class Nias_course_woocommerce extends \Elementor\Widget_Base
                                                 <?php
                                                 if ($lesson['lesson_private']) {
                                                     if ($bought_course) {
-                                                        echo apply_filters('the_content', $lesson['lesson_content']);
+                                                        echo $lesson['lesson_content'];
                                                     } else {
-                                                        echo apply_filters('the_content', $settings['nsprivatetextcontent']);
+                                                        echo $settings['nsprivatetextcontent'];
                                                     }
                                                 } else {
-                                                    echo apply_filters('the_content', $lesson['lesson_content']);
+                                                    echo $lesson['lesson_content'];
                                                 }
                                                 ?>
                                             </div>
