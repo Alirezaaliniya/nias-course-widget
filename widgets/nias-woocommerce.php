@@ -22,7 +22,7 @@ class Nias_course_woocommerce extends \Elementor\Widget_Base
             true // اجرا در فوتر
         );
         wp_enqueue_script('nscourse-js');
-        
+
         wp_enqueue_style(
             'nscourse-css',
             plugin_dir_url(__DIR__) . 'assets/niascourse.css',
@@ -97,42 +97,42 @@ class Nias_course_woocommerce extends \Elementor\Widget_Base
         );
 
         $this->add_control(
-			'nias_openorclose',
-			[
-			   'label' => __( 'قابلیت باز و بسته شدن؟', 'nias-course-widget' ),
-			   'type' => \Elementor\Controls_Manager::SWITCHER,
-			   'label_on' => esc_html__("بله", 'nias-course-widget'),
-					   'label_off' => esc_html__("خیر", 'nias-course-widget'),
-			   'default' => 'yes'
-  
-			]
-		 );
+            'nias_openorclose',
+            [
+                'label' => __('قابلیت باز و بسته شدن؟', 'nias-course-widget'),
+                'type' => \Elementor\Controls_Manager::SWITCHER,
+                'label_on' => esc_html__("بله", 'nias-course-widget'),
+                'label_off' => esc_html__("خیر", 'nias-course-widget'),
+                'default' => 'yes'
+
+            ]
+        );
         $this->add_control(
-			'nsarrowicon',
-			[
-				'condition' => [
-					'nias_openorclose' => 'yes',
-				],
-				'label' => esc_html__( 'آیکون باز و بسته شدن', 'nias-course-widget' ),
-				'type' => \Elementor\Controls_Manager::ICONS,
-				'default' => [
-					'value' => 'fas fa-chevron-down',
-					'library' => 'fa-solid',
-				],
-				'recommended' => [
-					'fa-solid' => [
-						'circle',
-						'dot-circle',
-						'square-full',
-					],
-					'fa-regular' => [
-						'circle',
-						'dot-circle',
-						'square-full',
-					],
-				],
-			]
-		);
+            'nsarrowicon',
+            [
+                'condition' => [
+                    'nias_openorclose' => 'yes',
+                ],
+                'label' => esc_html__('آیکون باز و بسته شدن', 'nias-course-widget'),
+                'type' => \Elementor\Controls_Manager::ICONS,
+                'default' => [
+                    'value' => 'fas fa-chevron-down',
+                    'library' => 'fa-solid',
+                ],
+                'recommended' => [
+                    'fa-solid' => [
+                        'circle',
+                        'dot-circle',
+                        'square-full',
+                    ],
+                    'fa-regular' => [
+                        'circle',
+                        'dot-circle',
+                        'square-full',
+                    ],
+                ],
+            ]
+        );
         $this->add_control(
             'nspreviewicon',
             [
@@ -543,65 +543,65 @@ class Nias_course_woocommerce extends \Elementor\Widget_Base
     {
         $settings = $this->get_settings_for_display();
 
-// Check if user has purchased the course
-$bought_course = false;
-$current_user = wp_get_current_user();
-if (is_user_logged_in()) {
-    global $post;
-    if (!empty($current_user->ID) && isset($post) && !empty($post->ID)) {
-        $product_id = $post->ID;
-        
-        // Check two-way verification toggle status
-        $two_way_verification = carbon_get_theme_option('nias_two_way_verification');
-        
-        if ($two_way_verification === 'on') {
-            // Two-way verification mode is active
-            // Check using both methods
-            $wc_bought = wc_customer_bought_product($current_user->user_login, $current_user->ID, $product_id);
-            $order_bought = false;
-            
-            // Check orders with 'wc-completed' status
-            $args = [
-                'customer_id' => $current_user->ID,
-                'limit'       => -1,
-                'status'      => 'wc-completed',
-            ];
-            $orders = wc_get_orders($args);
-            foreach ($orders as $order) {
-                foreach ($order->get_items() as $item) {
-                    if ($item->get_product_id() == $product_id) {
-                        $order_bought = true;
-                        break 2; // Exit both loops after finding the purchase
+        // Check if user has purchased the course
+        $bought_course = false;
+        $current_user = wp_get_current_user();
+        if (is_user_logged_in()) {
+            global $post;
+            if (!empty($current_user->ID) && isset($post) && !empty($post->ID)) {
+                $product_id = $post->ID;
+
+                // Check two-way verification toggle status
+                $two_way_verification = carbon_get_theme_option('nias_two_way_verification');
+
+                if ($two_way_verification === 'on') {
+                    // Two-way verification mode is active
+                    // Check using both methods
+                    $wc_bought = wc_customer_bought_product($current_user->user_login, $current_user->ID, $product_id);
+                    $order_bought = false;
+
+                    // Check orders with 'wc-completed' status
+                    $args = [
+                        'customer_id' => $current_user->ID,
+                        'limit'       => -1,
+                        'status'      => 'wc-completed',
+                    ];
+                    $orders = wc_get_orders($args);
+                    foreach ($orders as $order) {
+                        foreach ($order->get_items() as $item) {
+                            if ($item->get_product_id() == $product_id) {
+                                $order_bought = true;
+                                break 2; // Exit both loops after finding the purchase
+                            }
+                        }
                     }
-                }
-            }
-            
-            // Course is considered purchased only if both methods confirm
-$bought_course = ($wc_bought || $order_bought);            
-        } else {
-            // Normal mode - one method confirmation is sufficient
-            if (wc_customer_bought_product($current_user->user_login, $current_user->ID, $product_id)) {
-                $bought_course = true;
-            } else {
-                // Check orders with 'wc-completed' status
-                $args = [
-                    'customer_id' => $current_user->ID,
-                    'limit'       => -1,
-                    'status'      => 'wc-completed',
-                ];
-                $orders = wc_get_orders($args);
-                foreach ($orders as $order) {
-                    foreach ($order->get_items() as $item) {
-                        if ($item->get_product_id() == $product_id) {
-                            $bought_course = true;
-                            break 2; // Exit both loops after finding the purchase
+
+                    // Course is considered purchased only if both methods confirm
+                    $bought_course = ($wc_bought || $order_bought);
+                } else {
+                    // Normal mode - one method confirmation is sufficient
+                    if (wc_customer_bought_product($current_user->user_login, $current_user->ID, $product_id)) {
+                        $bought_course = true;
+                    } else {
+                        // Check orders with 'wc-completed' status
+                        $args = [
+                            'customer_id' => $current_user->ID,
+                            'limit'       => -1,
+                            'status'      => 'wc-completed',
+                        ];
+                        $orders = wc_get_orders($args);
+                        foreach ($orders as $order) {
+                            foreach ($order->get_items() as $item) {
+                                if ($item->get_product_id() == $product_id) {
+                                    $bought_course = true;
+                                    break 2; // Exit both loops after finding the purchase
+                                }
+                            }
                         }
                     }
                 }
             }
         }
-    }
-}
 
         $post_id = get_the_ID();
         $sections = carbon_get_post_meta($post_id, 'course_sections');
@@ -610,7 +610,7 @@ $bought_course = ($wc_bought || $order_bought);
             <div id="nias_course_sections">
                 <?php foreach ($sections as $index => $section) { ?>
                     <div class="nias_course_section">
-                        <div class="section_header toggle_section" >
+                        <div class="section_header toggle_section">
                             <?php
                             // Handle section icon
                             if (!empty($section['section_icon'])) {
@@ -742,12 +742,12 @@ $bought_course = ($wc_bought || $order_bought);
                                                 <?php
                                                 if ($lesson['lesson_private']) {
                                                     if ($bought_course) {
-                                                        echo $lesson['lesson_content'];
+                                                        echo apply_filters('the_content', $lesson['lesson_content']);
                                                     } else {
-                                                        echo $settings['nsprivatetextcontent'];
+                                                        echo apply_filters('the_content', $settings['nsprivatetextcontent']);
                                                     }
                                                 } else {
-                                                    echo $lesson['lesson_content'];
+                                                    echo apply_filters('the_content', $lesson['lesson_content']);
                                                 }
                                                 ?>
                                             </div>
