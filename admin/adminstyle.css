@@ -46,7 +46,7 @@
           border-radius: 10px;
       }
 
-      body *:not(#wpadminbar *, i , [role=treeitem] span[aria-hidden] , .dashicons) {
+      body.toplevel_page_nias-course-settings *:not(#wpadminbar *, body.toplevel_page_nias-course-settings i , body.toplevel_page_nias-course-settings [role=treeitem] span[aria-hidden] , body.toplevel_page_nias-course-settings .dashicons) {
           font-family: 'Vazirmatn' !important;
       }
 
