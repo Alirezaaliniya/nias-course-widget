@@ -6,9 +6,7 @@ if (!defined('ABSPATH')) {
 // Add new endpoint
 add_action('init', 'nias_course_add_endpoint');
 function nias_course_add_endpoint() {
-    if (!function_exists('carbon_get_theme_option') || carbon_get_theme_option('nias_course_account_display') !== 'on') {
-        return;
-    }
+
     $endpoint = get_option('nias_course_endpoint', 'my-courses');
     add_rewrite_endpoint($endpoint, EP_ROOT | EP_PAGES);
 }
@@ -16,7 +14,7 @@ function nias_course_add_endpoint() {
 // Add new menu item to my account menu
 add_filter('woocommerce_account_menu_items', 'nias_course_add_menu_item');
 function nias_course_add_menu_item($items) {
-    if (!function_exists('carbon_get_theme_option') || carbon_get_theme_option('nias_course_account_display') !== 'on') {
+    if (!is_user_logged_in()){
         return $items;
     }
     
@@ -34,7 +32,7 @@ function nias_course_add_menu_item($items) {
 // Add content to the new endpoint
 add_action('woocommerce_account_my-courses_endpoint', 'nias_course_endpoint_content');
 function nias_course_endpoint_content() {
-    if (!function_exists('carbon_get_theme_option') || carbon_get_theme_option('nias_course_account_display') !== 'on') {
+    if (!is_user_logged_in()){
         return;
     }
     
@@ -440,4 +438,30 @@ function nias_handle_video_url($url) {
         }
     }
     return '<div class="video-container"><iframe src="' . esc_url(trim($url)) . '" frameborder="0" allowfullscreen></iframe></div>';
+}
+
+// Hide 'my-courses' menu item if not enabled
+add_filter('woocommerce_account_menu_items', 'nias_hide_my_courses_menu_item');
+function nias_hide_my_courses_menu_item($items) {
+    if (!is_user_logged_in()){
+        return $items;
+    }
+    
+    if (!function_exists('carbon_get_theme_option') || carbon_get_theme_option('nias_course_account_display') !== 'on') {
+        // اگر گزینه فعال نبود، منوی دوره‌های من را با CSS مخفی کن
+        add_action('wp_footer', function() {
+            echo '<style>.woocommerce-MyAccount-navigation-link--my-courses { display: none !important; }</style>';
+        });
+        return $items;
+    }
+    
+    $endpoint = get_option('nias_course_endpoint', 'my-courses');
+    $new_items = array();
+    foreach ($items as $key => $item) {
+        $new_items[$key] = $item;
+        if ($key === 'dashboard') {
+            $new_items[$endpoint] = 'دوره های من';
+        }
+    }
+    return $new_items;
 }
