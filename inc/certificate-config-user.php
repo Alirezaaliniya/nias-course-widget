@@ -296,7 +296,7 @@ function generate_certificate_verification_button($user_id) {
     $button_html = sprintf(
         '<a href="%s" class="certificate-verification-button button" target="_blank">%s</a>',
         esc_url($verification_link),
-        __('تایید مدرک', 'nias-course-widget')
+        __('دریافت مدرک', 'nias-course-widget')
     );
     
     return $button_html;

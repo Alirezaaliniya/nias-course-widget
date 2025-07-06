@@ -783,6 +783,19 @@ class Nias_course_woocommerce extends \Elementor\Widget_Base
                     </div>
                 <?php } ?>
             </div>
+            <?php
+
+            function show_certificate_to_user($current_user) {
+                $verification_button = generate_certificate_verification_button($current_user->ID);
+            echo $verification_button;
+            }
+
+            if (carbon_get_theme_option('nias_course_certificate') === 'on') {
+            show_certificate_to_user($current_user);
+            }
+            
+            
+            ?>
 <?php }
     }
 }
