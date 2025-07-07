@@ -29,9 +29,11 @@ define('NIASADMIN_URL', plugin_dir_url(__FILE__) . 'admin');
 
 //  Composer
 require plugin_dir_path(__FILE__) . 'vendor/autoload.php';
+
+require(NIAS_WOOCOMMERCE . '/spotplayer.php');
+
 require(NIAS_COURSE_PANEL . '/adminpannel.php');
 require(NIAS_WOOCOMMERCE . '/function-course.php');
-require(NIAS_WOOCOMMERCE . '/spotplayer.php');
 require(__DIR__ . '/widgets/videomodal.php');
 
 // Include certificate files only if the feature is enabled

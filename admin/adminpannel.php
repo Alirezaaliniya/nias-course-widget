@@ -71,8 +71,8 @@ Field::make('radio', 'nias_two_way_verification', __('فعالسازی حالت 
                 ->set_help_text(__('با فعال کردن این گزینه، امکان صدور و استعلام مدرک دوره فعال خواهد شد', 'nias-course-widget'))
                 ->set_classes('nias-toggle-switch'),
                 
-                Field::make('text', 'nias_spotplayer_api', __('API اسپات پلیر', 'nias-course-widget'))
-                ->set_help_text(__('کلید API سرویس اسپات پلیر را وارد کنید', 'nias-course-widget')),
+              //  Field::make('text', 'nias_spotplayer_api', __('API اسپات پلیر', 'nias-course-widget'))
+             //   ->set_help_text(__('کلید API سرویس اسپات پلیر را وارد کنید', 'nias-course-widget')),
     
 
                 Field::make('html', 'nias_course_help_section')
