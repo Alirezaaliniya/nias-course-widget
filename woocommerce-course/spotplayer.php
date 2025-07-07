@@ -1,118 +1,62 @@
 <?php
-function spotplayer_course_list_shortcode($atts) {
-    // Extract shortcode attributes
+function spotplayer_simple_outline_shortcode($atts) {
     $atts = shortcode_atts(array(
-        'license_key' => '',
-        'course_id' => '',
-        'domain' => 'https://app.spotplayer.ir'
+        'api_key' => '',
+        'endpoint' => 'https://panel.spotplayer.ir/course/',
+        'level' => '-1'
     ), $atts);
 
-    if (empty($atts['license_key'])) {
-        return '<p>Error: License key is required.</p>';
+    if (empty($atts['api_key'])) {
+        return '<p>کلید API وارد نشده است.</p>';
     }
 
-    // Start output buffering
-    ob_start();
-    ?>
-    <div id="player" style="display:none;"></div>
-    <div class="spotplayer-course-list">
-        <div id="course-content"></div>
-    </div>
-    
-    <script src="https://app.spotplayer.ir/assets/js/app-api.js"></script>
-    <script type="application/javascript">
-        async function initializeSpotPlayer() {
-            try {
-                // Use the correct domain for SpotPlayer API
-                const sp = new SpotPlayer(document.getElementById('player'), 'https://app.spotplayer.ir/spotx', false);
-                await sp.Open('<?php echo esc_js($atts['license_key']); ?>', '<?php echo esc_js($atts['course_id']); ?>');
-                
-                if (typeof sp.courses !== 'undefined' && sp.courses.length > 0) {
-                    const courseContent = document.getElementById('course-content');
-                    let html = '<ul class="courses-list">';
-                    
-                    sp.courses.forEach(course => {
-                        html += `
-                            <li class="course-item">
-                                <h3>${course.name}</h3>
-                                <ul class="sessions-list">`;
-                        
-                        course.items.forEach(item => {
-                            html += `
-                                <li class="session-item">
-                                    <span class="session-name">${item.name}</span>
-                                    <span class="session-duration">${formatDuration(item.duration)}</span>
-                                </li>`;
-                        });
-                        
-                        html += `
-                                </ul>
-                            </li>`;
-                    });
-                    
-                    html += '</ul>';
-                    courseContent.innerHTML = html;
-                }
-                
-                // Hide player after initialization
-                await sp.Hide();
-            } catch(ex) {
-                console.error('SpotPlayer initialization error:', ex);
-                document.getElementById('course-content').innerHTML = '<p>Error loading course content. Please try again later.</p>';
-            }
-        }
+    $response = wp_remote_get($atts['endpoint'], array(
+        'headers' => array(
+            '$API' => $atts['api_key'],
+            '$LEVEL' => $atts['level']
+        ),
+        'timeout' => 20
+    ));
 
-        function formatDuration(duration) {
-            var seconds = Math.floor(duration / 1000);
-            var minutes = Math.floor(seconds / 60);
-            var hours = Math.floor(minutes / 60);
-            
-            minutes = minutes % 60;
-            seconds = seconds % 60;
-            
-            return (hours > 0 ? hours + ':' : '') + 
-                   padZero(minutes) + ':' + 
-                   padZero(seconds);
-        }
+    if (is_wp_error($response)) {
+        return '<p>خطا در اتصال به سرور: ' . esc_html($response->get_error_message()) . '</p>';
+    }
 
-        function padZero(num) {
-            return num < 10 ? '0' + num : num;
-        }
+    $data = json_decode(wp_remote_retrieve_body($response), true);
+    if (!$data || !isset($data['contents'])) {
+        return '<p>اطلاعات نامعتبر است.</p>';
+    }
 
-        // Initialize when document is ready
-        document.addEventListener('DOMContentLoaded', initializeSpotPlayer);
-    </script>
-    <style>
-        .spotplayer-course-list {
-            margin: 20px 0;
+    $output = '<div class="spotplayer-course-outline">';
+
+    // لیست فصل‌ها
+    $segments = array_filter($data['contents'], function($item) {
+        return isset($item['type']) && $item['type'] === 'seg';
+    });
+
+    if (!empty($segments)) {
+        $output .= '<h3>📚 فصل‌ها:</h3><ul>';
+        foreach ($segments as $seg) {
+            $output .= '<li>' . esc_html($seg['name']) . '</li>';
         }
-        .courses-list {
-            list-style: none;
-            padding: 0;
+        $output .= '</ul>';
+    }
+
+    // لیست درس‌ها
+    $lessons = array_filter($data['contents'], function($item) {
+        return isset($item['type']) && $item['type'] === 'vid';
+    });
+
+    if (!empty($lessons)) {
+        $output .= '<h3>🎥 دروس:</h3><ul>';
+        foreach ($lessons as $lesson) {
+            $output .= '<li>' . esc_html($lesson['name']) . '</li>';
         }
-        .course-item {
-            margin-bottom: 20px;
-        }
-        .sessions-list {
-            list-style: none;
-            padding-left: 20px;
-        }
-        .session-item {
-            display: flex;
-            justify-content: space-between;
-            padding: 5px 0;
-            border-bottom: 1px solid #eee;
-        }
-        .session-duration {
-            color: #666;
-            font-size: 0.9em;
-        }
-    </style>
-    <?php
-    
-    return ob_get_clean();
+        $output .= '</ul>';
+    }
+
+    $output .= '</div>';
+
+    return $output;
 }
-
-// Register the shortcode
-add_shortcode('spotplayer_course_list', 'spotplayer_course_list_shortcode');
-
+add_shortcode('spotplayer_simple_outline', 'spotplayer_simple_outline_shortcode');
