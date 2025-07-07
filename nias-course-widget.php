@@ -150,13 +150,18 @@ function change_category_nias_course()
 		background-color: #252525 !important;
 		border-radius: 10px!important;
         color:white!important;
-	
-		button{
+	}
+        		#elementor-panel-category-nias-widget-category .elementor-element-wrapper button{
 		border: none!important;
 		}
-	}
+        #elementor-panel-category-nias-widget-category *{
+color:white!important;
+        }
         .elementor-navigator__element__element-type .nias-course-woo , .elementor-navigator__element__element-type .nias-course-maker{
         width:20px;
+        }
+        #elementor-panel-category-nias-widget-category .elementor-element{
+		background-color: #252525 !important;
         }
 
 .nias-course-woo{
