@@ -31,17 +31,13 @@ define('NIASADMIN_URL', plugin_dir_url(__FILE__) . 'admin');
 require plugin_dir_path(__FILE__) . 'vendor/autoload.php';
 
 require(NIAS_WOOCOMMERCE . '/spotplayer.php');
-
 require(NIAS_COURSE_PANEL . '/adminpannel.php');
 require(NIAS_WOOCOMMERCE . '/function-course.php');
 require(__DIR__ . '/widgets/videomodal.php');
-
-// Include certificate files only if the feature is enabled
-
 require(NIAS_COURSE_INC . '/certificate-show.php');
 require(NIAS_COURSE_INC . '/certificate-config-user.php');
-
 require(NIAS_WOOCOMMERCE . '/my-account.php');
+require(NIAS_COURSE_INC . '/shortcodes.php');
 
 
 

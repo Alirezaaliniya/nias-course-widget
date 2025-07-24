@@ -239,12 +239,40 @@ Field::make('radio', 'nias_two_way_verification', __('فعالسازی حالت 
                     ->set_help_text(__('متنی که بعد از نام دانشجو نمایش داده می‌شود', 'nias-course-widget'))
                     ->set_width(50),
 
-                Field::make('radio', 'certificate_show_date', __('نمایش تاریخ', 'nias-course-widget'))
+                    Field::make('radio', 'certificate_show_date', __('نمایش تاریخ', 'nias-course-widget'))
                     ->set_options([
                         'on' => __('فعال', 'nias-course-widget'),
                         'off' => __('غیرفعال', 'nias-course-widget'),
                     ])
                     ->set_default_value('on')
+                    ->set_width(50),
+                
+                Field::make('radio', 'certificate_date_source', __('منبع تاریخ', 'nias-course-widget'))
+                    ->set_options([
+                        'purchase_date' => __('تاریخ خرید دوره', 'nias-course-widget'),
+                        'manual_date' => __('تاریخ دستی', 'nias-course-widget'),
+                        'user_certificate_date' => __('تاریخ از فیلد nias_certificate_date کاربر', 'nias-course-widget'),
+                    ])
+                    ->set_default_value('purchase_date')
+                    ->set_conditional_logic([
+                        [
+                            'field' => 'certificate_show_date',
+                            'value' => 'on',
+                        ]
+                    ])
+                    ->set_width(50),
+                
+                Field::make('date', 'certificate_manual_date', __('تاریخ دستی', 'nias-course-widget'))
+                    ->set_conditional_logic([
+                        [
+                            'field' => 'certificate_show_date',
+                            'value' => 'on',
+                        ],
+                        [
+                            'field' => 'certificate_date_source',
+                            'value' => 'manual_date',
+                        ]
+                    ])
                     ->set_width(50),
 
                 Field::make('image', 'certificate_seal_image', __('تصویر مهر شما', 'nias-course-widget'))
