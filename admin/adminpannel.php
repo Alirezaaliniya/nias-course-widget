@@ -171,6 +171,7 @@ Field::make('radio', 'nias_two_way_verification', __('فعالسازی حالت 
 
                             <code>[nias_certificate]</code> برای نمایش مدرک<br><br>
                             <code>[nias_certificate_preview]</code> برای پیش‌نمایش<br><br>
+                            <code>[nias_button_certificate]</code> دکمه هدایت کاربر به دریافت مدرک<br><br>
                             <span style="color: #856404;">حواست باشه بعد از تست، شورت‌کد پیش‌نمایش رو برداری </span>
                         </div>
                     '),
