@@ -115,6 +115,13 @@ function create_course_metabox() {
                                             'relation' => 'AND',
                                             ['field' => 'file_type', 'value' => 'upload']
                                         ]),
+                                    // نمایش فایل آپلود شده با HTML
+                                    Field::make('html', 'file_preview_html')
+                                        ->set_html('<div id="nias-file-preview"></div>')
+                                        ->set_conditional_logic([
+                                            'relation' => 'AND',
+                                            ['field' => 'file_type', 'value' => 'upload']
+                                        ]),
                                     Field::make('text', 'file_url', __('لینک فایل', 'nias-course-widget'))
                                         ->set_conditional_logic([
                                             'relation' => 'AND',
@@ -129,6 +136,157 @@ function create_course_metabox() {
                 ])
                 ->set_header_template('<%- section_title %>'),
         ]);
+}
+
+// Add jQuery for file preview functionality
+add_action('admin_footer', 'nias_course_file_preview_script');
+function nias_course_file_preview_script() {
+    $plugin_url = plugin_dir_url(dirname(__FILE__));
+    ?>
+    <script>
+    const pluginUrl = '<?php echo esc_url($plugin_url); ?>';
+    jQuery(document).ready(function($) {
+        function updateFilePreview(fileUrl, previewContainer) {
+            if (!fileUrl) {
+                previewContainer.html('');
+                return;
+            }
+
+            const extension = fileUrl.split('.').pop().toLowerCase();
+            let previewHtml = '';
+
+            // Image formats
+            if (['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg', 'bmp'].includes(extension)) {
+                previewHtml = `<img src="${fileUrl}" style="max-width: 200px; height: auto;">`;
+            } 
+            // Video formats
+            else if (['mp4', 'webm', 'ogv', 'mov', 'm4v', 'avi'].includes(extension)) {
+                previewHtml = `
+                    <video controls style="max-width: 200px;">
+                        <source src="${fileUrl}" type="video/${extension === 'mov' ? 'quicktime' : (extension === 'm4v' ? 'mp4' : extension)}">
+                        Your browser does not support the video tag.
+                    </video>`;
+            } 
+            // Audio formats
+            else if (['mp3', 'wav', 'ogg', 'm4a', 'aac'].includes(extension)) {
+                previewHtml = `
+                    <audio controls style="max-width: 200px;">
+                        <source src="${fileUrl}" type="audio/${extension === 'm4a' ? 'mp4' : extension}">
+                        Your browser does not support the audio tag.
+                    </audio>`;
+            }
+            // PDF files
+            else if (['pdf'].includes(extension)) {
+                previewHtml = `<img src="${pluginUrl}/admin/images/pdf-icon.png" style="width: 50px;"><br><a href="${fileUrl}" target="_blank">View PDF</a>`;
+            } 
+            // Other files
+            else {
+                previewHtml = `<a href="${fileUrl}" target="_blank">Download File</a>`;
+            }
+
+            previewContainer.html(previewHtml);
+        }
+
+        // Function to initialize file preview for a specific group
+        function initializeFilePreview($group) {
+            const $fileField = $group.find('.cf-file');
+            const $previewContainer = $group.find('#nias-file-preview');
+            
+            if ($fileField.length && $previewContainer.length) {
+                const $fileInput = $fileField.find('input[type="hidden"]');
+                if ($fileInput.length) {
+                    updateFilePreview($fileInput.val(), $previewContainer);
+
+                    // Watch for changes using MutationObserver on the input
+                    const observer = new MutationObserver(function(mutations) {
+                        mutations.forEach(function(mutation) {
+                            if (mutation.type === 'attributes' && mutation.attributeName === 'value') {
+                                updateFilePreview($fileInput.val(), $previewContainer);
+                            }
+                        });
+                    });
+
+                    observer.observe($fileInput[0], {
+                        attributes: true
+                    });
+                }
+            }
+        }
+
+        // Main container observer to watch for dynamically added groups
+        const containerObserver = new MutationObserver(function(mutations) {
+            mutations.forEach(function(mutation) {
+                if (mutation.addedNodes.length) {
+                    mutation.addedNodes.forEach(function(node) {
+                        if (node.nodeType === 1) { // Element node
+                            const $node = $(node);
+                            if ($node.hasClass('cf-complex__group') || $node.hasClass('cf-complex__group--grid')) {
+                                initializeFilePreview($node);
+                            } else {
+                                // Check for groups inside the added node
+                                $node.find('.cf-complex__group, .cf-complex__group--grid').each(function() {
+                                    initializeFilePreview($(this));
+                                });
+                            }
+                        }
+                    });
+                }
+            });
+        });
+
+        // Start observing the main container for dynamic changes
+        const $mainContainer = $('.cf-container__fields');
+        if ($mainContainer.length) {
+            containerObserver.observe($mainContainer[0], {
+                childList: true,
+                subtree: true
+            });
+        }
+
+        // Event delegation for file actions
+        $(document).on('click', '.cf-file__browse', function() {
+            const $group = $(this).closest('.cf-complex__group, .cf-complex__group--grid');
+            const $fileInput = $(this).closest('.cf-file__inner').find('input[type="hidden"]');
+            const $previewContainer = $group.find('#nias-file-preview');
+            
+            if ($fileInput.length && $previewContainer.length) {
+                setTimeout(function() {
+                    updateFilePreview($fileInput.val(), $previewContainer);
+                }, 500);
+            }
+        });
+
+        $(document).on('click', '.cf-file__remove', function() {
+            const $group = $(this).closest('.cf-complex__group, .cf-complex__group--grid');
+            const $previewContainer = $group.find('#nias-file-preview');
+            
+            if ($previewContainer.length) {
+                setTimeout(function() {
+                    updateFilePreview('', $previewContainer);
+                }, 100);
+            }
+        });
+
+        // Initialize existing groups
+        $('.cf-complex__group, .cf-complex__group--grid').each(function() {
+            initializeFilePreview($(this));
+        });
+
+        // Handle Carbon Fields events
+        $(document)
+            .on('carbon_fields_complex_field_added', function(e, $group) {
+                setTimeout(function() {
+                    initializeFilePreview($group);
+                }, 100);
+            })
+            .on('carbon_fields_complex_field_changes', function() {
+                $('.cf-complex__group, .cf-complex__group--grid').each(function() {
+                    initializeFilePreview($(this));
+                });
+            });
+    });
+    </script>
+    <?php
 }
 
 
