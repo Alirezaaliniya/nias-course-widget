@@ -233,6 +233,10 @@ class CertificateMPDF
 // Modified shortcode function
 function nias_certificate_shortcode($atts)
 {
+    // Initialize verification variable
+    $nias_course_certificate_verify = false;
+    $verification_message = '';
+
     // Add JavaScript for handling form submission and progress bar
     wp_enqueue_script('jquery');
     add_action('wp_footer', function () {
@@ -384,9 +388,6 @@ function nias_certificate_shortcode($atts)
     // بررسی پارامتر code در URL
     $code_param = isset($_GET['code']) ? sanitize_text_field($_GET['code']) : '';
     $user_id_param = isset($_GET['user_id']) ? intval($_GET['user_id']) : 0;
-
-    // متغیر برای ذخیره پیام اعتبارسنجی
-    $verification_message = '';
 
     // اگر پارامتر code موجود است، بررسی اعتبار آن
     if (!empty($code_param) && $user_id_param > 0) {

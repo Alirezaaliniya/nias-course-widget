@@ -647,3 +647,6 @@ button.toggle_lesson {
     position: relative;
     display: block;
 }
+.h_iframe-aparat_embed_frame {
+    aspect-ratio: 16/9;
+}
