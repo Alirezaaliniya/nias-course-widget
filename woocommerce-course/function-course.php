@@ -24,6 +24,7 @@ function custom_carbon_fields_styles() {
 // Register Course Fields
 add_action('carbon_fields_register_fields', 'create_course_metabox');
 function create_course_metabox() {
+    // Main course settings metabox
     Container::make('post_meta', __(' تنظیمات دوره ساز نیاس', 'nias-course-widget'))
         ->where('post_type', '=', 'product')
         ->set_classes('nias-course-product-option')
@@ -135,6 +136,18 @@ function create_course_metabox() {
                         ->set_header_template('<%- lesson_title %>'),
                 ])
                 ->set_header_template('<%- section_title %>'),
+        ]);
+
+    // Spot Player metabox
+    Container::make('post_meta', __('تنظیمات اسپات پلیر', 'nias-course-widget'))
+        ->where('post_type', '=', 'product')
+        ->set_classes('nias-spotplayer-option')
+        ->set_priority('high')
+        ->add_fields([
+            Field::make('text', 'spotplayer_download_url', __('لینک صفحه دانلود ویدیو اسپات پلیر', 'nias-course-widget'))
+                ->set_help_text(__('لینک صفحه دانلود ویدیو را از اسپات پلیر وارد کنید', 'nias-course-widget')),
+            Field::make('html', 'spotplayer_sync_button')
+                ->set_html('<button type="button" class="button button-primary" id="sync-spotplayer">همگام سازی جلسات با اسپات پلیر</button><div id="sync-status"></div>')
         ]);
 }
 
@@ -288,6 +301,63 @@ function nias_course_file_preview_script() {
     </script>
     <?php
 }
+
+// Add JavaScript for Spot Player sync button functionality
+add_action('admin_footer', function() {
+    if (get_post_type() !== 'product') return;
+    ?>
+    <script>
+    jQuery(document).ready(function($) {
+        $('#sync-spotplayer').on('click', function() {
+            const button = $(this);
+            const statusDiv = $('#sync-status');
+            
+            // Try multiple possible selectors that Carbon Fields might use
+            const urlField = $('input[name="_spotplayer_download_url"], input[data-name="spotplayer_download_url"], .cf-field__body input[name*="spotplayer_download_url"], textarea[name="carbon_fields_compact_input[spotplayer_download_url]"]');
+            const downloadUrl = urlField.val();
+            
+            // Debug output
+            console.log('Field selectors tried:', urlField.selector);
+            console.log('Fields found:', urlField.length);
+            console.log('URL value:', downloadUrl);
+            
+            if (!downloadUrl) {
+                statusDiv.html('<p style="color: red;">لطفا ابتدا لینک دانلود را وارد کنید</p>');
+                return;
+            }
+
+            button.prop('disabled', true);
+            statusDiv.html('<p>در حال همگام سازی...</p>');
+
+            $.ajax({
+                url: ajaxurl,
+                type: 'POST',
+                data: {
+                    action: 'nias_spotplayer_sync',
+                    post_id: $('#post_ID').val(),
+                    url: downloadUrl
+                },
+                success: function(response) {
+                    if (response.success) {
+                        statusDiv.html('<p style="color: green;">' + response.data.message + '</p>');
+                        setTimeout(() => {
+                            window.location.reload();
+                        }, 1500);
+                    } else {
+                        statusDiv.html('<p style="color: red;">خطا: ' + response.data + '</p>');
+                        button.prop('disabled', false);
+                    }
+                },
+                error: function() {
+                    statusDiv.html('<p style="color: red;">خطا در ارتباط با سرور</p>');
+                    button.prop('disabled', false);
+                }
+            });
+        });
+    });
+    </script>
+    <?php
+});
 
 
 

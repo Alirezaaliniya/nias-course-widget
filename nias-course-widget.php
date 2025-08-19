@@ -31,6 +31,7 @@ define('NIASADMIN_URL', plugin_dir_url(__FILE__) . 'admin');
 require plugin_dir_path(__FILE__) . 'vendor/autoload.php';
 
 require(NIAS_WOOCOMMERCE . '/spotplayer.php');
+require(NIAS_WOOCOMMERCE . '/spotplayer-sync.php');
 require(NIAS_COURSE_PANEL . '/adminpannel.php');
 require(NIAS_WOOCOMMERCE . '/function-course.php');
 require(__DIR__ . '/widgets/videomodal.php');
