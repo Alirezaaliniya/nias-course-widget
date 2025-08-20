@@ -3,9 +3,9 @@ Contributors: Niasir
 Tags: course maker, LMS elementor, Elementor course widget, Nias widget
 Donate link: https://nias.ir/
 Requires at least: 5.8
-Tested up to: 6.7.1
+Tested up to: 6.8.2
 Requires PHP: 7.4
-Stable tag: 1.2.9
+Stable tag: 1.2.10
 License: GPLv2
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -27,6 +27,7 @@ License URI: https://www.gnu.org/licenses/gpl-2.0.html
 *قابلیت نمایش ویدیو در مودال
 *قابلیت صدور مدرک برای دانشجویان با بارکد اختصاصی و قابلیت پیگیری وضعیت مدرک
 *نمایش دوره در پنل کاربری ووکامرس
+*امکان همگام سازی جلسات با اسپات پلیر
 
 == پشتیبانی ==
 * [پشتیبانی در سایت نیاس](https://nias.ir/)
@@ -59,6 +60,13 @@ License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
 
 == Changelog ==
+=v1.2.10=
+*مشکل پیش نمایش درس خصوصی رفع شد 
+*مشکل نصفه نمایش دادن ویدیو آپارات رفع شد
+*شورت کد نمایش لایسنس اضافه شد
+*گزینه همگام سازی جلسات با اسپات پلیر اضافه شد
+
+
 =v1.2.9=
 *مشکل عدم نمایش موسیقی و ویدیو حل شد
 *مشکل عدم نمایش درست ایکن های وردپرس در پیشخوان رفع شد
