@@ -180,6 +180,43 @@ function nias_curriculum_inject_button()
     }
     $url = admin_url('admin.php?page=nias-course-curriculum&product=' . intval($post->ID));
     ?>
+    <style>
+        .nias-curriculum-btn.page-title-action,
+        .nias-curriculum-btn.page-title-action:hover,
+        .nias-curriculum-btn.page-title-action:focus {
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+            margin-inline-start: 8px;
+            padding: 7px 18px;
+            font-size: 14px;
+            font-weight: 700;
+            line-height: 1.6;
+            color: #fff;
+            border: none;
+            border-radius: 9px;
+            background: linear-gradient(135deg, #3b82f6, #2563eb);
+            box-shadow: 0 8px 18px -8px rgba(37, 99, 235, .7);
+            text-shadow: none;
+            animation: niasCurPulse 2.2s ease-in-out infinite;
+            transition: transform .15s ease, box-shadow .15s ease;
+        }
+        .nias-curriculum-btn.page-title-action:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 12px 24px -8px rgba(37, 99, 235, .8);
+            animation-play-state: paused;
+        }
+        .nias-curriculum-btn .dashicons {
+            width: 18px;
+            height: 18px;
+            font-size: 18px;
+            line-height: 1;
+        }
+        @keyframes niasCurPulse {
+            0%, 100% { box-shadow: 0 8px 18px -8px rgba(37, 99, 235, .7); }
+            50%      { box-shadow: 0 8px 26px -6px rgba(37, 99, 235, 1); }
+        }
+    </style>
     <script>
     jQuery(function ($) {
         var label = <?php echo wp_json_encode(__('ویرایش جلسات و فصل‌ها', 'nias-course-widget')); ?>;
@@ -188,14 +225,31 @@ function nias_curriculum_inject_button()
         if (!$action.length || $('.nias-curriculum-btn').length) {
             return;
         }
-        $('<a>', {
+        var $btn = $('<a>', {
             'class': 'page-title-action nias-curriculum-btn',
-            'href': href,
-            'text': label
-        }).insertAfter($action);
+            'href': href
+        });
+        $btn.html('<span class="dashicons dashicons-welcome-learn-more"></span>' + $('<span>').text(label).html());
+        $btn.insertAfter($action);
     });
     </script>
     <?php
+}
+
+/* -------------------------------------------------------------------------
+ * Row action on the products list (next to Edit / Quick Edit)
+ * ---------------------------------------------------------------------- */
+
+add_filter('post_row_actions', 'nias_curriculum_row_action', 10, 2);
+function nias_curriculum_row_action($actions, $post)
+{
+    if (!$post || $post->post_type !== 'product' || !current_user_can('edit_post', $post->ID)) {
+        return $actions;
+    }
+    $url = admin_url('admin.php?page=nias-course-curriculum&product=' . intval($post->ID));
+    $actions['nias_curriculum'] = '<a href="' . esc_url($url) . '" style="color:#2563eb;font-weight:600;">'
+        . esc_html__('ویرایش جلسات و فصل‌ها', 'nias-course-widget') . '</a>';
+    return $actions;
 }
 
 /* -------------------------------------------------------------------------
