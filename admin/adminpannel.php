@@ -21,6 +21,7 @@ function nias_settings_main_fields()
         'nias_two_way_verification'   => 'radio',
         'nias_course_account_display' => 'radio',
         'nias_course_certificate'     => 'radio',
+        'nias_spotplayer_enabled'     => 'radio',
     );
 }
 
@@ -76,6 +77,18 @@ function nias_course_register_settings_pages()
             'manage_options',
             'nias-course-certificate',
             'nias_course_render_certificate_settings'
+        );
+    }
+
+    // SpotPlayer license sub-page only appears when the feature is enabled.
+    if (carbon_get_theme_option('nias_spotplayer_enabled') === 'on' && function_exists('nias_spot_render_license_settings')) {
+        add_submenu_page(
+            'nias-course-settings',
+            __('لایسنس اسپات پلیر', 'nias-course-widget'),
+            __('لایسنس اسپات پلیر', 'nias-course-widget'),
+            'manage_options',
+            'nias-spotplayer-license',
+            'nias_spot_render_license_settings'
         );
     }
 }
@@ -212,8 +225,10 @@ function nias_fa_digits($str)
 function nias_settings_topbar($active)
 {
     $cert_on  = carbon_get_theme_option('nias_course_certificate') === 'on';
+    $spot_on  = carbon_get_theme_option('nias_spotplayer_enabled') === 'on';
     $main_url = admin_url('admin.php?page=nias-course-settings');
     $cert_url = admin_url('admin.php?page=nias-course-certificate');
+    $spot_url = admin_url('admin.php?page=nias-spotplayer-license');
     ?>
     <div class="nias-set-bar">
         <div class="nias-set-bar-inner">
@@ -233,6 +248,9 @@ function nias_settings_topbar($active)
                 <a href="<?php echo esc_url($main_url); ?>" class="nias-tab <?php echo $active === 'main' ? 'active' : ''; ?>"><?php echo esc_html__('تنظیمات اصلی', 'nias-course-widget'); ?></a>
                 <?php if ($cert_on) : ?>
                     <a href="<?php echo esc_url($cert_url); ?>" class="nias-tab <?php echo $active === 'cert' ? 'active' : ''; ?>"><?php echo esc_html__('تنظیمات مدرک دوره', 'nias-course-widget'); ?> <span class="nias-tab-badge"><?php echo esc_html__('فعال', 'nias-course-widget'); ?></span></a>
+                <?php endif; ?>
+                <?php if ($spot_on) : ?>
+                    <a href="<?php echo esc_url($spot_url); ?>" class="nias-tab <?php echo $active === 'spot' ? 'active' : ''; ?>"><?php echo esc_html__('لایسنس اسپات پلیر', 'nias-course-widget'); ?> <span class="nias-tab-badge"><?php echo esc_html__('فعال', 'nias-course-widget'); ?></span></a>
                 <?php endif; ?>
             </div>
         </div>
@@ -258,7 +276,7 @@ function nias_set_saved_banner($saved)
 }
 
 /** Toggle switch row (stores on/off). */
-function nias_set_toggle_row($name, $title, $desc, $default, $badge = '')
+function nias_set_toggle_row($name, $title, $desc, $default, $badge = '', $wrap_attr = '')
 {
     $current = carbon_get_theme_option($name);
     if ($current === '' || $current === false) {
@@ -266,7 +284,7 @@ function nias_set_toggle_row($name, $title, $desc, $default, $badge = '')
     }
     $on = ($current === 'on');
     ?>
-    <div class="nias-row">
+    <div class="nias-row" <?php echo $wrap_attr; ?>>
         <div class="nias-row-main">
             <div class="nias-row-title"><?php echo esc_html($title); ?><?php if ($badge) echo ' <span class="nias-chip">' . esc_html($badge) . '</span>'; ?></div>
             <?php if ($desc) : ?><div class="nias-row-desc"><?php echo wp_kses_post($desc); ?></div><?php endif; ?>
@@ -439,6 +457,13 @@ function nias_course_render_main_settings()
                         __('با فعال کردن این گزینه، امکان صدور و استعلام مدرک دوره فعال خواهد شد. پس از ذخیره، زیرمنوی «تنظیمات مدرک دوره» نمایش داده می‌شود.', 'nias-course-widget'),
                         'off',
                         __('مدرک', 'nias-course-widget')
+                    );
+                    nias_set_toggle_row(
+                        'nias_spotplayer_enabled',
+                        __('فعالسازی لایسنس اسپات پلیر', 'nias-course-widget'),
+                        __('با فعال کردن این گزینه، امکانات اسپات پلیر (ساخت خودکار لایسنس پس از خرید، نمایش پلیر و دانلود) فعال شده و تب «لایسنس اسپات پلیر» نمایش داده می‌شود. برای جلوگیری از تداخل، افزونه مجزای اسپات پلیر را غیرفعال کنید.', 'nias-course-widget'),
+                        'off',
+                        __('اسپات پلیر', 'nias-course-widget')
                     );
                     ?>
                 <?php nias_set_card_close(); ?>
@@ -653,7 +678,11 @@ function nias_course_render_certificate_settings()
 add_action('admin_enqueue_scripts', 'nias_course_settings_assets');
 function nias_course_settings_assets($hook)
 {
-    if (strpos($hook, 'nias-course-settings') === false && strpos($hook, 'nias-course-certificate') === false) {
+    if (
+        strpos($hook, 'nias-course-settings') === false &&
+        strpos($hook, 'nias-course-certificate') === false &&
+        strpos($hook, 'nias-spotplayer-license') === false
+    ) {
         return;
     }
     wp_enqueue_media();

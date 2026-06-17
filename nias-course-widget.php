@@ -35,6 +35,7 @@ require(NIAS_COURSE_INC . '/nias-meta.php');
 
 require(NIAS_WOOCOMMERCE . '/spotplayer-sync.php');
 require(NIAS_COURSE_PANEL . '/adminpannel.php');
+require(NIAS_WOOCOMMERCE . '/spotplayer-license.php');
 require(NIAS_WOOCOMMERCE . '/function-course.php');
 require(NIAS_WOOCOMMERCE . '/curriculum-editor.php');
 require(__DIR__ . '/widgets/videomodal.php');

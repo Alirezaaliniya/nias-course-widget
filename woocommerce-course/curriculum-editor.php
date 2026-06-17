@@ -15,6 +15,18 @@ if (!defined('ABSPATH')) {
  * @package nias-course-widget
  */
 
+/*
+ * Chrome extension links for exporting the SpotPlayer session list.
+ * EDIT THESE: put the extension download link and the usage-tutorial link here.
+ * (Leaving them as '#' simply renders the buttons as disabled placeholders.)
+ */
+if (!defined('NIAS_SPOT_EXT_DOWNLOAD_URL')) {
+    define('NIAS_SPOT_EXT_DOWNLOAD_URL', '#');
+}
+if (!defined('NIAS_SPOT_EXT_TUTORIAL_URL')) {
+    define('NIAS_SPOT_EXT_TUTORIAL_URL', '#');
+}
+
 /* -------------------------------------------------------------------------
  * Data conversion: stored course_sections  <->  flat JS model
  * ---------------------------------------------------------------------- */
@@ -277,6 +289,14 @@ function nias_curriculum_ajax_save()
     $sections = nias_course_sanitize_sections(nias_curriculum_js_to_input($chapters));
     carbon_set_post_meta($product_id, 'course_sections', $sections);
 
+    // SpotPlayer fields moved here from the product metabox.
+    if (isset($_POST['spot_download_url'])) {
+        update_post_meta($product_id, '_spotplayer_download_url', esc_url_raw(wp_unslash($_POST['spot_download_url'])));
+    }
+    if (isset($_POST['spot_license_course']) && function_exists('nias_spot_store_course_meta') && nias_spot_enabled()) {
+        nias_spot_store_course_meta($product_id, wp_unslash($_POST['spot_license_course']));
+    }
+
     wp_send_json_success(array('message' => __('تغییرات ذخیره شد.', 'nias-course-widget')));
 }
 
@@ -304,6 +324,7 @@ function nias_curriculum_render_page()
 
     $sections  = carbon_get_post_meta($product_id, 'course_sections');
     $sections  = is_array($sections) ? $sections : array();
+    $spot_enabled = function_exists('nias_spot_enabled') && nias_spot_enabled();
     $boot = array(
         'chapters'       => nias_curriculum_sections_to_js($sections),
         'productId'      => $product_id,
@@ -311,6 +332,13 @@ function nias_curriculum_render_page()
         'ajaxUrl'        => admin_url('admin-ajax.php'),
         'nonce'          => wp_create_nonce('nias_curriculum_save_' . $product_id),
         'productEditUrl' => get_edit_post_link($product_id, 'raw'),
+        'spot'           => array(
+            'enabled'      => $spot_enabled,
+            'downloadUrl'  => get_post_meta($product_id, '_spotplayer_download_url', true),
+            'licenseCourse'=> $spot_enabled ? get_post_meta($product_id, '_nias_spot_course', true) : '',
+            'extDownload'  => NIAS_SPOT_EXT_DOWNLOAD_URL,
+            'extTutorial'  => NIAS_SPOT_EXT_TUTORIAL_URL,
+        ),
         'i18n'           => array(
             'newChapter'  => __('فصل جدید', 'nias-course-widget'),
             'newLesson'   => __('درس جدید', 'nias-course-widget'),
@@ -356,6 +384,10 @@ function nias_curriculum_render_page()
                     <button type="button" class="nc-btn nc-btn-save" id="nc-save-all">
                         <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><path d="M17 21v-8H7v8M7 3v5h8"/></svg>
                         <?php echo esc_html__('ذخیره همه تغییرات', 'nias-course-widget'); ?>
+                    </button>
+                    <button type="button" class="nc-btn nc-btn-spot" id="nc-spot-open">
+                        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m8 6 8 6-8 6V6z"/><rect x="3" y="3" width="18" height="18" rx="3"/></svg>
+                        <?php echo esc_html__('ابزار اسپات پلیر', 'nias-course-widget'); ?>
                     </button>
                     <a class="nc-btn nc-btn-ghost" id="nc-back" href="<?php echo esc_url($boot['productEditUrl']); ?>">
                         <?php echo esc_html__('بازگشت به محصول', 'nias-course-widget'); ?>
@@ -413,6 +445,92 @@ function nias_curriculum_render_page()
         </div>
 
         <div id="nc-modal-root"></div>
+
+        <!-- SpotPlayer tools drawer -->
+        <div id="nc-spot-drawer" class="nc-spot-drawer" aria-hidden="true">
+            <div class="nc-spot-overlay" data-spot-close></div>
+            <aside class="nc-spot-panel" role="dialog" aria-label="<?php echo esc_attr__('ابزار اسپات پلیر', 'nias-course-widget'); ?>">
+                <div class="nc-spot-head">
+                    <div class="nc-spot-head-t">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m8 6 8 6-8 6V6z"/><rect x="3" y="3" width="18" height="18" rx="3"/></svg>
+                        <span><?php echo esc_html__('ابزار اسپات پلیر', 'nias-course-widget'); ?></span>
+                    </div>
+                    <button type="button" class="nc-spot-x" data-spot-close aria-label="<?php echo esc_attr__('بستن', 'nias-course-widget'); ?>">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
+                    </button>
+                </div>
+
+                <div class="nc-spot-body">
+
+                    <!-- A: sync from URL -->
+                    <section class="nc-spot-card">
+                        <div class="nc-spot-card-t">
+                            <span class="nc-spot-num">۱</span>
+                            <?php echo esc_html__('همگام‌سازی از لینک اسپات پلیر', 'nias-course-widget'); ?>
+                        </div>
+                        <label class="nc-spot-label" for="nc-spot-url"><?php echo esc_html__('لینک صفحه دانلود ویدیو اسپات پلیر', 'nias-course-widget'); ?></label>
+                        <input type="text" id="nc-spot-url" class="nc-spot-input" dir="ltr" placeholder="https://…" value="<?php echo esc_attr($boot['spot']['downloadUrl']); ?>">
+                        <p class="nc-spot-hint"><?php echo esc_html__('لینک صفحه دانلود ویدیو را وارد کنید؛ فصل‌ها و جلسات به‌صورت خودکار خوانده شده و جایگزین محتوای فعلی می‌شوند.', 'nias-course-widget'); ?></p>
+                        <button type="button" class="nc-spot-btn nc-spot-btn-primary" id="nc-spot-sync">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 2v6h-6M3 12a9 9 0 0 1 15-6.7L21 8M3 22v-6h6M21 12a9 9 0 0 1-15 6.7L3 16"/></svg>
+                            <?php echo esc_html__('همگام‌سازی جلسات', 'nias-course-widget'); ?>
+                        </button>
+                    </section>
+
+                    <!-- B: Chrome extension -->
+                    <section class="nc-spot-card">
+                        <div class="nc-spot-card-t">
+                            <span class="nc-spot-num">۲</span>
+                            <?php echo esc_html__('اکستنشن کروم خروجی لیست جلسات', 'nias-course-widget'); ?>
+                        </div>
+                        <p class="nc-spot-hint"><?php echo esc_html__('با اکستنشن کروم می‌توانید لیست جلسات را از اسپات پلیر هم با فرمت قابل تشخیص توسط پلاگین (JSON) و هم به‌صورت PDF خروجی بگیرید.', 'nias-course-widget'); ?></p>
+                        <div class="nc-spot-row">
+                            <a class="nc-spot-btn nc-spot-btn-dark <?php echo NIAS_SPOT_EXT_DOWNLOAD_URL === '#' ? 'is-disabled' : ''; ?>" id="nc-spot-ext-dl" href="<?php echo esc_url(NIAS_SPOT_EXT_DOWNLOAD_URL); ?>" target="_blank" rel="noopener">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
+                                <?php echo esc_html__('دانلود اکستنشن', 'nias-course-widget'); ?>
+                            </a>
+                            <a class="nc-spot-btn nc-spot-btn-soft <?php echo NIAS_SPOT_EXT_TUTORIAL_URL === '#' ? 'is-disabled' : ''; ?>" id="nc-spot-ext-help" href="<?php echo esc_url(NIAS_SPOT_EXT_TUTORIAL_URL); ?>" target="_blank" rel="noopener">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.1 9a3 3 0 0 1 5.8 1c0 2-3 3-3 3M12 17h.01"/></svg>
+                                <?php echo esc_html__('آموزش کار با اکستنشن', 'nias-course-widget'); ?>
+                            </a>
+                        </div>
+                    </section>
+
+                    <!-- C: import JSON file -->
+                    <section class="nc-spot-card">
+                        <div class="nc-spot-card-t">
+                            <span class="nc-spot-num">۳</span>
+                            <?php echo esc_html__('وارد کردن لیست جلسات از فایل JSON', 'nias-course-widget'); ?>
+                        </div>
+                        <p class="nc-spot-hint"><?php echo esc_html__('فایل JSON خروجی‌گرفته‌شده از اکستنشن را انتخاب کنید تا فصل‌ها و جلسات وارد و جایگزین محتوای فعلی شوند.', 'nias-course-widget'); ?></p>
+                        <label class="nc-spot-file" id="nc-spot-file-label">
+                            <input type="file" id="nc-spot-file" accept=".json,application/json" hidden>
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg>
+                            <span id="nc-spot-file-name"><?php echo esc_html__('انتخاب فایل JSON…', 'nias-course-widget'); ?></span>
+                        </label>
+                        <button type="button" class="nc-spot-btn nc-spot-btn-primary" id="nc-spot-import" disabled>
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12M7 10l5 5 5-5M5 21h14"/></svg>
+                            <?php echo esc_html__('وارد کردن از فایل', 'nias-course-widget'); ?>
+                        </button>
+                    </section>
+
+                    <?php if ($boot['spot']['enabled']) : ?>
+                    <!-- D: license course IDs -->
+                    <section class="nc-spot-card">
+                        <div class="nc-spot-card-t">
+                            <span class="nc-spot-num">۴</span>
+                            <?php echo esc_html__('شناسه دوره‌های لایسنس', 'nias-course-widget'); ?>
+                        </div>
+                        <label class="nc-spot-label" for="nc-spot-license"><?php echo esc_html__('شناسه دوره‌های اسپات پلیر', 'nias-course-widget'); ?></label>
+                        <textarea id="nc-spot-license" class="nc-spot-input" dir="ltr" rows="2" placeholder="aaaaaaaaaaaaaaaaaaaaaaaa,bbbbbbbbbbbbbbbbbbbbbbbb"><?php echo esc_textarea($boot['spot']['licenseCourse']); ?></textarea>
+                        <p class="nc-spot-hint"><?php echo esc_html__('شناسه دوره‌ها را با جداکننده , وارد کنید. با خرید محصول، لایسنس به‌صورت خودکار ساخته می‌شود. با «ذخیره همه تغییرات» ذخیره می‌شود.', 'nias-course-widget'); ?></p>
+                    </section>
+                    <?php endif; ?>
+
+                </div>
+            </aside>
+        </div>
+
         <div id="nc-toast" class="nc-toast"></div>
     </div>
 
@@ -611,6 +729,44 @@ function nias_curriculum_styles()
     .nc-toast{position:fixed;bottom:28px;left:50%;transform:translateX(-50%) translateY(20px);background:#1f2733;color:#fff;padding:12px 22px;border-radius:12px;font-size:14px;font-weight:600;box-shadow:0 16px 40px -12px rgba(16,24,40,.5);opacity:0;pointer-events:none;transition:.25s;z-index:100000}
     .nc-toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
     .nc-toast.err{background:#b91c1c}
+
+    /* SpotPlayer tools button + drawer */
+    .nc-btn-spot{background:linear-gradient(135deg,#7c3aed,#6d28d9);color:#fff;box-shadow:0 8px 18px -8px rgba(109,40,217,.7)}
+    .nc-btn-spot:hover{background:linear-gradient(135deg,#6d28d9,#5b21b6)}
+    .nc-spot-drawer{position:fixed;inset:0;z-index:100001;display:none}
+    .nc-spot-drawer.open{display:block}
+    .nc-spot-overlay{position:absolute;inset:0;background:rgba(15,23,42,.55);opacity:0;transition:opacity .25s}
+    .nc-spot-drawer.open .nc-spot-overlay{opacity:1}
+    .nc-spot-panel{position:absolute;top:0;bottom:0;left:0;width:420px;max-width:92vw;background:#f6f7fb;box-shadow:0 0 60px -10px rgba(16,24,40,.5);display:flex;flex-direction:column;transform:translateX(-100%);transition:transform .28s cubic-bezier(.4,0,.2,1)}
+    .nc-spot-drawer.open .nc-spot-panel{transform:translateX(0)}
+    .nc-spot-head{display:flex;align-items:center;justify-content:space-between;padding:18px 20px;background:linear-gradient(135deg,#7c3aed,#6d28d9);color:#fff}
+    .nc-spot-head-t{display:flex;align-items:center;gap:10px;font-size:16px;font-weight:800}
+    .nc-spot-x{width:34px;height:34px;border:none;background:rgba(255,255,255,.18);color:#fff;border-radius:9px;cursor:pointer;display:flex;align-items:center;justify-content:center}
+    .nc-spot-x:hover{background:rgba(255,255,255,.3)}
+    .nc-spot-body{padding:18px;overflow-y:auto;flex:1;display:flex;flex-direction:column;gap:16px}
+    .nc-spot-card{background:#fff;border:1px solid #eceef4;border-radius:16px;padding:16px 18px;box-shadow:0 1px 2px rgba(16,24,40,.04)}
+    .nc-spot-card-t{display:flex;align-items:center;gap:9px;font-size:14px;font-weight:800;color:#1f2733;margin-bottom:12px}
+    .nc-spot-num{width:24px;height:24px;flex:0 0 24px;border-radius:8px;background:#ede9fe;color:#6d28d9;font-size:13px;font-weight:800;display:flex;align-items:center;justify-content:center}
+    .nc-spot-label{display:block;font-size:12.5px;font-weight:700;color:#475569;margin-bottom:6px}
+    .nc-spot-input{width:100%;box-sizing:border-box;border:1px solid #dce0ea;border-radius:10px;padding:10px 12px;font-size:13px;font-family:inherit;background:#fbfcfe;outline:none;transition:.15s}
+    .nc-spot-input:focus{border-color:#7c3aed;box-shadow:0 0 0 3px rgba(124,58,237,.12);background:#fff}
+    textarea.nc-spot-input{resize:vertical;line-height:1.7}
+    .nc-spot-hint{font-size:11.5px;color:#7b819a;line-height:1.9;margin:8px 0 12px}
+    .nc-spot-row{display:flex;gap:10px;flex-wrap:wrap}
+    .nc-spot-row>.nc-spot-btn{flex:1 1 0;min-width:140px}
+    .nc-spot-btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;border:none;border-radius:10px;padding:11px 16px;font-size:13px;font-weight:700;font-family:inherit;cursor:pointer;text-decoration:none;transition:.15s;width:100%;box-sizing:border-box}
+    .nc-spot-btn-primary{background:linear-gradient(135deg,#7c3aed,#6d28d9);color:#fff;box-shadow:0 8px 16px -8px rgba(109,40,217,.6)}
+    .nc-spot-btn-primary:hover{filter:brightness(1.05)}
+    .nc-spot-btn-primary:disabled{opacity:.5;cursor:not-allowed;box-shadow:none}
+    .nc-spot-btn-dark{background:#1f2733;color:#fff}
+    .nc-spot-btn-dark:hover{background:#0f172a}
+    .nc-spot-btn-soft{background:#ede9fe;color:#6d28d9}
+    .nc-spot-btn-soft:hover{background:#ddd6fe}
+    .nc-spot-btn.is-disabled{opacity:.45;pointer-events:none}
+    .nc-spot-btn.is-busy{opacity:.7;pointer-events:none}
+    .nc-spot-file{display:flex;align-items:center;gap:9px;border:1.5px dashed #c8cdda;border-radius:11px;padding:13px 14px;font-size:12.5px;color:#64748b;cursor:pointer;background:#fbfcfe;margin-bottom:12px;transition:.15s}
+    .nc-spot-file:hover{border-color:#7c3aed;color:#6d28d9;background:#faf8ff}
+    .nc-spot-file #nc-spot-file-name{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
     </style>
     <?php
 }
@@ -1069,6 +1225,10 @@ function nias_curriculum_script()
             body.append('product_id', DATA.productId);
             body.append('nonce', DATA.nonce);
             body.append('chapters', JSON.stringify(serialize()));
+            var spUrlEl = document.getElementById('nc-spot-url');
+            var spLicEl = document.getElementById('nc-spot-license');
+            if (spUrlEl) { body.append('spot_download_url', spUrlEl.value); }
+            if (spLicEl) { body.append('spot_license_course', spLicEl.value); }
             fetch(DATA.ajaxUrl, { method: 'POST', credentials: 'same-origin', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body: body.toString() })
                 .then(function (r) { return r.json(); })
                 .then(function (res) {
@@ -1226,6 +1386,135 @@ function nias_curriculum_script()
         document.addEventListener('keydown', function (e) {
             if ((e.ctrlKey || e.metaKey) && (e.key === 's' || e.key === 'S')) { e.preventDefault(); saveAll(); }
         });
+
+        /* =====================================================================
+         * SpotPlayer tools drawer
+         * ================================================================= */
+        (function () {
+            var SPOT = DATA.spot || {};
+            var drawer = document.getElementById('nc-spot-drawer');
+            if (!drawer) { return; }
+            var openBtn = document.getElementById('nc-spot-open');
+
+            function openDrawer() { drawer.classList.add('open'); drawer.setAttribute('aria-hidden', 'false'); }
+            function closeDrawer() { drawer.classList.remove('open'); drawer.setAttribute('aria-hidden', 'true'); }
+            if (openBtn) { openBtn.addEventListener('click', openDrawer); }
+            drawer.addEventListener('click', function (e) { if (e.target.closest('[data-spot-close]')) { closeDrawer(); } });
+            document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && drawer.classList.contains('open')) { closeDrawer(); } });
+
+            /* ---- build editor chapters from an arbitrary imported list ---- */
+            function normTitle(o, keys) {
+                for (var i = 0; i < keys.length; i++) { if (o && o[keys[i]] != null && String(o[keys[i]]).trim() !== '') { return String(o[keys[i]]).trim(); } }
+                return '';
+            }
+            function toChapters(raw) {
+                // Accept: top-level array, {sections:[…]}, {chapters:[…]}, {data:[…]}.
+                var list = raw;
+                if (!Array.isArray(list)) {
+                    list = (raw && (raw.sections || raw.chapters || raw.data)) || [];
+                }
+                if (!Array.isArray(list)) { return []; }
+                var out = [];
+                list.forEach(function (ch) {
+                    if (ch == null) { return; }
+                    var title = normTitle(ch, ['title', 'section_title', 'name', 'chapter']);
+                    var rawLessons = ch.lessons || ch.items || ch.videos || ch.sessions || [];
+                    if (!Array.isArray(rawLessons)) { rawLessons = []; }
+                    // a bare array of strings = lessons of an untitled chapter
+                    var lessons = rawLessons.map(function (ls) {
+                        var lt = (typeof ls === 'string') ? ls : normTitle(ls, ['title', 'lesson_title', 'name', 'session']);
+                        return {
+                            id: uid('l'), title: lt, label: '',
+                            icon: mkMedia(), video: mkMedia(), file: mkMedia(),
+                            private: true, content: ''
+                        };
+                    }).filter(function (l) { return l.title !== ''; });
+                    if (title === '' && lessons.length === 0) { return; }
+                    out.push({ id: uid('c'), title: title || 'بدون عنوان', subtitle: '', icon: mkMedia(), expanded: false, lessons: lessons });
+                });
+                return out;
+            }
+            function applyChapters(chapters, label) {
+                if (!chapters.length) { toast('موردی برای وارد کردن یافت نشد.', true); return; }
+                state.chapters = chapters;
+                if (state.chapters.length) {
+                    state.chapters[0].expanded = true;
+                    var c0 = state.chapters[0];
+                    state.selected = c0.lessons.length
+                        ? { type: 'lesson', chapterId: c0.id, lessonId: c0.lessons[0].id }
+                        : { type: 'chapter', chapterId: c0.id, lessonId: null };
+                } else {
+                    state.selected = { type: 'chapter', chapterId: null, lessonId: null };
+                }
+                markDirty();
+                renderAll();
+                closeDrawer();
+                var totL = 0; state.chapters.forEach(function (c) { totL += c.lessons.length; });
+                toast((label || 'وارد شد') + '：' + faNum(state.chapters.length) + ' فصل · ' + faNum(totL) + ' درس. برای ذخیره، «ذخیره همه تغییرات» را بزنید.');
+            }
+            function confirmReplace() {
+                var hasContent = state.chapters.length > 0;
+                return !hasContent || window.confirm('محتوای فعلی فصل‌ها و جلسات با لیست جدید جایگزین می‌شود. ادامه می‌دهید؟');
+            }
+
+            /* ---- A: sync from URL ---- */
+            var syncBtn = document.getElementById('nc-spot-sync');
+            if (syncBtn) {
+                syncBtn.addEventListener('click', function () {
+                    var urlEl = document.getElementById('nc-spot-url');
+                    var url = urlEl ? urlEl.value.trim() : '';
+                    if (!url) { toast('ابتدا لینک اسپات پلیر را وارد کنید.', true); return; }
+                    if (!confirmReplace()) { return; }
+                    setBtnBusy(syncBtn, true);
+                    var body = new URLSearchParams();
+                    body.append('action', 'nias_spotplayer_sync');
+                    body.append('post_id', DATA.productId);
+                    body.append('url', url);
+                    fetch(DATA.ajaxUrl, { method: 'POST', credentials: 'same-origin', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body: body.toString() })
+                        .then(function (r) { return r.json(); })
+                        .then(function (res) {
+                            setBtnBusy(syncBtn, false);
+                            if (res && res.success) {
+                                // The endpoint already wrote course_sections; reload to show it.
+                                state.dirty = false;
+                                toast((res.data && res.data.message) || 'همگام‌سازی انجام شد');
+                                setTimeout(function () { window.location.reload(); }, 700);
+                            } else {
+                                toast((res && res.data && res.data.message) || 'خطا در همگام‌سازی', true);
+                            }
+                        })
+                        .catch(function () { setBtnBusy(syncBtn, false); toast('خطا در ارتباط با سرور', true); });
+                });
+            }
+
+            /* ---- C: import JSON file ---- */
+            var fileInput = document.getElementById('nc-spot-file');
+            var fileName = document.getElementById('nc-spot-file-name');
+            var importBtn = document.getElementById('nc-spot-import');
+            var pickedFile = null;
+            if (fileInput) {
+                fileInput.addEventListener('change', function () {
+                    pickedFile = this.files && this.files[0] ? this.files[0] : null;
+                    if (fileName) { fileName.textContent = pickedFile ? pickedFile.name : 'انتخاب فایل JSON…'; }
+                    if (importBtn) { importBtn.disabled = !pickedFile; }
+                });
+            }
+            if (importBtn) {
+                importBtn.addEventListener('click', function () {
+                    if (!pickedFile) { return; }
+                    if (!confirmReplace()) { return; }
+                    var reader = new FileReader();
+                    reader.onload = function () {
+                        var data;
+                        try { data = JSON.parse(reader.result); }
+                        catch (err) { toast('فایل JSON معتبر نیست.', true); return; }
+                        applyChapters(toChapters(data), 'وارد شد از فایل');
+                    };
+                    reader.onerror = function () { toast('خطا در خواندن فایل.', true); };
+                    reader.readAsText(pickedFile);
+                });
+            }
+        })();
 
         renderAll();
     })();

@@ -12,22 +12,13 @@ if (!defined('ABSPATH')) {
  * curriculum editor's AJAX save, and the save_post guard.
  */
 
-/* -------------------------------------------------------------------------
- * Metabox registration (Spot Player only)
- * ---------------------------------------------------------------------- */
-
-add_action('add_meta_boxes', 'nias_course_register_metaboxes');
-function nias_course_register_metaboxes()
-{
-    add_meta_box(
-        'nias_spotplayer_box',
-        __('تنظیمات اسپات پلیر', 'nias-course-widget'),
-        'nias_spotplayer_metabox',
-        'product',
-        'normal',
-        'high'
-    );
-}
+/*
+ * NOTE: The "تنظیمات اسپات پلیر" metabox used to live on the product edit
+ * screen. It has been moved into the curriculum editor page (the "ابزار اسپات
+ * پلیر" drawer in woocommerce-course/curriculum-editor.php), where the download
+ * URL, session sync, Chrome-extension links, JSON import and the license
+ * course IDs are now managed and saved together with the chapters via AJAX.
+ */
 
 /* -------------------------------------------------------------------------
  * Media group helper (icon / video / file with upload+url, value type url)
@@ -44,30 +35,11 @@ function nias_media_group_keys($type)
 }
 
 /* -------------------------------------------------------------------------
- * Metabox callbacks
- * ---------------------------------------------------------------------- */
-
-function nias_spotplayer_metabox($post)
-{
-    // This nonce now also authorises the save_post handler below.
-    wp_nonce_field('nias_course_meta', 'nias_course_meta_nonce');
-
-    $url = get_post_meta($post->ID, '_spotplayer_download_url', true);
-    ?>
-    <p>
-        <label class="nias-field-label" for="_spotplayer_download_url"><?php echo esc_html__('لینک صفحه دانلود ویدیو اسپات پلیر', 'nias-course-widget'); ?></label>
-        <input type="text" class="widefat" id="_spotplayer_download_url" name="_spotplayer_download_url" value="<?php echo esc_attr($url); ?>">
-        <span class="description"><?php echo esc_html__('لینک صفحه دانلود ویدیو را از اسپات پلیر وارد کنید', 'nias-course-widget'); ?></span>
-    </p>
-    <p>
-        <button type="button" class="button button-primary" id="sync-spotplayer"><?php echo esc_html__('همگام سازی جلسات با اسپات پلیر', 'nias-course-widget'); ?></button>
-    </p>
-    <div id="sync-status"></div>
-    <?php
-}
-
-/* -------------------------------------------------------------------------
- * Save
+ * Save (legacy inline curriculum inputs only)
+ *
+ * The curriculum, download URL and license fields are saved from the dedicated
+ * editor page via AJAX. This guard only persists legacy inline section inputs
+ * if they were actually submitted, so a normal product save never wipes data.
  * ---------------------------------------------------------------------- */
 
 add_action('save_post_product', 'nias_course_save_metaboxes', 10, 2);
@@ -83,17 +55,11 @@ function nias_course_save_metaboxes($post_id, $post)
         return;
     }
 
-    // The curriculum is edited on the dedicated page (saved via AJAX). Only
-    // persist sections here if legacy inline inputs were actually submitted,
-    // so a normal product save never wipes the stored curriculum.
     if (isset($_POST['nias_course']['sections'])) {
         $sections_input = (array) wp_unslash($_POST['nias_course']['sections']);
         $sections = nias_course_sanitize_sections($sections_input);
         carbon_set_post_meta($post_id, 'course_sections', $sections);
     }
-
-    $spot = isset($_POST['_spotplayer_download_url']) ? esc_url_raw(wp_unslash($_POST['_spotplayer_download_url'])) : '';
-    update_post_meta($post_id, '_spotplayer_download_url', $spot);
 }
 
 /* -------------------------------------------------------------------------
@@ -184,59 +150,8 @@ function nias_course_sanitize_sections($raw)
     return $out;
 }
 
-/* -------------------------------------------------------------------------
- * Admin assets + Spot Player sync script (product edit screen)
- * ---------------------------------------------------------------------- */
-
-add_action('admin_footer', 'nias_course_builder_script');
-function nias_course_builder_script()
-{
-    $screen = function_exists('get_current_screen') ? get_current_screen() : null;
-    if (!$screen || $screen->post_type !== 'product') {
-        return;
-    }
-    ?>
-    <script>
-    jQuery(function ($) {
-        // Spot Player sync.
-        $('#sync-spotplayer').on('click', function () {
-            var button = $(this);
-            var statusDiv = $('#sync-status');
-            var downloadUrl = $('#_spotplayer_download_url').val();
-
-            if (!downloadUrl) {
-                statusDiv.html('<p style="color: red;">لطفا ابتدا لینک دانلود را وارد کنید</p>');
-                return;
-            }
-
-            button.prop('disabled', true);
-            statusDiv.html('<p>در حال همگام سازی...</p>');
-
-            $.ajax({
-                url: ajaxurl,
-                type: 'POST',
-                data: {
-                    action: 'nias_spotplayer_sync',
-                    post_id: $('#post_ID').val(),
-                    url: downloadUrl
-                },
-                success: function (response) {
-                    if (response.success) {
-                        statusDiv.html('<p style="color: green;">' + response.data.message + '</p>');
-                        setTimeout(function () { window.location.reload(); }, 1500);
-                    } else {
-                        var msg = response.data && response.data.message ? response.data.message : response.data;
-                        statusDiv.html('<p style="color: red;">خطا: ' + msg + '</p>');
-                        button.prop('disabled', false);
-                    }
-                },
-                error: function () {
-                    statusDiv.html('<p style="color: red;">خطا در ارتباط با سرور</p>');
-                    button.prop('disabled', false);
-                }
-            });
-        });
-    });
-    </script>
-    <?php
-}
+/*
+ * The Spot Player session-sync script used to run on the product edit screen
+ * (targeting the old metabox). It now lives in the curriculum editor's
+ * "ابزار اسپات پلیر" drawer (woocommerce-course/curriculum-editor.php).
+ */

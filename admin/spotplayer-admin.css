@@ -1,0 +1,20 @@
+/* SpotPlayer License — admin order/payment metabox (Nias Course Widget) */
+
+#nias-sp-order table { border-spacing: 0; width: 100%; }
+#nias-sp-order table td,
+#nias-sp-order table th { padding: 5px 0 !important; vertical-align: middle !important; }
+
+#nias-sp-order table input {
+    border-radius: 4px; border: 1px solid #999; background: #FFF;
+}
+#nias-sp-order table input[type=text] { width: 100%; padding: 3px 6px; }
+#nias-sp-order table input.ltr { direction: ltr; }
+
+#nias-sp-order table button {
+    width: 100%; color: #FFF; border: none; padding: 6px 0;
+    border-radius: 5px; cursor: pointer; background: #1f9d4d; margin-top: 6px;
+}
+#nias-sp-order table button:hover { filter: brightness(.95); }
+#nias-sp-order table button.remove { background: #c0392b; }
+
+#nias-spot-course textarea { width: 100%; direction: ltr; min-height: 80px; }

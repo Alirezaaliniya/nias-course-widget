@@ -1,0 +1,81 @@
+/* SpotPlayer License — frontend (Nias Course Widget) */
+
+.woocommerce-order-details > #nias-sp,
+#nias-sp { margin: 40px 0; direction: rtl; font-size: 14px; }
+
+#nias-sp h1 { font-size: 26px; font-weight: 800; margin-bottom: 15px; }
+#nias-sp h2 { font-size: 20px; font-weight: 800; margin-bottom: 15px; }
+#nias-sp h3 { font-size: 18px; font-weight: 800; }
+#nias-sp b { color: #61D; font-size: 22px; vertical-align: middle; }
+#nias-sp p { line-height: 1.8; font-size: 14px; }
+#nias-sp ul { list-style: none; padding: 0 !important; margin: 0 !important; }
+
+#nias-sp-warn {
+    background: #fff3f3; color: #900; border-radius: 8px;
+    margin-bottom: 30px; padding: 10px 14px; line-height: 1.9;
+}
+
+#nias-sp-web > p { margin-bottom: 10px; }
+#nias-sp-web ~ #nias-sp-app { margin-top: 70px; }
+#nias-sp-app > div { margin-top: 20px; }
+
+/* web player */
+#spotplayer {
+    border: 1px solid #AAA; width: 100%; height: 550px;
+    overflow: hidden; border-radius: 8px;
+}
+
+/* native players */
+#nias-sp_players > div {
+    display: flex; flex-wrap: wrap; justify-content: center;
+    background: #f7f1ff; border-radius: 10px; padding: 12px 12px 6px;
+}
+#nias-sp_players > div > a { flex-basis: 0; flex-grow: 1; min-width: 100px; text-align: center; padding: 10px; text-decoration: none; }
+#nias-sp_players > div > a.disable { opacity: .4; pointer-events: none; }
+#nias-sp_players > div > a > img { width: 80px; border-radius: 12px; display: inline-block; margin-bottom: 5px; }
+#nias-sp_players > div > a > b { display: block; font-weight: 700; font-size: 14px; color: inherit; }
+#nias-sp_players > div > a > u { color: #666; font-size: 12px; text-decoration: none; }
+
+/* license key */
+#nias-sp_license > textarea {
+    direction: ltr; width: 100%; height: 100px; display: block;
+    border: 1px solid #999; border-bottom: none; outline: none !important;
+    border-radius: 8px 8px 0 0; padding: 8px; box-sizing: border-box;
+}
+#nias-sp_license > button {
+    display: block; width: 100%; background: #61D; color: #FFF;
+    border-radius: 0 0 8px 8px; border: none !important; outline: none !important;
+    padding: 10px 0; cursor: pointer; font-size: 14px;
+}
+
+/* downloads */
+#nias-sp_videos img { margin: 0 0 0 7px; vertical-align: middle; width: 15px; }
+#nias-sp_videos > ul { list-style: none; margin: 0; padding: 0; }
+#nias-sp_videos > ul > li {
+    max-height: 40px; overflow: hidden; border: 1px solid #999; border-radius: 8px;
+    margin-bottom: 6px; padding: 0 12px 15px; transition: all .5s ease-out; line-height: 1.8;
+}
+#nias-sp_videos > ul > li.active { max-height: 4000px; transition-timing-function: ease-in; }
+#nias-sp_videos > ul > li > h4 { padding: 0; margin: 0; line-height: 35px; font-size: 15px; cursor: pointer; }
+#nias-sp_videos > ul > li > h4 > img { transition: all .5s; }
+#nias-sp_videos > ul > li.active > h4 > img { transform: scale(1, -1); }
+#nias-sp_videos > ul > li > ul > li { margin: 0; }
+#nias-sp_videos > ul > li > ul > li.nias-sp_seg {
+    margin-top: 15px; border-bottom: 1px dashed #999; padding-bottom: 3px; margin-bottom: 3px;
+}
+#nias-sp_videos > ul > li > ul > li.nias-sp_seg > a { color: #333; pointer-events: none; font-weight: bold; }
+#nias-sp_videos > ul > li > ul > li.nias-sp_seg > a > img { display: none !important; }
+
+/* courses list */
+#nias-sp_courses { display: flex; flex-wrap: wrap; }
+#nias-sp_courses > a { width: 33.33%; padding: 5px; text-decoration: none; box-sizing: border-box; }
+#nias-sp_courses > a > img { border: 1px solid #CCC; border-radius: 8px; }
+#nias-sp_courses > a > h2 { font-size: 18px; margin: 10px 0; }
+
+/* failed */
+#nias-sp_fail { background: #fff3f3; color: #900; border-radius: 8px; padding: 16px; text-align: center; }
+#nias-sp_fail button { margin-top: 10px; background: #900; color: #fff; border: none; border-radius: 6px; padding: 8px 18px; cursor: pointer; }
+
+@media (max-width: 600px) {
+    #nias-sp_courses > a { width: 50%; }
+}
