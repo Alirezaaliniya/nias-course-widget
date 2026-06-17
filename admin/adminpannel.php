@@ -198,6 +198,189 @@ function nias_render_multiselect($name, $label, $options, $help, $extra_attr = '
  * Main settings page
  * ---------------------------------------------------------------------- */
 
+/* -------------------------------------------------------------------------
+ * Modern (redesigned) settings UI helpers
+ * ---------------------------------------------------------------------- */
+
+/** Convert ASCII digits to Persian digits. */
+function nias_fa_digits($str)
+{
+    return strtr((string) $str, array('0' => '۰', '1' => '۱', '2' => '۲', '3' => '۳', '4' => '۴', '5' => '۵', '6' => '۶', '7' => '۷', '8' => '۸', '9' => '۹'));
+}
+
+/** Sticky top bar with brand + version + page tabs. */
+function nias_settings_topbar($active)
+{
+    $cert_on  = carbon_get_theme_option('nias_course_certificate') === 'on';
+    $main_url = admin_url('admin.php?page=nias-course-settings');
+    $cert_url = admin_url('admin.php?page=nias-course-certificate');
+    ?>
+    <div class="nias-set-bar">
+        <div class="nias-set-bar-inner">
+            <div class="nias-brand">
+                <div class="nias-brand-logo">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M4 6.5C4 5.67 4.67 5 5.5 5H11v14H5.5A1.5 1.5 0 0 1 4 17.5v-11Z" fill="#fff" opacity=".9"/><path d="M20 6.5C20 5.67 19.33 5 18.5 5H13v14h5.5a1.5 1.5 0 0 0 1.5-1.5v-11Z" fill="#fff"/></svg>
+                </div>
+                <div>
+                    <div class="nias-brand-title"><?php echo esc_html__('دوره ساز نیاس', 'nias-course-widget'); ?></div>
+                    <div class="nias-brand-sub"><?php echo esc_html__('پنل تنظیمات افزونه', 'nias-course-widget'); ?></div>
+                </div>
+            </div>
+            <div><span class="nias-ver"><?php echo esc_html__('نگارش', 'nias-course-widget') . ' ' . esc_html(nias_fa_digits(NIAS_COURSE_VERSION)); ?></span></div>
+        </div>
+        <div class="nias-set-tabs-wrap">
+            <div class="nias-set-tabs">
+                <a href="<?php echo esc_url($main_url); ?>" class="nias-tab <?php echo $active === 'main' ? 'active' : ''; ?>"><?php echo esc_html__('تنظیمات اصلی', 'nias-course-widget'); ?></a>
+                <?php if ($cert_on) : ?>
+                    <a href="<?php echo esc_url($cert_url); ?>" class="nias-tab <?php echo $active === 'cert' ? 'active' : ''; ?>"><?php echo esc_html__('تنظیمات مدرک دوره', 'nias-course-widget'); ?> <span class="nias-tab-badge"><?php echo esc_html__('فعال', 'nias-course-widget'); ?></span></a>
+                <?php endif; ?>
+            </div>
+        </div>
+    </div>
+    <?php
+}
+
+function nias_set_card_open($icon, $title)
+{
+    echo '<div class="nias-card"><div class="nias-card-head">' . $icon . '<div class="nias-card-title">' . esc_html($title) . '</div></div>';
+}
+function nias_set_card_close()
+{
+    echo '</div>';
+}
+
+function nias_set_saved_banner($saved)
+{
+    if (!$saved) {
+        return;
+    }
+    echo '<div class="nias-saved"><svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="m20 6-11 11-5-5" stroke="#0a8a44" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>' . esc_html__('تنظیمات ذخیره شد.', 'nias-course-widget') . '</div>';
+}
+
+/** Toggle switch row (stores on/off). */
+function nias_set_toggle_row($name, $title, $desc, $default, $badge = '')
+{
+    $current = carbon_get_theme_option($name);
+    if ($current === '' || $current === false) {
+        $current = $default;
+    }
+    $on = ($current === 'on');
+    ?>
+    <div class="nias-row">
+        <div class="nias-row-main">
+            <div class="nias-row-title"><?php echo esc_html($title); ?><?php if ($badge) echo ' <span class="nias-chip">' . esc_html($badge) . '</span>'; ?></div>
+            <?php if ($desc) : ?><div class="nias-row-desc"><?php echo wp_kses_post($desc); ?></div><?php endif; ?>
+        </div>
+        <label class="nias-switch">
+            <input type="hidden" name="<?php echo esc_attr($name); ?>" value="off">
+            <input type="checkbox" class="nias-switch-cb" name="<?php echo esc_attr($name); ?>" value="on" data-nias-field="<?php echo esc_attr($name); ?>" <?php checked($on); ?>>
+            <span class="nias-switch-track"><span class="nias-switch-knob"></span></span>
+        </label>
+    </div>
+    <?php
+}
+
+/** Segmented control (single value radio group). */
+function nias_set_segmented($name, $options, $default)
+{
+    $current = carbon_get_theme_option($name);
+    if ($current === '' || $current === false) {
+        $current = $default;
+    }
+    echo '<div class="nias-seg">';
+    foreach ($options as $val => $text) {
+        echo '<label class="nias-seg-item"><input type="radio" name="' . esc_attr($name) . '" value="' . esc_attr($val) . '" data-nias-field="' . esc_attr($name) . '" ' . checked($current, $val, false) . '><span>' . esc_html($text) . '</span></label>';
+    }
+    echo '</div>';
+}
+
+/** Radio cards (single value radio group, card style). */
+function nias_set_radio_cards($name, $options, $default)
+{
+    $current = carbon_get_theme_option($name);
+    if ($current === '' || $current === false) {
+        $current = $default;
+    }
+    echo '<div class="nias-rcards">';
+    foreach ($options as $val => $text) {
+        echo '<label class="nias-rcard"><input type="radio" name="' . esc_attr($name) . '" value="' . esc_attr($val) . '" data-nias-field="' . esc_attr($name) . '" ' . checked($current, $val, false) . '><span class="nias-rcard-dot"></span><span class="nias-rcard-txt">' . esc_html($text) . '</span></label>';
+    }
+    echo '</div>';
+}
+
+function nias_set_img_placeholder()
+{
+    return '<svg width="20" height="20" viewBox="0 0 24 24" fill="none"><rect x="3" y="3" width="18" height="18" rx="3" stroke="#c1c7da" stroke-width="1.6"/><circle cx="8.5" cy="8.5" r="1.5" fill="#c1c7da"/><path d="m21 15-5-5L5 21" stroke="#c1c7da" stroke-width="1.6" stroke-linejoin="round"/></svg>';
+}
+
+/** Image upload row (media library). Reuses .nias-image-field JS hooks. */
+function nias_set_image_row($name, $label, $hint)
+{
+    $current = carbon_get_theme_option($name);
+    ?>
+    <div class="nias-imgrow nias-image-field">
+        <div class="nias-imgrow-info">
+            <div class="nias-imgrow-label"><?php echo esc_html($label); ?></div>
+            <div class="nias-imgrow-hint"><?php echo esc_html($hint); ?></div>
+        </div>
+        <div class="nias-imgrow-ctrl">
+            <div class="nias-imgbox nias-image-preview"><?php echo $current ? '<img src="' . esc_url($current) . '">' : nias_set_img_placeholder(); ?></div>
+            <input type="hidden" class="nias-image-url" name="<?php echo esc_attr($name); ?>" value="<?php echo esc_attr($current); ?>">
+            <button type="button" class="nias-btn-soft nias-image-upload"><?php echo esc_html__('انتخاب تصویر', 'nias-course-widget'); ?></button>
+            <button type="button" class="nias-btn-del nias-image-clear"><?php echo esc_html__('حذف', 'nias-course-widget'); ?></button>
+        </div>
+    </div>
+    <?php
+}
+
+function nias_set_text_field($name, $label, $placeholder = '')
+{
+    $current = carbon_get_theme_option($name);
+    echo '<div class="nias-field"><label class="nias-flabel">' . esc_html($label) . '</label><input type="text" class="nias-input" name="' . esc_attr($name) . '" value="' . esc_attr($current) . '" placeholder="' . esc_attr($placeholder) . '"></div>';
+}
+
+function nias_set_date_field($name, $label, $wrap_attr = '')
+{
+    $current = carbon_get_theme_option($name);
+    echo '<div class="nias-field" ' . $wrap_attr . ' style="max-width:240px"><label class="nias-flabel">' . esc_html($label) . '</label><input type="text" class="nias-input nias-datepicker" dir="ltr" name="' . esc_attr($name) . '" value="' . esc_attr($current) . '" placeholder="YYYY-MM-DD"></div>';
+}
+
+function nias_set_select_field($name, $label, $desc, $options)
+{
+    $current = carbon_get_theme_option($name);
+    echo '<div class="nias-field"><label class="nias-flabel">' . esc_html($label) . '</label>';
+    if ($desc) {
+        echo '<div class="nias-fdesc">' . esc_html($desc) . '</div>';
+    }
+    echo '<div class="nias-select-wrap"><select class="nias-select" name="' . esc_attr($name) . '" data-nias-field="' . esc_attr($name) . '">';
+    foreach ($options as $val => $text) {
+        echo '<option value="' . esc_attr($val) . '" ' . selected($current, $val, false) . '>' . esc_html($text) . '</option>';
+    }
+    echo '</select><span class="nias-select-arrow"><svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="m6 9 6 6 6-6" stroke="#8a90a6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span></div></div>';
+}
+
+function nias_set_multiselect_field($name, $label, $options, $wrap_attr = '')
+{
+    $current = carbon_get_theme_option($name);
+    $current = is_array($current) ? array_map('strval', $current) : array();
+    echo '<div class="nias-field" ' . $wrap_attr . '><label class="nias-flabel">' . esc_html($label) . '</label>';
+    echo '<select class="nias-multiselect" name="' . esc_attr($name) . '[]" multiple size="6">';
+    foreach ($options as $val => $text) {
+        $sel = in_array((string) $val, $current, true) ? ' selected' : '';
+        echo '<option value="' . esc_attr($val) . '"' . $sel . '>' . esc_html($text) . '</option>';
+    }
+    echo '</select><div class="nias-fhint">' . esc_html__('برای انتخاب چند مورد، کلید Ctrl را نگه دارید.', 'nias-course-widget') . '</div></div>';
+}
+
+function nias_set_save_button($name)
+{
+    echo '<div class="nias-savebar"><button type="submit" name="' . esc_attr($name) . '" class="nias-btn-primary"><svg width="17" height="17" viewBox="0 0 24 24" fill="none"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2Z" stroke="#fff" stroke-width="1.8" stroke-linejoin="round"/><path d="M17 21v-8H7v8M7 3v5h8" stroke="#fff" stroke-width="1.8" stroke-linejoin="round"/></svg> ' . esc_html__('ذخیره تغییرات', 'nias-course-widget') . '</button></div>';
+}
+
+/* -------------------------------------------------------------------------
+ * Main settings page
+ * ---------------------------------------------------------------------- */
+
 function nias_course_render_main_settings()
 {
     if (!current_user_can('manage_options')) {
@@ -210,86 +393,106 @@ function nias_course_render_main_settings()
         $saved = true;
     }
     ?>
-    <div class="wrap nias-course-settings">
-        <h1><?php echo esc_html__('تنظیمات دوره ساز نیاس', 'nias-course-widget'); ?></h1>
+    <div class="nias-settings-app" dir="rtl">
+        <?php nias_settings_topbar('main'); ?>
+        <div class="nias-set-main">
+            <?php nias_set_saved_banner($saved); ?>
 
-        <?php if ($saved) : ?>
-            <div class="notice notice-success is-dismissible"><p><?php echo esc_html__('تنظیمات ذخیره شد.', 'nias-course-widget'); ?></p></div>
-        <?php endif; ?>
+            <!-- Migration alert -->
+            <div class="nias-alert">
+                <span class="nias-alert-bar"></span>
+                <div class="nias-alert-ic">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M12 9v4m0 4h.01M10.3 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.7 3.86a2 2 0 0 0-3.42 0Z" stroke="#ef4444" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </div>
+                <div class="nias-alert-body">
+                    <div class="nias-alert-title"><?php echo esc_html__('انتقال دیتا‌ها به دوره ساز جدید', 'nias-course-widget'); ?></div>
+                    <div class="nias-alert-desc"><?php echo esc_html__('چنانچه از ویجت ووکامرس دوره ساز استفاده می‌کردید و مشکلاتی را در آپدیت جدید مشاهده می‌کنید، جهت انتقال داده‌ها به ویرایشگر جدید کلیک کنید. حتماً پیش از انتقال از سایت بک‌اپ تهیه کنید.', 'nias-course-widget'); ?></div>
+                    <form method="post" style="margin:0">
+                        <?php wp_nonce_field('migrate_courses_nonce', '_wpnonce', true, true); ?>
+                        <button type="submit" name="migrate_courses" class="nias-btn-danger">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M21 12a9 9 0 1 1-2.64-6.36M21 3v6h-6" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                            <?php echo esc_html__('شروع انتقال و همگام‌سازی', 'nias-course-widget'); ?>
+                        </button>
+                    </form>
+                </div>
+            </div>
 
-        <div class="nias-course-migrate">
-            <h2><?php echo esc_html__('انتقال دیتا ها به دوره ساز جدید', 'nias-course-widget'); ?></h2>
             <form method="post">
-                <?php wp_nonce_field('migrate_courses_nonce', '_wpnonce', true, true); ?>
-                <p><?php echo esc_html__('چنانچه از ویجت ووکامرس دوره ساز استفاده میکردید و مشکلاتی را در آپدیت جدید مشاهده میکنید جهت انتقال داده ها به ویرایشگر جدید کلیک کنید توجه کنید حتماً از سایت بک اپ تهیه کنید :', 'nias-course-widget'); ?></p>
-                <input type="submit" name="migrate_courses" class="button button-primary" value="<?php echo esc_attr__('شروع انتقال و همگام سازی', 'nias-course-widget'); ?>">
+                <?php wp_nonce_field('nias_main_settings', 'nias_main_nonce'); ?>
+                <?php nias_set_card_open('<svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M12 2v4m0 12v4M4.93 4.93l2.83 2.83m8.48 8.48 2.83 2.83M2 12h4m12 0h4M4.93 19.07l2.83-2.83m8.48-8.48 2.83-2.83" stroke="#3858e9" stroke-width="1.8" stroke-linecap="round"/></svg>', __('گزینه‌های فعالسازی', 'nias-course-widget')); ?>
+                    <?php
+                    nias_set_toggle_row(
+                        'nias_two_way_verification',
+                        __('فعالسازی حالت دوجانبه بررسی خرید دوره‌ها', 'nias-course-widget'),
+                        __('این حالت تنها در صورتی استفاده شود که دوره‌های خریداری‌شده برای کاربران شما باز نمی‌شود.', 'nias-course-widget'),
+                        'off'
+                    );
+                    nias_set_toggle_row(
+                        'nias_course_account_display',
+                        __('فعالسازی نمایش دوره در حساب کاربری', 'nias-course-widget'),
+                        __('این گزینه فقط در صورتی که حساب کاربری شما استاندارد باشد عمل می‌کند و باید از ویجت ووکامرسی استفاده کرده باشید. اگر تغییری حاصل نشد، یکبار روی ذخیره در صفحه <a href="/wp-admin/options-permalink.php">پیوندهای یکتا</a> کلیک کنید.', 'nias-course-widget'),
+                        'off'
+                    );
+                    nias_set_toggle_row(
+                        'nias_course_certificate',
+                        __('فعالسازی مدرک دوره با قابلیت استعلام', 'nias-course-widget'),
+                        __('با فعال کردن این گزینه، امکان صدور و استعلام مدرک دوره فعال خواهد شد. پس از ذخیره، زیرمنوی «تنظیمات مدرک دوره» نمایش داده می‌شود.', 'nias-course-widget'),
+                        'off',
+                        __('مدرک', 'nias-course-widget')
+                    );
+                    ?>
+                <?php nias_set_card_close(); ?>
+                <?php nias_set_save_button('nias_save_main_settings'); ?>
             </form>
-        </div>
 
-        <form method="post">
-            <?php wp_nonce_field('nias_main_settings', 'nias_main_nonce'); ?>
-            <table class="form-table" role="presentation">
-                <?php
-                nias_render_radio(
-                    'nias_two_way_verification',
-                    __('فعالسازی حالت دو جانبه بررسی خرید دوره ها', 'nias-course-widget'),
-                    array('off' => __('غیرفعال', 'nias-course-widget'), 'on' => __('فعال', 'nias-course-widget')),
-                    'off',
-                    __('توجه این حالت تنها در صورتی استفاده شود که دوره های خریداری شده برای کاربران شما باز نمیشود', 'nias-course-widget'),
-                    'nias-toggle-switch'
-                );
+            <!-- Help / tutorials -->
+            <?php nias_set_card_open('<svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="m10 8 6 4-6 4V8Z" fill="#3858e9"/><rect x="2" y="4" width="20" height="16" rx="3" stroke="#3858e9" stroke-width="1.8"/></svg>', __('آموزش استفاده از افزونه', 'nias-course-widget')); ?>
+                <div class="nias-card-pad">
+                    <div class="nias-vid-grid">
+                        <div>
+                            <div class="nias-vid-label"><?php echo esc_html__('پارت ۱', 'nias-course-widget'); ?></div>
+                            <div class="h_iframe-aparat_embed_frame nias-vid">
+                                <span style="display:block;padding-top:57%"></span>
+                                <iframe src="https://www.aparat.com/video/video/embed/videohash/b90c8sh/vt/frame?titleShow=true&recom=self" allowFullScreen="true" webkitallowfullscreen="true" mozallowfullscreen="true"></iframe>
+                            </div>
+                        </div>
+                        <div>
+                            <div class="nias-vid-label"><?php echo esc_html__('پارت ۲', 'nias-course-widget'); ?></div>
+                            <div class="h_iframe-aparat_embed_frame nias-vid">
+                                <span style="display:block;padding-top:57%"></span>
+                                <iframe src="https://www.aparat.com/video/video/embed/videohash/lcd5qbk/vt/frame" allowFullScreen="true" webkitallowfullscreen="true" mozallowfullscreen="true"></iframe>
+                            </div>
+                        </div>
+                    </div>
 
-                nias_render_radio(
-                    'nias_course_account_display',
-                    __('فعالسازی نمایش دوره در حساب کاربری', 'nias-course-widget'),
-                    array('off' => __('غیرفعال', 'nias-course-widget'), 'on' => __('فعال', 'nias-course-widget')),
-                    'off',
-                    __('این گزینه فقط در صورتی که حساب کاربری شما یک حساب کاربری استاندارد باشد عمل خواهد کرد همچنین حتماً باید از ویجت ووکامرسی استفاده کرده باشید.<br>اگه تغییری حاصل نشد یکبار روی ذخیره تغییرات در صفحه <a href="/wp-admin/options-permalink.php">پیوندهای یکتا</a> کلیک کنید', 'nias-course-widget'),
-                    'nias-toggle-switch'
-                );
+                    <div class="nias-tg">
+                        <div class="nias-tg-text"><?php echo esc_html__('در صورت وجود مشکل یا سوال از طریق تلگرام با ما در ارتباط باشید.', 'nias-course-widget'); ?></div>
+                        <a href="https://t.me/niasir" target="_blank" rel="noopener" class="nias-tg-btn">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="#3858e9"><path d="M23.9 4.3 20.5 20c-.25 1.1-.92 1.38-1.86.86l-5.14-3.79-2.48 2.39c-.27.27-.5.5-1.03.5l.37-5.23 9.5-8.59c.42-.37-.09-.57-.65-.21L6.97 12.8l-5.06-1.58c-1.1-.34-1.12-1.1.23-1.63L21.92 1.97c.92-.34 1.72.21 1.42 1.63Z"/></svg>
+                            T.me/niasir
+                        </a>
+                    </div>
 
-                nias_render_radio(
-                    'nias_course_certificate',
-                    __('فعالسازی مدرک دوره با قابلیت استعلام', 'nias-course-widget'),
-                    array('off' => __('غیرفعال', 'nias-course-widget'), 'on' => __('فعال', 'nias-course-widget')),
-                    'off',
-                    __('با فعال کردن این گزینه، امکان صدور و استعلام مدرک دوره فعال خواهد شد (پس از ذخیره، زیرمنوی «تنظیمات مدرک دوره» نمایش داده می‌شود)', 'nias-course-widget'),
-                    'nias-toggle-switch'
-                );
-                ?>
-            </table>
-            <?php submit_button(__('ذخیره تغییرات', 'nias-course-widget'), 'primary', 'nias_save_main_settings'); ?>
-        </form>
-
-        <div class="nias-course-help">
-            <h2><?php echo esc_html__('آموزش استفاده از پلاگین را از اینجا ببینید', 'nias-course-widget'); ?></h2>
-            <div style="max-width: 100%; display: flex; gap: 20px;">
-                <div style="flex: 1; max-width: 363px;">
-                    <h3>پارت 1</h3>
-                    <div class="h_iframe-aparat_embed_frame">
-                        <span style="display: block;padding-top: 57%"></span>
-                        <iframe src="https://www.aparat.com/video/video/embed/videohash/b90c8sh/vt/frame?titleShow=true&recom=self" allowFullScreen="true" webkitallowfullscreen="true" mozallowfullscreen="true"></iframe>
+                    <div class="nias-banners">
+                        <a href="https://nias.ir" target="_blank" rel="noopener" class="nias-banner nias-banner-blue">
+                            <div>
+                                <div class="nias-banner-t"><?php echo esc_html__('آموزش‌های طراحی سایت نیاس', 'nias-course-widget'); ?></div>
+                                <div class="nias-banner-s">nias.ir</div>
+                            </div>
+                            <span class="nias-banner-cta"><?php echo esc_html__('ورود', 'nias-course-widget'); ?></span>
+                        </a>
+                        <a href="https://proelement.ir" target="_blank" rel="noopener" class="nias-banner nias-banner-red">
+                            <div>
+                                <div class="nias-banner-t" style="color:#401f24"><?php echo esc_html__('پرو المنت — دانلود قالب', 'nias-course-widget'); ?></div>
+                                <div class="nias-banner-s" style="color:#9a7b7e">proelement.ir</div>
+                            </div>
+                            <span class="nias-banner-cta nias-banner-cta-red"><?php echo esc_html__('ورود', 'nias-course-widget'); ?></span>
+                        </a>
                     </div>
                 </div>
-                <div style="flex: 1; max-width: 363px;">
-                    <h3>پارت 2</h3>
-                    <div class="h_iframe-aparat_embed_frame">
-                        <span style="display: block;padding-top: 57%"></span>
-                        <iframe src="https://www.aparat.com/video/video/embed/videohash/lcd5qbk/vt/frame" allowFullScreen="true" webkitallowfullscreen="true" mozallowfullscreen="true"></iframe>
-                    </div>
-                </div>
-            </div>
-            <p><?php echo esc_html__('لطفاً در صورت وجود مشکل یا سوال از طریق تلگرام با بنده در ارتباط باشید', 'nias-course-widget'); ?></p>
-            <a href="https://T.me/niasir">T.me/niasir</a>
+            <?php nias_set_card_close(); ?>
 
-            <div style="display: flex; gap: 20px; margin: 20px 0; align-items: center;justify-content: space-between;">
-                <a href="https://nias.ir" target="_blank" rel="noopener">
-                    <img src="<?php echo esc_url(plugin_dir_url(__DIR__) . 'assets/images/nias.webp'); ?>" alt="Nias" style="height: auto;">
-                </a>
-                <a href="https://proelement.ir" target="_blank" rel="noopener">
-                    <img src="<?php echo esc_url(plugin_dir_url(__DIR__) . 'assets/images/proelement.webp'); ?>" alt="Pro Element" style="height: auto;">
-                </a>
-            </div>
+            <div class="nias-foot"><?php echo wp_kses_post(__('سپاسگزاریم از اینکه سایت خود را با <span style="color:#3858e9;font-weight:600">وردپرس</span> ساخته‌اید.', 'nias-course-widget')); ?></div>
         </div>
     </div>
     <?php
@@ -330,120 +533,115 @@ function nias_course_render_certificate_settings()
         }
     }
     ?>
-    <div class="wrap nias-course-settings">
-        <h1><?php echo esc_html__('تنظیمات مدرک دوره', 'nias-course-widget'); ?></h1>
+    <div class="nias-settings-app" dir="rtl">
+        <?php nias_settings_topbar('cert'); ?>
+        <div class="nias-set-main">
+            <?php nias_set_saved_banner($saved); ?>
 
-        <?php if ($saved) : ?>
-            <div class="notice notice-success is-dismissible"><p><?php echo esc_html__('تنظیمات ذخیره شد.', 'nias-course-widget'); ?></p></div>
-        <?php endif; ?>
+            <form method="post">
+                <?php wp_nonce_field('nias_certificate_settings', 'nias_certificate_nonce'); ?>
 
-        <form method="post">
-            <?php wp_nonce_field('nias_certificate_settings', 'nias_certificate_nonce'); ?>
-            <table class="form-table" role="presentation">
-                <?php
-                nias_render_radio(
-                    'certificate_display_type',
-                    __('نحوه نمایش مدرک', 'nias-course-widget'),
-                    array(
-                        'all'      => __('همه محصولات', 'nias-course-widget'),
-                        'selected' => __('محصول انتخابی', 'nias-course-widget'),
-                        'category' => __('محصول از دسته بندی', 'nias-course-widget'),
-                        'none'     => __('هیچکدام', 'nias-course-widget'),
-                    ),
-                    'none',
-                    __('نحوه نمایش مدرک برای محصولات را انتخاب کنید', 'nias-course-widget')
-                );
-
-                nias_render_multiselect(
-                    'certificate_selected_products',
-                    __('محصولات انتخابی', 'nias-course-widget'),
-                    $product_options,
-                    __('محصولاتی که می‌خواهید مدرک برای آنها نمایش داده شود را انتخاب کنید', 'nias-course-widget'),
-                    'data-nias-show-when="certificate_display_type=selected"'
-                );
-
-                nias_render_select(
-                    'certificate_display_page',
-                    __('صفحه نمایش مدرک', 'nias-course-widget'),
-                    $page_options,
-                    __('صفحه‌ای که می‌خواهید مدرک در آن نمایش داده شود را انتخاب کنید', 'nias-course-widget')
-                );
-                ?>
-                <tr><td colspan="2">
-                    <div style="background: #fff3cd; padding: 10px; border: 1px solid #ffeeba; border-radius: 4px;">
-                        <strong>شورت‌کدها:</strong><br><br>
-                        <span style="color: #856404;">از شورت کد در صفحه ای که انتخاب کردی استفاده کن </span><br><br>
-                        <code>[nias_certificate]</code> برای نمایش مدرک<br><br>
-                        <code>[nias_certificate_preview]</code> برای پیش‌نمایش<br><br>
-                        <code>[nias_button_certificate]</code> دکمه هدایت کاربر به دریافت مدرک<br><br>
-                        <span style="color: #856404;">حواست باشه بعد از تست، شورت‌کد پیش‌نمایش رو برداری </span>
+                <!-- Display card -->
+                <?php nias_set_card_open('<svg width="20" height="20" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="9" r="5" stroke="#3858e9" stroke-width="1.8"/><path d="m8.5 13-1.5 8 5-2.5 5 2.5-1.5-8" stroke="#3858e9" stroke-width="1.8" stroke-linejoin="round"/></svg>', __('نمایش مدرک', 'nias-course-widget')); ?>
+                    <div class="nias-row-block">
+                        <div class="nias-row-title"><?php echo esc_html__('نحوه نمایش مدرک', 'nias-course-widget'); ?></div>
+                        <div class="nias-row-desc"><?php echo esc_html__('نحوه نمایش مدرک برای محصولات را انتخاب کنید.', 'nias-course-widget'); ?></div>
+                        <?php
+                        nias_set_segmented('certificate_display_type', array(
+                            'all'      => __('همه محصولات', 'nias-course-widget'),
+                            'selected' => __('محصول انتخابی', 'nias-course-widget'),
+                            'category' => __('از دسته‌بندی', 'nias-course-widget'),
+                            'none'     => __('هیچکدام', 'nias-course-widget'),
+                        ), 'none');
+                        nias_set_multiselect_field('certificate_selected_products', __('محصولات انتخابی', 'nias-course-widget'), $product_options, 'data-nias-show-when="certificate_display_type=selected"');
+                        nias_set_multiselect_field('certificate_selected_categories', __('دسته‌بندی‌های انتخابی', 'nias-course-widget'), $category_options, 'data-nias-show-when="certificate_display_type=category"');
+                        ?>
                     </div>
-                </td></tr>
-                <?php
-                nias_render_multiselect(
-                    'certificate_selected_categories',
-                    __('دسته‌بندی‌های انتخابی', 'nias-course-widget'),
-                    $category_options,
-                    __('دسته‌بندی‌هایی که می‌خواهید مدرک برای محصولات آنها نمایش داده شود را انتخاب کنید', 'nias-course-widget'),
-                    'data-nias-show-when="certificate_display_type=category"'
-                );
-
-                nias_render_image('certificate_watermark', __('تصویر لوگوی شما', 'nias-course-widget'), __('تصویر مارک یا لوگوی مدرک را آپلود کنید. توجه کنید تصویر انتخاب شده از نوع svg نباشد!', 'nias-course-widget'));
-                nias_render_image('certificate_header_bg', __('تصویر پس زمینه هدر', 'nias-course-widget'), __('تصویر پس زمینه بخش بالای مدرک را آپلود کنید. توجه کنید تصویر انتخاب شده از نوع svg نباشد!', 'nias-course-widget'));
-                nias_render_image('certificate_footer_bg', __('تصویر پس زمینه فوتر', 'nias-course-widget'), __('تصویر پس زمینه بخش پایین مدرک را آپلود کنید. توجه کنید تصویر انتخاب شده از نوع svg نباشد!', 'nias-course-widget'));
-                nias_render_image('certificate_icon', __('نماد سرتیفیکت', 'nias-course-widget'), __('نماد یا آیکون مدرک را آپلود کنید. توجه کنید تصویر انتخاب شده از نوع svg نباشد!', 'nias-course-widget'));
-                ?>
-                <tr><td colspan="2">
-                    <div style="background: #e5f6ff; padding: 15px; border: 1px solid #b8e6ff; border-radius: 4px; margin: 10px 0;">
-                        <h3 style="margin-top: 0;">دانلود نمونه تصاویر مدرک</h3>
-                        <p>برای دانلود نمونه تصاویر آماده مدرک (شامل هدر، فوتر، واترمارک و آیکون) روی لینک زیر کلیک کنید:</p>
-                        <p><a href="<?php echo esc_url(plugin_dir_url(__DIR__) . 'assets/images/certificate.zip'); ?>" class="button button-secondary">
-                            <span class="dashicons dashicons-download" style="vertical-align: middle;"></span>
-                            دانلود نمونه تصاویر مدرک
-                        </a></p>
+                    <div class="nias-row-block nias-row-sep">
+                        <?php nias_set_select_field('certificate_display_page', __('صفحه نمایش مدرک', 'nias-course-widget'), __('صفحه‌ای که می‌خواهید مدرک در آن نمایش داده شود را انتخاب کنید.', 'nias-course-widget'), $page_options); ?>
                     </div>
-                </td></tr>
-                <?php
-                nias_render_text('certificate_first_title', __('تایتل اول مدرک', 'nias-course-widget'), __('عنوان اصلی که در بالای مدرک نمایش داده می‌شود', 'nias-course-widget'));
-                nias_render_text('certificate_before_name_title', __('تایتل قبل از نام دانشجو', 'nias-course-widget'), __('متنی که قبل از نام دانشجو نمایش داده می‌شود', 'nias-course-widget'));
-                nias_render_text('certificate_after_name_title', __('تایتل بعد از نام دانشجو', 'nias-course-widget'), __('متنی که بعد از نام دانشجو نمایش داده می‌شود', 'nias-course-widget'));
+                <?php nias_set_card_close(); ?>
 
-                nias_render_radio(
-                    'certificate_show_date',
-                    __('نمایش تاریخ', 'nias-course-widget'),
-                    array('on' => __('فعال', 'nias-course-widget'), 'off' => __('غیرفعال', 'nias-course-widget')),
-                    'on',
-                    ''
-                );
+                <!-- Shortcodes card -->
+                <div class="nias-shortcodes">
+                    <div class="nias-sc-head">
+                        <svg width="19" height="19" viewBox="0 0 24 24" fill="none"><path d="m8 16-4-4 4-4m8 0 4 4-4 4M14 4l-4 16" stroke="#c98a16" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                        <span><?php echo esc_html__('شورت‌کدها', 'nias-course-widget'); ?></span>
+                    </div>
+                    <div class="nias-sc-sub"><?php echo esc_html__('شورت‌کد را در صفحه‌ای که انتخاب کردی استفاده کن.', 'nias-course-widget'); ?></div>
+                    <div class="nias-sc-list">
+                        <div class="nias-sc-item"><code dir="ltr">[nias_certificate]</code><span><?php echo esc_html__('نمایش مدرک', 'nias-course-widget'); ?></span></div>
+                        <div class="nias-sc-item"><code dir="ltr">[nias_certificate_preview]</code><span><?php echo esc_html__('پیش‌نمایش', 'nias-course-widget'); ?></span></div>
+                        <div class="nias-sc-item"><code dir="ltr">[nias_button_certificate]</code><span><?php echo esc_html__('دکمه هدایت به دریافت مدرک', 'nias-course-widget'); ?></span></div>
+                    </div>
+                    <div class="nias-sc-warn"><?php echo esc_html__('⚠ حواست باشه بعد از تست، شورت‌کد پیش‌نمایش رو برداری.', 'nias-course-widget'); ?></div>
+                </div>
 
-                nias_render_radio(
-                    'certificate_date_source',
-                    __('منبع تاریخ', 'nias-course-widget'),
-                    array(
-                        'purchase_date'         => __('تاریخ خرید دوره', 'nias-course-widget'),
-                        'manual_date'           => __('تاریخ دستی', 'nias-course-widget'),
-                        'user_certificate_date' => __('تاریخ از فیلد nias_certificate_date کاربر', 'nias-course-widget'),
-                    ),
-                    'purchase_date',
-                    '',
-                    '',
-                    'data-nias-show-when="certificate_show_date=on"'
-                );
+                <!-- Images card -->
+                <?php nias_set_card_open('<svg width="20" height="20" viewBox="0 0 24 24" fill="none"><rect x="3" y="3" width="18" height="18" rx="3" stroke="#3858e9" stroke-width="1.8"/><circle cx="8.5" cy="8.5" r="1.5" fill="#3858e9"/><path d="m21 15-5-5L5 21" stroke="#3858e9" stroke-width="1.8" stroke-linejoin="round"/></svg>', __('تصاویر مدرک', 'nias-course-widget')); ?>
+                    <div class="nias-card-padx">
+                        <?php
+                        nias_set_image_row('certificate_watermark', __('تصویر لوگوی شما', 'nias-course-widget'), __('مارک یا لوگوی مدرک را آپلود کنید (svg نباشد).', 'nias-course-widget'));
+                        nias_set_image_row('certificate_header_bg', __('تصویر پس‌زمینه هدر', 'nias-course-widget'), __('پس‌زمینه بخش بالای مدرک (svg نباشد).', 'nias-course-widget'));
+                        nias_set_image_row('certificate_footer_bg', __('تصویر پس‌زمینه فوتر', 'nias-course-widget'), __('پس‌زمینه بخش پایین مدرک (svg نباشد).', 'nias-course-widget'));
+                        nias_set_image_row('certificate_icon', __('نماد سرتیفیکت', 'nias-course-widget'), __('نماد یا آیکون مدرک را آپلود کنید (svg نباشد).', 'nias-course-widget'));
+                        ?>
+                        <div class="nias-dlsamples">
+                            <div>
+                                <div class="nias-dls-title"><?php echo esc_html__('دانلود نمونه تصاویر مدرک', 'nias-course-widget'); ?></div>
+                                <div class="nias-dls-sub"><?php echo esc_html__('نمونه تصاویر آماده شامل هدر، فوتر، واترمارک و آیکون.', 'nias-course-widget'); ?></div>
+                            </div>
+                            <a href="<?php echo esc_url(plugin_dir_url(__DIR__) . 'assets/images/certificate.zip'); ?>" class="nias-dls-btn">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M12 3v12m0 0 4-4m-4 4-4-4M5 21h14" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                                <?php echo esc_html__('دانلود نمونه تصاویر', 'nias-course-widget'); ?>
+                            </a>
+                        </div>
+                    </div>
+                <?php nias_set_card_close(); ?>
 
-                nias_render_date(
-                    'certificate_manual_date',
-                    __('تاریخ دستی', 'nias-course-widget'),
-                    '',
-                    'data-nias-show-when="certificate_date_source=manual_date"'
-                );
+                <!-- Texts card -->
+                <?php nias_set_card_open('<svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M4 7V5h16v2M9 19h6M12 5v14" stroke="#3858e9" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>', __('متن‌های مدرک', 'nias-course-widget')); ?>
+                    <div class="nias-card-pad nias-stack">
+                        <?php
+                        nias_set_text_field('certificate_first_title', __('تایتل اول مدرک', 'nias-course-widget'), __('عنوان اصلی بالای مدرک', 'nias-course-widget'));
+                        nias_set_text_field('certificate_before_name_title', __('تایتل قبل از نام دانشجو', 'nias-course-widget'), __('متن قبل از نام دانشجو', 'nias-course-widget'));
+                        nias_set_text_field('certificate_after_name_title', __('تایتل بعد از نام دانشجو', 'nias-course-widget'), __('متن بعد از نام دانشجو', 'nias-course-widget'));
+                        ?>
+                    </div>
+                <?php nias_set_card_close(); ?>
 
-                nias_render_image('certificate_seal_image', __('تصویر مهر شما', 'nias-course-widget'), __('تصویر مهر رسمی خود را آپلود کنید. توجه کنید تصویر انتخاب شده از نوع svg نباشد!', 'nias-course-widget'));
-                nias_render_image('certificate_signature_image', __('تصویر امضا', 'nias-course-widget'), __('تصویر امضای مسئول صدور مدرک را آپلود کنید. توجه کنید تصویر انتخاب شده از نوع svg نباشد!', 'nias-course-widget'));
-                nias_render_text('certificate_signer_name', __('نام امضا کننده', 'nias-course-widget'), __('نام شخص امضا کننده مدرک', 'nias-course-widget'));
-                ?>
-            </table>
-            <?php submit_button(__('ذخیره تغییرات', 'nias-course-widget'), 'primary', 'nias_save_certificate_settings'); ?>
-        </form>
+                <!-- Date card -->
+                <?php nias_set_card_open('<svg width="20" height="20" viewBox="0 0 24 24" fill="none"><rect x="3" y="5" width="18" height="16" rx="3" stroke="#3858e9" stroke-width="1.8"/><path d="M3 9h18M8 3v4M16 3v4" stroke="#3858e9" stroke-width="1.8" stroke-linecap="round"/></svg>', __('تاریخ مدرک', 'nias-course-widget')); ?>
+                    <?php nias_set_toggle_row('certificate_show_date', __('نمایش تاریخ', 'nias-course-widget'), '', 'on'); ?>
+                    <div class="nias-row-block nias-row-sep" data-nias-show-when="certificate_show_date=on">
+                        <div class="nias-row-title" style="margin-bottom:12px"><?php echo esc_html__('منبع تاریخ', 'nias-course-widget'); ?></div>
+                        <?php
+                        nias_set_radio_cards('certificate_date_source', array(
+                            'purchase_date'         => __('تاریخ خرید دوره', 'nias-course-widget'),
+                            'manual_date'           => __('تاریخ دستی', 'nias-course-widget'),
+                            'user_certificate_date' => __('تاریخ از فیلد nias_certificate_date کاربر', 'nias-course-widget'),
+                        ), 'purchase_date');
+                        nias_set_date_field('certificate_manual_date', __('تاریخ دستی', 'nias-course-widget'), 'data-nias-show-when="certificate_date_source=manual_date"');
+                        ?>
+                    </div>
+                <?php nias_set_card_close(); ?>
+
+                <!-- Signature card -->
+                <?php nias_set_card_open('<svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M3 17c4-1 4-9 7-9s2 6 5 6 3-3 6-3" stroke="#3858e9" stroke-width="1.8" stroke-linecap="round"/><path d="M3 21h18" stroke="#3858e9" stroke-width="1.8" stroke-linecap="round"/></svg>', __('مهر و امضا', 'nias-course-widget')); ?>
+                    <div class="nias-card-padx">
+                        <?php
+                        nias_set_image_row('certificate_seal_image', __('تصویر مهر شما', 'nias-course-widget'), __('مهر رسمی خود را آپلود کنید (svg نباشد).', 'nias-course-widget'));
+                        nias_set_image_row('certificate_signature_image', __('تصویر امضا', 'nias-course-widget'), __('امضای مسئول صدور مدرک را آپلود کنید (svg نباشد).', 'nias-course-widget'));
+                        ?>
+                        <div class="nias-signer"><?php nias_set_text_field('certificate_signer_name', __('نام امضا کننده', 'nias-course-widget'), __('نام شخص امضا کننده مدرک', 'nias-course-widget')); ?></div>
+                    </div>
+                <?php nias_set_card_close(); ?>
+
+                <?php nias_set_save_button('nias_save_certificate_settings'); ?>
+            </form>
+
+            <div class="nias-foot"><?php echo wp_kses_post(__('سپاسگزاریم از اینکه سایت خود را با <span style="color:#3858e9;font-weight:600">وردپرس</span> ساخته‌اید.', 'nias-course-widget')); ?></div>
+        </div>
     </div>
     <?php
 }
@@ -468,6 +666,8 @@ function nias_course_settings_inline_js()
     ?>
     <script>
     jQuery(function ($) {
+        var imgPlaceholder = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none"><rect x="3" y="3" width="18" height="18" rx="3" stroke="#c1c7da" stroke-width="1.6"/><circle cx="8.5" cy="8.5" r="1.5" fill="#c1c7da"/><path d="m21 15-5-5L5 21" stroke="#c1c7da" stroke-width="1.6" stroke-linejoin="round"/></svg>';
+
         // Media uploader for image fields.
         $(document).on('click', '.nias-image-upload', function (e) {
             e.preventDefault();
@@ -476,7 +676,7 @@ function nias_course_settings_inline_js()
             frame.on('select', function () {
                 var attachment = frame.state().get('selection').first().toJSON();
                 $wrap.find('.nias-image-url').val(attachment.url);
-                $wrap.find('.nias-image-preview').html('<img src="' + attachment.url + '" style="max-width:120px;height:auto;margin-top:8px;display:block;">');
+                $wrap.find('.nias-image-preview').html('<img src="' + attachment.url + '">');
             });
             frame.open();
         });
@@ -484,7 +684,7 @@ function nias_course_settings_inline_js()
             e.preventDefault();
             var $wrap = $(this).closest('.nias-image-field');
             $wrap.find('.nias-image-url').val('');
-            $wrap.find('.nias-image-preview').empty();
+            $wrap.find('.nias-image-preview').html(imgPlaceholder);
         });
 
         // Conditional rows: data-nias-show-when="field=value".
@@ -499,7 +699,7 @@ function nias_course_settings_inline_js()
                 $(this).toggle(actual === expected);
             });
         }
-        $(document).on('change', 'input[type=radio], select', evaluateConditions);
+        $(document).on('change', 'input[type=radio], input[type=checkbox], select', evaluateConditions);
         evaluateConditions();
     });
     </script>

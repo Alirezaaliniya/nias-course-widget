@@ -182,3 +182,168 @@ body *:not(#wpadminbar *,i){
 .h_iframe-aparat_embed_frame {
     aspect-ratio: 16/9;
 }
+
+/* =========================================================================
+ * Redesigned settings UI (white + #3858e9, modern, RTL)
+ * ===================================================================== */
+.nias-settings-app, .nias-settings-app * { box-sizing: border-box; }
+.nias-settings-app {
+    margin: -10px -20px 0 -20px;
+    background: #eef1f7;
+    color: #16182a;
+    min-height: calc(100vh - 32px);
+    padding-bottom: 80px;
+    font-family: 'Vazirmatn', sans-serif;
+}
+.nias-settings-app a { box-shadow: none; }
+
+/* top bar */
+.nias-set-bar { background: #fff; border-bottom: 1px solid #e6e9f2; position: sticky; top: var(--wp-admin--admin-bar--height, 32px); z-index: 20; }
+.nias-set-bar-inner { max-width: 980px; margin: 0 auto; padding: 16px 24px; display: flex; align-items: center; justify-content: space-between; gap: 20px; }
+.nias-brand { display: flex; align-items: center; gap: 14px; }
+.nias-brand-logo { width: 44px; height: 44px; border-radius: 12px; background: linear-gradient(135deg, #3858e9, #6b82f5); display: flex; align-items: center; justify-content: center; box-shadow: 0 6px 16px rgba(56,88,233,.35); flex-shrink: 0; }
+.nias-brand-title { font-size: 17px; font-weight: 800; letter-spacing: -.2px; }
+.nias-brand-sub { font-size: 12px; color: #8a90a6; font-weight: 500; }
+.nias-ver { font-size: 12px; font-weight: 600; color: #3858e9; background: #eef1fe; padding: 6px 12px; border-radius: 999px; }
+.nias-set-tabs-wrap { max-width: 980px; margin: 0 auto; padding: 0 24px; }
+.nias-set-tabs { display: flex; gap: 4px; }
+.nias-tab { padding: 12px 18px 14px; font-size: 14px; font-weight: 700; cursor: pointer; border-bottom: 2.5px solid transparent; color: #8a90a6; text-decoration: none; display: flex; align-items: center; gap: 7px; }
+.nias-tab:hover { color: #3858e9; }
+.nias-tab.active { border-bottom-color: #3858e9; color: #3858e9; }
+.nias-tab-badge { font-size: 10px; font-weight: 700; padding: 2px 7px; border-radius: 999px; background: #eef1fe; color: #3858e9; }
+
+.nias-set-main { max-width: 980px; margin: 0 auto; padding: 28px 24px 0; }
+
+/* saved banner */
+.nias-saved { display: flex; align-items: center; gap: 8px; background: #e7f7ee; border: 1px solid #b6e6cb; color: #0a8a44; font-size: 13.5px; font-weight: 700; border-radius: 12px; padding: 13px 16px; margin-bottom: 22px; }
+
+/* cards */
+.nias-card { background: #fff; border: 1px solid #e9ebf4; border-radius: 16px; box-shadow: 0 1px 2px rgba(16,24,40,.04); margin-bottom: 22px; overflow: hidden; }
+.nias-card-head { padding: 18px 24px; border-bottom: 1px solid #f1f2f8; display: flex; align-items: center; gap: 12px; }
+.nias-card-title { font-size: 15px; font-weight: 800; }
+.nias-card-pad { padding: 24px; }
+.nias-card-padx { padding: 4px 24px 20px; }
+.nias-stack { display: flex; flex-direction: column; gap: 18px; }
+
+/* rows */
+.nias-row { padding: 22px 24px; display: flex; align-items: flex-start; justify-content: space-between; gap: 24px; border-bottom: 1px solid #f4f5fa; }
+.nias-row:last-child { border-bottom: none; }
+.nias-row-main { flex: 1; }
+.nias-row-title { font-size: 14.5px; font-weight: 700; display: flex; align-items: center; gap: 9px; }
+.nias-row-desc { font-size: 13px; color: #6b7280; line-height: 1.95; margin-top: 6px; max-width: 600px; }
+.nias-row-desc a { color: #3858e9; font-weight: 600; text-decoration: none; }
+.nias-row-block { padding: 22px 24px; }
+.nias-row-sep { border-top: 1px solid #f4f5fa; }
+.nias-row-block .nias-field { margin-top: 16px; }
+.nias-row-block.nias-row-sep .nias-field { margin-top: 0; }
+.nias-chip { font-size: 10.5px; font-weight: 700; color: #3858e9; background: #eef1fe; padding: 2px 8px; border-radius: 999px; }
+
+/* toggle switch */
+.nias-switch { position: relative; display: inline-block; flex-shrink: 0; cursor: pointer; margin-top: 2px; }
+.nias-switch-cb { position: absolute; opacity: 0; width: 0; height: 0; }
+.nias-switch-track { display: block; width: 50px; height: 28px; border-radius: 999px; background: #cfd5e6; transition: background .22s; position: relative; }
+.nias-switch-knob { position: absolute; top: 3px; right: 3px; width: 22px; height: 22px; border-radius: 50%; background: #fff; box-shadow: 0 2px 5px rgba(16,24,40,.25); transition: right .22s; }
+.nias-switch-cb:checked ~ .nias-switch-track { background: #3858e9; }
+.nias-switch-cb:checked ~ .nias-switch-track .nias-switch-knob { right: 25px; }
+.nias-switch-cb:focus-visible ~ .nias-switch-track { box-shadow: 0 0 0 3px rgba(56,88,233,.3); }
+
+/* segmented control */
+.nias-seg { display: inline-flex; background: #f1f3fa; border-radius: 12px; padding: 4px; gap: 4px; flex-wrap: wrap; margin-top: 14px; }
+.nias-seg-item { margin: 0; }
+.nias-seg-item input { position: absolute; opacity: 0; width: 0; height: 0; }
+.nias-seg-item span { display: block; font-size: 13px; font-weight: 600; padding: 9px 16px; border-radius: 9px; cursor: pointer; color: #5a6079; transition: .15s; }
+.nias-seg-item input:checked + span { background: #fff; color: #3858e9; box-shadow: 0 1px 3px rgba(16,24,40,.12); }
+
+/* radio cards */
+.nias-rcards { display: flex; flex-direction: column; gap: 9px; }
+.nias-rcard { display: flex; align-items: center; gap: 12px; border-radius: 12px; padding: 13px 16px; cursor: pointer; border: 1.5px solid #e7eaf3; background: #fff; transition: .15s; }
+.nias-rcard input { position: absolute; opacity: 0; width: 0; height: 0; }
+.nias-rcard-dot { width: 19px; height: 19px; border-radius: 50%; flex-shrink: 0; border: 2px solid #cfd5e6; display: flex; align-items: center; justify-content: center; transition: .15s; }
+.nias-rcard-txt { font-size: 13.5px; font-weight: 600; }
+.nias-rcard:has(input:checked) { border-color: #3858e9; background: #f5f7ff; }
+.nias-rcard:has(input:checked) .nias-rcard-dot { border-color: #3858e9; }
+.nias-rcard:has(input:checked) .nias-rcard-dot::after { content: ""; width: 9px; height: 9px; border-radius: 50%; background: #3858e9; }
+
+/* fields */
+.nias-flabel { font-size: 13.5px; font-weight: 700; display: block; margin-bottom: 8px; }
+.nias-fdesc { font-size: 13px; color: #6b7280; margin-bottom: 12px; margin-top: -2px; }
+.nias-fhint { font-size: 12px; color: #9aa0b4; margin-top: 6px; }
+.nias-input { width: 100%; font-family: inherit; font-size: 13.5px; background: #fbfcfe; border: 1px solid #e1e5f0; border-radius: 11px; padding: 12px 14px; outline: none; color: #16182a; transition: .15s; }
+.nias-input:focus { border-color: #3858e9; background: #fff; }
+
+.nias-select-wrap { position: relative; max-width: 360px; }
+.nias-select { width: 100%; font-family: inherit; font-size: 13.5px; color: #16182a; background: #fbfcfe; border: 1px solid #e1e5f0; border-radius: 11px; padding: 12px 14px; -webkit-appearance: none; appearance: none; cursor: pointer; outline: none; }
+.nias-select:focus { border-color: #3858e9; background: #fff; }
+.nias-select-arrow { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); pointer-events: none; display: flex; }
+
+.nias-multiselect { width: 100%; max-width: 420px; font-family: inherit; font-size: 13.5px; background: #fbfcfe; border: 1px solid #e1e5f0; border-radius: 11px; padding: 8px; outline: none; color: #16182a; }
+.nias-multiselect:focus { border-color: #3858e9; }
+
+/* image rows */
+.nias-imgrow { display: flex; align-items: center; justify-content: space-between; gap: 20px; padding: 18px 0; border-bottom: 1px solid #f4f5fa; }
+.nias-imgrow-info { flex: 1; }
+.nias-imgrow-label { font-size: 14px; font-weight: 700; }
+.nias-imgrow-hint { font-size: 12px; color: #9aa0b4; margin-top: 4px; }
+.nias-imgrow-ctrl { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.nias-imgbox { width: 54px; height: 54px; border-radius: 11px; border: 1.5px dashed #d4d9e8; background: #fafbfe; display: flex; align-items: center; justify-content: center; flex-shrink: 0; overflow: hidden; }
+.nias-imgbox img { width: 100%; height: 100%; object-fit: cover; }
+.nias-btn-soft { font-family: inherit; font-size: 12.5px; font-weight: 700; color: #3858e9; background: #eef1fe; border: none; border-radius: 9px; padding: 10px 14px; cursor: pointer; }
+.nias-btn-soft:hover { background: #e2e8fe; }
+.nias-btn-del { font-family: inherit; font-size: 12.5px; font-weight: 600; color: #98415a; background: #fdeef1; border: none; border-radius: 9px; padding: 10px 14px; cursor: pointer; }
+.nias-btn-del:hover { background: #fadfe5; }
+.nias-signer { padding-top: 18px; }
+
+/* download samples */
+.nias-dlsamples { margin: 18px 0 4px; background: linear-gradient(135deg, #eef6ff, #f6fbff); border: 1px solid #d6eaff; border-radius: 13px; padding: 18px 20px; display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
+.nias-dls-title { font-size: 13.5px; font-weight: 800; color: #1d4e80; }
+.nias-dls-sub { font-size: 12px; color: #5a82a8; margin-top: 4px; line-height: 1.8; }
+.nias-dls-btn { text-decoration: none; font-family: inherit; font-size: 13px; font-weight: 700; color: #fff; background: #2b7fd6; border-radius: 10px; padding: 11px 18px; display: inline-flex; align-items: center; gap: 8px; }
+
+/* shortcodes card */
+.nias-shortcodes { background: linear-gradient(135deg, #fffaf0, #fffdf8); border: 1px solid #f6e7c4; border-radius: 16px; padding: 22px 24px; margin-bottom: 22px; }
+.nias-sc-head { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; }
+.nias-sc-head span { font-size: 14.5px; font-weight: 800; color: #8a6212; }
+.nias-sc-sub { font-size: 12.5px; color: #9a7726; margin-bottom: 14px; }
+.nias-sc-list { display: flex; flex-direction: column; gap: 10px; }
+.nias-sc-item { display: flex; align-items: center; justify-content: space-between; gap: 12px; background: #fff; border: 1px solid #f3e6c6; border-radius: 10px; padding: 11px 14px; }
+.nias-sc-item code { font-family: monospace !important; font-size: 13px; color: #b45309; }
+.nias-sc-item span { font-size: 12px; color: #8a6212; }
+.nias-sc-warn { font-size: 12px; color: #b08423; margin-top: 13px; }
+
+/* alert */
+.nias-alert { display: flex; gap: 16px; background: #fff; border: 1px solid #fbdcd9; border-radius: 16px; padding: 22px 24px; margin-bottom: 22px; box-shadow: 0 1px 2px rgba(16,24,40,.04); position: relative; overflow: hidden; }
+.nias-alert-bar { position: absolute; right: 0; top: 0; bottom: 0; width: 4px; background: #ef4444; }
+.nias-alert-ic { flex-shrink: 0; width: 42px; height: 42px; border-radius: 11px; background: #fef2f2; display: flex; align-items: center; justify-content: center; }
+.nias-alert-body { flex: 1; }
+.nias-alert-title { font-size: 15px; font-weight: 800; margin-bottom: 6px; }
+.nias-alert-desc { font-size: 13px; color: #6b7280; line-height: 2; max-width: 640px; }
+
+/* buttons / save bar */
+.nias-btn-primary { font-family: inherit; font-size: 14px; font-weight: 700; color: #fff; background: #3858e9; border: none; border-radius: 11px; padding: 13px 26px; cursor: pointer; box-shadow: 0 8px 18px rgba(56,88,233,.3); display: inline-flex; align-items: center; gap: 9px; transition: .15s; }
+.nias-btn-primary:hover { background: #2c49c8; transform: translateY(-1px); }
+.nias-btn-danger { margin-top: 14px; font-family: inherit; font-size: 13px; font-weight: 700; color: #fff; background: #ef4444; border: none; border-radius: 10px; padding: 11px 18px; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; }
+.nias-btn-danger:hover { background: #dc2626; }
+.nias-savebar { display: flex; justify-content: flex-start; margin-bottom: 32px; }
+
+/* tutorials / help */
+.nias-vid-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+.nias-vid-label { font-size: 13px; font-weight: 700; color: #8a90a6; margin-bottom: 10px; }
+.nias-vid { border-radius: 14px; overflow: hidden; }
+.nias-tg { margin-top: 22px; display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; background: #f7f8fc; border: 1px solid #eceef6; border-radius: 12px; padding: 14px 18px; }
+.nias-tg-text { font-size: 13px; color: #4b5163; line-height: 1.9; }
+.nias-tg-btn { text-decoration: none; font-size: 13px; font-weight: 700; color: #3858e9; background: #eef1fe; padding: 9px 16px; border-radius: 9px; display: inline-flex; align-items: center; gap: 8px; }
+.nias-banners { margin-top: 16px; display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.nias-banner { border-radius: 12px; padding: 16px 18px; display: flex; align-items: center; justify-content: space-between; gap: 12px; text-decoration: none; }
+.nias-banner-blue { background: linear-gradient(120deg, #eef1fe, #f6f8ff); border: 1px solid #e2e7fb; }
+.nias-banner-red { background: linear-gradient(120deg, #fdeef0, #fff6f7); border: 1px solid #f8dde0; }
+.nias-banner-t { font-size: 13px; font-weight: 800; color: #1f2640; }
+.nias-banner-s { font-size: 11.5px; color: #7b819a; margin-top: 3px; }
+.nias-banner-cta { font-size: 12px; font-weight: 700; color: #fff; background: #3858e9; padding: 8px 14px; border-radius: 8px; }
+.nias-banner-cta-red { background: #c0394b; }
+
+.nias-foot { text-align: center; font-size: 12px; color: #9aa0b4; padding: 8px 0 0; }
+
+@media (max-width: 782px) {
+    .nias-set-bar { top: var(--wp-admin--admin-bar--height, 46px); }
+    .nias-vid-grid, .nias-banners { grid-template-columns: 1fr; }
+}
