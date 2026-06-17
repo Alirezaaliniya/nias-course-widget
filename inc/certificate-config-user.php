@@ -4,11 +4,6 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
-// Include Carbon Fields
-use Carbon_Fields\Container;
-use Carbon_Fields\Field;
-use Carbon_Fields\Carbon_Fields;
-
 // Add QR Code dependencies
 use Endroid\QrCode\QrCode;
 use Endroid\QrCode\Writer\PngWriter;
@@ -647,16 +642,10 @@ add_action('show_user_profile', 'add_certificate_verification_button_to_profile'
 add_action('edit_user_profile', 'add_certificate_verification_button_to_profile');
 
 function get_certificate_display_page_url() {
-    // Check if Carbon Fields function exists
     if (!function_exists('carbon_get_theme_option')) {
-        // Attempt to initialize Carbon Fields
-        if (class_exists('Carbon_Fields\\Carbon_Fields')) {
-            \Carbon_Fields\Carbon_Fields::boot();
-        } else {
-            return home_url('/verify1'); // Fallback if Carbon Fields is not available
-        }
+        return home_url('/verify1'); // Fallback if the data layer is not available
     }
-    
+
     $page_id = carbon_get_theme_option('certificate_display_page');
     
     if (!empty($page_id) && get_post_status($page_id) === 'publish') {

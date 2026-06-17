@@ -1,326 +1,209 @@
 <?php
-use Carbon_Fields\Container\Container;
-use Carbon_Fields\Field\Field;
-// Add custom CSS for Carbon Fields styling
-add_action('admin_head', 'custom_carbon_fields_styles');
-function custom_carbon_fields_styles() {
-    $logo_url = plugin_dir_url(__DIR__) . 'admin/nias-course.png';
-
-    ?>
-    <style>
-
-       .nias-course-product-option .cf-container__fields:before {
-            content: '';
-            background-image: url('<?php echo esc_url($logo_url); ?>');            background-size: contain;
-            background-repeat: no-repeat;
-            width: 70px;
-    height: 70px;
-    display: block;
-        }
-
-    </style>
-    <?php
-}
-// Register Course Fields
-add_action('carbon_fields_register_fields', 'create_course_metabox');
-function create_course_metabox() {
-    // Main course settings metabox
-    Container::make('post_meta', __(' تنظیمات دوره ساز نیاس', 'nias-course-widget'))
-        ->where('post_type', '=', 'product')
-        ->set_classes('nias-course-product-option')
-        ->set_priority('high')
-        ->add_fields([
-            Field::make('complex', 'course_sections', __('فصل‌ها', 'nias-course-widget'))
-                ->set_layout('tabbed-vertical')
-                ->add_fields([
-                    Field::make('text', 'section_title', __('عنوان فصل', 'nias-course-widget'))
-                        ->set_required(true),
-                    Field::make('text', 'section_subtitle', __('زیرعنوان', 'nias-course-widget')),
-                    Field::make('complex', 'section_icon', __('آیکون', 'nias-course-widget'))
-                        ->add_fields([
-                            Field::make('select', 'icon_type', __('نوع آیکون', 'nias-course-widget'))
-                                ->set_options([
-                                    'upload' => __('آپلود فایل', 'nias-course-widget'),
-                                    'url' => __('لینک مستقیم', 'nias-course-widget')
-                                ]),
-                            Field::make('image', 'icon_upload', __('آپلود آیکون', 'nias-course-widget'))
-                                ->set_value_type('url')
-                                ->set_conditional_logic([
-                                    'relation' => 'AND',
-                                    ['field' => 'icon_type', 'value' => 'upload']
-                                ]),
-                            Field::make('text', 'icon_url', __('لینک آیکون', 'nias-course-widget'))
-                                ->set_conditional_logic([
-                                    'relation' => 'AND',
-                                    ['field' => 'icon_type', 'value' => 'url']
-                                ])
-                        ])
-                        ->set_max(1),
-                    Field::make('complex', 'lessons', __('درس‌ها', 'nias-course-widget'))
-                        ->set_layout('tabbed-horizontal')
-                        ->add_fields([
-                            Field::make('text', 'lesson_title', __('عنوان درس', 'nias-course-widget'))
-                                ->set_required(true),
-                            Field::make('complex', 'lesson_icon', __('آیکون', 'nias-course-widget'))
-                                ->add_fields([
-                                    Field::make('select', 'icon_type', __('نوع آیکون', 'nias-course-widget'))
-                                        ->set_options([
-                                            'upload' => __('آپلود فایل', 'nias-course-widget'),
-                                            'url' => __('لینک مستقیم', 'nias-course-widget')
-                                        ]),
-                                    Field::make('image', 'icon_upload', __('آپلود آیکون', 'nias-course-widget'))
-                                        ->set_value_type('url')
-                                        ->set_conditional_logic([
-                                            'relation' => 'AND',
-                                            ['field' => 'icon_type', 'value' => 'upload']
-                                        ]),
-                                    Field::make('text', 'icon_url', __('لینک آیکون', 'nias-course-widget'))
-                                        ->set_conditional_logic([
-                                            'relation' => 'AND',
-                                            ['field' => 'icon_type', 'value' => 'url']
-                                        ])
-                                ])
-                                ->set_max(1),
-                            Field::make('text', 'lesson_label', __('برچسب', 'nias-course-widget')),
-                            Field::make('complex', 'lesson_preview_video', __('ویدیوی پیش‌نمایش', 'nias-course-widget'))
-                                ->add_fields([
-                                    Field::make('select', 'video_type', __('نوع ویدیو', 'nias-course-widget'))
-                                        ->set_options([
-                                            'upload' => __('آپلود فایل', 'nias-course-widget'),
-                                            'url' => __('لینک مستقیم', 'nias-course-widget')
-                                        ]),
-                                    Field::make('file', 'video_upload', __('آپلود ویدیو', 'nias-course-widget'))
-                                        ->set_type(['video'])
-                                        ->set_value_type('url')
-                                        ->set_conditional_logic([
-                                            'relation' => 'AND',
-                                            ['field' => 'video_type', 'value' => 'upload']
-                                        ]),
-                                    Field::make('text', 'video_url', __('لینک ویدیو', 'nias-course-widget'))
-                                        ->set_conditional_logic([
-                                            'relation' => 'AND',
-                                            ['field' => 'video_type', 'value' => 'url']
-                                        ])
-                                ])
-                                ->set_max(1),
-                            Field::make('complex', 'lesson_download', __('فایل خصوصی درس', 'nias-course-widget'))
-                                ->add_fields([
-                                    Field::make('select', 'file_type', __('نوع فایل', 'nias-course-widget'))
-                                        ->set_options([
-                                            'upload' => __('آپلود فایل', 'nias-course-widget'),
-                                            'url' => __('لینک مستقیم', 'nias-course-widget')
-                                        ]),
-                                    Field::make('file', 'file_upload', __('آپلود فایل', 'nias-course-widget'))
-                                        ->set_value_type('url')
-                                        ->set_conditional_logic([
-                                            'relation' => 'AND',
-                                            ['field' => 'file_type', 'value' => 'upload']
-                                        ]),
-                                    // نمایش فایل آپلود شده با HTML
-                                    Field::make('html', 'file_preview_html')
-                                        ->set_html('<div id="nias-file-preview"></div>')
-                                        ->set_conditional_logic([
-                                            'relation' => 'AND',
-                                            ['field' => 'file_type', 'value' => 'upload']
-                                        ]),
-                                    Field::make('text', 'file_url', __('لینک فایل', 'nias-course-widget'))
-                                        ->set_conditional_logic([
-                                            'relation' => 'AND',
-                                            ['field' => 'file_type', 'value' => 'url']
-                                        ])
-                                ])
-                                ->set_max(1),
-                            Field::make('checkbox', 'lesson_private', __('درس خصوصی است؟', 'nias-course-widget')),
-                            Field::make('rich_text', 'lesson_content', __('محتوای درس', 'nias-course-widget'))
-                            ->set_help_text('<strong style="font-size:15px;background-color:red;color:white; padding:5px 10px;border-radius:10px;">توجه مهم:</strong> ' . __('برای درج ایفریم یوتیوب و آپارت و ... از تب بالا بخش متن را انتخاب کنید و کد را وارد کنید', 'nias-course-widget')),                        ])
-                        ->set_header_template('<%- lesson_title %>'),
-                ])
-                ->set_header_template('<%- section_title %>'),
-        ]);
-
-    // Spot Player metabox
-    Container::make('post_meta', __('تنظیمات اسپات پلیر', 'nias-course-widget'))
-        ->where('post_type', '=', 'product')
-        ->set_classes('nias-spotplayer-option')
-        ->set_priority('high')
-        ->add_fields([
-            Field::make('text', 'spotplayer_download_url', __('لینک صفحه دانلود ویدیو اسپات پلیر', 'nias-course-widget'))
-                ->set_help_text(__('لینک صفحه دانلود ویدیو را از اسپات پلیر وارد کنید', 'nias-course-widget')),
-            Field::make('html', 'spotplayer_sync_button')
-                ->set_html('<button type="button" class="button button-primary" id="sync-spotplayer">همگام سازی جلسات با اسپات پلیر</button><div id="sync-status"></div>')
-        ]);
+if (!defined('ABSPATH')) {
+    exit;
 }
 
-// Add jQuery for file preview functionality
-add_action('admin_footer', 'nias_course_file_preview_script');
-function nias_course_file_preview_script() {
-    $plugin_url = plugin_dir_url(dirname(__FILE__));
+/**
+ * Product course meta handling (Carbon Fields replacement).
+ *
+ * The chapter/lesson curriculum is edited on a dedicated full-page editor
+ * (see woocommerce-course/curriculum-editor.php) instead of an inline metabox.
+ * This file keeps the Spot Player metabox, the shared sanitizers used by the
+ * curriculum editor's AJAX save, and the save_post guard.
+ */
+
+/* -------------------------------------------------------------------------
+ * Metabox registration (Spot Player only)
+ * ---------------------------------------------------------------------- */
+
+add_action('add_meta_boxes', 'nias_course_register_metaboxes');
+function nias_course_register_metaboxes()
+{
+    add_meta_box(
+        'nias_spotplayer_box',
+        __('تنظیمات اسپات پلیر', 'nias-course-widget'),
+        'nias_spotplayer_metabox',
+        'product',
+        'normal',
+        'high'
+    );
+}
+
+/* -------------------------------------------------------------------------
+ * Media group helper (icon / video / file with upload+url, value type url)
+ * ---------------------------------------------------------------------- */
+
+function nias_media_group_keys($type)
+{
+    $map = array(
+        'icon'  => array('icon_type', 'icon_upload', 'icon_url'),
+        'video' => array('video_type', 'video_upload', 'video_url'),
+        'file'  => array('file_type', 'file_upload', 'file_url'),
+    );
+    return $map[$type];
+}
+
+/* -------------------------------------------------------------------------
+ * Metabox callbacks
+ * ---------------------------------------------------------------------- */
+
+function nias_spotplayer_metabox($post)
+{
+    // This nonce now also authorises the save_post handler below.
+    wp_nonce_field('nias_course_meta', 'nias_course_meta_nonce');
+
+    $url = get_post_meta($post->ID, '_spotplayer_download_url', true);
     ?>
-    <script>
-    const pluginUrl = '<?php echo esc_url($plugin_url); ?>';
-    jQuery(document).ready(function($) {
-        function updateFilePreview(fileUrl, previewContainer) {
-            if (!fileUrl) {
-                previewContainer.html('');
-                return;
-            }
-
-            const extension = fileUrl.split('.').pop().toLowerCase();
-            let previewHtml = '';
-
-            // Image formats
-            if (['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg', 'bmp'].includes(extension)) {
-                previewHtml = `<img src="${fileUrl}" style="max-width: 200px; height: auto;">`;
-            } 
-            // Video formats
-            else if (['mp4', 'webm', 'ogv', 'mov', 'm4v', 'avi'].includes(extension)) {
-                previewHtml = `
-                    <video controls style="max-width: 200px;">
-                        <source src="${fileUrl}" type="video/${extension === 'mov' ? 'quicktime' : (extension === 'm4v' ? 'mp4' : extension)}">
-                        Your browser does not support the video tag.
-                    </video>`;
-            } 
-            // Audio formats
-            else if (['mp3', 'wav', 'ogg', 'm4a', 'aac'].includes(extension)) {
-                previewHtml = `
-                    <audio controls style="max-width: 200px;">
-                        <source src="${fileUrl}" type="audio/${extension === 'm4a' ? 'mp4' : extension}">
-                        Your browser does not support the audio tag.
-                    </audio>`;
-            }
-            // PDF files
-            else if (['pdf'].includes(extension)) {
-                previewHtml = `<img src="${pluginUrl}/admin/images/pdf-icon.png" style="width: 50px;"><br><a href="${fileUrl}" target="_blank">View PDF</a>`;
-            } 
-            // Other files
-            else {
-                previewHtml = `<a href="${fileUrl}" target="_blank">Download File</a>`;
-            }
-
-            previewContainer.html(previewHtml);
-        }
-
-        // Function to initialize file preview for a specific group
-        function initializeFilePreview($group) {
-            const $fileField = $group.find('.cf-file');
-            const $previewContainer = $group.find('#nias-file-preview');
-            
-            if ($fileField.length && $previewContainer.length) {
-                const $fileInput = $fileField.find('input[type="hidden"]');
-                if ($fileInput.length) {
-                    updateFilePreview($fileInput.val(), $previewContainer);
-
-                    // Watch for changes using MutationObserver on the input
-                    const observer = new MutationObserver(function(mutations) {
-                        mutations.forEach(function(mutation) {
-                            if (mutation.type === 'attributes' && mutation.attributeName === 'value') {
-                                updateFilePreview($fileInput.val(), $previewContainer);
-                            }
-                        });
-                    });
-
-                    observer.observe($fileInput[0], {
-                        attributes: true
-                    });
-                }
-            }
-        }
-
-        // Main container observer to watch for dynamically added groups
-        const containerObserver = new MutationObserver(function(mutations) {
-            mutations.forEach(function(mutation) {
-                if (mutation.addedNodes.length) {
-                    mutation.addedNodes.forEach(function(node) {
-                        if (node.nodeType === 1) { // Element node
-                            const $node = $(node);
-                            if ($node.hasClass('cf-complex__group') || $node.hasClass('cf-complex__group--grid')) {
-                                initializeFilePreview($node);
-                            } else {
-                                // Check for groups inside the added node
-                                $node.find('.cf-complex__group, .cf-complex__group--grid').each(function() {
-                                    initializeFilePreview($(this));
-                                });
-                            }
-                        }
-                    });
-                }
-            });
-        });
-
-        // Start observing the main container for dynamic changes
-        const $mainContainer = $('.cf-container__fields');
-        if ($mainContainer.length) {
-            containerObserver.observe($mainContainer[0], {
-                childList: true,
-                subtree: true
-            });
-        }
-
-        // Event delegation for file actions
-        $(document).on('click', '.cf-file__browse', function() {
-            const $group = $(this).closest('.cf-complex__group, .cf-complex__group--grid');
-            const $fileInput = $(this).closest('.cf-file__inner').find('input[type="hidden"]');
-            const $previewContainer = $group.find('#nias-file-preview');
-            
-            if ($fileInput.length && $previewContainer.length) {
-                setTimeout(function() {
-                    updateFilePreview($fileInput.val(), $previewContainer);
-                }, 500);
-            }
-        });
-
-        $(document).on('click', '.cf-file__remove', function() {
-            const $group = $(this).closest('.cf-complex__group, .cf-complex__group--grid');
-            const $previewContainer = $group.find('#nias-file-preview');
-            
-            if ($previewContainer.length) {
-                setTimeout(function() {
-                    updateFilePreview('', $previewContainer);
-                }, 100);
-            }
-        });
-
-        // Initialize existing groups
-        $('.cf-complex__group, .cf-complex__group--grid').each(function() {
-            initializeFilePreview($(this));
-        });
-
-        // Handle Carbon Fields events
-        $(document)
-            .on('carbon_fields_complex_field_added', function(e, $group) {
-                setTimeout(function() {
-                    initializeFilePreview($group);
-                }, 100);
-            })
-            .on('carbon_fields_complex_field_changes', function() {
-                $('.cf-complex__group, .cf-complex__group--grid').each(function() {
-                    initializeFilePreview($(this));
-                });
-            });
-    });
-    </script>
+    <p>
+        <label class="nias-field-label" for="_spotplayer_download_url"><?php echo esc_html__('لینک صفحه دانلود ویدیو اسپات پلیر', 'nias-course-widget'); ?></label>
+        <input type="text" class="widefat" id="_spotplayer_download_url" name="_spotplayer_download_url" value="<?php echo esc_attr($url); ?>">
+        <span class="description"><?php echo esc_html__('لینک صفحه دانلود ویدیو را از اسپات پلیر وارد کنید', 'nias-course-widget'); ?></span>
+    </p>
+    <p>
+        <button type="button" class="button button-primary" id="sync-spotplayer"><?php echo esc_html__('همگام سازی جلسات با اسپات پلیر', 'nias-course-widget'); ?></button>
+    </p>
+    <div id="sync-status"></div>
     <?php
 }
 
-// Add JavaScript for Spot Player sync button functionality
-add_action('admin_footer', function() {
-    if (get_post_type() !== 'product') return;
+/* -------------------------------------------------------------------------
+ * Save
+ * ---------------------------------------------------------------------- */
+
+add_action('save_post_product', 'nias_course_save_metaboxes', 10, 2);
+function nias_course_save_metaboxes($post_id, $post)
+{
+    if (defined('DOING_AUTOSAVE') && DOING_AUTOSAVE) {
+        return;
+    }
+    if (!isset($_POST['nias_course_meta_nonce']) || !wp_verify_nonce($_POST['nias_course_meta_nonce'], 'nias_course_meta')) {
+        return;
+    }
+    if (!current_user_can('edit_post', $post_id)) {
+        return;
+    }
+
+    // The curriculum is edited on the dedicated page (saved via AJAX). Only
+    // persist sections here if legacy inline inputs were actually submitted,
+    // so a normal product save never wipes the stored curriculum.
+    if (isset($_POST['nias_course']['sections'])) {
+        $sections_input = (array) wp_unslash($_POST['nias_course']['sections']);
+        $sections = nias_course_sanitize_sections($sections_input);
+        carbon_set_post_meta($post_id, 'course_sections', $sections);
+    }
+
+    $spot = isset($_POST['_spotplayer_download_url']) ? esc_url_raw(wp_unslash($_POST['_spotplayer_download_url'])) : '';
+    update_post_meta($post_id, '_spotplayer_download_url', $spot);
+}
+
+/* -------------------------------------------------------------------------
+ * Sanitizers (shared with the curriculum editor AJAX save)
+ * ---------------------------------------------------------------------- */
+
+/**
+ * Sanitize lesson rich content.
+ *
+ * Course lessons routinely contain embed code (Aparat/YouTube iframes together
+ * with their <style> block). Trusted users — those allowed to post unfiltered
+ * HTML, i.e. administrators/shop managers on most installs — keep it verbatim,
+ * exactly as WordPress stores post_content. Everyone else falls back to
+ * wp_kses_post(). This prevents <style>/<iframe> from being stripped while their
+ * inner text leaks onto the front-end.
+ *
+ * @param string $raw
+ * @return string
+ */
+function nias_course_sanitize_lesson_content($raw)
+{
+    $raw = (string) $raw;
+    if (current_user_can('unfiltered_html')) {
+        return $raw;
+    }
+    return wp_kses_post($raw);
+}
+
+function nias_course_sanitize_media_group($group, $type)
+{
+    $keys = nias_media_group_keys($type);
+    $group = is_array($group) ? $group : array();
+
+    $tval  = isset($group[$keys[0]]) ? sanitize_text_field($group[$keys[0]]) : 'url';
+    $upval = isset($group[$keys[1]]) ? esc_url_raw($group[$keys[1]]) : '';
+    $urlval = isset($group[$keys[2]]) ? esc_url_raw($group[$keys[2]]) : '';
+
+    if ($upval === '' && $urlval === '') {
+        return array();
+    }
+
+    return array(array(
+        $keys[0] => $tval,
+        $keys[1] => $upval,
+        $keys[2] => $urlval,
+    ));
+}
+
+function nias_course_sanitize_sections($raw)
+{
+    $out = array();
+    foreach ($raw as $section) {
+        if (!is_array($section)) {
+            continue;
+        }
+
+        $sec = array(
+            'section_title'    => sanitize_text_field($section['section_title'] ?? ''),
+            'section_subtitle' => sanitize_text_field($section['section_subtitle'] ?? ''),
+            'section_icon'     => nias_course_sanitize_media_group($section['section_icon'] ?? array(), 'icon'),
+            'lessons'          => array(),
+        );
+
+        if (!empty($section['lessons']) && is_array($section['lessons'])) {
+            foreach ($section['lessons'] as $lesson) {
+                if (!is_array($lesson)) {
+                    continue;
+                }
+                $sec['lessons'][] = array(
+                    'lesson_title'         => sanitize_text_field($lesson['lesson_title'] ?? ''),
+                    'lesson_icon'          => nias_course_sanitize_media_group($lesson['lesson_icon'] ?? array(), 'icon'),
+                    'lesson_label'         => sanitize_text_field($lesson['lesson_label'] ?? ''),
+                    'lesson_preview_video' => nias_course_sanitize_media_group($lesson['lesson_preview_video'] ?? array(), 'video'),
+                    'lesson_download'      => nias_course_sanitize_media_group($lesson['lesson_download'] ?? array(), 'file'),
+                    'lesson_private'       => (isset($lesson['lesson_private']) && $lesson['lesson_private'] === 'yes'),
+                    'lesson_content'       => nias_course_sanitize_lesson_content($lesson['lesson_content'] ?? ''),
+                );
+            }
+        }
+
+        // Skip completely empty sections.
+        if ($sec['section_title'] === '' && empty($sec['lessons']) && empty($sec['section_icon'])) {
+            continue;
+        }
+
+        $out[] = $sec;
+    }
+    return $out;
+}
+
+/* -------------------------------------------------------------------------
+ * Admin assets + Spot Player sync script (product edit screen)
+ * ---------------------------------------------------------------------- */
+
+add_action('admin_footer', 'nias_course_builder_script');
+function nias_course_builder_script()
+{
+    $screen = function_exists('get_current_screen') ? get_current_screen() : null;
+    if (!$screen || $screen->post_type !== 'product') {
+        return;
+    }
     ?>
     <script>
-    jQuery(document).ready(function($) {
-        $('#sync-spotplayer').on('click', function() {
-            const button = $(this);
-            const statusDiv = $('#sync-status');
-            
-            // Try multiple possible selectors that Carbon Fields might use
-            const urlField = $('input[name="_spotplayer_download_url"], input[data-name="spotplayer_download_url"], .cf-field__body input[name*="spotplayer_download_url"], textarea[name="carbon_fields_compact_input[spotplayer_download_url]"]');
-            const downloadUrl = urlField.val();
-            
-            // Debug output
-            console.log('Field selectors tried:', urlField.selector);
-            console.log('Fields found:', urlField.length);
-            console.log('URL value:', downloadUrl);
-            
+    jQuery(function ($) {
+        // Spot Player sync.
+        $('#sync-spotplayer').on('click', function () {
+            var button = $(this);
+            var statusDiv = $('#sync-status');
+            var downloadUrl = $('#_spotplayer_download_url').val();
+
             if (!downloadUrl) {
                 statusDiv.html('<p style="color: red;">لطفا ابتدا لینک دانلود را وارد کنید</p>');
                 return;
@@ -337,18 +220,17 @@ add_action('admin_footer', function() {
                     post_id: $('#post_ID').val(),
                     url: downloadUrl
                 },
-                success: function(response) {
+                success: function (response) {
                     if (response.success) {
                         statusDiv.html('<p style="color: green;">' + response.data.message + '</p>');
-                        setTimeout(() => {
-                            window.location.reload();
-                        }, 1500);
+                        setTimeout(function () { window.location.reload(); }, 1500);
                     } else {
-                        statusDiv.html('<p style="color: red;">خطا: ' + response.data + '</p>');
+                        var msg = response.data && response.data.message ? response.data.message : response.data;
+                        statusDiv.html('<p style="color: red;">خطا: ' + msg + '</p>');
                         button.prop('disabled', false);
                     }
                 },
-                error: function() {
+                error: function () {
                     statusDiv.html('<p style="color: red;">خطا در ارتباط با سرور</p>');
                     button.prop('disabled', false);
                 }
@@ -357,11 +239,4 @@ add_action('admin_footer', function() {
     });
     </script>
     <?php
-});
-
-
-
-
-
-
-
+}

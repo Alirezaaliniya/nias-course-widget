@@ -1,8 +1,6 @@
 <?php
-// Ensure Carbon Fields is initialized
-add_action('after_setup_theme', 'crb_load_carbon_fields');
-function crb_load_carbon_fields() {
-    \Carbon_Fields\Carbon_Fields::boot();
+if (!defined('ABSPATH')) {
+    exit;
 }
 
 function nias_spotplayer_sync_handler() {
@@ -183,11 +181,6 @@ function nias_spotplayer_sync_handler() {
         }
 
         error_log('Final sections array: ' . print_r($sections, true));
-
-        // Before saving, ensure Carbon Fields is booted
-        if (!class_exists('\Carbon_Fields\Carbon_Fields')) {
-            throw new Exception('Carbon Fields is not loaded');
-        }
 
         // Clear existing sections first
         carbon_set_post_meta($post_id, 'course_sections', array());

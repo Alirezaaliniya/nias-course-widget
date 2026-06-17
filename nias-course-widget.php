@@ -4,7 +4,7 @@
  * Plugin Name: Nias course | دوره ساز نیاس
  * Description:   پلاگین دوره ساز نیاس ویجت "دوره ساز نیاس" را به ویرایشگر المنتور شما اضافه میکند که میتوانید دوره مورد نظر خود را درون تمپلیت محصول بسازیدو قالب خود را به یک قالب فروش دوره و فایل تبدیل کنید | این پلاگین بصورت رایگان منتشر شده و رایگان هم خواهد ماند❤️
  * Plugin URI:  https://nias.ir/product/nias-course-widget/
- * Version:     1.2.10
+ * Version:     1.3.0
  * Author:      Alireza aliniya
  * Author URI:  https://nias.ir/
  * Text Domain: nias-course-widget
@@ -16,7 +16,7 @@
 if (! defined('ABSPATH')) {
     exit; // Exit if accessed directly.
 }
-define('NIAS_COURSE_VERSION', '1.2.10');
+define('NIAS_COURSE_VERSION', '1.3.0');
 
 define('NIAS_FUNCTIONS' , plugin_dir_path(__FILE__).'inc/functions.php');
 define('NIAS_COURSE', plugin_dir_path(__FILE__) );
@@ -30,9 +30,13 @@ define('NIASADMIN_URL', plugin_dir_url(__FILE__) . 'admin');
 //  Composer
 require plugin_dir_path(__FILE__) . 'vendor/autoload.php';
 
+// Carbon-compatible settings/meta data layer (replaces Carbon Fields).
+require(NIAS_COURSE_INC . '/nias-meta.php');
+
 require(NIAS_WOOCOMMERCE . '/spotplayer-sync.php');
 require(NIAS_COURSE_PANEL . '/adminpannel.php');
 require(NIAS_WOOCOMMERCE . '/function-course.php');
+require(NIAS_WOOCOMMERCE . '/curriculum-editor.php');
 require(__DIR__ . '/widgets/videomodal.php');
 require(NIAS_COURSE_INC . '/certificate-show.php');
 require(NIAS_COURSE_INC . '/certificate-config-user.php');
@@ -42,23 +46,6 @@ require(NIAS_COURSE_INC . '/shortcodes.php');
 
 
 
-
-// Carbon Fields
-add_action('after_setup_theme', 'nias_course_load_carbon_fields');
-function nias_course_load_carbon_fields() {
-    \Carbon_Fields\Carbon_Fields::boot();
-}
-/*
-// separate translation file
-add_filter('carbon_fields_translate_strings', 'translate_carbon_fields_strings');
-function translate_carbon_fields_strings($texts) {
-    $texts['There are no entries yet.'] = __('هنوز موردی ثبت نشده است.', 'nias-course-widget');
-    $texts['Add Entry'] = __('افزودن مورد', 'nias-course-widget');
-    $texts['Collapse All'] = __('بستن همه', 'nias-course-widget');
-    
-    return $texts;
-}
-*/
 
 /**
  * Register List Widget.
