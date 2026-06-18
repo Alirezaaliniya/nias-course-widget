@@ -212,6 +212,7 @@ function nias_spot_render_license_settings()
     ?>
     <div class="nias-settings-app" dir="rtl">
         <?php nias_settings_topbar('spot'); ?>
+        <div class="nias-set-shell">
         <div class="nias-set-main">
             <?php nias_set_saved_banner($saved); ?>
 
@@ -361,6 +362,8 @@ function nias_spot_render_license_settings()
             </form>
 
             <div class="nias-foot"><?php echo wp_kses_post(__('قدرت گرفته از <span style="color:#3858e9;font-weight:600">اسپات پلیر</span> — یکپارچه با دوره ساز نیاس.', 'nias-course-widget')); ?></div>
+        </div>
+        <?php nias_settings_ads_sidebar(); ?>
         </div>
     </div>
     <?php

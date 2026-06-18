@@ -91,6 +91,7 @@ function nias_curriculum_sections_to_js($sections)
                     'video'   => nias_curriculum_media_to_js(isset($lesson['lesson_preview_video'][0]) ? $lesson['lesson_preview_video'][0] : array(), 'video'),
                     'file'    => nias_curriculum_media_to_js(isset($lesson['lesson_download'][0]) ? $lesson['lesson_download'][0] : array(), 'file'),
                     'private' => !empty($lesson['lesson_private']),
+                    'duration' => isset($lesson['lesson_duration']) ? $lesson['lesson_duration'] : '',
                     'content' => isset($lesson['lesson_content']) ? $lesson['lesson_content'] : '',
                 );
             }
@@ -137,6 +138,7 @@ function nias_curriculum_js_to_input($chapters)
                     'lesson_preview_video' => nias_curriculum_media_to_group(isset($lesson['video']) ? $lesson['video'] : array(), 'video'),
                     'lesson_download'      => nias_curriculum_media_to_group(isset($lesson['file']) ? $lesson['file'] : array(), 'file'),
                     'lesson_private'       => !empty($lesson['private']) ? 'yes' : '',
+                    'lesson_duration'      => isset($lesson['duration']) ? $lesson['duration'] : '',
                     'lesson_content'       => isset($lesson['content']) ? $lesson['content'] : '',
                 );
             }
@@ -289,6 +291,12 @@ function nias_curriculum_ajax_save()
     $sections = nias_course_sanitize_sections(nias_curriculum_js_to_input($chapters));
     carbon_set_post_meta($product_id, 'course_sections', $sections);
 
+    // Course instructors (when the feature is enabled).
+    if (function_exists('nias_instructors_enabled') && nias_instructors_enabled() && isset($_POST['instructors'])) {
+        $instructor_ids = array_filter(array_map('intval', explode(',', (string) wp_unslash($_POST['instructors']))));
+        nias_set_product_instructors($product_id, $instructor_ids);
+    }
+
     // SpotPlayer fields moved here from the product metabox.
     if (isset($_POST['spot_download_url'])) {
         update_post_meta($product_id, '_spotplayer_download_url', esc_url_raw(wp_unslash($_POST['spot_download_url'])));
@@ -325,6 +333,20 @@ function nias_curriculum_render_page()
     $sections  = carbon_get_post_meta($product_id, 'course_sections');
     $sections  = is_array($sections) ? $sections : array();
     $spot_enabled = function_exists('nias_spot_enabled') && nias_spot_enabled();
+
+    $inst_enabled   = function_exists('nias_instructors_enabled') && nias_instructors_enabled();
+    $inst_available = array();
+    if ($inst_enabled) {
+        foreach (nias_get_instructors() as $inst_user) {
+            $inst_available[] = array(
+                'id'    => $inst_user->ID,
+                'name'  => $inst_user->display_name,
+                'email' => $inst_user->user_email,
+            );
+        }
+    }
+    $inst_selected = $inst_enabled ? nias_product_instructors($product_id) : array();
+
     $boot = array(
         'chapters'       => nias_curriculum_sections_to_js($sections),
         'productId'      => $product_id,
@@ -338,6 +360,12 @@ function nias_curriculum_render_page()
             'licenseCourse'=> $spot_enabled ? get_post_meta($product_id, '_nias_spot_course', true) : '',
             'extDownload'  => NIAS_SPOT_EXT_DOWNLOAD_URL,
             'extTutorial'  => NIAS_SPOT_EXT_TUTORIAL_URL,
+        ),
+        'instructors'    => array(
+            'enabled'   => $inst_enabled,
+            'available' => $inst_available,
+            'selected'  => array_map('intval', $inst_selected),
+            'manageUrl' => admin_url('admin.php?page=nias-course-instructors'),
         ),
         'i18n'           => array(
             'newChapter'  => __('فصل جدید', 'nias-course-widget'),
@@ -353,7 +381,7 @@ function nias_curriculum_render_page()
         ),
     );
     ?>
-    <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style><?php echo nias_course_font_face_css(); ?></style>
     <?php nias_curriculum_styles(); ?>
 
     <div id="nias-cur-app" class="nc-app" dir="rtl">
@@ -389,6 +417,13 @@ function nias_curriculum_render_page()
                         <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m8 6 8 6-8 6V6z"/><rect x="3" y="3" width="18" height="18" rx="3"/></svg>
                         <?php echo esc_html__('ابزار اسپات پلیر', 'nias-course-widget'); ?>
                     </button>
+                    <?php if ($inst_enabled) : ?>
+                    <button type="button" class="nc-btn nc-btn-inst" id="nc-inst-open">
+                        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8ZM23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                        <?php echo esc_html__('مدرسین دوره', 'nias-course-widget'); ?>
+                        <span class="nc-inst-count" id="nc-inst-count"></span>
+                    </button>
+                    <?php endif; ?>
                     <a class="nc-btn nc-btn-ghost" id="nc-back" href="<?php echo esc_url($boot['productEditUrl']); ?>">
                         <?php echo esc_html__('بازگشت به محصول', 'nias-course-widget'); ?>
                     </a>
@@ -530,6 +565,59 @@ function nias_curriculum_render_page()
                 </div>
             </aside>
         </div>
+
+        <?php if ($inst_enabled) : ?>
+        <!-- Instructors drawer -->
+        <div id="nc-inst-drawer" class="nc-spot-drawer nc-inst-drawer" aria-hidden="true">
+            <div class="nc-spot-overlay" data-inst-close></div>
+            <aside class="nc-spot-panel" role="dialog" aria-label="<?php echo esc_attr__('مدرسین دوره', 'nias-course-widget'); ?>">
+                <div class="nc-spot-head">
+                    <div class="nc-spot-head-t">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8ZM23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                        <span><?php echo esc_html__('مدرسین دوره', 'nias-course-widget'); ?></span>
+                    </div>
+                    <button type="button" class="nc-spot-x" data-inst-close aria-label="<?php echo esc_attr__('بستن', 'nias-course-widget'); ?>">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
+                    </button>
+                </div>
+
+                <div class="nc-spot-body">
+                    <section class="nc-spot-card">
+                        <div class="nc-spot-card-t">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+                            <?php echo esc_html__('انتخاب مدرسین این دوره', 'nias-course-widget'); ?>
+                        </div>
+                        <p class="nc-spot-hint"><?php echo esc_html__('مدرسینی که این دوره را تدریس می‌کنند انتخاب کنید. تغییرات با «ذخیره همه تغییرات» ذخیره می‌شوند.', 'nias-course-widget'); ?></p>
+
+                        <?php if (empty($inst_available)) : ?>
+                            <div class="nc-inst-none"><?php echo esc_html__('هنوز مدرسی ثبت نشده است.', 'nias-course-widget'); ?></div>
+                            <a class="nc-spot-btn nc-spot-btn-soft" href="<?php echo esc_url($boot['instructors']['manageUrl']); ?>" target="_blank" rel="noopener">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8ZM19 8v6M22 11h-6"/></svg>
+                                <?php echo esc_html__('افزودن مدرس در صفحهٔ مدیریت', 'nias-course-widget'); ?>
+                            </a>
+                        <?php else : ?>
+                            <div class="nc-inst-pick" id="nc-inst-pick">
+                                <?php foreach ($inst_available as $inst_opt) :
+                                    $checked = in_array((int) $inst_opt['id'], array_map('intval', $inst_selected), true);
+                                    $initial = function_exists('mb_substr') ? mb_substr($inst_opt['name'], 0, 1, 'UTF-8') : substr($inst_opt['name'], 0, 1); ?>
+                                    <label class="nc-inst-item">
+                                        <input type="checkbox" class="nc-inst-cb" value="<?php echo esc_attr($inst_opt['id']); ?>" <?php checked($checked); ?>>
+                                        <span class="nc-inst-ava"><?php echo esc_html($initial); ?></span>
+                                        <span class="nc-inst-meta">
+                                            <span class="nc-inst-name"><?php echo esc_html($inst_opt['name']); ?></span>
+                                            <span class="nc-inst-email"><?php echo esc_html($inst_opt['email']); ?></span>
+                                        </span>
+                                        <span class="nc-inst-tick"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span>
+                                    </label>
+                                <?php endforeach; ?>
+                            </div>
+                            <a class="nc-inst-managelink" href="<?php echo esc_url($boot['instructors']['manageUrl']); ?>" target="_blank" rel="noopener"><?php echo esc_html__('مدیریت مدرسین', 'nias-course-widget'); ?> ↗</a>
+                        <?php endif; ?>
+                    </section>
+                </div>
+            </aside>
+        </div>
+        <?php endif; ?>
 
         <div id="nc-toast" class="nc-toast"></div>
     </div>
@@ -767,6 +855,30 @@ function nias_curriculum_styles()
     .nc-spot-file{display:flex;align-items:center;gap:9px;border:1.5px dashed #c8cdda;border-radius:11px;padding:13px 14px;font-size:12.5px;color:#64748b;cursor:pointer;background:#fbfcfe;margin-bottom:12px;transition:.15s}
     .nc-spot-file:hover{border-color:#7c3aed;color:#6d28d9;background:#faf8ff}
     .nc-spot-file #nc-spot-file-name{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
+    /* Instructors button + drawer */
+    .nc-btn-inst{background:linear-gradient(135deg,#4f46e5,#4338ca);color:#fff;box-shadow:0 8px 18px -8px rgba(67,56,202,.7)}
+    .nc-btn-inst:hover{background:linear-gradient(135deg,#4338ca,#3730a3)}
+    .nc-inst-count{display:none;align-items:center;justify-content:center;min-width:20px;height:20px;padding:0 6px;border-radius:10px;background:rgba(255,255,255,.25);color:#fff;font-size:12px;font-weight:800}
+    .nc-inst-count.has{display:inline-flex}
+    .nc-inst-drawer .nc-spot-panel{right:0;left:auto;transform:translateX(100%)}
+    .nc-inst-drawer.open .nc-spot-panel{transform:translateX(0)}
+    .nc-inst-drawer .nc-spot-head{background:linear-gradient(135deg,#4f46e5,#4338ca)}
+    .nc-inst-pick{display:flex;flex-direction:column;gap:9px;margin-top:4px}
+    .nc-inst-item{display:flex;align-items:center;gap:11px;padding:11px 12px;border:1px solid #e6e9ef;border-radius:13px;background:#fbfcfe;cursor:pointer;transition:.15s}
+    .nc-inst-item:hover{border-color:#c7d0f7;background:#f5f7ff}
+    .nc-inst-item input{position:absolute;opacity:0;width:0;height:0}
+    .nc-inst-item:has(input:checked){border-color:#4f46e5;background:#eef0fe}
+    .nc-inst-ava{display:flex;align-items:center;justify-content:center;width:38px;height:38px;border-radius:50%;flex:0 0 auto;background:#e0e3fb;color:#4338ca;font-size:15px;font-weight:800}
+    .nc-inst-item:has(input:checked) .nc-inst-ava{background:#4f46e5;color:#fff}
+    .nc-inst-meta{flex:1 1 auto;min-width:0;display:flex;flex-direction:column}
+    .nc-inst-name{font-size:13.5px;font-weight:700;color:#1f2733;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+    .nc-inst-email{font-size:11.5px;color:#8a90a6;direction:ltr;text-align:right;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+    .nc-inst-tick{display:flex;align-items:center;justify-content:center;width:24px;height:24px;border-radius:50%;flex:0 0 auto;border:2px solid #cdd3e6;color:transparent;transition:.15s}
+    .nc-inst-item:has(input:checked) .nc-inst-tick{background:#4f46e5;border-color:#4f46e5;color:#fff}
+    .nc-inst-none{padding:14px;border:1px dashed #d7dde7;border-radius:12px;background:#fbfcfe;color:#94a3b8;font-size:13px;text-align:center;margin-bottom:12px}
+    .nc-inst-managelink{display:inline-block;margin-top:14px;color:#4f46e5;font-size:12.5px;font-weight:700;text-decoration:none}
+    .nc-inst-managelink:hover{text-decoration:underline}
     </style>
     <?php
 }
@@ -822,7 +934,7 @@ function nias_curriculum_script()
                         return {
                             id: uid('l'), title: l.title || '', label: l.label || '',
                             icon: mkMedia(l.icon), video: mkMedia(l.video), file: mkMedia(l.file),
-                            private: !!l.private, content: l.content || ''
+                            private: !!l.private, duration: l.duration || '', content: l.content || ''
                         };
                     })
                 };
@@ -1029,6 +1141,7 @@ function nias_curriculum_script()
             var h = '';
             h += '<div><div class="nc-label">عنوان درس <span class="req">*</span></div><input type="text" class="nc-input" data-field="lessonTitle" value="' + esc(ls.title) + '" placeholder="مثلاً: مقدمه"></div>';
             h += '<div><div class="nc-label">برچسب درس</div><input type="text" class="nc-input" data-field="lessonLabel" value="' + esc(ls.label) + '" placeholder="مثلاً: رایگان"></div>';
+            h += '<div><div class="nc-label">مدت زمان درس</div><input type="text" class="nc-input" data-field="lessonDuration" value="' + esc(ls.duration || '') + '" placeholder="مثلاً: ۱۲:۳۵ یا ۱۵ دقیقه"></div>';
             h += '<div><div class="nc-label">آیکون درس</div>' + mediaHtml('lesson', 'icon', ls.icon, IC.img, 'یک تصویر انتخاب کنید یا لینک بدهید', 'انتخاب') + '</div>';
             h += '<div><div class="nc-label">ویدیوی پیش‌نمایش</div>' + mediaHtml('lesson', 'video', ls.video, IC.video, 'لینک یا فایل ویدیو را اضافه کنید', 'افزودن') + '</div>';
             h += '<div><div class="nc-label">فایل خصوصی درس</div>' + mediaHtml('lesson', 'file', ls.file, IC.file, 'PDF، تمرین یا فایل پیوست', 'افزودن') + '</div>';
@@ -1064,7 +1177,7 @@ function nias_curriculum_script()
         }
         function addLesson(cid) {
             var ch = getChapter(cid); if (!ch) return;
-            var ls = { id: uid('l'), title: I18N.newLesson || 'درس جدید', label: '', icon: mkMedia(), video: mkMedia(), file: mkMedia(), private: false, content: '' };
+            var ls = { id: uid('l'), title: I18N.newLesson || 'درس جدید', label: '', icon: mkMedia(), video: mkMedia(), file: mkMedia(), private: false, duration: '', content: '' };
             ch.expanded = true; ch.lessons.push(ls);
             state.selected = { type: 'lesson', chapterId: cid, lessonId: ls.id };
             markDirty(); renderAll();
@@ -1078,7 +1191,7 @@ function nias_curriculum_script()
                 id: uid('c'), title: src.title + (I18N.copySuffix || ' (کپی)'), subtitle: src.subtitle,
                 icon: cloneMedia(src.icon), expanded: true,
                 lessons: src.lessons.map(function (l) {
-                    return { id: uid('l'), title: l.title, label: l.label, icon: cloneMedia(l.icon), video: cloneMedia(l.video), file: cloneMedia(l.file), private: l.private, content: l.content };
+                    return { id: uid('l'), title: l.title, label: l.label, icon: cloneMedia(l.icon), video: cloneMedia(l.video), file: cloneMedia(l.file), private: l.private, duration: l.duration || '', content: l.content };
                 })
             };
             state.chapters.splice(idx + 1, 0, copy);
@@ -1090,7 +1203,7 @@ function nias_curriculum_script()
             var idx = -1; for (var i = 0; i < ch.lessons.length; i++) if (ch.lessons[i].id === lid) { idx = i; break; }
             if (idx < 0) return;
             var src = ch.lessons[idx];
-            var copy = { id: uid('l'), title: src.title + (I18N.copySuffix || ' (کپی)'), label: src.label, icon: cloneMedia(src.icon), video: cloneMedia(src.video), file: cloneMedia(src.file), private: src.private, content: src.content };
+            var copy = { id: uid('l'), title: src.title + (I18N.copySuffix || ' (کپی)'), label: src.label, icon: cloneMedia(src.icon), video: cloneMedia(src.video), file: cloneMedia(src.file), private: src.private, duration: src.duration || '', content: src.content };
             ch.lessons.splice(idx + 1, 0, copy);
             state.selected = { type: 'lesson', chapterId: cid, lessonId: copy.id };
             markDirty(); renderAll();
@@ -1189,7 +1302,7 @@ function nias_curriculum_script()
                 return {
                     title: c.title, subtitle: c.subtitle, icon: c.icon,
                     lessons: c.lessons.map(function (l) {
-                        return { title: l.title, label: l.label, icon: l.icon, video: l.video, file: l.file, private: l.private, content: l.content };
+                        return { title: l.title, label: l.label, icon: l.icon, video: l.video, file: l.file, private: l.private, duration: l.duration || '', content: l.content };
                     })
                 };
             });
@@ -1229,6 +1342,12 @@ function nias_curriculum_script()
             var spLicEl = document.getElementById('nc-spot-license');
             if (spUrlEl) { body.append('spot_download_url', spUrlEl.value); }
             if (spLicEl) { body.append('spot_license_course', spLicEl.value); }
+            if (DATA.instructors && DATA.instructors.enabled) {
+                var instCbs = document.querySelectorAll('.nc-inst-cb');
+                var instIds = [];
+                for (var ci = 0; ci < instCbs.length; ci++) { if (instCbs[ci].checked) instIds.push(instCbs[ci].value); }
+                body.append('instructors', instIds.join(','));
+            }
             fetch(DATA.ajaxUrl, { method: 'POST', credentials: 'same-origin', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body: body.toString() })
                 .then(function (r) { return r.json(); })
                 .then(function (res) {
@@ -1345,6 +1464,7 @@ function nias_curriculum_script()
                 else if (field === 'chapSub') { var ch2 = selChapter(); if (ch2) ch2.subtitle = val; }
                 else if (field === 'lessonTitle') { var ls = selLesson(); if (ls) { ls.title = val; updateText('[data-title-l="' + ls.id + '"]', val || 'بدون عنوان'); updateText('[data-head-title]', val || 'بدون عنوان', editorEl); } }
                 else if (field === 'lessonLabel') { var ls2 = selLesson(); if (ls2) ls2.label = val; }
+                else if (field === 'lessonDuration') { var ls3 = selLesson(); if (ls3) ls3.duration = val; }
                 markDirty();
                 return;
             }
@@ -1423,10 +1543,11 @@ function nias_curriculum_script()
                     // a bare array of strings = lessons of an untitled chapter
                     var lessons = rawLessons.map(function (ls) {
                         var lt = (typeof ls === 'string') ? ls : normTitle(ls, ['title', 'lesson_title', 'name', 'session']);
+                        var ld = (ls && typeof ls === 'object') ? (ls.duration || ls.time || ls.length || ls.lesson_duration || '') : '';
                         return {
                             id: uid('l'), title: lt, label: '',
                             icon: mkMedia(), video: mkMedia(), file: mkMedia(),
-                            private: true, content: ''
+                            private: true, duration: String(ld || ''), content: ''
                         };
                     }).filter(function (l) { return l.title !== ''; });
                     if (title === '' && lessons.length === 0) { return; }
@@ -1514,6 +1635,39 @@ function nias_curriculum_script()
                     reader.readAsText(pickedFile);
                 });
             }
+        })();
+
+        /* =====================================================================
+         * Instructors drawer
+         * ================================================================= */
+        (function () {
+            if (!DATA.instructors || !DATA.instructors.enabled) { return; }
+            var drawer = document.getElementById('nc-inst-drawer');
+            var openBtn = document.getElementById('nc-inst-open');
+            var countEl = document.getElementById('nc-inst-count');
+
+            function updateCount() {
+                var cbs = document.querySelectorAll('.nc-inst-cb');
+                var n = 0;
+                for (var i = 0; i < cbs.length; i++) { if (cbs[i].checked) n++; }
+                if (countEl) {
+                    if (n > 0) { countEl.textContent = faNum(n); countEl.classList.add('has'); }
+                    else { countEl.textContent = ''; countEl.classList.remove('has'); }
+                }
+            }
+            function openDrawer() { if (drawer) { drawer.classList.add('open'); drawer.setAttribute('aria-hidden', 'false'); } }
+            function closeDrawer() { if (drawer) { drawer.classList.remove('open'); drawer.setAttribute('aria-hidden', 'true'); } }
+
+            if (openBtn) { openBtn.addEventListener('click', openDrawer); }
+            if (drawer) {
+                drawer.addEventListener('click', function (e) { if (e.target.closest('[data-inst-close]')) { closeDrawer(); } });
+                drawer.addEventListener('change', function (e) {
+                    if (e.target && e.target.classList.contains('nc-inst-cb')) { updateCount(); markDirty(); }
+                });
+            }
+            document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && drawer && drawer.classList.contains('open')) { closeDrawer(); } });
+
+            updateCount();
         })();
 
         renderAll();

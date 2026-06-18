@@ -188,7 +188,7 @@ body *:not(#wpadminbar *,i){
  * ===================================================================== */
 .nias-settings-app, .nias-settings-app * { box-sizing: border-box; }
 .nias-settings-app {
-    margin: -10px -20px 0 -20px;
+    margin: -10px -20px 0 0;
     background: #eef1f7;
     color: #16182a;
     min-height: calc(100vh - 32px);
@@ -365,3 +365,30 @@ body *:not(#wpadminbar *,i){
 .nias-sp-help ul { margin: 8px 0 14px; padding: 0 18px 0 0; }
 .nias-sp-help li { direction: ltr; text-align: left; font-family: Consolas, Monaco, monospace; font-size: 12px; margin: 2px 0; }
 .nias-sp-help a { color: #3858e9; }
+
+/* ---------------------------------------------------------------------
+ * Settings page layout with a left ad/promo sidebar
+ * ------------------------------------------------------------------- */
+.nias-set-shell { max-width: 1320px; margin: 0 auto; padding: 28px 24px 0; display: flex; align-items: flex-start; gap: 24px; }
+.nias-set-shell .nias-set-main { max-width: none; margin: 0; padding: 0; flex: 1 1 auto; min-width: 0; }
+.nias-set-aside { flex: 0 0 290px; position: sticky; top: 130px; display: flex; flex-direction: column; gap: 14px; }
+
+.nias-ads-title { display: flex; align-items: center; gap: 7px; font-size: 13px; font-weight: 800; color: #5a6178; padding: 2px 2px 0; }
+.nias-ad { position: relative; display: flex; flex-direction: column; align-items: flex-start; gap: 8px; background: #fff; border: 1px solid #e9ebf4; border-radius: 16px; padding: 18px 18px 16px; text-decoration: none; color: #16182a; box-shadow: 0 1px 2px rgba(16,24,40,.04); overflow: hidden; transition: transform .16s ease, box-shadow .16s ease, border-color .16s ease; }
+.nias-ad::before { content: ""; position: absolute; inset-inline-start: 0; top: 0; bottom: 0; width: 4px; background: var(--ad-accent, #3858e9); }
+.nias-ad:hover { transform: translateY(-2px); box-shadow: 0 14px 28px -16px var(--ad-accent, #3858e9); border-color: var(--ad-accent, #3858e9); }
+.nias-ad-badge { font-size: 10.5px; font-weight: 800; color: var(--ad-accent, #3858e9); background: rgba(20,24,42,.05); padding: 3px 9px; border-radius: 999px; }
+.nias-ad-ic { width: 42px; height: 42px; border-radius: 12px; display: flex; align-items: center; justify-content: center; background: var(--ad-accent, #3858e9); box-shadow: 0 6px 14px -6px var(--ad-accent, #3858e9); }
+.nias-ad-title { font-size: 14px; font-weight: 800; line-height: 1.6; color: #16182a; }
+.nias-ad-desc { font-size: 12px; line-height: 1.85; color: #6b7186; }
+.nias-ad-cta { display: inline-flex; align-items: center; gap: 5px; font-size: 12.5px; font-weight: 800; color: var(--ad-accent, #3858e9); margin-top: 2px; }
+
+@media (max-width: 1180px) {
+    .nias-set-shell { flex-direction: column; max-width: 980px; }
+    .nias-set-aside { flex-basis: auto; width: 100%; position: static; flex-direction: row; flex-wrap: wrap; }
+    .nias-ads-title { flex-basis: 100%; }
+    .nias-ad { flex: 1 1 280px; }
+}
+@media (max-width: 600px) {
+    .nias-set-aside { flex-direction: column; }
+}

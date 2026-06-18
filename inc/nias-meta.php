@@ -61,6 +61,7 @@ function nias_course_sections_schema()
                 'file_url'    => array('type' => 'value'),
             )),
             'lesson_private'       => array('type' => 'value'),
+            'lesson_duration'      => array('type' => 'value'),
             'lesson_content'       => array('type' => 'value'),
         )),
     );

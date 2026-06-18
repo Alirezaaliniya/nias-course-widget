@@ -21,6 +21,113 @@ function get_certificate_settings() {
     ];
 }
 
+/**
+ * Whether a product is eligible for a certificate, honoring the
+ * "نحوه نمایش مدرک" setting (certificate_display_type + selected products/cats).
+ *
+ * Mirrors nias_modern_course_cert_applies() so the [nias_certificate] list and
+ * the modern course view agree on which products get a certificate.
+ *
+ * @param int $product_id
+ * @return bool
+ */
+function nias_certificate_product_eligible($product_id)
+{
+    if (carbon_get_theme_option('nias_course_certificate') !== 'on') {
+        return false;
+    }
+    $type = carbon_get_theme_option('certificate_display_type');
+
+    if ($type === 'all') {
+        return true;
+    }
+    if ($type === 'selected') {
+        $selected = array_map('strval', (array) carbon_get_theme_option('certificate_selected_products'));
+        return in_array((string) $product_id, $selected, true);
+    }
+    if ($type === 'category') {
+        $cats  = array_map('strval', (array) carbon_get_theme_option('certificate_selected_categories'));
+        $terms = wp_get_post_terms($product_id, 'product_cat', array('fields' => 'ids'));
+        if (is_wp_error($terms)) {
+            return false;
+        }
+        foreach ((array) $terms as $term_id) {
+            if (in_array((string) $term_id, $cats, true)) {
+                return true;
+            }
+        }
+        return false;
+    }
+    return false; // 'none' or unset
+}
+
+/**
+ * Resolve the date printed on a certificate, honoring the "منبع تاریخ" setting
+ * (certificate_date_source): purchase date, a manual date, or a per-user date
+ * stored in user meta.
+ *
+ * @param int    $user_id
+ * @param int    $product_id
+ * @param string $order_date fallback (the purchase/completion date, Y-m-d)
+ * @return string
+ */
+function nias_certificate_resolve_date($user_id, $product_id, $order_date)
+{
+    $source = carbon_get_theme_option('certificate_date_source');
+
+    if ($source === 'manual_date') {
+        $manual = carbon_get_theme_option('certificate_manual_date');
+        if (!empty($manual)) {
+            return $manual;
+        }
+    } elseif ($source === 'user_certificate_date') {
+        // Settings label references "nias_certificate_date"; keep backward
+        // compatibility with the older "usercertificate_date" meta key.
+        $udate = get_user_meta($user_id, 'nias_certificate_date', true);
+        if (empty($udate)) {
+            $udate = get_user_meta($user_id, 'usercertificate_date', true);
+        }
+        if (!empty($udate)) {
+            return $udate;
+        }
+    }
+
+    return $order_date; // 'purchase_date' (default) or empty/unset settings
+}
+
+/**
+ * Convert a Gregorian date (Y, M, D) to Jalali (Persian) date parts.
+ * Standard algorithm, no external dependency.
+ *
+ * @param int $gy
+ * @param int $gm
+ * @param int $gd
+ * @return array{0:int,1:int,2:int} [jy, jm, jd]
+ */
+function nias_gregorian_to_jalali($gy, $gm, $gd)
+{
+    $g_d_m = array(0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334);
+    $gy2   = ($gm > 2) ? ($gy + 1) : $gy;
+    $days  = 355666 + (365 * $gy) + ((int) (($gy2 + 3) / 4)) - ((int) (($gy2 + 99) / 100))
+        + ((int) (($gy2 + 399) / 400)) + $gd + $g_d_m[$gm - 1];
+    $jy = -1595 + (33 * ((int) ($days / 12053)));
+    $days %= 12053;
+    $jy += 4 * ((int) ($days / 1461));
+    $days %= 1461;
+    if ($days > 365) {
+        $jy += (int) (($days - 1) / 365);
+        $days = ($days - 1) % 365;
+    }
+    if ($days < 186) {
+        $jm = 1 + (int) ($days / 31);
+        $jd = 1 + ($days % 31);
+    } else {
+        $jm = 7 + (int) (($days - 186) / 30);
+        $jd = 1 + (($days - 186) % 30);
+    }
+    return array($jy, $jm, $jd);
+}
+
 class CertificateMPDF
 {
     private $mpdf;
@@ -215,12 +322,29 @@ class CertificateMPDF
     }
 
 
-    // تبدیل تاریخ میلادی به شمسی (ساده)
+    // تبدیل تاریخ میلادی به شمسی
     private function convertToJalali($gregorianDate)
     {
-        // برای سادگی، فعلاً همان تاریخ میلادی را برمی‌گردانیم
-        // شما می‌تونید از کتابخانه jDateTime استفاده کنید
-        return $gregorianDate;
+        if (empty($gregorianDate)) {
+            return $gregorianDate;
+        }
+        $ts = strtotime($gregorianDate);
+        if ($ts === false) {
+            return $gregorianDate; // unparseable (e.g. an already-formatted manual date)
+        }
+        $gy = (int) date('Y', $ts);
+        // A year below 1700 is almost certainly an already-Jalali date entered
+        // manually — leave it untouched instead of double-converting.
+        if ($gy < 1700) {
+            return $gregorianDate;
+        }
+        if (!function_exists('nias_gregorian_to_jalali')) {
+            return $gregorianDate;
+        }
+        list($jy, $jm, $jd) = nias_gregorian_to_jalali($gy, (int) date('n', $ts), (int) date('j', $ts));
+        $months = array('فروردین', 'اردیبهشت', 'خرداد', 'تیر', 'مرداد', 'شهریور', 'مهر', 'آبان', 'آذر', 'دی', 'بهمن', 'اسفند');
+        $month_name = isset($months[$jm - 1]) ? $months[$jm - 1] : $jm;
+        return $jd . ' ' . $month_name . ' ' . $jy;
     }
 
     public function output($filename = 'certificate.pdf', $dest = 'D')
@@ -447,6 +571,23 @@ function nias_certificate_shortcode($atts)
         return '<p class="certificate-error">کاربر با این شناسه یافت نشد.</p>';
     }
 
+    // Permission: a visitor may see a user's certificate list only for their own
+    // account, or when they arrived with a valid verification code for that user.
+    // This keeps the normal "view my certificates" flow working without a ?code=
+    // link, while still protecting other users' lists.
+    $is_self  = is_user_logged_in() && get_current_user_id() === $user_id;
+    $can_view = $is_self || $nias_course_certificate_verify;
+    if (!$can_view) {
+        $wrap_open = '<div class="certificate-download-container" style="max-width: 800px; margin: auto; padding: 20px; background-color: #f9f9f9; border-radius: 10px;">';
+        if (!empty($code_param)) {
+            return $wrap_open . $verification_message . '</div>'; // invalid-code message
+        }
+        if (is_user_logged_in()) {
+            return $wrap_open . '<div class="certificate-error"><h3>دسترسی مجاز نیست</h3><p>اجازهٔ مشاهدهٔ مدارک این کاربر را ندارید.</p></div></div>';
+        }
+        return $wrap_open . '<div class="certificate-error"><h3>برای مشاهده مدارک</h3><p>برای دیدن مدارک خود ابتدا وارد حساب کاربری شوید.</p></div></div>';
+    }
+
     // Get user's eligible courses
     $eligible_courses = get_user_purchased_courses($user_id);
 
@@ -464,7 +605,6 @@ function nias_certificate_shortcode($atts)
 
     $download_url = admin_url('admin-ajax.php');
     $nonce = wp_create_nonce('generate_certificate_nonce');
-    if ($nias_course_certificate_verify) {
         $output = '<div class="certificate-download-container" style="max-width: 800px; margin: auto; padding: 20px; background-color: #f9f9f9; border-radius: 10px; z-index: 99;position:relative;">
         ' . $verification_message . '
         <h2>مدارک دوره‌ها</h2>
@@ -522,16 +662,6 @@ function nias_certificate_shortcode($atts)
     </div>';
 
         return $output;
-    } else {
-        return '<div class="certificate-download-container" style="max-width: 800px; margin: auto; padding: 20px; background-color: #f9f9f9; border-radius: 10px; z-index: 99;position:relative;">
-        <h2>گواهی دوره‌ها</h2>
-        <p><strong>کاربر:</strong> ' . esc_html($user_data->display_name) . ' (ID: ' . esc_html($user_id) . ')</p>
-        <div class="certificate-error">
-            <h3>❌ گواهی نامعتبر است</h3>
-            <p>کدی که وارد کرده‌اید در سیستم یافت نشد.</p>
-        </div>
-    </div>';
-    }
 }
 
 // Add AJAX handler for PDF generation
@@ -666,10 +796,15 @@ function get_user_purchased_courses($user_id)
 
                 //error_log('Processing product: ' . $product->get_name() . ' (ID: ' . $product_id . ')');
 
-                // بررسی اینکه آیا این محصول واجد شرایط گواهی‌نامه است
-                // فعلاً همه محصولات را واجد شرایط در نظر می‌گیریم
-                // شما می‌توانید شرایط خاص خود را اضافه کنید
-                $is_certificate_eligible = true; // یا has_user_purchased_certificate($user_id);
+                // Whether this product is eligible for a certificate, honoring the
+                // "نحوه نمایش مدرک" setting (همه / محصول انتخابی / دسته‌بندی / هیچکدام).
+                $is_certificate_eligible = nias_certificate_product_eligible($product_id);
+
+                // Quiz gate: if a quiz is linked to this course, the user must have
+                // passed it before the course's certificate becomes available.
+                if ($is_certificate_eligible && function_exists('nias_quiz_course_gate_passed') && !nias_quiz_course_gate_passed($user_id, $product_id)) {
+                    $is_certificate_eligible = false;
+                }
 
                 if ($is_certificate_eligible) {
                     // Get or generate certificate code
@@ -679,9 +814,10 @@ function get_user_purchased_courses($user_id)
                         update_user_meta($user_id, 'certificate_code_' . $product_id, $certificate_code);
                     }
 
+                    $order_date = $order->get_date_completed() ? $order->get_date_completed()->date('Y-m-d') : $order->get_date_created()->date('Y-m-d');
                     $eligible_products[$product_id] = [
                         'name' => $product->get_name(),
-                        'date' => $order->get_date_completed() ? $order->get_date_completed()->date('Y-m-d') : $order->get_date_created()->date('Y-m-d'),
+                        'date' => nias_certificate_resolve_date($user_id, $product_id, $order_date),
                         'order_id' => $order->get_id(),
                         'certificate_code' => $certificate_code
                     ];

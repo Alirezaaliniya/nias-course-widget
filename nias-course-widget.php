@@ -26,6 +26,22 @@ define('NIAS_COURSE_INC', plugin_dir_path(__FILE__) . 'inc');
 
 define('NIAS_IMAGE', plugin_dir_url(__FILE__) . 'assets/images/');
 define('NIASADMIN_URL', plugin_dir_url(__FILE__) . 'admin');
+define('NIAS_FONTS_URL', plugin_dir_url(__FILE__) . 'assets/fonts/');
+
+/**
+ * Inline @font-face CSS for the bundled Vazir font, so plugin admin screens use
+ * the local font files instead of the Google Fonts CDN. The faces are declared
+ * under the "Vazirmatn" family name the existing styles already reference.
+ *
+ * @return string
+ */
+function nias_course_font_face_css()
+{
+    $b = NIAS_FONTS_URL;
+    return "@font-face{font-family:'Vazirmatn';font-style:normal;font-weight:1 450;font-display:swap;src:url('{$b}Vazir.ttf') format('truetype')}"
+        . "@font-face{font-family:'Vazirmatn';font-style:normal;font-weight:451 550;font-display:swap;src:url('{$b}Vazir-Medium.ttf') format('truetype')}"
+        . "@font-face{font-family:'Vazirmatn';font-style:normal;font-weight:551 900;font-display:swap;src:url('{$b}Vazir-Bold.ttf') format('truetype')}";
+}
 
 //  Composer
 require plugin_dir_path(__FILE__) . 'vendor/autoload.php';
@@ -38,9 +54,13 @@ require(NIAS_COURSE_PANEL . '/adminpannel.php');
 require(NIAS_WOOCOMMERCE . '/spotplayer-license.php');
 require(NIAS_WOOCOMMERCE . '/function-course.php');
 require(NIAS_WOOCOMMERCE . '/curriculum-editor.php');
+require(NIAS_WOOCOMMERCE . '/modern-course.php');
+require(NIAS_WOOCOMMERCE . '/quiz-builder.php');
+require(NIAS_WOOCOMMERCE . '/quiz-frontend.php');
 require(__DIR__ . '/widgets/videomodal.php');
 require(NIAS_COURSE_INC . '/certificate-show.php');
 require(NIAS_COURSE_INC . '/certificate-config-user.php');
+require(NIAS_COURSE_INC . '/instructors.php');
 require(NIAS_WOOCOMMERCE . '/my-account.php');
 require(NIAS_COURSE_INC . '/shortcodes.php');
 

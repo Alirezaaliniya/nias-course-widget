@@ -135,6 +135,7 @@ function nias_course_sanitize_sections($raw)
                     'lesson_preview_video' => nias_course_sanitize_media_group($lesson['lesson_preview_video'] ?? array(), 'video'),
                     'lesson_download'      => nias_course_sanitize_media_group($lesson['lesson_download'] ?? array(), 'file'),
                     'lesson_private'       => (isset($lesson['lesson_private']) && $lesson['lesson_private'] === 'yes'),
+                    'lesson_duration'      => sanitize_text_field($lesson['lesson_duration'] ?? ''),
                     'lesson_content'       => nias_course_sanitize_lesson_content($lesson['lesson_content'] ?? ''),
                 );
             }
