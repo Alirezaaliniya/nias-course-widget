@@ -44,7 +44,13 @@ function nias_course_endpoint_content() {
         echo '<p>لطفا برای مشاهده دوره‌های خود وارد شوید.</p>';
         return;
     }
-    
+
+    // حالت مدرن: نمایش دوره‌های خریداری‌شده به‌صورت کارتی (جایگزین آکاردئون).
+    if (nias_modern_account_enabled()) {
+        echo nias_course_render_cards(nias_course_get_purchased_course_ids($current_user->ID));
+        return;
+    }
+
     // دریافت سفارش‌های تکمیل شده کاربر
     $args = [
         'customer_id' => $current_user->ID,
@@ -438,6 +444,159 @@ function nias_handle_video_url($url) {
         }
     }
     return '<div class="video-container"><iframe src="' . esc_url(trim($url)) . '" frameborder="0" allowfullscreen></iframe></div>';
+}
+
+/* -------------------------------------------------------------------------
+ * Modern card view for purchased courses
+ * ---------------------------------------------------------------------- */
+
+/** Whether the modern (card) display is enabled for the account page. */
+function nias_modern_account_enabled()
+{
+    return function_exists('carbon_get_theme_option') && carbon_get_theme_option('nias_modern_account') === 'on';
+}
+
+/**
+ * Distinct product IDs purchased by a user (completed orders).
+ *
+ * @param int $user_id
+ * @return int[]
+ */
+function nias_course_get_purchased_course_ids($user_id)
+{
+    $ids = array();
+    $user_id = intval($user_id);
+    if (!$user_id || !function_exists('wc_get_orders')) {
+        return $ids;
+    }
+    $orders = wc_get_orders(array(
+        'customer_id' => $user_id,
+        'limit'       => -1,
+        'status'      => 'wc-completed',
+    ));
+    foreach ($orders as $order) {
+        foreach ($order->get_items() as $item) {
+            $pid = $item->get_product_id();
+            if ($pid && !in_array($pid, $ids, true)) {
+                $ids[] = (int) $pid;
+            }
+        }
+    }
+    return $ids;
+}
+
+/** URL of a course's display page (the focused modern course view). */
+function nias_course_modern_view_url($product_id)
+{
+    $qv = defined('NIAS_MODERN_QV') ? NIAS_MODERN_QV : 'nias_modern';
+    return add_query_arg($qv, '1', get_permalink(intval($product_id)));
+}
+
+/**
+ * Render purchased courses as a responsive card grid. Each card links to that
+ * course's display page. Only products that actually hold curriculum sections
+ * are shown.
+ *
+ * @param int[] $course_ids
+ * @return string
+ */
+function nias_course_render_cards($course_ids)
+{
+    $course_ids = array_filter(array_map('intval', (array) $course_ids));
+
+    $cards = array();
+    foreach ($course_ids as $cid) {
+        $course = get_post($cid);
+        if (!$course || $course->post_type !== 'product') {
+            continue;
+        }
+        $sections = carbon_get_post_meta($cid, 'course_sections');
+        if (empty($sections) || !is_array($sections)) {
+            continue;
+        }
+        $cards[] = array('id' => $cid, 'post' => $course, 'sections' => $sections);
+    }
+
+    if (empty($cards)) {
+        return '<p class="nias-cc-empty">' . esc_html__('شما هنوز هیچ دوره‌ای خریداری نکرده‌اید.', 'nias-course-widget') . '</p>';
+    }
+
+    ob_start();
+    ?>
+    <div class="nias-course-cards" dir="rtl">
+        <?php foreach ($cards as $c) :
+            $cid   = $c['id'];
+            $title = $c['post']->post_title;
+            $url   = nias_course_modern_view_url($cid);
+            $thumb = get_the_post_thumbnail_url($cid, 'large');
+            if (!$thumb && function_exists('wc_placeholder_img_src')) {
+                $thumb = wc_placeholder_img_src('large');
+            }
+            $sec_count = count($c['sections']);
+            $les_count = 0;
+            foreach ($c['sections'] as $s) {
+                if (!empty($s['lessons']) && is_array($s['lessons'])) {
+                    $les_count += count($s['lessons']);
+                }
+            }
+            ?>
+            <a class="nias-course-card" href="<?php echo esc_url($url); ?>">
+                <div class="nias-cc-thumb">
+                    <?php if ($thumb) : ?><img src="<?php echo esc_url($thumb); ?>" alt="<?php echo esc_attr($title); ?>" loading="lazy"><?php endif; ?>
+                    <span class="nias-cc-play">
+                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="6 4 20 12 6 20 6 4" fill="#fff" stroke="none"/></svg>
+                    </span>
+                </div>
+                <div class="nias-cc-body">
+                    <h3 class="nias-cc-title"><?php echo esc_html($title); ?></h3>
+                    <div class="nias-cc-meta">
+                        <span class="nias-cc-chip">
+                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+                            <?php echo esc_html(number_format_i18n($sec_count) . ' ' . __('سرفصل', 'nias-course-widget')); ?>
+                        </span>
+                        <span class="nias-cc-chip">
+                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="6 4 20 12 6 20 6 4"/></svg>
+                            <?php echo esc_html(number_format_i18n($les_count) . ' ' . __('جلسه', 'nias-course-widget')); ?>
+                        </span>
+                    </div>
+                    <span class="nias-cc-btn">
+                        <?php echo esc_html__('ورود به دوره', 'nias-course-widget'); ?>
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"/></svg>
+                    </span>
+                </div>
+            </a>
+        <?php endforeach; ?>
+    </div>
+    <style>
+        .nias-course-cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:20px;margin:14px 0}
+        .nias-course-cards *{box-sizing:border-box}
+        .nias-course-card{display:flex;flex-direction:column;background:#fff;border:1px solid #e6e9ef;border-radius:16px;overflow:hidden;text-decoration:none;color:inherit;box-shadow:0 1px 2px rgba(16,24,40,.04),0 10px 26px -20px rgba(16,24,40,.4);transition:transform .16s ease,box-shadow .16s ease}
+        .nias-course-card:hover{transform:translateY(-4px);box-shadow:0 1px 2px rgba(16,24,40,.04),0 18px 36px -18px rgba(30,131,240,.55);border-color:#bcd6fb}
+        .nias-cc-thumb{position:relative;aspect-ratio:16/9;background:#eef2f7;overflow:hidden}
+        .nias-cc-thumb img{width:100%;height:100%;object-fit:cover;display:block;transition:transform .25s ease}
+        .nias-course-card:hover .nias-cc-thumb img{transform:scale(1.05)}
+        .nias-cc-play{position:absolute;inset:0;margin:auto;width:52px;height:52px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:rgba(30,131,240,.92);box-shadow:0 8px 20px -6px rgba(30,131,240,.8);opacity:0;transition:opacity .16s ease}
+        .nias-course-card:hover .nias-cc-play{opacity:1}
+        .nias-cc-body{display:flex;flex-direction:column;gap:12px;padding:16px 16px 18px}
+        .nias-cc-title{margin:0;font-size:16px;font-weight:800;line-height:1.7;color:#1f2a30;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+        .nias-cc-meta{display:flex;flex-wrap:wrap;gap:8px;margin-top:auto}
+        .nias-cc-chip{display:inline-flex;align-items:center;gap:5px;height:26px;padding:0 10px;border-radius:8px;background:#eef4fe;color:#1e6fd6;font-size:12.5px;font-weight:700}
+        .nias-cc-btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;height:42px;border-radius:11px;background:linear-gradient(135deg,#1e83f0,#0e6fd6);color:#fff;font-size:14px;font-weight:800;margin-top:4px}
+        .nias-course-card:hover .nias-cc-btn{background:linear-gradient(135deg,#1873d6,#0a62c0)}
+        .nias-cc-empty{padding:16px;background:#f1f4f9;border-radius:12px;color:#475569;font-weight:600}
+    </style>
+    <?php
+    return ob_get_clean();
+}
+
+/** Shortcode: purchased-course cards for the current user. */
+add_shortcode('nias_purchased_courses', 'nias_purchased_courses_shortcode');
+function nias_purchased_courses_shortcode($atts)
+{
+    if (!is_user_logged_in()) {
+        return '<p class="nias-cc-empty">' . esc_html__('برای مشاهده دوره‌های خریداری‌شده وارد شوید.', 'nias-course-widget') . '</p>';
+    }
+    return nias_course_render_cards(nias_course_get_purchased_course_ids(get_current_user_id()));
 }
 
 // Hide 'my-courses' menu item if not enabled

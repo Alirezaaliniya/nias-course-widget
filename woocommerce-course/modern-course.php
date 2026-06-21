@@ -1166,9 +1166,9 @@ function nias_modern_course_sticky_button()
 add_action('template_redirect', 'nias_modern_course_takeover');
 function nias_modern_course_takeover()
 {
-    if (nias_modern_course_mode() === 'off') {
-        return;
-    }
+    // The focused full-page view is triggered by the explicit ?nias_modern=1
+    // flag (emitted by the auto-mode sticky button and the account/shortcode
+    // course cards), so it works regardless of the global modern-course mode.
     if (empty($_GET[NIAS_MODERN_QV])) {
         return;
     }

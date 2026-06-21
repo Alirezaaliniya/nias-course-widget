@@ -20,6 +20,7 @@ function nias_settings_main_fields()
     return array(
         'nias_two_way_verification'   => 'radio',
         'nias_course_account_display' => 'radio',
+        'nias_modern_account'         => 'radio',
         'nias_course_certificate'     => 'radio',
         'nias_spotplayer_enabled'     => 'radio',
         'nias_instructors_enabled'    => 'radio',
@@ -521,6 +522,13 @@ function nias_course_render_main_settings()
                         __('فعالسازی نمایش دوره در حساب کاربری', 'nias-course-widget'),
                         __('این گزینه فقط در صورتی که حساب کاربری شما استاندارد باشد عمل می‌کند و باید از ویجت ووکامرسی استفاده کرده باشید. اگر تغییری حاصل نشد، یکبار روی ذخیره در صفحه <a href="/wp-admin/options-permalink.php">پیوندهای یکتا</a> کلیک کنید.', 'nias-course-widget'),
                         'off'
+                    );
+                    nias_set_toggle_row(
+                        'nias_modern_account',
+                        __('فعالسازی نمایش مدرن در حساب', 'nias-course-widget'),
+                        __('با فعال کردن این گزینه، در صفحهٔ «دوره های من» حساب کاربری، دوره‌های خریداری‌شده به‌جای آکاردئون قبلی به‌صورت کارتی نمایش داده می‌شوند و هر کارت به صفحهٔ نمایش همان دوره (نمای مدرن) لینک می‌شود. برای نمایش دستی نیز می‌توانید از شورت‌کد <code dir="ltr">[nias_purchased_courses]</code> استفاده کنید.', 'nias-course-widget'),
+                        'off',
+                        __('مدرن', 'nias-course-widget')
                     );
                     nias_set_toggle_row(
                         'nias_course_certificate',
