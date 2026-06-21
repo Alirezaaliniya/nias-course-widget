@@ -437,7 +437,7 @@ class Nias_course_woocommerce extends \Elementor\Widget_Base
                 'type' => \Elementor\Controls_Manager::COLOR,
                 'selectors' => [
                     '{{WRAPPER}} .section_header .nsarrowicon i' => 'color: {{VALUE}}',
-                    '{{WRAPPER}} .section_header .nsarrowicon i svg' => 'fill: {{VALUE}}',
+                    '{{WRAPPER}} .section_header .nsarrowicon svg' => 'fill: {{VALUE}}',
 
                 ],
             ]
@@ -559,7 +559,557 @@ class Nias_course_woocommerce extends \Elementor\Widget_Base
                 ],
             ]
         );
+        $this->add_control(
+            'nsbadge-sub-itembackcolor_insidehead',
+            [
+                'label' => esc_html__('رنگ بک گراند زیر عنوان درس', 'nias-course-widget'),
+                'type' => \Elementor\Controls_Manager::COLOR,
+                'selectors' => [
+                    '{{WRAPPER}} .lesson_label' => 'background-color: {{VALUE}}',
+                ],
+            ]
+        );
 
+        $this->end_controls_section();
+
+        /* ----------------------- section content (body) style ---------------------- */
+        $this->start_controls_section(
+            'nsstyle_section_content',
+            [
+                'label' => esc_html__('استایل محتوای فصل', 'nias-course-widget'),
+                'tab' => \Elementor\Controls_Manager::TAB_STYLE,
+            ]
+        );
+        $this->add_group_control(
+            \Elementor\Group_Control_Background::get_type(),
+            [
+                'name' => 'background_section_content',
+                'types' => ['classic', 'gradient'],
+                'selector' => '{{WRAPPER}} .section_content',
+            ]
+        );
+        $this->add_group_control(
+            \Elementor\Group_Control_Border::get_type(),
+            [
+                'name' => 'border_section_content',
+                'selector' => '{{WRAPPER}} .section_content',
+            ]
+        );
+        $this->add_responsive_control(
+            'nsradius_section_content',
+            [
+                'label' => esc_html__('نرمی حاشیه', 'nias-course-widget'),
+                'type' => \Elementor\Controls_Manager::DIMENSIONS,
+                'size_units' => ['px', '%', 'em', 'rem', 'custom'],
+                'selectors' => [
+                    '{{WRAPPER}} .section_content' => 'border-radius: {{TOP}}{{UNIT}} {{RIGHT}}{{UNIT}} {{BOTTOM}}{{UNIT}} {{LEFT}}{{UNIT}};',
+                ],
+            ]
+        );
+        $this->add_responsive_control(
+            'nspadding_section_content',
+            [
+                'label' => esc_html__('فاصله داخلی', 'nias-course-widget'),
+                'type' => \Elementor\Controls_Manager::DIMENSIONS,
+                'size_units' => ['px', '%', 'em', 'rem', 'custom'],
+                'selectors' => [
+                    '{{WRAPPER}} .section_content' => 'padding: {{TOP}}{{UNIT}} {{RIGHT}}{{UNIT}} {{BOTTOM}}{{UNIT}} {{LEFT}}{{UNIT}};',
+                ],
+            ]
+        );
+        $this->add_responsive_control(
+            'nsgap_lessons_list',
+            [
+                'label' => esc_html__('فاصله بین درس‌ها', 'nias-course-widget'),
+                'type' => \Elementor\Controls_Manager::SLIDER,
+                'size_units' => ['px', 'em', 'rem'],
+                'range' => [
+                    'px' => ['min' => 0, 'max' => 80, 'step' => 1],
+                ],
+                'selectors' => [
+                    '{{WRAPPER}} .lesson_item' => 'margin-bottom: {{SIZE}}{{UNIT}};',
+                ],
+            ]
+        );
+        $this->end_controls_section();
+
+        /* ---------------------------- lesson box style ---------------------------- */
+        $this->start_controls_section(
+            'nsstyle_lesson_box',
+            [
+                'label' => esc_html__('استایل باکس درس', 'nias-course-widget'),
+                'tab' => \Elementor\Controls_Manager::TAB_STYLE,
+            ]
+        );
+        $this->add_group_control(
+            \Elementor\Group_Control_Background::get_type(),
+            [
+                'name' => 'background_lesson_box',
+                'types' => ['classic', 'gradient'],
+                'selector' => '{{WRAPPER}} .lesson_item',
+            ]
+        );
+        $this->add_group_control(
+            \Elementor\Group_Control_Border::get_type(),
+            [
+                'name' => 'border_lesson_box',
+                'selector' => '{{WRAPPER}} .lesson_item',
+            ]
+        );
+        $this->add_responsive_control(
+            'nsradius_lesson_box',
+            [
+                'label' => esc_html__('نرمی حاشیه', 'nias-course-widget'),
+                'type' => \Elementor\Controls_Manager::DIMENSIONS,
+                'size_units' => ['px', '%', 'em', 'rem', 'custom'],
+                'selectors' => [
+                    '{{WRAPPER}} .lesson_item' => 'border-radius: {{TOP}}{{UNIT}} {{RIGHT}}{{UNIT}} {{BOTTOM}}{{UNIT}} {{LEFT}}{{UNIT}};',
+                ],
+            ]
+        );
+        $this->add_responsive_control(
+            'nspadding_lesson_box',
+            [
+                'label' => esc_html__('فاصله داخلی', 'nias-course-widget'),
+                'type' => \Elementor\Controls_Manager::DIMENSIONS,
+                'size_units' => ['px', '%', 'em', 'rem', 'custom'],
+                'selectors' => [
+                    '{{WRAPPER}} .lesson_item' => 'padding: {{TOP}}{{UNIT}} {{RIGHT}}{{UNIT}} {{BOTTOM}}{{UNIT}} {{LEFT}}{{UNIT}};',
+                ],
+            ]
+        );
+        $this->add_responsive_control(
+            'nsgap_lesson_header',
+            [
+                'label' => esc_html__('فاصله بین اجزای ردیف درس', 'nias-course-widget'),
+                'type' => \Elementor\Controls_Manager::SLIDER,
+                'size_units' => ['px', 'em', 'rem'],
+                'range' => [
+                    'px' => ['min' => 0, 'max' => 60, 'step' => 1],
+                ],
+                'selectors' => [
+                    '{{WRAPPER}} .lesson_header' => 'gap: {{SIZE}}{{UNIT}};',
+                ],
+            ]
+        );
+        $this->end_controls_section();
+
+        /* --------------------------- lesson icon style ---------------------------- */
+        $this->start_controls_section(
+            'nsstyle_lesson_icon',
+            [
+                'label' => esc_html__('استایل آیکن درس', 'nias-course-widget'),
+                'tab' => \Elementor\Controls_Manager::TAB_STYLE,
+            ]
+        );
+        $this->add_responsive_control(
+            'nslessonicon_size',
+            [
+                'label' => esc_html__('اندازه آیکن/عکس درس', 'nias-course-widget'),
+                'type' => \Elementor\Controls_Manager::SLIDER,
+                'size_units' => ['px', 'em', 'rem'],
+                'range' => [
+                    'px' => ['min' => 0, 'max' => 120, 'step' => 1],
+                ],
+                'selectors' => [
+                    '{{WRAPPER}} .nias-right-head img' => 'width: {{SIZE}}{{UNIT}}; height: {{SIZE}}{{UNIT}};',
+                    '{{WRAPPER}} .ns-icon-wrapper i' => 'font-size: {{SIZE}}{{UNIT}};',
+                    '{{WRAPPER}} .ns-icon-wrapper svg' => 'width: {{SIZE}}{{UNIT}}; height: {{SIZE}}{{UNIT}};',
+                ],
+            ]
+        );
+        $this->add_control(
+            'nslessonicon_color',
+            [
+                'label' => esc_html__('رنگ آیکن درس', 'nias-course-widget'),
+                'type' => \Elementor\Controls_Manager::COLOR,
+                'selectors' => [
+                    '{{WRAPPER}} .lesson_item i' => 'color: {{VALUE}};',
+                    '{{WRAPPER}} .lesson_item svg' => 'fill: {{VALUE}};',
+                ],
+            ]
+        );
+        $this->add_responsive_control(
+            'nslessonicon_radius',
+            [
+                'label' => esc_html__('نرمی حاشیه عکس درس', 'nias-course-widget'),
+                'type' => \Elementor\Controls_Manager::DIMENSIONS,
+                'size_units' => ['px', '%', 'em', 'rem', 'custom'],
+                'selectors' => [
+                    '{{WRAPPER}} .nias-right-head img' => 'border-radius: {{TOP}}{{UNIT}} {{RIGHT}}{{UNIT}} {{BOTTOM}}{{UNIT}} {{LEFT}}{{UNIT}};',
+                ],
+            ]
+        );
+        $this->end_controls_section();
+
+        /* -------------------------- preview button style -------------------------- */
+        $this->start_controls_section(
+            'nsstyle_preview_btn',
+            [
+                'label' => esc_html__('استایل دکمه پیش‌نمایش', 'nias-course-widget'),
+                'tab' => \Elementor\Controls_Manager::TAB_STYLE,
+            ]
+        );
+        $this->add_responsive_control(
+            'nspreview_icon_size',
+            [
+                'label' => esc_html__('اندازه آیکن پیش‌نمایش', 'nias-course-widget'),
+                'type' => \Elementor\Controls_Manager::SLIDER,
+                'size_units' => ['px', 'em', 'rem'],
+                'range' => [
+                    'px' => ['min' => 0, 'max' => 80, 'step' => 1],
+                ],
+                'selectors' => [
+                    '{{WRAPPER}} .nias-preview-tag .nspreviewicon' => 'font-size: {{SIZE}}{{UNIT}};',
+                    '{{WRAPPER}} .nias-preview-tag .nspreviewicon svg' => 'width: {{SIZE}}{{UNIT}}; height: {{SIZE}}{{UNIT}};',
+                ],
+            ]
+        );
+        $this->add_group_control(
+            \Elementor\Group_Control_Typography::get_type(),
+            [
+                'label' => esc_html__('فونت متن پیش‌نمایش', 'nias-course-widget'),
+                'name' => 'nspreview_text_typography',
+                'selector' => '{{WRAPPER}} .nias-preview-tag .nsspanpreviewtext',
+            ]
+        );
+        $this->add_responsive_control(
+            'nspreview_radius',
+            [
+                'label' => esc_html__('نرمی حاشیه', 'nias-course-widget'),
+                'type' => \Elementor\Controls_Manager::DIMENSIONS,
+                'size_units' => ['px', '%', 'em', 'rem', 'custom'],
+                'selectors' => [
+                    '{{WRAPPER}} .nias-preview-tag' => 'border-radius: {{TOP}}{{UNIT}} {{RIGHT}}{{UNIT}} {{BOTTOM}}{{UNIT}} {{LEFT}}{{UNIT}};',
+                ],
+            ]
+        );
+        $this->add_responsive_control(
+            'nspreview_padding',
+            [
+                'label' => esc_html__('فاصله داخلی', 'nias-course-widget'),
+                'type' => \Elementor\Controls_Manager::DIMENSIONS,
+                'size_units' => ['px', '%', 'em', 'rem', 'custom'],
+                'selectors' => [
+                    '{{WRAPPER}} .nias-preview-tag' => 'padding: {{TOP}}{{UNIT}} {{RIGHT}}{{UNIT}} {{BOTTOM}}{{UNIT}} {{LEFT}}{{UNIT}};',
+                ],
+            ]
+        );
+        $this->start_controls_tabs('nspreview_btn_tabs');
+        $this->start_controls_tab(
+            'nspreview_btn_normal',
+            ['label' => esc_html__('عادی', 'nias-course-widget')]
+        );
+        $this->add_control(
+            'nspreview_color',
+            [
+                'label' => esc_html__('رنگ متن و آیکن', 'nias-course-widget'),
+                'type' => \Elementor\Controls_Manager::COLOR,
+                'selectors' => [
+                    '{{WRAPPER}} .nias-preview-tag' => 'color: {{VALUE}};',
+                    '{{WRAPPER}} .nias-preview-tag svg' => 'fill: {{VALUE}};',
+                ],
+            ]
+        );
+        $this->add_group_control(
+            \Elementor\Group_Control_Background::get_type(),
+            [
+                'name' => 'background_preview_btn',
+                'types' => ['classic', 'gradient'],
+                'selector' => '{{WRAPPER}} .nias-preview-tag',
+            ]
+        );
+        $this->end_controls_tab();
+        $this->start_controls_tab(
+            'nspreview_btn_hover',
+            ['label' => esc_html__('هاور', 'nias-course-widget')]
+        );
+        $this->add_control(
+            'nspreview_color_hover',
+            [
+                'label' => esc_html__('رنگ متن و آیکن', 'nias-course-widget'),
+                'type' => \Elementor\Controls_Manager::COLOR,
+                'selectors' => [
+                    '{{WRAPPER}} .nias-preview-tag:hover' => 'color: {{VALUE}};',
+                    '{{WRAPPER}} .nias-preview-tag:hover svg' => 'fill: {{VALUE}};',
+                ],
+            ]
+        );
+        $this->add_group_control(
+            \Elementor\Group_Control_Background::get_type(),
+            [
+                'name' => 'background_preview_btn_hover',
+                'types' => ['classic', 'gradient'],
+                'selector' => '{{WRAPPER}} .nias-preview-tag:hover',
+            ]
+        );
+        $this->end_controls_tab();
+        $this->end_controls_tabs();
+        $this->end_controls_section();
+
+        /* ------------------------- download button style -------------------------- */
+        $this->start_controls_section(
+            'nsstyle_download_btn',
+            [
+                'label' => esc_html__('استایل دکمه دانلود', 'nias-course-widget'),
+                'tab' => \Elementor\Controls_Manager::TAB_STYLE,
+            ]
+        );
+        $this->add_responsive_control(
+            'nsdownload_icon_size',
+            [
+                'label' => esc_html__('اندازه آیکن دانلود', 'nias-course-widget'),
+                'type' => \Elementor\Controls_Manager::SLIDER,
+                'size_units' => ['px', 'em', 'rem'],
+                'range' => [
+                    'px' => ['min' => 0, 'max' => 80, 'step' => 1],
+                ],
+                'selectors' => [
+                    '{{WRAPPER}} .nsdownload-button i' => 'font-size: {{SIZE}}{{UNIT}};',
+                    '{{WRAPPER}} .nsdownload-button svg' => 'width: {{SIZE}}{{UNIT}}; height: {{SIZE}}{{UNIT}};',
+                ],
+            ]
+        );
+        $this->add_responsive_control(
+            'nsdownload_size',
+            [
+                'label' => esc_html__('اندازه دکمه', 'nias-course-widget'),
+                'type' => \Elementor\Controls_Manager::SLIDER,
+                'size_units' => ['px', 'em', 'rem'],
+                'range' => [
+                    'px' => ['min' => 0, 'max' => 120, 'step' => 1],
+                ],
+                'selectors' => [
+                    '{{WRAPPER}} .nsdownload-button' => 'height: {{SIZE}}{{UNIT}}; min-width: {{SIZE}}{{UNIT}};',
+                ],
+            ]
+        );
+        $this->add_responsive_control(
+            'nsdownload_radius',
+            [
+                'label' => esc_html__('نرمی حاشیه', 'nias-course-widget'),
+                'type' => \Elementor\Controls_Manager::DIMENSIONS,
+                'size_units' => ['px', '%', 'em', 'rem', 'custom'],
+                'selectors' => [
+                    '{{WRAPPER}} .nsdownload-button' => 'border-radius: {{TOP}}{{UNIT}} {{RIGHT}}{{UNIT}} {{BOTTOM}}{{UNIT}} {{LEFT}}{{UNIT}};',
+                ],
+            ]
+        );
+        $this->start_controls_tabs('nsdownload_btn_tabs');
+        $this->start_controls_tab(
+            'nsdownload_btn_normal',
+            ['label' => esc_html__('عادی', 'nias-course-widget')]
+        );
+        $this->add_control(
+            'nsdownload_color',
+            [
+                'label' => esc_html__('رنگ آیکن', 'nias-course-widget'),
+                'type' => \Elementor\Controls_Manager::COLOR,
+                'selectors' => [
+                    '{{WRAPPER}} .nsdownload-button' => 'color: {{VALUE}};',
+                    '{{WRAPPER}} .nsdownload-button svg' => 'fill: {{VALUE}};',
+                ],
+            ]
+        );
+        $this->add_group_control(
+            \Elementor\Group_Control_Background::get_type(),
+            [
+                'name' => 'background_download_btn',
+                'types' => ['classic', 'gradient'],
+                'selector' => '{{WRAPPER}} .nsdownload-button',
+            ]
+        );
+        $this->end_controls_tab();
+        $this->start_controls_tab(
+            'nsdownload_btn_hover',
+            ['label' => esc_html__('هاور', 'nias-course-widget')]
+        );
+        $this->add_control(
+            'nsdownload_color_hover',
+            [
+                'label' => esc_html__('رنگ آیکن', 'nias-course-widget'),
+                'type' => \Elementor\Controls_Manager::COLOR,
+                'selectors' => [
+                    '{{WRAPPER}} .nsdownload-button:hover' => 'color: {{VALUE}};',
+                    '{{WRAPPER}} .nsdownload-button:hover svg' => 'fill: {{VALUE}};',
+                ],
+            ]
+        );
+        $this->add_group_control(
+            \Elementor\Group_Control_Background::get_type(),
+            [
+                'name' => 'background_download_btn_hover',
+                'types' => ['classic', 'gradient'],
+                'selector' => '{{WRAPPER}} .nsdownload-button:hover',
+            ]
+        );
+        $this->end_controls_tab();
+        $this->end_controls_tabs();
+        $this->end_controls_section();
+
+        /* -------------------------- private lesson style -------------------------- */
+        $this->start_controls_section(
+            'nsstyle_private',
+            [
+                'label' => esc_html__('استایل بخش خصوصی', 'nias-course-widget'),
+                'tab' => \Elementor\Controls_Manager::TAB_STYLE,
+            ]
+        );
+        $this->add_responsive_control(
+            'nsprivate_icon_size',
+            [
+                'label' => esc_html__('اندازه آیکن قفل', 'nias-course-widget'),
+                'type' => \Elementor\Controls_Manager::SLIDER,
+                'size_units' => ['px', 'em', 'rem'],
+                'range' => [
+                    'px' => ['min' => 0, 'max' => 80, 'step' => 1],
+                ],
+                'selectors' => [
+                    '{{WRAPPER}} .ns-private-icon svg' => 'width: {{SIZE}}{{UNIT}}; height: {{SIZE}}{{UNIT}};',
+                ],
+            ]
+        );
+        $this->add_control(
+            'nsprivate_icon_color',
+            [
+                'label' => esc_html__('رنگ آیکن قفل', 'nias-course-widget'),
+                'type' => \Elementor\Controls_Manager::COLOR,
+                'selectors' => [
+                    '{{WRAPPER}} .ns-private-icon svg path' => 'fill: {{VALUE}};',
+                    '{{WRAPPER}} .ns-private-icon svg' => 'fill: {{VALUE}};',
+                ],
+            ]
+        );
+        $this->add_group_control(
+            \Elementor\Group_Control_Typography::get_type(),
+            [
+                'label' => esc_html__('فونت متن راهنما (خصوصی)', 'nias-course-widget'),
+                'name' => 'nsprivate_tooltip_typography',
+                'selector' => '{{WRAPPER}} .ns-private-lesson span',
+            ]
+        );
+        $this->add_control(
+            'nsprivate_tooltip_color',
+            [
+                'label' => esc_html__('رنگ متن راهنما', 'nias-course-widget'),
+                'type' => \Elementor\Controls_Manager::COLOR,
+                'selectors' => [
+                    '{{WRAPPER}} .ns-private-lesson span' => 'color: {{VALUE}};',
+                ],
+            ]
+        );
+        $this->add_control(
+            'nsprivate_tooltip_bg',
+            [
+                'label' => esc_html__('رنگ بک گراند متن راهنما', 'nias-course-widget'),
+                'type' => \Elementor\Controls_Manager::COLOR,
+                'selectors' => [
+                    '{{WRAPPER}} .ns-private-lesson span' => 'background-color: {{VALUE}};',
+                    '{{WRAPPER}} .ns-private-lesson span:before' => 'border-top-color: {{VALUE}};',
+                ],
+            ]
+        );
+        $this->end_controls_section();
+
+        /* ----------------------- lesson toggle (arrow) style ---------------------- */
+        $this->start_controls_section(
+            'nsstyle_lesson_toggle',
+            [
+                'label' => esc_html__('استایل آیکن باز/بسته درس', 'nias-course-widget'),
+                'tab' => \Elementor\Controls_Manager::TAB_STYLE,
+            ]
+        );
+        $this->add_responsive_control(
+            'nslesson_toggle_size',
+            [
+                'label' => esc_html__('اندازه آیکن', 'nias-course-widget'),
+                'type' => \Elementor\Controls_Manager::SLIDER,
+                'size_units' => ['px', 'em', 'rem'],
+                'range' => [
+                    'px' => ['min' => 0, 'max' => 80, 'step' => 1],
+                ],
+                'selectors' => [
+                    '{{WRAPPER}} .lesson_header .nsarrowicon i' => 'font-size: {{SIZE}}{{UNIT}};',
+                    '{{WRAPPER}} .lesson_header .nsarrowicon svg' => 'width: {{SIZE}}{{UNIT}}; height: {{SIZE}}{{UNIT}};',
+                ],
+            ]
+        );
+        $this->add_control(
+            'nslesson_toggle_color',
+            [
+                'label' => esc_html__('رنگ آیکن', 'nias-course-widget'),
+                'type' => \Elementor\Controls_Manager::COLOR,
+                'selectors' => [
+                    '{{WRAPPER}} .lesson_header .nsarrowicon i' => 'color: {{VALUE}};',
+                    '{{WRAPPER}} .lesson_header .nsarrowicon svg' => 'fill: {{VALUE}};',
+                ],
+            ]
+        );
+        $this->end_controls_section();
+
+        /* --------------------------- lesson content style -------------------------- */
+        $this->start_controls_section(
+            'nsstyle_lesson_content',
+            [
+                'label' => esc_html__('استایل محتوای درس', 'nias-course-widget'),
+                'tab' => \Elementor\Controls_Manager::TAB_STYLE,
+            ]
+        );
+        $this->add_group_control(
+            \Elementor\Group_Control_Typography::get_type(),
+            [
+                'label' => esc_html__('فونت محتوای درس', 'nias-course-widget'),
+                'name' => 'nslesson_content_typography',
+                'selector' => '{{WRAPPER}} .lesson_content',
+            ]
+        );
+        $this->add_control(
+            'nslesson_content_color',
+            [
+                'label' => esc_html__('رنگ متن محتوا', 'nias-course-widget'),
+                'type' => \Elementor\Controls_Manager::COLOR,
+                'selectors' => [
+                    '{{WRAPPER}} .lesson_content' => 'color: {{VALUE}};',
+                ],
+            ]
+        );
+        $this->add_group_control(
+            \Elementor\Group_Control_Background::get_type(),
+            [
+                'name' => 'background_lesson_content',
+                'types' => ['classic', 'gradient'],
+                'selector' => '{{WRAPPER}} .lesson_content',
+            ]
+        );
+        $this->add_group_control(
+            \Elementor\Group_Control_Border::get_type(),
+            [
+                'name' => 'border_lesson_content',
+                'selector' => '{{WRAPPER}} .lesson_content',
+            ]
+        );
+        $this->add_responsive_control(
+            'nslesson_content_radius',
+            [
+                'label' => esc_html__('نرمی حاشیه', 'nias-course-widget'),
+                'type' => \Elementor\Controls_Manager::DIMENSIONS,
+                'size_units' => ['px', '%', 'em', 'rem', 'custom'],
+                'selectors' => [
+                    '{{WRAPPER}} .lesson_content' => 'border-radius: {{TOP}}{{UNIT}} {{RIGHT}}{{UNIT}} {{BOTTOM}}{{UNIT}} {{LEFT}}{{UNIT}};',
+                ],
+            ]
+        );
+        $this->add_responsive_control(
+            'nslesson_content_padding',
+            [
+                'label' => esc_html__('فاصله داخلی', 'nias-course-widget'),
+                'type' => \Elementor\Controls_Manager::DIMENSIONS,
+                'size_units' => ['px', '%', 'em', 'rem', 'custom'],
+                'selectors' => [
+                    '{{WRAPPER}} .lesson_content' => 'padding: {{TOP}}{{UNIT}} {{RIGHT}}{{UNIT}} {{BOTTOM}}{{UNIT}} {{LEFT}}{{UNIT}};',
+                ],
+            ]
+        );
         $this->end_controls_section();
     }
 
