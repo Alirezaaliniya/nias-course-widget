@@ -189,10 +189,16 @@ function nias_curriculum_inject_button()
         return;
     }
     global $post;
-    if (!$post || !$post->ID || $post->post_status === 'auto-draft') {
+    if (!$post || !$post->ID) {
         return;
     }
-    $url = admin_url('admin.php?page=nias-course-curriculum&product=' . intval($post->ID));
+    // A brand-new product is still an "auto-draft": it has an ID but hasn't been
+    // saved yet. The curriculum is stored per product-ID, and opening the editor
+    // is a full-page navigation that would discard the unsaved product form, so
+    // for new products we still show the button but disable it with a hint to
+    // save the product first.
+    $is_new = ($post->post_status === 'auto-draft');
+    $url    = admin_url('admin.php?page=nias-course-curriculum&product=' . intval($post->ID));
     ?>
     <style>
         .nias-curriculum-btn.page-title-action,
@@ -220,6 +226,16 @@ function nias_curriculum_inject_button()
             box-shadow: 0 12px 24px -8px rgba(37, 99, 235, .8);
             animation-play-state: paused;
         }
+        .nias-curriculum-btn.is-disabled,
+        .nias-curriculum-btn.is-disabled:hover,
+        .nias-curriculum-btn.is-disabled:focus {
+            background: linear-gradient(135deg, #94a3b8, #64748b);
+            box-shadow: none;
+            cursor: not-allowed;
+            transform: none;
+            animation: none;
+            opacity: .85;
+        }
         .nias-curriculum-btn .dashicons {
             width: 18px;
             height: 18px;
@@ -233,18 +249,35 @@ function nias_curriculum_inject_button()
     </style>
     <script>
     jQuery(function ($) {
-        var label = <?php echo wp_json_encode(__('ویرایش جلسات و فصل‌ها', 'nias-course-widget')); ?>;
-        var href  = <?php echo wp_json_encode($url); ?>;
+        var label   = <?php echo wp_json_encode(__('ویرایش جلسات و فصل‌ها', 'nias-course-widget')); ?>;
+        var href    = <?php echo wp_json_encode($url); ?>;
+        var isNew   = <?php echo $is_new ? 'true' : 'false'; ?>;
+        var saveMsg = <?php echo wp_json_encode(__('برای افزودن فصل و درس، ابتدا محصول را ذخیره کنید.', 'nias-course-widget')); ?>;
+        if ($('.nias-curriculum-btn').length) {
+            return;
+        }
+        // The ".page-title-action" ("Add New") button only exists on the list and
+        // edit-existing screens — not on post-new.php. Fall back to inserting after
+        // the page heading so the button is reachable when adding a new product.
         var $action = $('.wrap .page-title-action').first();
-        if (!$action.length || $('.nias-curriculum-btn').length) {
+        var $anchor = $action.length ? $action : $('.wrap h1.wp-heading-inline, #wpbody-content .wrap h1').first();
+        if (!$anchor.length) {
             return;
         }
         var $btn = $('<a>', {
-            'class': 'page-title-action nias-curriculum-btn',
-            'href': href
+            'class': 'page-title-action nias-curriculum-btn' + (isNew ? ' is-disabled' : ''),
+            'href': isNew ? '#' : href,
+            'title': isNew ? saveMsg : label
         });
         $btn.html('<span class="dashicons dashicons-welcome-learn-more"></span>' + $('<span>').text(label).html());
-        $btn.insertAfter($action);
+        if (isNew) {
+            $btn.attr('aria-disabled', 'true');
+            $btn.on('click', function (e) {
+                e.preventDefault();
+                window.alert(saveMsg);
+            });
+        }
+        $btn.insertAfter($anchor);
     });
     </script>
     <?php
@@ -640,7 +673,7 @@ function nias_curriculum_styles()
     #nias-cur-app, #nias-cur-app *{box-sizing:border-box}
     #nias-cur-app{
         --acc:#2563eb;--deep:#2159d3;--soft:#e9effd;--soft2:#dce6fc;--bord:#a8c1f7;--ring:rgba(37,99,235,.18);
-        font-family:'Vazirmatn',sans-serif;color:#1f2733;margin:-10px -20px 0 -20px;min-height:calc(100vh - 32px);
+        font-family:'Vazirmatn',sans-serif;color:#1f2733;margin:0;min-height:calc(100vh - 32px);
         padding:24px 22px 60px;background:radial-gradient(1200px 600px at 80% -10%, #e8effb 0%, rgba(232,239,251,0) 55%), #eef2f7;
         -webkit-font-smoothing:antialiased;
     }
