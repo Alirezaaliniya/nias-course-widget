@@ -24,6 +24,7 @@ function nias_settings_main_fields()
         'nias_spotplayer_enabled'     => 'radio',
         'nias_instructors_enabled'    => 'radio',
         'nias_quiz_enabled'           => 'radio',
+        'nias_meta_enabled'           => 'radio',
         'nias_modern_course'          => 'radio',
     );
 }
@@ -231,11 +232,13 @@ function nias_settings_topbar($active)
     $spot_on  = carbon_get_theme_option('nias_spotplayer_enabled') === 'on';
     $inst_on  = function_exists('nias_instructors_enabled') && nias_instructors_enabled();
     $quiz_on  = function_exists('nias_quiz_enabled') && nias_quiz_enabled();
+    $meta_on  = function_exists('nias_meta_enabled') && nias_meta_enabled();
     $main_url = admin_url('admin.php?page=nias-course-settings');
     $cert_url = admin_url('admin.php?page=nias-course-certificate');
     $spot_url = admin_url('admin.php?page=nias-spotplayer-license');
     $inst_url = admin_url('admin.php?page=nias-course-instructors');
     $quiz_url = admin_url('admin.php?page=nias-course-quiz');
+    $meta_url = admin_url('admin.php?page=nias-course-meta');
     ?>
     <div class="nias-set-bar">
         <div class="nias-set-bar-inner">
@@ -264,6 +267,9 @@ function nias_settings_topbar($active)
                 <?php endif; ?>
                 <?php if ($quiz_on) : ?>
                     <a href="<?php echo esc_url($quiz_url); ?>" class="nias-tab <?php echo $active === 'quiz' ? 'active' : ''; ?>"><?php echo esc_html__('آزمون‌ساز', 'nias-course-widget'); ?> <span class="nias-tab-badge"><?php echo esc_html__('فعال', 'nias-course-widget'); ?></span></a>
+                <?php endif; ?>
+                <?php if ($meta_on) : ?>
+                    <a href="<?php echo esc_url($meta_url); ?>" class="nias-tab <?php echo $active === 'meta' ? 'active' : ''; ?>"><?php echo esc_html__('متا', 'nias-course-widget'); ?> <span class="nias-tab-badge"><?php echo esc_html__('فعال', 'nias-course-widget'); ?></span></a>
                 <?php endif; ?>
             </div>
         </div>
@@ -488,7 +494,7 @@ function nias_course_render_main_settings()
                     <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M12 9v4m0 4h.01M10.3 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.7 3.86a2 2 0 0 0-3.42 0Z" stroke="#ef4444" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
                 </div>
                 <div class="nias-alert-body">
-                    <div class="nias-alert-title"><?php echo esc_html__('انتقال دیتا‌ها به دوره ساز جدید', 'nias-course-widget'); ?></div>
+                    <div class="nias-alert-title"><?php echo esc_html__('انتقال دیتا‌ها به دوره ساز مخصوص ورژن 1.1.5 به قبل', 'nias-course-widget'); ?></div>
                     <div class="nias-alert-desc"><?php echo esc_html__('چنانچه از ویجت ووکامرس دوره ساز استفاده می‌کردید و مشکلاتی را در آپدیت جدید مشاهده می‌کنید، جهت انتقال داده‌ها به ویرایشگر جدید کلیک کنید. حتماً پیش از انتقال از سایت بک‌اپ تهیه کنید.', 'nias-course-widget'); ?></div>
                     <form method="post" style="margin:0">
                         <?php wp_nonce_field('migrate_courses_nonce', '_wpnonce', true, true); ?>
@@ -544,6 +550,13 @@ function nias_course_render_main_settings()
                         'off',
                         __('آزمون', 'nias-course-widget')
                     );
+                    nias_set_toggle_row(
+                        'nias_meta_enabled',
+                        __('فعالسازی متا', 'nias-course-widget'),
+                        __('با فعال کردن این گزینه، تب «متا» نمایش داده می‌شود؛ از آنجا می‌توانید متاهای سفارشی (نام و کلید) بسازید. سپس مقدار هر متا را در صفحهٔ «ویرایش جلسات و فصل‌ها» هر محصول وارد کرده و با شورت‌کد <code dir="ltr">[nias_meta key="..."]</code> نمایش دهید.', 'nias-course-widget'),
+                        'off',
+                        __('متا', 'nias-course-widget')
+                    );
                     ?>
                 <?php nias_set_card_close(); ?>
 
@@ -585,20 +598,17 @@ function nias_course_render_main_settings()
             <!-- Help / tutorials -->
             <?php nias_set_card_open('<svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="m10 8 6 4-6 4V8Z" fill="#3858e9"/><rect x="2" y="4" width="20" height="16" rx="3" stroke="#3858e9" stroke-width="1.8"/></svg>', __('آموزش استفاده از افزونه', 'nias-course-widget')); ?>
                 <div class="nias-card-pad">
-                    <div class="nias-vid-grid">
-                        <div>
-                            <div class="nias-vid-label"><?php echo esc_html__('پارت ۱', 'nias-course-widget'); ?></div>
-                            <div class="h_iframe-aparat_embed_frame nias-vid">
-                                <span style="display:block;padding-top:57%"></span>
-                                <iframe src="https://www.aparat.com/video/video/embed/videohash/b90c8sh/vt/frame?titleShow=true&recom=self" allowFullScreen="true" webkitallowfullscreen="true" mozallowfullscreen="true"></iframe>
-                            </div>
-                        </div>
-                        <div>
-                            <div class="nias-vid-label"><?php echo esc_html__('پارت ۲', 'nias-course-widget'); ?></div>
-                            <div class="h_iframe-aparat_embed_frame nias-vid">
-                                <span style="display:block;padding-top:57%"></span>
-                                <iframe src="https://www.aparat.com/video/video/embed/videohash/lcd5qbk/vt/frame" allowFullScreen="true" webkitallowfullscreen="true" mozallowfullscreen="true"></iframe>
-                            </div>
+                    <div class="nias-vid-note" style="display:flex;flex-wrap:wrap;align-items:center;justify-content: space-between;gap:14px;padding:16px 18px;background:#f1f4f9;border:1px solid #e2e6ee;border-radius:12px">
+                        <span style="font-size:15px;font-weight:700;color:#33415c;line-height:2;text-align:center"><?php echo esc_html__('آموزش های کارکردن با پلاگین دوره ساز را از آپارات نیاس و یوتیوب نیاس دنبال کنید', 'nias-course-widget'); ?></span>
+                        <div style="display:flex;gap:10px;flex-wrap:wrap">
+                            <a href="https://www.aparat.com/playlist/26525943/" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:7px;height:40px;padding:0 16px;border-radius:10px;background:#ed145b;color:#fff;font-size:14px;font-weight:700;text-decoration:none">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 4.2a5.8 5.8 0 1 1 0 11.6 5.8 5.8 0 0 1 0-11.6zm0 2.3a3.5 3.5 0 1 0 0 7 3.5 3.5 0 0 0 0-7z"/></svg>
+                                <?php echo esc_html__('آپارات نیاس', 'nias-course-widget'); ?>
+                            </a>
+                            <a href="https://www.youtube.com/watch?v=WyBlPnjvVv4&list=PLl88gtSh81bU57NKRpZqoAZaFJCok7-mx" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:7px;height:40px;padding:0 16px;border-radius:10px;background:#ff0000;color:#fff;font-size:14px;font-weight:700;text-decoration:none">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M23.5 6.2a3 3 0 0 0-2.1-2.1C19.5 3.5 12 3.5 12 3.5s-7.5 0-9.4.6A3 3 0 0 0 .5 6.2 31 31 0 0 0 0 12a31 31 0 0 0 .5 5.8 3 3 0 0 0 2.1 2.1c1.9.6 9.4.6 9.4.6s7.5 0 9.4-.6a3 3 0 0 0 2.1-2.1A31 31 0 0 0 24 12a31 31 0 0 0-.5-5.8zM9.6 15.6V8.4l6.3 3.6-6.3 3.6z"/></svg>
+                                <?php echo esc_html__('یوتیوب نیاس', 'nias-course-widget'); ?>
+                            </a>
                         </div>
                     </div>
 
@@ -800,7 +810,8 @@ function nias_course_settings_assets($hook)
         strpos($hook, 'nias-course-certificate') === false &&
         strpos($hook, 'nias-spotplayer-license') === false &&
         strpos($hook, 'nias-course-instructors') === false &&
-        strpos($hook, 'nias-course-quiz') === false
+        strpos($hook, 'nias-course-quiz') === false &&
+        strpos($hook, 'nias-course-meta') === false
     ) {
         return;
     }

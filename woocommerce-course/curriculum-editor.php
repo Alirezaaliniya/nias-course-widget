@@ -338,6 +338,11 @@ function nias_curriculum_ajax_save()
         nias_spot_store_course_meta($product_id, wp_unslash($_POST['spot_license_course']));
     }
 
+    // Custom product meta values (when the feature is enabled).
+    if (function_exists('nias_meta_enabled') && nias_meta_enabled() && isset($_POST['meta_values'])) {
+        nias_meta_save_product_values($product_id, wp_unslash($_POST['meta_values']));
+    }
+
     wp_send_json_success(array('message' => __('تغییرات ذخیره شد.', 'nias-course-widget')));
 }
 
@@ -510,6 +515,8 @@ function nias_curriculum_render_page()
                     <div class="nc-ed-foot" id="nc-ed-foot"></div>
                 </div>
             </div>
+
+            <?php nias_meta_render_curriculum_box($product_id); ?>
         </div>
 
         <div id="nc-modal-root"></div>
@@ -1380,6 +1387,14 @@ function nias_curriculum_script()
                 var instIds = [];
                 for (var ci = 0; ci < instCbs.length; ci++) { if (instCbs[ci].checked) instIds.push(instCbs[ci].value); }
                 body.append('instructors', instIds.join(','));
+            }
+            var metaInputs = document.querySelectorAll('[data-nias-meta-key]');
+            if (metaInputs.length) {
+                var metaVals = {};
+                for (var mi = 0; mi < metaInputs.length; mi++) {
+                    metaVals[metaInputs[mi].getAttribute('data-nias-meta-key')] = metaInputs[mi].value;
+                }
+                body.append('meta_values', JSON.stringify(metaVals));
             }
             fetch(DATA.ajaxUrl, { method: 'POST', credentials: 'same-origin', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body: body.toString() })
                 .then(function (r) { return r.json(); })
