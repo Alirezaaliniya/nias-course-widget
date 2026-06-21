@@ -1274,7 +1274,7 @@ class Nias_course_woocommerce extends \Elementor\Widget_Base
                                                                     $download_url = $download['file_url'];
                                                                 }
                                                                 if ($download_url) { ?>
-                                                                    <a class="nsdownload-button nias-course-icon" target="_blank" href="<?php echo esc_url($download_url); ?>">
+                                                                    <a class="nsdownload-button nias-course-icon" target="_blank" download href="<?php echo esc_url($download_url); ?>">
                                                                         <i><?php \Elementor\Icons_Manager::render_icon($settings['nsdownloadicon'], ['aria-hidden' => 'true']); ?></i>
                                                                     </a>
                                                             <?php }

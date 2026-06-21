@@ -57,13 +57,20 @@ document.addEventListener("DOMContentLoaded", function() {
 });
 jQuery(document).ready(function($) {
     // باز و بسته کردن فصل‌ها
-    $('.toggle_section').on('click', function() {
+    // از بایند تفویض‌شده (delegated) استفاده می‌کنیم تا در ویرایشگر المنتور هم که
+    // ویجت پس از آماده‌شدن صفحه و به‌صورت پویا رندر/بازرندر می‌شود، کار کند.
+    $(document).on('click', '.toggle_section', function() {
         $(this).closest('.nias_course_section').find('.section_content').slideToggle();
         $(this).toggleClass('active');
     });
 
     // باز و بسته کردن دروس
-    $('.toggle_lesson').on('click', function() {
+    $(document).on('click', '.toggle_lesson', function(e) {
+        // کلیک روی دکمه‌های پیش‌نمایش/دانلود (یا هر لینک دیگری) نباید
+        // آکاردئون درس را باز/بسته کند؛ فقط بگذار خود لینک عمل کند.
+        if ($(e.target).closest('a, .nias-preview-tag, .nsdownload-button').length) {
+            return;
+        }
         $(this).closest('.lesson_item').find('.lesson_content').slideToggle();
         $(this).toggleClass('active');
 
