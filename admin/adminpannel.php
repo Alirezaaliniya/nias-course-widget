@@ -495,7 +495,7 @@ function nias_course_render_main_settings()
                     <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M12 9v4m0 4h.01M10.3 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.7 3.86a2 2 0 0 0-3.42 0Z" stroke="#ef4444" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
                 </div>
                 <div class="nias-alert-body">
-                    <div class="nias-alert-title"><?php echo esc_html__('انتقال دیتا‌ها به دوره ساز مخصوص ورژن 1.1.5 به قبل', 'nias-course-widget'); ?></div>
+                    <div class="nias-alert-title"><?php echo esc_html__(' انتقال دیتا ها به دوره ساز جدید (برای نسخه های قبل از  1.1.5) ', 'nias-course-widget'); ?></div>
                     <div class="nias-alert-desc"><?php echo esc_html__('چنانچه از ویجت ووکامرس دوره ساز استفاده می‌کردید و مشکلاتی را در آپدیت جدید مشاهده می‌کنید، جهت انتقال داده‌ها به ویرایشگر جدید کلیک کنید. حتماً پیش از انتقال از سایت بک‌اپ تهیه کنید.', 'nias-course-widget'); ?></div>
                     <form method="post" style="margin:0">
                         <?php wp_nonce_field('migrate_courses_nonce', '_wpnonce', true, true); ?>
