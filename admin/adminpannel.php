@@ -245,7 +245,7 @@ function nias_settings_topbar($active)
         <div class="nias-set-bar-inner">
             <div class="nias-brand">
                 <div class="nias-brand-logo">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M4 6.5C4 5.67 4.67 5 5.5 5H11v14H5.5A1.5 1.5 0 0 1 4 17.5v-11Z" fill="#fff" opacity=".9"/><path d="M20 6.5C20 5.67 19.33 5 18.5 5H13v14h5.5a1.5 1.5 0 0 0 1.5-1.5v-11Z" fill="#fff"/></svg>
+                    <img src="<?php echo esc_url(plugin_dir_url(__DIR__) . 'assets/logons.gif'); ?>" alt="<?php echo esc_attr__('دوره ساز نیاس', 'nias-course-widget'); ?>" width="24" height="24" style="display:block">
                 </div>
                 <div>
                     <div class="nias-brand-title"><?php echo esc_html__('دوره ساز نیاس', 'nias-course-widget'); ?></div>
@@ -429,7 +429,7 @@ function nias_settings_ads_sidebar()
             'title'  => __('بهینه‌ترین افزونه ورود و ثبت‌نام پیامکی', 'nias-course-widget'),
             'desc'   => __('ورود و عضویت سریع کاربران با پیامک؛ سبک، سازگار با ووکامرس و بهینه برای سرعت سایت.', 'nias-course-widget'),
             'cta'    => __('مشاهده افزونه', 'nias-course-widget'),
-            'url'    => 'https://nias.ir/',
+            'url'    => 'https://nias.ir/product/nias-login-signup/',
             'accent' => '#16a34a',
             'icon'   => '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-8.5 8.5 8.5 8.5 0 0 1-3.8-.9L3 21l1.9-5.7A8.5 8.5 0 1 1 21 11.5Z"/><path d="M8 11h.01M12 11h.01M16 11h.01"/></svg>',
         ),

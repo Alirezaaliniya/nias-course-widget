@@ -4,7 +4,12 @@
   left: 0!important;
   margin: 0 0 0 20px!important;
 }
-
+.nias-brand-logo img {
+    width: 100%;
+    object-fit: contain;
+    height: 100%;
+    border-radius: 10px;
+}
 .nias-toggle-switch .cf-radio__list {
           display: flex;
           background: #e4e4e4;
