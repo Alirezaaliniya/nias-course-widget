@@ -1304,9 +1304,13 @@ function nias_modern_course_takeover()
     <meta name="robots" content="noindex,nofollow">
     <title><?php echo esc_html($title); ?></title>
     <style>
+        /* Focused (standalone) view has no theme, so load Vazir for a consistent
+           Persian look (the shortcode/auto in-page mode still inherits the theme font). */
+        @font-face{font-family:'Vazir';src:url('<?php echo esc_url(NIAS_FONTS_URL . 'Vazir.ttf'); ?>') format('truetype');font-weight:400;font-style:normal;font-display:swap}
+        @font-face{font-family:'Vazir';src:url('<?php echo esc_url(NIAS_FONTS_URL . 'Vazir-Medium.ttf'); ?>') format('truetype');font-weight:500;font-style:normal;font-display:swap}
+        @font-face{font-family:'Vazir';src:url('<?php echo esc_url(NIAS_FONTS_URL . 'Vazir-Bold.ttf'); ?>') format('truetype');font-weight:700;font-style:normal;font-display:swap}
         html,body{margin:0;padding:0;background:#eef1f4}
-        /* Focused view has no theme: use the system font (no web font loaded). */
-        body{font-family:system-ui,-apple-system,"Segoe UI",Tahoma,Arial,sans-serif}
+        body{font-family:'Vazir',system-ui,-apple-system,"Segoe UI",Tahoma,Arial,sans-serif}
         .nmc-sa-bar{position:sticky;top:0;z-index:10;display:flex;align-items:center;gap:14px;background:#fff;border-bottom:1px solid #e9ecef;padding:12px 18px;font-family:inherit}
         .nmc-sa-back{display:inline-flex;align-items:center;gap:7px;font-size:14px;font-weight:700;color:#1e83f0;text-decoration:none;background:#eef4fe;border-radius:10px;padding:9px 16px}
         .nmc-sa-back:hover{background:#e0ecfd}
