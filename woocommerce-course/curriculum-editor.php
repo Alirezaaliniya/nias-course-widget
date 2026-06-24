@@ -21,7 +21,7 @@ if (!defined('ABSPATH')) {
  * (Leaving them as '#' simply renders the buttons as disabled placeholders.)
  */
 if (!defined('NIAS_SPOT_EXT_DOWNLOAD_URL')) {
-    define('NIAS_SPOT_EXT_DOWNLOAD_URL', '#');
+    define('NIAS_SPOT_EXT_DOWNLOAD_URL', 'https://github.com/Alirezaaliniya/nias-spot-exporter');
 }
 if (!defined('NIAS_SPOT_EXT_TUTORIAL_URL')) {
     define('NIAS_SPOT_EXT_TUTORIAL_URL', '#');

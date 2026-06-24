@@ -1125,52 +1125,21 @@ class Nias_course_woocommerce extends \Elementor\Widget_Base
             if (!empty($current_user->ID) && isset($post) && !empty($post->ID)) {
                 $product_id = $post->ID;
 
-                // Check two-way verification toggle status
-                $two_way_verification = carbon_get_theme_option('nias_two_way_verification');
-
-                if ($two_way_verification === 'on') {
-                    // Two-way verification mode is active
-                    // Check using both methods
-                    $wc_bought = wc_customer_bought_product($current_user->user_login, $current_user->ID, $product_id);
-                    $order_bought = false;
-
-                    // Check orders with 'wc-completed' status
-                    $args = [
-                        'customer_id' => $current_user->ID,
-                        'limit'       => -1,
-                        'status'      => 'wc-completed',
-                    ];
-                    $orders = wc_get_orders($args);
-                    foreach ($orders as $order) {
-                        foreach ($order->get_items() as $item) {
-                            if ($item->get_product_id() == $product_id) {
-                                $order_bought = true;
-                                break 2; // Exit both loops after finding the purchase
-                            }
-                        }
-                    }
-
-                    // Course is considered purchased only if both methods confirm
-                    $bought_course = ($wc_bought || $order_bought);
-                } else {
-                    // Normal mode - one method confirmation is sufficient
-                    if (wc_customer_bought_product($current_user->user_login, $current_user->ID, $product_id)) {
-                        $bought_course = true;
-                    } else {
-                        // Check orders with 'wc-completed' status
-                        $args = [
-                            'customer_id' => $current_user->ID,
-                            'limit'       => -1,
-                            'status'      => 'wc-completed',
-                        ];
-                        $orders = wc_get_orders($args);
-                        foreach ($orders as $order) {
-                            foreach ($order->get_items() as $item) {
-                                if ($item->get_product_id() == $product_id) {
-                                    $bought_course = true;
-                                    break 2; // Exit both loops after finding the purchase
-                                }
-                            }
+                // Access is granted only by a 'wc-completed' order. Paid-but-not-
+                // completed orders (e.g. 'processing') — or an order whose status
+                // later moves away from completed — do not grant access, so we do
+                // not use wc_customer_bought_product (which counts any paid order).
+                $args = [
+                    'customer_id' => $current_user->ID,
+                    'limit'       => -1,
+                    'status'      => 'wc-completed',
+                ];
+                $orders = wc_get_orders($args);
+                foreach ($orders as $order) {
+                    foreach ($order->get_items() as $item) {
+                        if ($item->get_product_id() == $product_id) {
+                            $bought_course = true;
+                            break 2; // Exit both loops after finding the purchase
                         }
                     }
                 }
@@ -1242,7 +1211,9 @@ class Nias_course_woocommerce extends \Elementor\Widget_Base
                                                 <div class="nias-left-head">
                                                     <?php
                                                     // Handle preview video
-                                                    if (!empty($lesson['lesson_preview_video'])) {
+                                                    // A private lesson's preview is shown to buyers only,
+                                                    // unless the "lock preview" option is turned off.
+                                                    if (!empty($lesson['lesson_preview_video']) && (empty($lesson['lesson_private']) || $bought_course || !nias_course_lock_part('preview'))) {
                                                         $preview_video = $lesson['lesson_preview_video'][0];
                                                         $video_url = '';
                                                         if ($preview_video['video_type'] === 'upload' && !empty($preview_video['video_upload'])) {
@@ -1264,7 +1235,7 @@ class Nias_course_woocommerce extends \Elementor\Widget_Base
 
                                                     // Handle lesson download and private content
                                                     if ($lesson['lesson_private']) {
-                                                        if ($bought_course) {
+                                                        if ($bought_course || !nias_course_lock_part('attachments')) {
                                                             if (!empty($lesson['lesson_download'])) {
                                                                 $download = $lesson['lesson_download'][0];
                                                                 $download_url = '';
@@ -1315,7 +1286,7 @@ class Nias_course_woocommerce extends \Elementor\Widget_Base
                                             <div class="lesson_content" style="display: none;">
                                                 <?php
                                                 if ($lesson['lesson_private']) {
-                                                    if ($bought_course) {
+                                                    if ($bought_course || !nias_course_lock_part('content')) {
                                                         echo $lesson['lesson_content'];
                                                     } else {
                                                         echo $settings['nsprivatetextcontent'];

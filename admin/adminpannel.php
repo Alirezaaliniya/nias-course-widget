@@ -27,7 +27,42 @@ function nias_settings_main_fields()
         'nias_quiz_enabled'           => 'radio',
         'nias_meta_enabled'           => 'radio',
         'nias_modern_course'          => 'radio',
+        'nias_lock_private_preview'   => 'radio',
+        'nias_lock_private_content'   => 'radio',
+        'nias_lock_private_attachments' => 'radio',
     );
+}
+
+/**
+ * Which parts of a private lesson are locked for users who have not purchased.
+ *
+ * Each part maps to one underlying lesson field, so the rule is consistent
+ * across every view (modern course view, account view and the Elementor widget):
+ *   - preview     => lesson_preview_video  (پیش‌نمایش / ویدیوی درس)
+ *   - content     => lesson_content        (توضیحات / محتوای درس)
+ *   - attachments => lesson_download       (منابع و پیوست / فایل دانلودی)
+ *
+ * Default is "locked" (on) when the option was never saved, so existing sites
+ * keep the previous fully-locked behaviour untouched.
+ *
+ * @param string $part preview|content|attachments
+ * @return bool true when that part must be hidden from non-purchasers.
+ */
+function nias_course_lock_part($part)
+{
+    $map = array(
+        'preview'     => 'nias_lock_private_preview',
+        'content'     => 'nias_lock_private_content',
+        'attachments' => 'nias_lock_private_attachments',
+    );
+    if (!isset($map[$part]) || !function_exists('carbon_get_theme_option')) {
+        return true;
+    }
+    $val = carbon_get_theme_option($map[$part]);
+    if ($val === '' || $val === false || $val === null) {
+        return true; // never saved → keep the default locked behaviour
+    }
+    return ($val === 'on');
 }
 
 function nias_settings_certificate_fields()
@@ -595,9 +630,36 @@ function nias_course_render_main_settings()
                                 <div class="nias-sc-item"><code dir="ltr">[nias_modern_course_lesson]</code><span><?php echo esc_html__('نوار اطلاعات درس (ناوبری و توضیحات/منابع)', 'nias-course-widget'); ?></span></div>
                                 <div class="nias-sc-item"><code dir="ltr">[nias_modern_course_curriculum]</code><span><?php echo esc_html__('فهرست فصل‌ها و جلسات', 'nias-course-widget'); ?></span></div>
                                 <div class="nias-sc-item"><code dir="ltr">[nias_modern_course_certificate]</code><span><?php echo esc_html__('بخش گواهی پایان دوره', 'nias-course-widget'); ?></span></div>
+                                <div class="nias-sc-item"><code dir="ltr">[nias_modern_course_button]</code><span><?php echo esc_html__('دکمهٔ ورود به محیط دوره مدرن (مستقل از حالت نمایش)', 'nias-course-widget'); ?></span></div>
                             </div>
                         </div>
                     </div>
+                <?php nias_set_card_close(); ?>
+
+                <?php nias_set_card_open('<svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M5 11h14v9H5z" stroke="#3858e9" stroke-width="1.8" stroke-linejoin="round"/><path d="M8 11V7a4 4 0 0 1 8 0v4" stroke="#3858e9" stroke-width="1.8" stroke-linecap="round"/></svg>', __('قفل درس‌های خصوصی', 'nias-course-widget')); ?>
+                    <div class="nias-row-block">
+                        <div class="nias-row-desc"><?php echo esc_html__('برای درس‌هایی که «خصوصی» هستند و کاربر هنوز دوره را خریداری نکرده، انتخاب کنید کدام بخش‌ها قفل (مخفی) شوند. این تنظیم روی نمای دوره مدرن، نمایش حساب کاربری و ویجت ووکامرس المنتور اعمال می‌شود. پیش‌فرض همهٔ موارد «قفل» است.', 'nias-course-widget'); ?></div>
+                    </div>
+                    <?php
+                    nias_set_toggle_row(
+                        'nias_lock_private_preview',
+                        __('قفل پیش‌نمایش / ویدیوی درس', 'nias-course-widget'),
+                        __('در نمای حساب کاربری و ویجت، لینک «پیش‌نمایش» و در نمای دوره مدرن، پلیر ویدیوی درس را برای کاربری که دوره را نخریده مخفی می‌کند.', 'nias-course-widget'),
+                        'on'
+                    );
+                    nias_set_toggle_row(
+                        'nias_lock_private_content',
+                        __('قفل توضیحات / محتوای درس', 'nias-course-widget'),
+                        __('محتوای متنی درس (توضیحات و درس‌های متنی) را برای کاربری که دوره را نخریده مخفی می‌کند.', 'nias-course-widget'),
+                        'on'
+                    );
+                    nias_set_toggle_row(
+                        'nias_lock_private_attachments',
+                        __('قفل منابع و پیوست (فایل دانلودی)', 'nias-course-widget'),
+                        __('فایل دانلودی و منابع و پیوست‌های درس را برای کاربری که دوره را نخریده مخفی می‌کند.', 'nias-course-widget'),
+                        'on'
+                    );
+                    ?>
                 <?php nias_set_card_close(); ?>
 
                 <?php nias_set_save_button('nias_save_main_settings'); ?>

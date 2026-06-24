@@ -213,10 +213,41 @@ function nias_modern_course_build_data($product_id)
     foreach ($chapters_src as $ci => $chap) {
         $lessons = array();
         foreach ((isset($chap['lessons']) ? $chap['lessons'] : array()) as $li => $les) {
-            $video_url = nias_modern_course_media_url(isset($les['video']) ? $les['video'] : array());
-            $file_url  = nias_modern_course_media_url(isset($les['file']) ? $les['file'] : array());
-            $content   = nias_modern_course_render_content(isset($les['content']) ? $les['content'] : '');
-            $private   = !empty($les['private']);
+            $private = !empty($les['private']);
+            $base    = ($private && !$purchased);
+
+            // Per-part access: a private, unpurchased lesson hides only the parts
+            // the admin chose to lock (تنظیمات «قفل درس‌های خصوصی»). Each part maps
+            // to one underlying field, consistent with the account/widget views:
+            //   preview→video, content→description/text, attachments→file.
+            $has_lock_fn  = function_exists('nias_course_lock_part');
+            $lock_video   = $base && (!$has_lock_fn || nias_course_lock_part('preview'));
+            $lock_content = $base && (!$has_lock_fn || nias_course_lock_part('content'));
+            $lock_attach  = $base && (!$has_lock_fn || nias_course_lock_part('attachments'));
+
+            // Raw values (before stripping) — used to decide the player lock cover.
+            $raw_video    = nias_modern_course_media_url(isset($les['video']) ? $les['video'] : array());
+            $raw_file     = nias_modern_course_media_url(isset($les['file']) ? $les['file'] : array());
+            $raw_content  = nias_modern_course_render_content(isset($les['content']) ? $les['content'] : '');
+            $raw_has_text = (trim(wp_strip_all_tags($raw_content)) !== '' || preg_match('/<(iframe|img|video|audio|embed|source|figure)\b/i', $raw_content));
+            $text_primary = ($raw_video === '' && $raw_file === '' && $raw_has_text);
+
+            // Strip the locked parts so they never reach the browser.
+            $video_url = $lock_video   ? '' : $raw_video;
+            $file_url  = $lock_attach  ? '' : $raw_file;
+            $content   = $lock_content ? '' : $raw_content;
+
+            // The player shows a lock cover when the lesson's PRIMARY medium is
+            // locked (video first, then a downloadable file, then text).
+            if ($raw_video !== '') {
+                $player_locked = $lock_video;
+            } elseif ($raw_file !== '') {
+                $player_locked = $lock_attach;
+            } elseif ($raw_has_text) {
+                $player_locked = $lock_content;
+            } else {
+                $player_locked = false;
+            }
 
             $lessons[] = array(
                 'id'           => 'c' . $ci . 'l' . $li,
@@ -224,7 +255,11 @@ function nias_modern_course_build_data($product_id)
                 'label'        => isset($les['label']) ? $les['label'] : '',
                 'duration'     => isset($les['duration']) ? $les['duration'] : '',
                 'private'      => $private,
-                'locked'       => ($private && !$purchased),
+                'locked'       => $player_locked,
+                // Tab-level "withheld because private" flags, so the info bar shows
+                // a clear private notice instead of an "empty" message.
+                'lockedDesc'   => ($lock_content && !$text_primary && $raw_has_text),
+                'lockedRes'    => ($lock_attach && $raw_file !== ''),
                 'videoKind'    => $video_url ? (nias_modern_course_is_video_file($video_url) ? 'file' : 'embed') : '',
                 'videoSrc'     => $video_url,
                 'downloadUrl'  => $file_url,
@@ -429,7 +464,7 @@ function nias_modern_course_assets()
     .nmc-chip{display:inline-flex;align-items:center;gap:5px;background:#f1f4f6;color:#5b666c;font-size:12px;font-weight:600;padding:4px 10px;border-radius:99px}
     .nmc-chip.muted{background:none;color:#7b868a;padding:0}
     .nmc-info-title{margin:0;font-size:20px;font-weight:700}
-    .nmc-nav{display:flex;align-items:center;gap:9px;flex-wrap:wrap}
+    .nmc-nav{display:flex;align-items:center;gap:9px;flex-wrap:wrap;flex-direction: row-reverse;}
     .nmc-btn{display:inline-flex;align-items:center;gap:6px;font-family:inherit;font-size:13px;font-weight:600;padding:10px 16px;border-radius:10px;cursor:pointer;border:1px solid #e1e6e9;background:#fff;color:#3a464c}
     .nmc-btn:disabled,.nmc-btn.off{opacity:.45;pointer-events:none}
     .nmc-btn.primary{border:0;background:var(--nmc-accent,#1e83f0);color:#fff;font-weight:700}
@@ -795,9 +830,18 @@ function nias_modern_course_script()
             var tab = this.state.tab;
             var body;
             if (tab === 'desc') {
-                var descHtml = (this.playerType(cur) === 'text') ? '' : (cur.content || '');
-                body = descHtml ? '<div class="nmc-desc">' + descHtml + '</div>'
-                                : '<div class="nmc-empty">برای این درس توضیحی ثبت نشده است.</div>';
+                if (cur.lockedDesc) {
+                    // Description withheld server-side because the lesson is private
+                    // and "lock content" is enabled — show a clear private notice.
+                    body = '<div class="nmc-empty">توضیحات این درس خصوصی است؛ برای مشاهده باید دوره را تهیه کنید.</div>';
+                } else {
+                    var descHtml = (this.playerType(cur) === 'text') ? '' : (cur.content || '');
+                    body = descHtml ? '<div class="nmc-desc">' + descHtml + '</div>'
+                                    : '<div class="nmc-empty">برای این درس توضیحی ثبت نشده است.</div>';
+                }
+            } else if (cur.lockedRes) {
+                // Resources/attachments withheld server-side for a private lesson.
+                body = '<div class="nmc-empty">منابع و پیوست این درس خصوصی است؛ برای دسترسی باید دوره را تهیه کنید.</div>';
             } else {
                 if (resources.length) {
                     body = '<div class="nmc-reslist">' + resources.map(function (r) {
@@ -1114,6 +1158,68 @@ function nias_modern_course_has_curriculum($product_id)
 {
     $sections = carbon_get_post_meta($product_id, 'course_sections');
     return is_array($sections) && !empty($sections);
+}
+
+/** Print the inline "enter modern course" button style once per request. */
+function nias_modern_course_button_assets()
+{
+    static $printed = false;
+    if ($printed) {
+        return;
+    }
+    $printed = true;
+    ?>
+    <style>
+    .nmc-enter-btn{display:inline-flex;align-items:center;gap:10px;font-family:inherit;font-size:15px;font-weight:800;color:#fff;text-decoration:none;border:0;border-radius:99px;padding:13px 26px;cursor:pointer;background:linear-gradient(135deg,#1e83f0,#0e6fd6);box-shadow:0 12px 30px -8px rgba(30,131,240,.7);transition:transform .15s ease,box-shadow .15s ease}
+    .nmc-enter-btn:hover{transform:translateY(-2px);color:#fff;box-shadow:0 16px 40px -8px rgba(30,131,240,.95)}
+    .nmc-enter-btn svg{flex:none}
+    .nmc-enter-dot{width:9px;height:9px;border-radius:50%;background:#9bff5f;box-shadow:0 0 0 0 rgba(155,255,95,.7);animation:nmc-enter-dot 1.4s ease-out infinite}
+    @keyframes nmc-enter-dot{0%{box-shadow:0 0 0 0 rgba(155,255,95,.7)}70%{box-shadow:0 0 0 10px rgba(155,255,95,0)}100%{box-shadow:0 0 0 0 rgba(155,255,95,0)}}
+    </style>
+    <?php
+}
+
+/**
+ * Shortcode: a button that opens the focused, full-screen modern course view.
+ *
+ *   [nias_modern_course_button]               current product
+ *   [nias_modern_course_button id="123"]      a specific product
+ *   [nias_modern_course_button text="..."]    custom label
+ *   [nias_modern_course_button class="..."]   extra CSS class(es)
+ *
+ * Renders whenever the resolved product has a curriculum. The focused
+ * ?nias_modern=1 view is available regardless of the global modern-course mode,
+ * so this button works the same way (unlike the per-section shortcodes, which
+ * are tied to «نمایش دستی با شورت‌کد»).
+ */
+add_shortcode('nias_modern_course_button', 'nias_modern_course_button_shortcode');
+function nias_modern_course_button_shortcode($atts)
+{
+    $atts = shortcode_atts(array(
+        'id'    => 0,
+        'text'  => '',
+        'class' => '',
+    ), $atts, 'nias_modern_course_button');
+
+    $product_id = nias_modern_course_resolve_pid(array('id' => $atts['id']));
+    if (!$product_id || !nias_modern_course_has_curriculum($product_id)) {
+        return '';
+    }
+
+    $url   = add_query_arg(NIAS_MODERN_QV, '1', get_permalink($product_id));
+    $label = ($atts['text'] !== '') ? $atts['text'] : __('ورود به محیط دوره مدرن', 'nias-course-widget');
+    $class = trim('nmc-enter-btn ' . sanitize_text_field($atts['class']));
+
+    ob_start();
+    nias_modern_course_button_assets();
+    ?>
+    <a class="<?php echo esc_attr($class); ?>" href="<?php echo esc_url($url); ?>" dir="rtl">
+        <span class="nmc-enter-dot"></span>
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg>
+        <span><?php echo esc_html($label); ?></span>
+    </a>
+    <?php
+    return ob_get_clean();
 }
 
 /**

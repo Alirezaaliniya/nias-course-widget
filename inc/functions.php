@@ -1,12 +1,11 @@
 <?php
 
 // بررسی اینکه کاربر دوره را خریده یا نه
+// دسترسی فقط با سفارشِ «تکمیل‌شده» (wc-completed) داده می‌شود. سفارش‌های
+// پرداخت‌شده ولی تکمیل‌نشده (مثل «در حال انجام/processing») یا سفارشی که وضعیتش
+// از تکمیل‌شده تغییر کند، دسترسی نمی‌دهند؛ به همین دلیل از wc_customer_bought_product
+// (که هر سفارش پرداخت‌شده را خریداری‌شده می‌شمارد) استفاده نمی‌کنیم.
 function nias_has_bought_course($user_id, $user_login, $product_id) {
-    $two_way_verification = carbon_get_theme_option('nias_two_way_verification');
-
-    $wc_bought = wc_customer_bought_product($user_login, $user_id, $product_id);
-    $order_bought = false;
-
     $args = [
         'customer_id' => $user_id,
         'limit'       => -1,
@@ -16,17 +15,12 @@ function nias_has_bought_course($user_id, $user_login, $product_id) {
     foreach ($orders as $order) {
         foreach ($order->get_items() as $item) {
             if ($item->get_product_id() == $product_id) {
-                $order_bought = true;
-                break 2;
+                return true;
             }
         }
     }
 
-    if ($two_way_verification === 'on') {
-        return ($wc_bought || $order_bought);
-    } else {
-        return ($wc_bought || $order_bought);
-    }
+    return false;
 }
 
 

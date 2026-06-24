@@ -113,50 +113,19 @@ function nias_course_display_content($product_id) {
     $current_user = wp_get_current_user();
     
     if (is_user_logged_in() && !empty($current_user->ID) && !empty($product_id)) {
-        // بررسی تنظیمات تأیید دو طرفه
-        $two_way_verification = carbon_get_theme_option('nias_two_way_verification');
-        
-        if ($two_way_verification === 'on') {
-            // حالت تأیید دو طرفه فعال
-            $wc_bought = wc_customer_bought_product($current_user->user_login, $current_user->ID, $product_id);
-            $order_bought = false;
-            
-            // بررسی سفارش‌های تکمیل شده
-            $args = [
-                'customer_id' => $current_user->ID,
-                'limit'       => -1,
-                'status'      => 'wc-completed',
-            ];
-            $orders = wc_get_orders($args);
-            foreach ($orders as $order) {
-                foreach ($order->get_items() as $item) {
-                    if ($item->get_product_id() == $product_id) {
-                        $order_bought = true;
-                        break 2;
-                    }
-                }
-            }
-            
-            $bought_course = ($wc_bought || $order_bought);            
-        } else {
-            // حالت عادی
-            if (wc_customer_bought_product($current_user->user_login, $current_user->ID, $product_id)) {
-                $bought_course = true;
-            } else {
-                // بررسی سفارش‌های تکمیل شده
-                $args = [
-                    'customer_id' => $current_user->ID,
-                    'limit'       => -1,
-                    'status'      => 'wc-completed',
-                ];
-                $orders = wc_get_orders($args);
-                foreach ($orders as $order) {
-                    foreach ($order->get_items() as $item) {
-                        if ($item->get_product_id() == $product_id) {
-                            $bought_course = true;
-                            break 2;
-                        }
-                    }
+        // دسترسی فقط با سفارشِ «تکمیل‌شده» داده می‌شود؛ سفارش‌های پرداخت‌شدهٔ
+        // تکمیل‌نشده یا سفارشی که از حالت تکمیل‌شده خارج شود دسترسی نمی‌دهند.
+        $args = [
+            'customer_id' => $current_user->ID,
+            'limit'       => -1,
+            'status'      => 'wc-completed',
+        ];
+        $orders = wc_get_orders($args);
+        foreach ($orders as $order) {
+            foreach ($order->get_items() as $item) {
+                if ($item->get_product_id() == $product_id) {
+                    $bought_course = true;
+                    break 2;
                 }
             }
         }
@@ -233,7 +202,9 @@ function nias_course_display_content($product_id) {
                                             <div class="nias-left-head">
                                                 <?php
                                                 // مدیریت ویدیوی پیش‌نمایش
-                                                if (!empty($lesson['lesson_preview_video'])) {
+                                                // پیش‌نمایش درسِ خصوصی فقط به خریداران نشان داده می‌شود
+                                                // مگر اینکه قفلِ پیش‌نمایش در تنظیمات خاموش باشد.
+                                                if (!empty($lesson['lesson_preview_video']) && (empty($lesson['lesson_private']) || $bought_course || !nias_course_lock_part('preview'))) {
                                                     $preview_video = $lesson['lesson_preview_video'][0];
                                                     $video_url = '';
                                                     if ($preview_video['video_type'] === 'upload' && !empty($preview_video['video_upload'])) {
@@ -255,7 +226,7 @@ function nias_course_display_content($product_id) {
 
                                                 // مدیریت دانلود درس و محتوای خصوصی
                                                 if ($lesson['lesson_private']) {
-                                                    if ($bought_course) {
+                                                    if ($bought_course || !nias_course_lock_part('attachments')) {
                                                         if (!empty($lesson['lesson_download'])) {
                                                             $download = $lesson['lesson_download'][0];
                                                             $download_url = '';
@@ -316,7 +287,7 @@ function nias_course_display_content($product_id) {
                                         <div class="lesson_content">
                                             <?php
                                             if ($lesson['lesson_private']) {
-                                                if ($bought_course) {
+                                                if ($bought_course || !nias_course_lock_part('content')) {
                                                     $content = $lesson['lesson_content'];
                                                     if (preg_match('/\[embed\](.+?)\[\/embed\]/', $content, $matches)) {
                                                         // Extract URL from embed shortcode
