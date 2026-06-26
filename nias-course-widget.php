@@ -62,6 +62,7 @@ require(__DIR__ . '/widgets/videomodal.php');
 require(NIAS_COURSE_INC . '/certificate-show.php');
 require(NIAS_COURSE_INC . '/certificate-config-user.php');
 require(NIAS_COURSE_INC . '/instructors.php');
+require(NIAS_COURSE_INC . '/instructor-dashboard.php');
 require(NIAS_WOOCOMMERCE . '/my-account.php');
 require(NIAS_COURSE_INC . '/shortcodes.php');
 
