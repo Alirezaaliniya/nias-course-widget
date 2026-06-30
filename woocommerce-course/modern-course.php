@@ -580,6 +580,23 @@ function nias_modern_course_script()
         function fa(n) { return String(n).replace(/[0-9]/g, function (d) { return '۰۱۲۳۴۵۶۷۸۹'[d]; }); }
         function esc(s) { return String(s == null ? '' : s).replace(/[&<>"]/g, function (c) { return ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]; }); }
 
+        // Scripts injected through innerHTML are inert (the browser never runs
+        // them). Pasted embed codes that ship as a <script> tag — e.g. the
+        // Aparat embed script — therefore do nothing, while a pasted <iframe>
+        // works. Re-create each script node so it actually executes.
+        function runScripts(container) {
+            if (!container) { return; }
+            var scripts = container.querySelectorAll('script');
+            for (var i = 0; i < scripts.length; i++) {
+                var old = scripts[i], s = document.createElement('script');
+                for (var j = 0; j < old.attributes.length; j++) {
+                    s.setAttribute(old.attributes[j].name, old.attributes[j].value);
+                }
+                if (old.textContent) { s.textContent = old.textContent; }
+                old.parentNode.replaceChild(s, old);
+            }
+        }
+
         // --- inline icon set (stroke style, matches the design) ---
         var ICON = {
             play: '<svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>',
@@ -807,6 +824,9 @@ function nias_modern_course_script()
             host.innerHTML = '';
             host.appendChild(stage);
 
+            // Execute any embed scripts (e.g. Aparat) that came in the lesson text.
+            if (t === 'text') { runScripts(stage); }
+
             // restore saved position for video
             if (t === 'video') {
                 var saved = this.state.times[cur.id];
@@ -878,6 +898,9 @@ function nias_modern_course_script()
                     '<button type="button" class="nmc-tab ' + (tab === 'res' ? 'active' : '') + '" data-act="tabres">منابع و پیوست‌ها</button>' +
                 '</div>' +
                 '<div class="nmc-tabbody">' + body + '</div>';
+
+            // Run embed scripts (e.g. Aparat) pasted into the description tab.
+            runScripts(host.querySelector('.nmc-tabbody'));
 
             host.querySelector('[data-act="prev"]').addEventListener('click', function () { self.go(-1); });
             host.querySelector('[data-act="next"]').addEventListener('click', function () { self.go(1); });
