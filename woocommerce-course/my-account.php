@@ -11,24 +11,6 @@ function nias_course_add_endpoint() {
     add_rewrite_endpoint($endpoint, EP_ROOT | EP_PAGES);
 }
 
-// Add new menu item to my account menu
-add_filter('woocommerce_account_menu_items', 'nias_course_add_menu_item');
-function nias_course_add_menu_item($items) {
-    if (!is_user_logged_in()){
-        return $items;
-    }
-    
-    $endpoint = get_option('nias_course_endpoint', 'my-courses');
-    $new_items = array();
-    foreach ($items as $key => $item) {
-        $new_items[$key] = $item;
-        if ($key === 'dashboard') {
-            $new_items[$endpoint] = 'دوره های من';
-        }
-    }
-    return $new_items;
-}
-
 // Add content to the new endpoint
 add_action('woocommerce_account_my-courses_endpoint', 'nias_course_endpoint_content');
 function nias_course_endpoint_content() {
@@ -570,21 +552,18 @@ function nias_purchased_courses_shortcode($atts)
     return nias_course_render_cards(nias_course_get_purchased_course_ids(get_current_user_id()));
 }
 
-// Hide 'my-courses' menu item if not enabled
-add_filter('woocommerce_account_menu_items', 'nias_hide_my_courses_menu_item');
-function nias_hide_my_courses_menu_item($items) {
+// Add 'my-courses' menu item only when the option is enabled in settings
+add_filter('woocommerce_account_menu_items', 'nias_course_add_menu_item');
+function nias_course_add_menu_item($items) {
     if (!is_user_logged_in()){
         return $items;
     }
-    
+
+    // فقط در صورت فعال بودن گزینه در تنظیمات، منوی دوره‌های من اضافه شود
     if (!function_exists('carbon_get_theme_option') || carbon_get_theme_option('nias_course_account_display') !== 'on') {
-        // اگر گزینه فعال نبود، منوی دوره‌های من را با CSS مخفی کن
-        add_action('wp_footer', function() {
-            echo '<style>.woocommerce-MyAccount-navigation-link--my-courses { display: none !important; }</style>';
-        });
         return $items;
     }
-    
+
     $endpoint = get_option('nias_course_endpoint', 'my-courses');
     $new_items = array();
     foreach ($items as $key => $item) {
