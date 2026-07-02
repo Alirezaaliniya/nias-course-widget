@@ -194,8 +194,10 @@ function nias_course_display_content($product_id) {
                                                     } elseif ($preview_video['video_type'] === 'url' && !empty($preview_video['video_url'])) {
                                                         $video_url = $preview_video['video_url'];
                                                     }
-                                                    if ($video_url) { ?>
-                                                        <a class="nias-preview-tag" target="_blank" href="<?php echo esc_url($video_url); ?>">
+                                                    $preview_embed = ($preview_video['video_type'] === 'embed' && !empty($preview_video['video_embed'])) ? $preview_video['video_embed'] : '';
+                                                    if ($video_url || $preview_embed) {
+                                                        if (function_exists('nias_request_preview_modal')) { nias_request_preview_modal(); } ?>
+                                                        <a class="nias-preview-tag"<?php echo $preview_embed ? '' : ' target="_blank"'; ?> href="<?php echo $video_url ? esc_url($video_url) : '#'; ?>"<?php echo $preview_embed ? ' data-embed="' . esc_attr($preview_embed) . '"' : ''; ?>>
                                                             <i class="nspreviewicon nias-course-icon">
                                                                 <svg width="25" height="25" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                                                                     <path d="M8 5v14l11-7z" fill="currentColor"/>

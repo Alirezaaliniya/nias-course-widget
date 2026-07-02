@@ -1221,8 +1221,9 @@ class Nias_course_woocommerce extends \Elementor\Widget_Base
                                                         } elseif ($preview_video['video_type'] === 'url' && !empty($preview_video['video_url'])) {
                                                             $video_url = $preview_video['video_url'];
                                                         }
-                                                        if ($video_url) { ?>
-                                                            <a class="nias-preview-tag" target="_blank" href="<?php echo esc_url($video_url); ?>">
+                                                        $preview_embed = ($preview_video['video_type'] === 'embed' && !empty($preview_video['video_embed'])) ? $preview_video['video_embed'] : '';
+                                                        if ($video_url || $preview_embed) { ?>
+                                                            <a class="nias-preview-tag"<?php echo $preview_embed ? '' : ' target="_blank"'; ?> href="<?php echo $video_url ? esc_url($video_url) : '#'; ?>"<?php echo $preview_embed ? ' data-embed="' . esc_attr($preview_embed) . '"' : ''; ?>>
                                                                 <i class="nspreviewicon nias-course-icon">
                                                                     <?php \Elementor\Icons_Manager::render_icon($settings['nspreviewicon'], ['aria-hidden' => 'true']); ?>
                                                                 </i>
