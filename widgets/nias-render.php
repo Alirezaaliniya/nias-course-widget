@@ -237,7 +237,7 @@ foreach ($woo_downloads as $download) {
 <?php
 if ($lesson_single["private_lesson"] !== "no") {
     if ($bought_course) {
-        echo $lesson_single['lesson_content'];
+        echo nias_audio_upgrade_html($lesson_single['lesson_content']);
     } else {
         echo $settings['nsprivatetextcontent'];
     }

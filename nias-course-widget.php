@@ -53,6 +53,7 @@ require(NIAS_WOOCOMMERCE . '/spotplayer-sync.php');
 require(NIAS_COURSE_PANEL . '/adminpannel.php');
 require(NIAS_WOOCOMMERCE . '/spotplayer-license.php');
 require(NIAS_WOOCOMMERCE . '/function-course.php');
+require(NIAS_WOOCOMMERCE . '/audio-player.php');
 require(NIAS_WOOCOMMERCE . '/curriculum-editor.php');
 require(NIAS_WOOCOMMERCE . '/product-meta.php');
 require(NIAS_WOOCOMMERCE . '/modern-course.php');

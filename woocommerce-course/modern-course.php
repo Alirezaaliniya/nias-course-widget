@@ -75,6 +75,12 @@ function nias_modern_course_is_video_file($url)
     return (bool) preg_match('/\.(mp4|m4v|webm|ogg|ogv|mov)(\?.*)?$/i', (string) $url);
 }
 
+/** Is this URL a directly-playable audio file? */
+function nias_modern_course_is_audio_file($url)
+{
+    return (bool) preg_match('/\.(mp3|wav|m4a|aac|oga|flac|opus|weba)(\?.*)?$/i', (string) $url);
+}
+
 /** Human file name from a URL (used as the resource/download label). */
 function nias_modern_course_file_name($url)
 {
@@ -238,15 +244,17 @@ function nias_modern_course_build_data($product_id)
             $content   = $lock_content ? '' : $raw_content;
 
             // The player shows a lock cover when the lesson's PRIMARY medium is
-            // locked (video first, then a downloadable file, then text).
+            // locked (video first, then a downloadable file, then text). When the
+            // lesson has no medium at all but is private and withheld from this
+            // user, the "private" cover still takes priority over the generic
+            // "no content" message.
             if ($raw_video !== '') {
                 $player_locked = $lock_video;
             } elseif ($raw_file !== '') {
                 $player_locked = $lock_attach;
-            } elseif ($raw_has_text) {
-                $player_locked = $lock_content;
             } else {
-                $player_locked = false;
+                // Text lesson, or a lesson with no medium at all.
+                $player_locked = $lock_content;
             }
 
             $lessons[] = array(
@@ -260,7 +268,7 @@ function nias_modern_course_build_data($product_id)
                 // a clear private notice instead of an "empty" message.
                 'lockedDesc'   => ($lock_content && !$text_primary && $raw_has_text),
                 'lockedRes'    => ($lock_attach && $raw_file !== ''),
-                'videoKind'    => $video_url ? (nias_modern_course_is_video_file($video_url) ? 'file' : 'embed') : '',
+                'videoKind'    => $video_url ? (nias_modern_course_is_audio_file($video_url) ? 'audio' : (nias_modern_course_is_video_file($video_url) ? 'file' : 'embed')) : '',
                 'videoSrc'     => $video_url,
                 'downloadUrl'  => $file_url,
                 'downloadName' => $file_url ? nias_modern_course_file_name($file_url) : '',
@@ -457,6 +465,23 @@ function nias_modern_course_assets()
     .nmc-cover-btn.dl{background:#48af3b}
     .nmc-cover-btn.buy{background:#ff6060;font-size:14px;padding:11px 24px}
 
+    /* audio player (waveform) */
+    .nmc-audio{width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:20px;padding:26px 24px;background:linear-gradient(150deg,#18262e 0%,#0e1518 70%);text-align:center}
+    .nmc-audio audio{display:none}
+    .nmc-audio-art{width:88px;height:88px;flex:none;border-radius:24px;display:flex;align-items:center;justify-content:center;color:#fff;background:linear-gradient(135deg,var(--nmc-accent,#1e83f0),#0e6fd6);box-shadow:0 14px 30px -10px rgba(30,131,240,.7)}
+    .nmc-audio.playing .nmc-audio-art{animation:nmc-pulse 1.6s ease-in-out infinite}
+    @keyframes nmc-pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.06)}}
+    .nmc-audio-name{color:#eaf1f6;font-size:15px;font-weight:700;max-width:82%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+    .nmc-audio-wave{display:flex;align-items:center;gap:3px;height:56px;width:min(560px,86%);cursor:pointer;direction:ltr}
+    .nmc-audio-bar{flex:1 1 0;min-width:2px;border-radius:99px;background:rgba(255,255,255,.16);transition:background .15s,transform .15s}
+    .nmc-audio-bar.on{background:var(--nmc-accent,#1e83f0)}
+    .nmc-audio-wave:hover .nmc-audio-bar{transform:scaleY(1.06)}
+    .nmc-audio-controls{display:flex;align-items:center;gap:16px}
+    .nmc-audio-btn{width:56px;height:56px;flex:none;border:0;border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;color:#fff;background:var(--nmc-accent,#1e83f0);box-shadow:0 10px 24px -8px rgba(30,131,240,.8);transition:transform .15s}
+    .nmc-audio-btn:hover{transform:scale(1.06)}
+    .nmc-audio-time{color:#aab6bd;font-size:14px;font-weight:600;font-variant-numeric:tabular-nums;direction:ltr}
+    .nmc-audio-time .sep{opacity:.5;margin:0 4px}
+
     /* info bar */
     .nmc-info-top{padding:20px 24px;display:flex;align-items:flex-start;gap:16px;flex-wrap:wrap}
     .nmc-info-l{flex:1;min-width:220px}
@@ -615,7 +640,11 @@ function nias_modern_course_script()
             lockBig: '<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 11h14v9H5zM8 11V7a4 4 0 0 1 8 0v4"/></svg>',
             fileBig: '<svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8zM14 3v5h5"/></svg>',
             circle: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/></svg>',
-            seal: '<svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="9" r="6"/><path d="M12 6v6M9 9h6"/></svg>'
+            seal: '<svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="9" r="6"/><path d="M12 6v6M9 9h6"/></svg>',
+            audio: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 10v4M8 6v12M12 3v18M16 6v12M20 10v4"/></svg>',
+            audioBig: '<svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 10v4M8 6v12M12 3v18M16 6v12M20 10v4"/></svg>',
+            playBig: '<svg width="26" height="26" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>',
+            pauseBig: '<svg width="26" height="26" viewBox="0 0 24 24" fill="currentColor"><path d="M7 5h4v14H7zM13 5h4v14h-4z"/></svg>'
         };
 
         function NMC(data) {
@@ -655,16 +684,16 @@ function nias_modern_course_script()
         NMC.prototype.threshold = function () { var t = this.d.certificate && this.d.certificate.threshold; t = parseInt(t, 10); return isNaN(t) ? 80 : t; };
         NMC.prototype.playerType = function (l) {
             if (l.locked) return 'locked';
-            if (l.videoSrc) return l.videoKind === 'file' ? 'video' : 'iframe';
+            if (l.videoSrc) return l.videoKind === 'file' ? 'video' : (l.videoKind === 'audio' ? 'audio' : 'iframe');
             if (l.downloadUrl) return 'download';
             if (l.hasContent) return 'text';
             return 'empty';
         };
         NMC.prototype.typeLabel = function (l) {
-            return ({ video: 'ویدیو', iframe: 'پخش آنلاین', download: 'فایل دانلودی', text: 'درس متنی', locked: 'درس خصوصی', empty: 'درس' })[this.playerType(l)];
+            return ({ video: 'ویدیو', audio: 'فایل صوتی', iframe: 'پخش آنلاین', download: 'فایل دانلودی', text: 'درس متنی', locked: 'درس خصوصی', empty: 'درس' })[this.playerType(l)];
         };
         NMC.prototype.typeIcon = function (l) {
-            return ({ video: ICON.play, iframe: ICON.iframe, download: ICON.download, text: ICON.text, locked: ICON.lock, empty: ICON.book })[this.playerType(l)];
+            return ({ video: ICON.play, audio: ICON.audio, iframe: ICON.iframe, download: ICON.download, text: ICON.text, locked: ICON.lock, empty: ICON.book })[this.playerType(l)];
         };
 
         // ---- mounting ----
@@ -795,6 +824,8 @@ function nias_modern_course_script()
                 stage.appendChild(v);
             } else if (t === 'iframe') {
                 stage.appendChild(el('iframe', { src: cur.videoSrc, allow: 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; fullscreen', allowfullscreen: '' }));
+            } else if (t === 'audio') {
+                this.buildAudio(stage, cur);
             } else if (t === 'text') {
                 var box = el('div', { 'class': 'nmc-text nmc-scroll' });
                 box.innerHTML = '<div class="nmc-text-in"><div class="nmc-text-tag">' + ICON.text + '<span>درس متنی</span></div><div class="nmc-text-body">' + cur.content + '</div></div>';
@@ -827,13 +858,80 @@ function nias_modern_course_script()
             // Execute any embed scripts (e.g. Aparat) that came in the lesson text.
             if (t === 'text') { runScripts(stage); }
 
-            // restore saved position for video
-            if (t === 'video') {
+            // restore saved position for the media element (video or audio)
+            if (t === 'video' || t === 'audio') {
                 var saved = this.state.times[cur.id];
-                if (saved) { try { this._video.currentTime = saved; } catch (e) {} }
+                if (saved && this._video) { try { this._video.currentTime = saved; } catch (e) {} }
             } else {
                 this._video = null;
             }
+        };
+
+        // ---- audio player (waveform) ----
+        // A custom, RTL-friendly audio player for lessons whose media is an
+        // audio file. Shares the video progress handlers (onVideoTime/-Loaded/
+        // -Ended) via a hidden <audio> element, so watch progress, resume and
+        // completion all work exactly like video lessons.
+        NMC.prototype.buildAudio = function (stage, cur) {
+            var self = this, NB = 56;
+            var au = el('div', { 'class': 'nmc-audio' });
+
+            var bars = '';
+            for (var bi = 0; bi < NB; bi++) {
+                // Deterministic pseudo-random bar heights (stable per position).
+                var r = Math.abs(Math.sin((bi + 1) * 12.9898) * 43758.5453);
+                r = r - Math.floor(r);
+                bars += '<span class="nmc-audio-bar" data-i="' + bi + '" style="height:' + Math.round(22 + r * 78) + '%"></span>';
+            }
+
+            au.innerHTML =
+                '<div class="nmc-audio-art">' + ICON.audioBig + '</div>' +
+                '<div class="nmc-audio-name">' + esc(cur.title) + '</div>' +
+                '<div class="nmc-audio-wave" role="slider" aria-label="نوار پخش صوت">' + bars + '</div>' +
+                '<div class="nmc-audio-controls">' +
+                    '<button type="button" class="nmc-audio-btn" data-act="toggle" aria-label="پخش/توقف">' + ICON.playBig + '</button>' +
+                    '<div class="nmc-audio-time"><span class="cur">۰:۰۰</span><span class="sep">/</span><span class="dur">۰:۰۰</span></div>' +
+                '</div>';
+
+            var a = el('audio', { src: cur.videoSrc, preload: 'metadata' });
+            au.appendChild(a);
+            stage.appendChild(au);
+            this._video = a;
+
+            var btn = au.querySelector('[data-act="toggle"]');
+            var wave = au.querySelector('.nmc-audio-wave');
+            var curEl = au.querySelector('.cur');
+            var durEl = au.querySelector('.dur');
+            var barEls = au.querySelectorAll('.nmc-audio-bar');
+
+            function fmt(t) {
+                t = Math.max(0, Math.floor(t || 0));
+                var m = Math.floor(t / 60), s = t % 60;
+                return fa(m) + ':' + fa(s < 10 ? '0' + s : s);
+            }
+            function paint() {
+                var d = a.duration || 0, lit = d ? Math.round(a.currentTime / d * NB) : 0;
+                for (var i = 0; i < barEls.length; i++) {
+                    if ((i < lit) !== barEls[i].classList.contains('on')) {
+                        barEls[i].classList.toggle('on', i < lit);
+                    }
+                }
+                curEl.textContent = fmt(a.currentTime);
+            }
+
+            btn.addEventListener('click', function () { if (a.paused) { a.play(); } else { a.pause(); } });
+            a.addEventListener('play', function () { au.classList.add('playing'); btn.innerHTML = ICON.pauseBig; });
+            a.addEventListener('pause', function () { au.classList.remove('playing'); btn.innerHTML = ICON.playBig; });
+            a.addEventListener('loadedmetadata', function (e) { durEl.textContent = fmt(a.duration); self.onVideoLoaded(e); paint(); });
+            a.addEventListener('timeupdate', function (e) { self.onVideoTime(e); paint(); });
+            a.addEventListener('ended', function () { self.onVideoEnded(); paint(); });
+            wave.addEventListener('click', function (ev) {
+                var b = ev.target && ev.target.closest ? ev.target.closest('.nmc-audio-bar') : null;
+                if (!b || !a.duration) { return; }
+                var i = parseInt(b.getAttribute('data-i'), 10);
+                try { a.currentTime = (i + 0.5) / NB * a.duration; } catch (e) {}
+                paint();
+            });
         };
 
         // ---- info bar ----

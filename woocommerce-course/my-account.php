@@ -278,14 +278,14 @@ function nias_course_display_content($product_id) {
                                                     } elseif (filter_var($content, FILTER_VALIDATE_URL)) {
                                                         // If content is just a URL
                                                         if (strpos($content, '.mp3') !== false || strpos($content, '.wav') !== false) {
-                                                            echo '<audio controls><source src="' . esc_url(trim($content)) . '" type="audio/mpeg">Your browser does not support the audio element.</audio>';
+                                                            echo nias_audio_player_html(trim($content));
                                                         } else {
                                                             echo nias_handle_video_url($content);
                                                         }
                                                     } elseif (strpos($content, '<iframe') !== false) {
                                                         echo '<div class="iframe-wrapper">' . $content . '</div>';
                                                     } else {
-                                                        echo wpautop($content);
+                                                        echo nias_audio_upgrade_html(wpautop($content));
                                                     }
                                                 } else {
                                                     echo wpautop($private_content_text);

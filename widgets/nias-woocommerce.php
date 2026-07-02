@@ -1287,12 +1287,12 @@ class Nias_course_woocommerce extends \Elementor\Widget_Base
                                                 <?php
                                                 if ($lesson['lesson_private']) {
                                                     if ($bought_course || !nias_course_lock_part('content')) {
-                                                        echo $lesson['lesson_content'];
+                                                        echo nias_audio_upgrade_html($lesson['lesson_content']);
                                                     } else {
                                                         echo $settings['nsprivatetextcontent'];
                                                     }
                                                 } else {
-                                                    echo $lesson['lesson_content'];
+                                                    echo nias_audio_upgrade_html($lesson['lesson_content']);
                                                 }
                                                 ?>
                                             </div>
