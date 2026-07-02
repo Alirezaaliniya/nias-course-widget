@@ -233,22 +233,28 @@ function nias_modern_course_build_data($product_id)
 
             // Raw values (before stripping) — used to decide the player lock cover.
             $raw_video    = nias_modern_course_media_url(isset($les['video']) ? $les['video'] : array());
+            // The preview can also be a pasted embed snippet (iframe/…). It shares
+            // the "video" slot and its lock, but renders as raw HTML.
+            $raw_embed    = (isset($les['video']['type']) && $les['video']['type'] === 'embed' && !empty($les['video']['embed']))
+                ? (string) $les['video']['embed'] : '';
+            $has_video    = ($raw_video !== '' || $raw_embed !== '');
             $raw_file     = nias_modern_course_media_url(isset($les['file']) ? $les['file'] : array());
             $raw_content  = nias_modern_course_render_content(isset($les['content']) ? $les['content'] : '');
             $raw_has_text = (trim(wp_strip_all_tags($raw_content)) !== '' || preg_match('/<(iframe|img|video|audio|embed|source|figure)\b/i', $raw_content));
-            $text_primary = ($raw_video === '' && $raw_file === '' && $raw_has_text);
+            $text_primary = (!$has_video && $raw_file === '' && $raw_has_text);
 
             // Strip the locked parts so they never reach the browser.
-            $video_url = $lock_video   ? '' : $raw_video;
-            $file_url  = $lock_attach  ? '' : $raw_file;
-            $content   = $lock_content ? '' : $raw_content;
+            $video_url  = $lock_video   ? '' : $raw_video;
+            $embed_code = $lock_video   ? '' : $raw_embed;
+            $file_url   = $lock_attach  ? '' : $raw_file;
+            $content    = $lock_content ? '' : $raw_content;
 
             // The player shows a lock cover when the lesson's PRIMARY medium is
-            // locked (video first, then a downloadable file, then text). When the
-            // lesson has no medium at all but is private and withheld from this
-            // user, the "private" cover still takes priority over the generic
-            // "no content" message.
-            if ($raw_video !== '') {
+            // locked (video/embed first, then a downloadable file, then text).
+            // When the lesson has no medium at all but is private and withheld
+            // from this user, the "private" cover still takes priority over the
+            // generic "no content" message.
+            if ($has_video) {
                 $player_locked = $lock_video;
             } elseif ($raw_file !== '') {
                 $player_locked = $lock_attach;
@@ -268,8 +274,9 @@ function nias_modern_course_build_data($product_id)
                 // a clear private notice instead of an "empty" message.
                 'lockedDesc'   => ($lock_content && !$text_primary && $raw_has_text),
                 'lockedRes'    => ($lock_attach && $raw_file !== ''),
-                'videoKind'    => $video_url ? (nias_modern_course_is_audio_file($video_url) ? 'audio' : (nias_modern_course_is_video_file($video_url) ? 'file' : 'embed')) : '',
+                'videoKind'    => $embed_code !== '' ? 'embedcode' : ($video_url ? (nias_modern_course_is_audio_file($video_url) ? 'audio' : (nias_modern_course_is_video_file($video_url) ? 'file' : 'embed')) : ''),
                 'videoSrc'     => $video_url,
+                'videoEmbed'   => $embed_code,
                 'downloadUrl'  => $file_url,
                 'downloadName' => $file_url ? nias_modern_course_file_name($file_url) : '',
                 'content'      => $content,
@@ -445,6 +452,9 @@ function nias_modern_course_assets()
     .nmc-player{background:#0e1518;border-radius:18px;overflow:hidden;box-shadow:0 14px 40px rgba(14,21,24,.28)}
     .nmc-stage{position:relative;width:100%;aspect-ratio:16/9;background:#0e1518}
     .nmc-stage video,.nmc-stage iframe{width:100%;height:100%;border:0;background:#0e1518}
+    .nmc-embed{position:absolute;inset:0;width:100%;height:100%;overflow:hidden}
+    .nmc-embed iframe{width:100%!important;height:100%!important;border:0}
+    .nmc-embed .h_iframe-aparat_embed_frame,.nmc-embed .h_iframe-aparat_embed_frame span{position:static!important;padding:0!important;height:100%!important;display:block}
     .nmc-stage video{object-fit:contain}
     .nmc-text{width:100%;height:100%;overflow:auto;background:#fff;direction:rtl}
     .nmc-text-in{max-width:760px;margin:0 auto;padding:40px 40px;font-size:16px;line-height:2.05;color:#2b363c}
@@ -684,16 +694,17 @@ function nias_modern_course_script()
         NMC.prototype.threshold = function () { var t = this.d.certificate && this.d.certificate.threshold; t = parseInt(t, 10); return isNaN(t) ? 80 : t; };
         NMC.prototype.playerType = function (l) {
             if (l.locked) return 'locked';
+            if (l.videoEmbed) return 'embedcode';
             if (l.videoSrc) return l.videoKind === 'file' ? 'video' : (l.videoKind === 'audio' ? 'audio' : 'iframe');
             if (l.downloadUrl) return 'download';
             if (l.hasContent) return 'text';
             return 'empty';
         };
         NMC.prototype.typeLabel = function (l) {
-            return ({ video: 'ویدیو', audio: 'فایل صوتی', iframe: 'پخش آنلاین', download: 'فایل دانلودی', text: 'درس متنی', locked: 'درس خصوصی', empty: 'درس' })[this.playerType(l)];
+            return ({ video: 'ویدیو', audio: 'فایل صوتی', iframe: 'پخش آنلاین', embedcode: 'پخش آنلاین', download: 'فایل دانلودی', text: 'درس متنی', locked: 'درس خصوصی', empty: 'درس' })[this.playerType(l)];
         };
         NMC.prototype.typeIcon = function (l) {
-            return ({ video: ICON.play, audio: ICON.audio, iframe: ICON.iframe, download: ICON.download, text: ICON.text, locked: ICON.lock, empty: ICON.book })[this.playerType(l)];
+            return ({ video: ICON.play, audio: ICON.audio, iframe: ICON.iframe, embedcode: ICON.iframe, download: ICON.download, text: ICON.text, locked: ICON.lock, empty: ICON.book })[this.playerType(l)];
         };
 
         // ---- mounting ----
@@ -826,6 +837,11 @@ function nias_modern_course_script()
                 stage.appendChild(el('iframe', { src: cur.videoSrc, allow: 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; fullscreen', allowfullscreen: '' }));
             } else if (t === 'audio') {
                 this.buildAudio(stage, cur);
+            } else if (t === 'embedcode') {
+                // Raw embed snippet pasted by the admin (iframe/style/script).
+                var emb = el('div', { 'class': 'nmc-embed' });
+                emb.innerHTML = cur.videoEmbed;
+                stage.appendChild(emb);
             } else if (t === 'text') {
                 var box = el('div', { 'class': 'nmc-text nmc-scroll' });
                 box.innerHTML = '<div class="nmc-text-in"><div class="nmc-text-tag">' + ICON.text + '<span>درس متنی</span></div><div class="nmc-text-body">' + cur.content + '</div></div>';
@@ -855,8 +871,9 @@ function nias_modern_course_script()
             host.innerHTML = '';
             host.appendChild(stage);
 
-            // Execute any embed scripts (e.g. Aparat) that came in the lesson text.
-            if (t === 'text') { runScripts(stage); }
+            // Execute any embed scripts (e.g. Aparat) that came in the lesson
+            // text or the pasted preview embed snippet.
+            if (t === 'text' || t === 'embedcode') { runScripts(stage); }
 
             // restore saved position for the media element (video or audio)
             if (t === 'video' || t === 'audio') {

@@ -28,7 +28,9 @@ function nias_media_group_keys($type)
 {
     $map = array(
         'icon'  => array('icon_type', 'icon_upload', 'icon_url'),
-        'video' => array('video_type', 'video_upload', 'video_url'),
+        // The video group has an extra 4th key holding raw embed code (iframe),
+        // so a preview can be a file, a link, OR a pasted embed snippet.
+        'video' => array('video_type', 'video_upload', 'video_url', 'video_embed'),
         'file'  => array('file_type', 'file_upload', 'file_url'),
     );
     return $map[$type];
@@ -97,15 +99,25 @@ function nias_course_sanitize_media_group($group, $type)
     $upval = isset($group[$keys[1]]) ? esc_url_raw($group[$keys[1]]) : '';
     $urlval = isset($group[$keys[2]]) ? esc_url_raw($group[$keys[2]]) : '';
 
-    if ($upval === '' && $urlval === '') {
+    // Optional 4th key: raw embed code (iframe/style/script). Kept verbatim for
+    // trusted users, wp_kses_post() for everyone else — same policy as lesson
+    // content, so pasted Aparat/YouTube embeds survive.
+    $has_embed = isset($keys[3]);
+    $embedval  = ($has_embed && isset($group[$keys[3]])) ? nias_course_sanitize_lesson_content($group[$keys[3]]) : '';
+
+    if ($upval === '' && $urlval === '' && $embedval === '') {
         return array();
     }
 
-    return array(array(
+    $out = array(
         $keys[0] => $tval,
         $keys[1] => $upval,
         $keys[2] => $urlval,
-    ));
+    );
+    if ($has_embed) {
+        $out[$keys[3]] = $embedval;
+    }
+    return array($out);
 }
 
 function nias_course_sanitize_sections($raw)

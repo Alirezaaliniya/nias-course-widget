@@ -42,11 +42,15 @@ function nias_curriculum_media_to_js($group, $type)
 {
     $keys  = nias_media_group_keys($type);
     $group = is_array($group) ? $group : array();
-    return array(
+    $out = array(
         'type'   => isset($group[$keys[0]]) && $group[$keys[0]] !== '' ? $group[$keys[0]] : 'url',
         'upload' => isset($group[$keys[1]]) ? $group[$keys[1]] : '',
         'url'    => isset($group[$keys[2]]) ? $group[$keys[2]] : '',
     );
+    if (isset($keys[3])) {
+        $out['embed'] = isset($group[$keys[3]]) ? $group[$keys[3]] : '';
+    }
+    return $out;
 }
 
 /**
@@ -61,11 +65,15 @@ function nias_curriculum_media_to_group($media, $type)
 {
     $keys  = nias_media_group_keys($type);
     $media = is_array($media) ? $media : array();
-    return array(
+    $out = array(
         $keys[0] => isset($media['type']) ? $media['type'] : 'url',
         $keys[1] => isset($media['upload']) ? $media['upload'] : '',
         $keys[2] => isset($media['url']) ? $media['url'] : '',
     );
+    if (isset($keys[3])) {
+        $out[$keys[3]] = isset($media['embed']) ? $media['embed'] : '';
+    }
+    return $out;
 }
 
 /**
@@ -803,6 +811,10 @@ function nias_curriculum_styles()
     .nc-media-url{display:flex;gap:8px;margin-top:8px}
     .nc-media-url input{flex:1 1 auto;height:38px;border:1px solid #e2e6ee;background:#f7f9fc;border-radius:9px;padding:0 12px;font-size:13px;color:#1f2733}
     .nc-media-url input:focus{border-color:var(--acc);background:#fff}
+    .nc-media-embed{margin-top:8px}
+    .nc-media-embed-lbl{font-size:12px;color:#64748b;margin-bottom:5px}
+    .nc-media-embed textarea{width:100%;min-height:72px;border:1px solid #e2e6ee;background:#f7f9fc;border-radius:9px;padding:9px 12px;font-size:12.5px;color:#1f2733;font-family:monospace;resize:vertical}
+    .nc-media-embed textarea:focus{border-color:var(--acc);background:#fff}
     .nc-media-clear{flex:0 0 auto;height:38px;padding:0 12px;border:1px solid #f4d4dc;background:#fff;color:#e11d48;border-radius:9px;font-size:12.5px;font-weight:700;cursor:pointer}
 
     .nc-private{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:13px 14px;border:1px solid #eef1f6;background:#f7f9fc;border-radius:13px;cursor:pointer;transition:.15s}
@@ -942,7 +954,7 @@ function nias_curriculum_script()
                 return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
             });
         }
-        function mkMedia(m) { m = m || {}; return { type: m.type || 'url', upload: m.upload || '', url: m.url || '' }; }
+        function mkMedia(m) { m = m || {}; return { type: m.type || 'url', upload: m.upload || '', url: m.url || '', embed: m.embed || '' }; }
         function mediaUrl(m) { return m && m.type === 'upload' ? (m.upload || '') : (m && m.url || ''); }
 
         /* ---- icons ---- */
@@ -1089,19 +1101,29 @@ function nias_curriculum_script()
         }
 
         /* ---- media control ---- */
-        function mediaHtml(scope, key, media, ic, hint, pickLabel) {
+        function mediaHtml(scope, key, media, ic, hint, pickLabel, allowEmbed) {
             var url = mediaUrl(media);
             var fname = url ? url.split('/').pop().split('?')[0] : 'چیزی وارد نشده';
+            var hasEmbed = allowEmbed && media && media.type === 'embed' && media.embed;
+            var mainLabel = url ? fname : (hasEmbed ? 'کد امبد ثبت شده' : 'چیزی وارد نشده');
             var thumb = (url && /\.(png|jpe?g|gif|webp|svg|bmp)$/i.test(url)) ? '<img src="' + esc(url) + '">' : ic;
             var h = '<div class="nc-media" data-scope="' + scope + '" data-key="' + key + '">';
             h += '<div class="nc-drop" data-media-pick="' + key + '" data-scope="' + scope + '">';
             h += '<div class="nc-drop-ic">' + thumb + '</div>';
-            h += '<div class="nc-drop-text"><div class="nc-drop-t">' + esc(url ? fname : 'چیزی وارد نشده') + '</div><div class="nc-drop-s">' + esc(hint) + '</div></div>';
+            h += '<div class="nc-drop-text"><div class="nc-drop-t">' + esc(mainLabel) + '</div><div class="nc-drop-s">' + esc(hint) + '</div></div>';
             h += '<span class="nc-chip">' + esc(pickLabel) + '</span></div>';
             h += '<div class="nc-media-url">';
             h += '<input type="text" data-media-url="' + key + '" data-scope="' + scope + '" placeholder="یا لینک مستقیم را وارد کنید" value="' + esc(media.type === 'upload' ? '' : (media.url || '')) + '">';
             if (url) h += '<button type="button" class="nc-media-clear" data-media-clear="' + key + '" data-scope="' + scope + '">حذف</button>';
-            h += '</div></div>';
+            h += '</div>';
+            if (allowEmbed) {
+                // Optional third input: paste a full embed snippet (iframe/style/…).
+                h += '<div class="nc-media-embed">';
+                h += '<div class="nc-media-embed-lbl">یا کد امبد (iframe) را اینجا بچسبانید</div>';
+                h += '<textarea data-media-embed="' + key + '" data-scope="' + scope + '" rows="3" dir="ltr" placeholder="&lt;iframe src=&quot;…&quot;&gt;&lt;/iframe&gt;">' + esc(media.embed || '') + '</textarea>';
+                h += '</div>';
+            }
+            h += '</div>';
             return h;
         }
 
@@ -1183,7 +1205,7 @@ function nias_curriculum_script()
             h += '<div><div class="nc-label">برچسب درس</div><input type="text" class="nc-input" data-field="lessonLabel" value="' + esc(ls.label) + '" placeholder="مثلاً: رایگان"></div>';
             h += '<div><div class="nc-label">مدت زمان درس</div><input type="text" class="nc-input" data-field="lessonDuration" value="' + esc(ls.duration || '') + '" placeholder="مثلاً: ۱۲:۳۵ یا ۱۵ دقیقه"></div>';
             h += '<div><div class="nc-label">آیکون درس</div>' + mediaHtml('lesson', 'icon', ls.icon, IC.img, 'یک تصویر انتخاب کنید یا لینک بدهید', 'انتخاب') + '</div>';
-            h += '<div><div class="nc-label">ویدیوی پیش‌نمایش</div>' + mediaHtml('lesson', 'video', ls.video, IC.video, 'لینک یا فایل ویدیو را اضافه کنید', 'افزودن') + '</div>';
+            h += '<div><div class="nc-label">ویدیوی پیش‌نمایش</div>' + mediaHtml('lesson', 'video', ls.video, IC.video, 'لینک، فایل یا کد امبد ویدیو را اضافه کنید', 'افزودن', true) + '</div>';
             h += '<div><div class="nc-label">فایل خصوصی درس</div>' + mediaHtml('lesson', 'file', ls.file, IC.file, 'PDF، تمرین یا فایل پیوست', 'افزودن') + '</div>';
             h += '<div class="nc-private' + (ls.private ? ' on' : '') + '" data-private-toggle><div class="nc-private-l"><span class="nc-lock">' + IC.lock + '</span><div><div class="nc-private-t">درس خصوصی است؟</div><div class="nc-private-s">فقط برای کاربران خریدار نمایش داده می‌شود</div></div></div><span class="nc-switch"><span class="nc-knob"></span></span></div>';
             fieldsEl.innerHTML = h;
@@ -1222,7 +1244,7 @@ function nias_curriculum_script()
             state.selected = { type: 'lesson', chapterId: cid, lessonId: ls.id };
             markDirty(); renderAll();
         }
-        function cloneMedia(m) { return { type: m.type, upload: m.upload, url: m.url }; }
+        function cloneMedia(m) { return { type: m.type, upload: m.upload, url: m.url, embed: m.embed || '' }; }
         function duplicateChapter(cid) {
             var idx = -1; for (var i = 0; i < state.chapters.length; i++) if (state.chapters[i].id === cid) { idx = i; break; }
             if (idx < 0) return;
@@ -1520,7 +1542,14 @@ function nias_curriculum_script()
             if (mkey) {
                 var scope = t.getAttribute('data-scope');
                 var tgt = scope === 'chapter' ? selChapter() : selLesson();
-                if (tgt && tgt[mkey]) { tgt[mkey] = { type: 'url', upload: '', url: t.value }; markDirty(); }
+                if (tgt && tgt[mkey]) { tgt[mkey] = { type: 'url', upload: '', url: t.value, embed: '' }; markDirty(); }
+                return;
+            }
+            var ekey = t.getAttribute('data-media-embed');
+            if (ekey) {
+                var escope = t.getAttribute('data-scope');
+                var etgt = escope === 'chapter' ? selChapter() : selLesson();
+                if (etgt && etgt[ekey]) { etgt[ekey] = { type: 'embed', upload: '', url: '', embed: t.value }; markDirty(); }
                 return;
             }
         });
