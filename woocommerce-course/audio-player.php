@@ -152,10 +152,78 @@ function nias_audio_player_html($src, $title = '')
 }
 
 /**
+ * Print the Plyr video player assets (CSS + JS) once per request.
+ */
+function nias_video_player_assets()
+{
+    static $printed = false;
+    if ($printed) {
+        return;
+    }
+    $printed = true;
+    $css_url = plugin_dir_url(NIAS_COURSE . 'nias-course-widget.php') . 'assets/niasplyr.css?v=' . NIAS_COURSE_VERSION;
+    $js_url  = plugin_dir_url(NIAS_COURSE . 'nias-course-widget.php') . 'assets/niasplyrscript.js?v=' . NIAS_COURSE_VERSION;
+    ?>
+    <link rel="stylesheet" href="<?php echo esc_url($css_url); ?>" />
+    <script src="<?php echo esc_url($js_url); ?>"></script>
+    <script>
+    (function () {
+        if (window._NiasVideoInit) { return; }
+        window._NiasVideoInit = true;
+        function initPlayers() {
+            document.querySelectorAll('.nias-vp-wrap[data-src]:not([data-plyr-ready])').forEach(function (wrap) {
+                wrap.setAttribute('data-plyr-ready', '1');
+                var src = wrap.getAttribute('data-src');
+                var vid = document.createElement('video');
+                vid.setAttribute('playsinline', '');
+                vid.setAttribute('controls', '');
+                vid.style.width = '100%';
+                vid.style.borderRadius = '12px';
+                var source = document.createElement('source');
+                source.src = src;
+                vid.appendChild(source);
+                wrap.appendChild(vid);
+                if (typeof Plyr !== 'undefined') {
+                    new Plyr(vid, { controls: ['play-large','play','progress','current-time','mute','volume','fullscreen'] });
+                }
+            });
+        }
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', initPlayers);
+        } else {
+            initPlayers();
+        }
+    })();
+    </script>
+    <style>
+    .nias-vp-wrap { width: 100%; max-width: 720px; margin: 10px 0; border-radius: 12px; overflow: hidden; background: #000; }
+    .nias-vp-wrap .plyr { border-radius: 12px; }
+    </style>
+    <?php
+}
+
+/**
+ * Placeholder markup for one video file, upgraded on the client with Plyr.
+ *
+ * @param string $src   Video file URL.
+ * @return string
+ */
+function nias_video_player_html($src)
+{
+    $src = trim((string) $src);
+    if ($src === '') {
+        return '';
+    }
+    nias_video_player_assets();
+    return '<div class="nias-vp-wrap" data-src="' . esc_url($src) . '"></div>';
+}
+
+/**
  * Convert audio references inside free-form HTML into beautiful players:
  *   - [audio src="…"] (and mp3/wav/… variants) shortcodes,
  *   - <audio …><source src="…"></audio> blocks,
  *   - a bare audio URL standing on its own.
+ *   - a bare video URL (mp4/webm/…) standing on its own → Plyr video player.
  *
  * Everything else is returned untouched.
  *
@@ -165,8 +233,14 @@ function nias_audio_player_html($src, $title = '')
 function nias_audio_upgrade_html($html)
 {
     $html = (string) $html;
-    if ($html === '' || stripos($html, 'nias-ap') !== false) {
-        return $html; // empty, or already upgraded
+    if ($html === '') {
+        return $html;
+    }
+    // If both player types are already present, skip re-processing
+    $has_audio = stripos($html, 'nias-ap') !== false;
+    $has_video = stripos($html, 'nias-vp-wrap') !== false;
+    if ($has_audio && $has_video) {
+        return $html; // already fully upgraded
     }
 
     // 1) [audio src="…"] shortcodes.
@@ -189,6 +263,17 @@ function nias_audio_upgrade_html($html)
     // 3) A bare audio URL on its own line / cell.
     $html = preg_replace_callback('~(^|>|\n)(\s*)(https?://[^\s<"\']+\.(?:mp3|wav|m4a|aac|oga|flac|opus))(\s*)(?=<|\n|$)~i', function ($m) {
         return $m[1] . $m[2] . nias_audio_player_html($m[3]) . $m[4];
+    }, $html);
+
+    // 4) A bare video URL on its own line / cell → Plyr video player.
+    $html = preg_replace_callback('~(^|>|\n)(\s*)(https?://[^\s<"\']+\.(?:mp4|m4v|webm|ogv|mov))(\?[^\s<"\']*)?(\s*)(?=<|\n|$)~i', function ($m) {
+        $url = $m[3] . (isset($m[4]) ? $m[4] : '');
+        return $m[1] . $m[2] . nias_video_player_html($url) . $m[5];
+    }, $html);
+
+    // 5) A video URL wrapped in an anchor tag: <a href="...mp4">…</a>
+    $html = preg_replace_callback('~<a\b[^>]*\bhref\s*=\s*["\']([^"\']+\.(?:mp4|m4v|webm|ogv|mov)(?:\?[^"\']*)?)["\'][^>]*>.*?</a>~is', function ($m) {
+        return nias_video_player_html($m[1]);
     }, $html);
 
     return $html;

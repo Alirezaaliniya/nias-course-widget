@@ -242,7 +242,7 @@ if ($lesson_single["private_lesson"] !== "no") {
         echo $settings['nsprivatetextcontent'];
     }
 } elseif ($lesson_single["private_lesson"] !== "yes") {
-    echo $lesson_single['lesson_content'];
+    echo nias_audio_upgrade_html($lesson_single['lesson_content']);
 }
 ?>
 </div>
