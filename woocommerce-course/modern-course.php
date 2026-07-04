@@ -117,7 +117,39 @@ function nias_modern_course_render_content($content)
     if (function_exists('shortcode_unautop')) {
         $content = shortcode_unautop($content);
     }
-    return do_shortcode($content);                      // [audio], [video], …
+    $content = do_shortcode($content); // [audio], [video] → our overrides run here
+
+    // Catch anything that slipped through (MediaElement fallback, bare URLs
+    // that were auto-embedded as links, etc.)
+    // Suppress the inline asset printing — modern-course loads them globally.
+    if (function_exists('nias_audio_upgrade_html')) {
+        // Mark assets as already-printed so nias_audio/video_player_assets()
+        // don't inject <style>/<script> blocks into the JSON-serialised string.
+        _nias_suppress_inline_player_assets();
+        $content = nias_audio_upgrade_html($content);
+    }
+
+    return $content;
+}
+
+/**
+ * Pre-mark the inline player asset flags as "already printed" so that
+ * nias_audio_player_assets() / nias_video_player_assets() become no-ops.
+ * Call this before nias_audio_upgrade_html() runs inside a context where
+ * assets are loaded by other means (e.g. modern-course bundles them globally).
+ */
+function _nias_suppress_inline_player_assets()
+{
+    // The two asset functions use static variables; the only portable way to
+    // flip them from outside is to call the functions once while output
+    // buffering suppresses the actual output.
+    static $done = false;
+    if ($done) { return; }
+    $done = true;
+    ob_start();
+    if (function_exists('nias_audio_player_assets')) { nias_audio_player_assets(); }
+    if (function_exists('nias_video_player_assets'))  { nias_video_player_assets(); }
+    ob_end_clean(); // discard the CSS/JS — modern-course loads it globally
 }
 
 /**
@@ -409,6 +441,127 @@ function nias_modern_course_assets()
         return;
     }
     $printed = true;
+
+    // Always load Plyr assets so nias-vp-wrap / nias-ap players inside lesson
+    // content (which lands in the DOM via JS) work without a separate inline print.
+    $base    = plugin_dir_url(NIAS_COURSE . 'nias-course-widget.php');
+    $css_ver = NIAS_COURSE_VERSION;
+    ?>
+    <link rel="stylesheet" href="<?php echo esc_url($base . 'assets/niasplyr.css?v=' . $css_ver); ?>" />
+    <script src="<?php echo esc_url($base . 'assets/niasplyrscript.js?v=' . $css_ver); ?>"></script>
+    <style>
+    /* Plyr video wrapper used inside lesson content */
+    .nias-vp-wrap{width:100%;margin:10px 0;border-radius:12px;overflow:hidden;background:#000}
+    .nias-vp-wrap .plyr{border-radius:12px}
+    /* Waveform audio player used inside lesson content */
+    .nias-ap{--nias-ap-accent:#1e83f0;box-sizing:border-box;display:flex;align-items:center;gap:14px;width:100%;max-width:560px;margin:10px 0;padding:12px 14px;border-radius:16px;background:linear-gradient(135deg,#f3f7fb,#e9eef5);border:1px solid #e2e8f0;direction:rtl}
+    .nias-ap *{box-sizing:border-box}
+    .nias-ap-btn{width:46px;height:46px;flex:none;border:0;border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;color:#fff;background:var(--nias-ap-accent);box-shadow:0 8px 18px -6px rgba(30,131,240,.7);transition:transform .15s}
+    .nias-ap-btn:hover{transform:scale(1.07)}
+    .nias-ap-btn svg{width:20px;height:20px;fill:currentColor}
+    .nias-ap-main{flex:1;min-width:0;display:flex;flex-direction:column;gap:6px}
+    .nias-ap-wave{display:flex;align-items:center;gap:2px;height:34px;cursor:pointer;direction:ltr}
+    .nias-ap-bar{flex:1 1 0;min-width:2px;border-radius:99px;background:rgba(30,60,90,.18);transition:background .15s,transform .15s}
+    .nias-ap-bar.on{background:var(--nias-ap-accent)}
+    .nias-ap-wave:hover .nias-ap-bar{transform:scaleY(1.08)}
+    .nias-ap-time{font-size:12.5px;font-weight:600;color:#5b666c;font-variant-numeric:tabular-nums;direction:ltr;align-self:flex-start}
+    .nias-ap-time .sep{opacity:.5;margin:0 4px}
+    .nias-ap audio{display:none}
+    </style>
+    <script>
+    /* ── Nias inline media player bootstrap (used inside lesson content) ── */
+    (function () {
+        var PLAY  = '<svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>';
+        var PAUSE = '<svg viewBox="0 0 24 24"><path d="M7 5h4v14H7zM13 5h4v14h-4z"/></svg>';
+
+        /* ---- waveform audio ---- */
+        function buildAudio(box) {
+            if (!box || box.getAttribute('data-nias-ap-ready') === '1') { return; }
+            var src = box.getAttribute('data-src');
+            if (!src) { return; }
+            box.setAttribute('data-nias-ap-ready', '1');
+            var NB = 40, bars = '';
+            for (var i = 0; i < NB; i++) {
+                var r = Math.abs(Math.sin((i + 1) * 12.9898) * 43758.5453); r -= Math.floor(r);
+                bars += '<span class="nias-ap-bar" data-i="' + i + '" style="height:' + Math.round(24 + r * 76) + '%"></span>';
+            }
+            function fa(n) { return String(n).replace(/[0-9]/g, function (d) { return '۰۱۲۳۴۵۶۷۸۹'[d]; }); }
+            function fmt(t) { t = Math.max(0, Math.floor(t||0)); var m = Math.floor(t/60), s = t%60; return fa(m)+':'+fa(s<10?'0'+s:s); }
+            box.innerHTML =
+                '<button type="button" class="nias-ap-btn" data-act="toggle" aria-label="پخش/توقف">' + PLAY + '</button>' +
+                '<div class="nias-ap-main"><div class="nias-ap-wave" role="slider" aria-label="نوار پخش صوت">' + bars + '</div>' +
+                '<div class="nias-ap-time"><span class="cur">۰:۰۰</span><span class="sep">/</span><span class="dur">۰:۰۰</span></div></div>';
+            var a = document.createElement('audio'); a.preload = 'metadata'; a.src = src;
+            box.appendChild(a);
+            var btn = box.querySelector('[data-act="toggle"]');
+            var curEl = box.querySelector('.cur'), durEl = box.querySelector('.dur');
+            var barEls = box.querySelectorAll('.nias-ap-bar');
+            function paint() {
+                var d = a.duration||0, lit = d ? Math.round(a.currentTime/d*NB) : 0;
+                for (var i=0;i<barEls.length;i++) { barEls[i].classList.toggle('on', i<lit); }
+                curEl.textContent = fmt(a.currentTime);
+            }
+            btn.addEventListener('click', function () { a.paused ? a.play() : a.pause(); });
+            a.addEventListener('play',           function () { btn.innerHTML = PAUSE; });
+            a.addEventListener('pause',          function () { btn.innerHTML = PLAY; });
+            a.addEventListener('loadedmetadata', function () { durEl.textContent = fmt(a.duration); paint(); });
+            a.addEventListener('timeupdate', paint);
+            a.addEventListener('ended',          function () { btn.innerHTML = PLAY; paint(); });
+            box.querySelector('.nias-ap-wave').addEventListener('click', function (ev) {
+                var b = ev.target && ev.target.closest ? ev.target.closest('.nias-ap-bar') : null;
+                if (!b || !a.duration) { return; }
+                try { a.currentTime = (parseInt(b.getAttribute('data-i'),10)+0.5)/NB*a.duration; } catch(e){}
+                paint();
+            });
+        }
+
+        /* ---- Plyr video ---- */
+        function buildVideo(wrap) {
+            if (!wrap || wrap.getAttribute('data-plyr-ready') === '1') { return; }
+            var src = wrap.getAttribute('data-src');
+            if (!src) { return; }
+            wrap.setAttribute('data-plyr-ready', '1');
+            var vid = document.createElement('video');
+            vid.setAttribute('playsinline', ''); vid.setAttribute('controls', '');
+            vid.style.width = '100%';
+            var source = document.createElement('source'); source.src = src;
+            vid.appendChild(source); wrap.appendChild(vid);
+            if (typeof Plyr !== 'undefined') {
+                new Plyr(vid, {
+                    controls: ['play-large','play','rewind','fast-forward','progress','current-time','duration','mute','volume','settings','fullscreen'],
+                    settings: ['speed'],
+                    speed: { selected: 1, options: [0.5, 0.75, 1, 1.25, 1.5, 1.75, 2] }
+                });
+            }
+        }
+
+        /* ---- scan a container (or whole document) ---- */
+        function scanMedia(root) {
+            var r = root || document;
+            r.querySelectorAll('.nias-ap[data-src]').forEach(buildAudio);
+            r.querySelectorAll('.nias-vp-wrap[data-src]').forEach(buildVideo);
+        }
+
+        /* expose globally so NiasModernCourse can call it after DOM updates */
+        window.NiasMedia = { scan: scanMedia, buildAudio: buildAudio, buildVideo: buildVideo };
+
+        /* initial scan on DOMContentLoaded */
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', function () { scanMedia(); });
+        } else {
+            scanMedia();
+        }
+    })();
+    </script>
+    <?php
+    nias_modern_course_script();
+}
+
+/**
+ * The shared front-end controller (printed once).
+ */
+function nias_modern_course_script()
+{
     ?>
     <style>
     .nmc,.nmc *{box-sizing:border-box}
@@ -452,6 +605,9 @@ function nias_modern_course_assets()
     .nmc-player{background:#0e1518;border-radius:18px;overflow:hidden;box-shadow:0 14px 40px rgba(14,21,24,.28)}
     .nmc-stage{position:relative;width:100%;aspect-ratio:16/9;background:#0e1518}
     .nmc-stage video,.nmc-stage iframe{width:100%;height:100%;border:0;background:#0e1518}
+    .nmc-stage .plyr{width:100%;height:100%}
+    .nmc-stage .plyr--video{height:100%}
+    .nmc-stage .plyr__video-wrapper{height:100%}
     .nmc-embed{position:absolute;inset:0;width:100%;height:100%;overflow:hidden}
     .nmc-embed iframe{width:100%!important;height:100%!important;border:0}
     .nmc-embed .h_iframe-aparat_embed_frame,.nmc-embed .h_iframe-aparat_embed_frame span{position:static!important;padding:0!important;height:100%!important;display:block}
@@ -592,14 +748,6 @@ function nias_modern_course_assets()
     .nmc-cert-verify{display:inline-flex;align-items:center;justify-content:center;gap:8px;background:#fff;border:1px solid #d4dadd;color:#2b363c;text-decoration:none;font-weight:600;font-size:13px;padding:11px;border-radius:11px}
     </style>
     <?php
-    nias_modern_course_script();
-}
-
-/**
- * The shared front-end controller (printed once).
- */
-function nias_modern_course_script()
-{
     ?>
     <script>
     (function () {
@@ -827,12 +975,26 @@ function nias_modern_course_script()
             var stage = el('div', { 'class': 'nmc-stage' });
 
             if (t === 'video') {
-                var v = el('video', { controls: '', playsinline: '', preload: 'metadata', src: cur.videoSrc });
-                v.addEventListener('timeupdate', function (e) { self.onVideoTime(e); });
-                v.addEventListener('loadedmetadata', function (e) { self.onVideoLoaded(e); });
-                v.addEventListener('ended', function () { self.onVideoEnded(); });
+                var v = el('video', { playsinline: '', preload: 'metadata', src: cur.videoSrc });
                 this._video = v;
                 stage.appendChild(v);
+                // Wrap with Plyr (full controls + speed)
+                if (typeof Plyr !== 'undefined') {
+                    var plyrInst = new Plyr(v, {
+                        controls: ['play-large','play','rewind','fast-forward','progress','current-time','duration','mute','volume','settings','fullscreen'],
+                        settings: ['speed'],
+                        speed: { selected: 1, options: [0.5, 0.75, 1, 1.25, 1.5, 1.75, 2] }
+                    });
+                    // Use Plyr events so progress/resume still work
+                    plyrInst.on('timeupdate', function (e) { self.onVideoTime({ target: v }); });
+                    plyrInst.on('loadedmetadata', function (e) { self.onVideoLoaded({ target: v }); });
+                    plyrInst.on('ended', function () { self.onVideoEnded(); });
+                } else {
+                    v.addEventListener('timeupdate', function (e) { self.onVideoTime(e); });
+                    v.addEventListener('loadedmetadata', function (e) { self.onVideoLoaded(e); });
+                    v.addEventListener('ended', function () { self.onVideoEnded(); });
+                    v.setAttribute('controls', '');
+                }
             } else if (t === 'iframe') {
                 stage.appendChild(el('iframe', { src: cur.videoSrc, allow: 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; fullscreen', allowfullscreen: '' }));
             } else if (t === 'audio') {
@@ -874,6 +1036,8 @@ function nias_modern_course_script()
             // Execute any embed scripts (e.g. Aparat) that came in the lesson
             // text or the pasted preview embed snippet.
             if (t === 'text' || t === 'embedcode') { runScripts(stage); }
+            // Init any nias-vp-wrap / nias-ap players inside the text content.
+            if (window.NiasMedia) { window.NiasMedia.scan(stage); }
 
             // restore saved position for the media element (video or audio)
             if (t === 'video' || t === 'audio') {
@@ -1016,6 +1180,8 @@ function nias_modern_course_script()
 
             // Run embed scripts (e.g. Aparat) pasted into the description tab.
             runScripts(host.querySelector('.nmc-tabbody'));
+            // Init any nias-vp-wrap / nias-ap players inside the description tab.
+            if (window.NiasMedia) { window.NiasMedia.scan(host.querySelector('.nmc-tabbody')); }
 
             host.querySelector('[data-act="prev"]').addEventListener('click', function () { self.go(-1); });
             host.querySelector('[data-act="next"]').addEventListener('click', function () { self.go(1); });

@@ -184,7 +184,11 @@ function nias_video_player_assets()
                 vid.appendChild(source);
                 wrap.appendChild(vid);
                 if (typeof Plyr !== 'undefined') {
-                    new Plyr(vid, { controls: ['play-large','play','progress','current-time','mute','volume','fullscreen'] });
+                    new Plyr(vid, {
+                        controls: ['play-large','play','rewind','fast-forward','progress','current-time','duration','mute','volume','settings','fullscreen'],
+                        settings: ['speed'],
+                        speed: { selected: 1, options: [0.5, 0.75, 1, 1.25, 1.5, 1.75, 2] }
+                    });
                 }
             });
         }
@@ -219,62 +223,184 @@ function nias_video_player_html($src)
 }
 
 /**
- * Convert audio references inside free-form HTML into beautiful players:
- *   - [audio src="…"] (and mp3/wav/… variants) shortcodes,
- *   - <audio …><source src="…"></audio> blocks,
- *   - a bare audio URL standing on its own.
- *   - a bare video URL (mp4/webm/…) standing on its own → Plyr video player.
+ * Register WordPress shortcode overrides so [video], [audio], and [embed]
+ * containing direct media files always use our players instead of the
+ * default MediaElement.js / oEmbed output.
  *
- * Everything else is returned untouched.
+ * Runs at plugins_loaded (priority 1) so the overrides are in place before
+ * Elementor or any other plugin processes content via do_shortcode().
+ */
+function _nias_register_shortcode_overrides()
+{
+    // Override [video …] shortcode with Plyr
+    add_shortcode('video', function ($atts) {
+        $atts = shortcode_atts([
+            'src' => '', 'mp4' => '', 'm4v' => '', 'webm' => '', 'ogv' => '', 'mov' => '',
+        ], (array) $atts, 'video');
+        $url = '';
+        foreach (['src', 'mp4', 'm4v', 'webm', 'ogv', 'mov'] as $k) {
+            if (!empty($atts[$k])) { $url = $atts[$k]; break; }
+        }
+        if ($url === '') { return ''; }
+        return nias_video_player_html($url);
+    });
+
+    // Override [audio …] shortcode with waveform player
+    add_shortcode('audio', function ($atts) {
+        $atts = shortcode_atts([
+            'src' => '', 'mp3' => '', 'm4a' => '', 'wav' => '',
+            'ogg' => '', 'oga' => '', 'aac' => '', 'flac' => '',
+        ], (array) $atts, 'audio');
+        $url = '';
+        foreach (['src', 'mp3', 'm4a', 'wav', 'ogg', 'oga', 'aac', 'flac'] as $k) {
+            if (!empty($atts[$k])) { $url = $atts[$k]; break; }
+        }
+        if ($url === '') { return ''; }
+        return nias_audio_player_html($url);
+    });
+
+    // Intercept [embed]…[/embed] whose content is a direct video file URL.
+    // WP_Embed::run_shortcode() converts [embed] tags before do_shortcode()
+    // runs; it calls wp_oembed_get() which triggers pre_oembed_result first.
+    add_filter('pre_oembed_result', function ($result, $url) {
+        if ($result !== null) { return $result; }
+        if (preg_match('/\.(mp4|m4v|webm|ogv|mov)(\?.*)?$/i', $url)) {
+            return nias_video_player_html($url);
+        }
+        return $result;
+    }, 1, 2);
+
+    // Fallback: WP_Embed turns unresolved URLs into plain <a> links via
+    // embed_maybe_make_link — catch direct video URLs here too.
+    add_filter('embed_maybe_make_link', function ($html, $url) {
+        if (preg_match('/\.(mp4|m4v|webm|ogv|mov)(\?.*)?$/i', $url)) {
+            return nias_video_player_html($url);
+        }
+        return $html;
+    }, 1, 2);
+
+    // Also intercept the oembed_result filter (fires after a successful fetch).
+    add_filter('oembed_result', function ($html, $url) {
+        if (preg_match('/\.(mp4|m4v|webm|ogv|mov)(\?.*)?$/i', $url)) {
+            return nias_video_player_html($url);
+        }
+        return $html;
+    }, 1, 2);
+}
+// Run as early as possible so overrides are in place when Elementor renders
+add_action('plugins_loaded', '_nias_register_shortcode_overrides', 1);
+
+
+
+/** Extract a URL from a shortcode attribute string. */
+function _nias_attr_url($atts_str, $keys)
+{
+    foreach ((array) $keys as $k) {
+        if (preg_match('/\b' . preg_quote($k, '/') . '\s*=\s*["\']([^"\']+)["\']/i', $atts_str, $m)) {
+            return $m[1];
+        }
+    }
+    return '';
+}
+
+/* ─────────────────── MAIN UPGRADE FUNCTION ──────────────────── */
+
+/**
+ * Convert all media references (shortcodes + HTML + bare URLs) into
+ * beautiful Nias players. Must be called BEFORE do_shortcode().
  *
- * @param string $html
+ * @param string $raw Raw content that may contain WP shortcodes.
  * @return string
  */
-function nias_audio_upgrade_html($html)
+function nias_audio_upgrade_html($raw)
 {
-    $html = (string) $html;
-    if ($html === '') {
-        return $html;
-    }
-    // If both player types are already present, skip re-processing
-    $has_audio = stripos($html, 'nias-ap') !== false;
-    $has_video = stripos($html, 'nias-vp-wrap') !== false;
-    if ($has_audio && $has_video) {
-        return $html; // already fully upgraded
-    }
+    $raw = (string) $raw;
+    if ($raw === '') { return $raw; }
 
-    // 1) [audio src="…"] shortcodes.
-    $html = preg_replace_callback('/\[audio\b([^\]]*)\]/i', function ($m) {
-        if (preg_match('/(?:src|mp3|m4a|wav|ogg|oga|aac|flac)\s*=\s*["\']([^"\']+)["\']/i', $m[1], $u)) {
-            return nias_audio_player_html($u[1]);
-        }
-        return $m[0];
-    }, $html);
+    // 0. [embed]…video_url…[/embed] wrapping a direct video file
+    $raw = preg_replace_callback(
+        '/\[embed\](.*?)\[\/embed\]/is',
+        function ($m) {
+            $url = trim(strip_tags($m[1]));
+            if (preg_match('/\.(mp4|m4v|webm|ogv|mov)(\?.*)?$/i', $url)) {
+                return nias_video_player_html($url);
+            }
+            return $m[0]; // non-video embeds (YouTube/Aparat) → leave for WP
+        },
+        $raw
+    );
 
-    // 2) <audio …>…</audio> blocks — use the element's src or first <source>.
-    $html = preg_replace_callback('/<audio\b[^>]*>.*?<\/audio>/is', function ($m) {
+    // 1. [video …] shortcode + optional [/video] → Plyr
+    $raw = preg_replace_callback(
+        '/\[video\b([^\]]*)\](?:\[\/video\])?/i',
+        function ($m) {
+            $url = _nias_attr_url($m[1], ['src', 'mp4', 'm4v', 'webm', 'ogv', 'mov']);
+            return $url !== '' ? nias_video_player_html($url) : $m[0];
+        },
+        $raw
+    );
+
+    // 2. [audio …] shortcode + optional [/audio] → waveform
+    $raw = preg_replace_callback(
+        '/\[audio\b([^\]]*)\](?:\[\/audio\])?/i',
+        function ($m) {
+            $url = _nias_attr_url($m[1], ['src', 'mp3', 'm4a', 'wav', 'ogg', 'oga', 'aac', 'flac']);
+            return $url !== '' ? nias_audio_player_html($url) : $m[0];
+        },
+        $raw
+    );
+
+    // 3. <audio …>…</audio> HTML blocks
+    $raw = preg_replace_callback('/<audio\b[^>]*>.*?<\/audio>/is', function ($m) {
         if (preg_match('/<audio\b[^>]*\bsrc\s*=\s*["\']([^"\']+)["\']/i', $m[0], $u)
             || preg_match('/<source\b[^>]*\bsrc\s*=\s*["\']([^"\']+)["\']/i', $m[0], $u)) {
             return nias_audio_player_html($u[1]);
         }
         return $m[0];
-    }, $html);
+    }, $raw);
 
-    // 3) A bare audio URL on its own line / cell.
-    $html = preg_replace_callback('~(^|>|\n)(\s*)(https?://[^\s<"\']+\.(?:mp3|wav|m4a|aac|oga|flac|opus))(\s*)(?=<|\n|$)~i', function ($m) {
-        return $m[1] . $m[2] . nias_audio_player_html($m[3]) . $m[4];
-    }, $html);
+    // 4. Bare video URL on its own line
+    $raw = preg_replace_callback(
+        '~(^|>|\n)(\s*)(https?://[^\s<"\']+\.(?:mp4|m4v|webm|ogv|mov))(\?[^\s<"\']*)?(\s*)(?=<|\n|$)~i',
+        function ($m) {
+            $url = $m[3] . (isset($m[4]) ? $m[4] : '');
+            return $m[1] . $m[2] . nias_video_player_html($url) . $m[5];
+        },
+        $raw
+    );
 
-    // 4) A bare video URL on its own line / cell → Plyr video player.
-    $html = preg_replace_callback('~(^|>|\n)(\s*)(https?://[^\s<"\']+\.(?:mp4|m4v|webm|ogv|mov))(\?[^\s<"\']*)?(\s*)(?=<|\n|$)~i', function ($m) {
-        $url = $m[3] . (isset($m[4]) ? $m[4] : '');
-        return $m[1] . $m[2] . nias_video_player_html($url) . $m[5];
-    }, $html);
+    // 5. Bare audio URL on its own line
+    $raw = preg_replace_callback(
+        '~(^|>|\n)(\s*)(https?://[^\s<"\']+\.(?:mp3|wav|m4a|aac|oga|flac|opus))(\s*)(?=<|\n|$)~i',
+        function ($m) {
+            return $m[1] . $m[2] . nias_audio_player_html($m[3]) . $m[4];
+        },
+        $raw
+    );
 
-    // 5) A video URL wrapped in an anchor tag: <a href="...mp4">…</a>
-    $html = preg_replace_callback('~<a\b[^>]*\bhref\s*=\s*["\']([^"\']+\.(?:mp4|m4v|webm|ogv|mov)(?:\?[^"\']*)?)["\'][^>]*>.*?</a>~is', function ($m) {
-        return nias_video_player_html($m[1]);
-    }, $html);
+    // 6. <a href="…video…">…</a> links
+    $raw = preg_replace_callback(
+        '~<a\b[^>]*\bhref\s*=\s*["\']([^"\']+\.(?:mp4|m4v|webm|ogv|mov)(?:\?[^"\']*)?)["\'][^>]*>.*?</a>~is',
+        function ($m) { return nias_video_player_html($m[1]); },
+        $raw
+    );
 
-    return $html;
+    // 7. Already-rendered WP MediaElement [video] output → replace with Plyr.
+    // This handles the case where Elementor has already run do_shortcode()
+    // before we get the content, so [video] is already <div class="wp-video">.
+    $raw = preg_replace_callback(
+        '~<div\b[^>]*\bwp-video\b[^>]*>.*?<video\b[^>]*\bsrc\s*=\s*["\']([^"\']+)["\'][^>]*>.*?</div>~is',
+        function ($m) { return nias_video_player_html($m[1]); },
+        $raw
+    );
+
+    // 8. Already-rendered MediaElement <video> with a <source src="…"> inside
+    // (but NOT our own nias-vp-wrap videos).
+    $raw = preg_replace_callback(
+        '~<video\b(?![^>]*class="[^"]*nias)[^>]*>\s*<source\b[^>]*\bsrc\s*=\s*["\']([^"\']+\.(?:mp4|m4v|webm|ogv|mov)(?:\?[^"\']*)?)["\'][^>]*/?>.*?</video>~is',
+        function ($m) { return nias_video_player_html($m[1]); },
+        $raw
+    );
+
+    return $raw;
 }

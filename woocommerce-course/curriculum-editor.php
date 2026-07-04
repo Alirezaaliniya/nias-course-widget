@@ -517,7 +517,7 @@ function nias_curriculum_render_page()
                                 ),
                             ));
                             ?>
-                            <div class="nc-note"><span>!</span><div><?php echo esc_html__('برای درج کد امبد (آپارات/یوتیوب) که شامل iframe و استایل است، مطمئن‌ترین راه استفاده از تب «متن» است.', 'nias-course-widget'); ?></div></div>
+                            <div class="nc-note"><span>!</span><div><?php echo esc_html__('برای درج کد امبد (آپارات/یوتیوب) که شامل iframe و استایل است، مطمئن‌ترین راه استفاده از تب «کد» است.', 'nias-course-widget'); ?></div></div>
                         </div>
                     </div>
                     <div class="nc-ed-foot" id="nc-ed-foot"></div>

@@ -67,7 +67,11 @@ function nias_modal_player_script()
         var $modal   = $('#videoModal');
         var $embed   = $('#niasModalEmbed');
         var videoEl  = document.getElementById('modalVideo');
-        var player   = (typeof Plyr !== 'undefined') ? new Plyr('#modalVideo') : null;
+        var player   = (typeof Plyr !== 'undefined') ? new Plyr('#modalVideo', {
+            controls: ['play-large','play','rewind','fast-forward','progress','current-time','duration','mute','volume','settings','fullscreen'],
+            settings: ['speed'],
+            speed: { selected: 1, options: [0.5, 0.75, 1, 1.25, 1.5, 1.75, 2] }
+        }) : null;
 
         function isVideoFile(url) { return /\.(mp4|m4v|webm|ogg|ogv|mov)(\?.*)?$/i.test(url); }
 
