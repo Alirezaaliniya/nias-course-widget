@@ -54,6 +54,7 @@ function nias_course_sections_schema()
                 'video_type'   => array('type' => 'value'),
                 'video_upload' => array('type' => 'value'),
                 'video_url'    => array('type' => 'value'),
+                'video_embed'  => array('type' => 'value'),
             )),
             'lesson_download'      => array('type' => 'complex', 'fields' => array(
                 'file_type'   => array('type' => 'value'),

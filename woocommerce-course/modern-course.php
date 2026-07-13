@@ -1195,6 +1195,12 @@ function nias_modern_course_script()
             var host = this.regions.curriculum; if (!host) return;
             var d = this.d, self = this;
             var totalLessons = this.flat.length;
+            var listHost = host.querySelector('.nmc-cur-list');
+            var restoreScrollTop = listHost ? listHost.scrollTop : 0;
+            var restoreScroll = {
+                x: window.pageXOffset || document.documentElement.scrollLeft || 0,
+                y: window.pageYOffset || document.documentElement.scrollTop || 0
+            };
             var head =
                 '<div class="nmc-cur-head"><h3>سرفصل‌های دوره</h3>' +
                 '<span class="nmc-cur-meta">' + fa(d.chapters.length) + ' فصل · ' + fa(totalLessons) + ' درس</span></div>';
@@ -1244,8 +1250,15 @@ function nias_modern_course_script()
 
             host.innerHTML = head + '<div class="nmc-cur-list nmc-scroll">' + list + '</div>';
 
+            var newListHost = host.querySelector('.nmc-cur-list');
+            if (newListHost) { newListHost.scrollTop = restoreScrollTop; }
+            if (window.scrollTo) { window.scrollTo(restoreScroll.x, restoreScroll.y); }
+
             host.querySelectorAll('[data-ch]').forEach(function (b) {
-                b.addEventListener('click', function () {
+                b.addEventListener('click', function (ev) {
+                    ev.preventDefault();
+                    ev.stopPropagation();
+                    b.blur();
                     var ci = parseInt(b.getAttribute('data-ch'), 10);
                     self.state.open[ci] = !self.state.open[ci];
                     self.persist();
@@ -1253,7 +1266,12 @@ function nias_modern_course_script()
                 });
             });
             host.querySelectorAll('[data-lesson]').forEach(function (b) {
-                b.addEventListener('click', function () { self.selectLesson(b.getAttribute('data-lesson')); });
+                b.addEventListener('click', function (ev) {
+                    ev.preventDefault();
+                    ev.stopPropagation();
+                    b.blur();
+                    self.selectLesson(b.getAttribute('data-lesson'));
+                });
             });
         };
 
