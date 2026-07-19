@@ -360,6 +360,9 @@ body *:not(#wpadminbar *,i){
 .nias-sp-color { width: 100%; height: 42px; padding: 4px; border: 1px solid #e1e4ee; border-radius: 10px; background: #fff; cursor: pointer; }
 .nias-sp-code { direction: ltr; font-family: Consolas, Monaco, "Courier New", monospace; font-size: 13px; line-height: 1.7; min-height: 130px; }
 
+.nias-sp-wmgrid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+@media (max-width: 960px) { .nias-sp-wmgrid { grid-template-columns: 1fr 1fr; } }
+
 .nias-sp-preview { background: #f7f8fc; border: 1px solid #eceef6; border-radius: 12px; padding: 14px 16px; }
 .nias-sp-preview-head { font-size: 12.5px; font-weight: 700; color: #0a8a44; margin-bottom: 8px; }
 .nias-sp-preview-body pre { direction: ltr; background: #1f2640; color: #d7def0; border-radius: 9px; padding: 12px 14px; overflow: auto; font-size: 12px; line-height: 1.7; margin: 0; }

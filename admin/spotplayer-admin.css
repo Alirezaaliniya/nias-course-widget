@@ -1,20 +1,109 @@
-/* SpotPlayer License — admin order/payment metabox (Nias Course Widget) */
+/* SpotPlayer License — admin order/payment metabox (Nias Course Widget)
+ * Matches the redesigned Nias settings UI (white + #3858e9, rounded, RTL). */
 
-#nias-sp-order table { border-spacing: 0; width: 100%; }
-#nias-sp-order table td,
-#nias-sp-order table th { padding: 5px 0 !important; vertical-align: middle !important; }
+#nias-sp-order,
+#nias-sp-order * { box-sizing: border-box; }
 
-#nias-sp-order table input {
-    border-radius: 4px; border: 1px solid #999; background: #FFF;
+#nias-sp-order .nias-spbox {
+    font-family: 'Vazirmatn', sans-serif;
+    color: #16182a;
+    padding: 4px 0 6px;
 }
-#nias-sp-order table input[type=text] { width: 100%; padding: 3px 6px; }
-#nias-sp-order table input.ltr { direction: ltr; }
 
-#nias-sp-order table button {
-    width: 100%; color: #FFF; border: none; padding: 6px 0;
-    border-radius: 5px; cursor: pointer; background: #1f9d4d; margin-top: 6px;
+/* status strip */
+#nias-sp-order .nias-spbox-status {
+    display: flex; align-items: center; gap: 9px; flex-wrap: wrap;
+    border-radius: 11px; padding: 11px 14px; margin-bottom: 16px;
+    font-size: 13px; font-weight: 700;
 }
-#nias-sp-order table button:hover { filter: brightness(.95); }
-#nias-sp-order table button.remove { background: #c0392b; }
+#nias-sp-order .nias-spbox-status.is-done {
+    background: #e7f7ee; border: 1px solid #b6e6cb; color: #0a8a44;
+}
+#nias-sp-order .nias-spbox-status.is-pending {
+    background: #f7f8fc; border: 1px solid #eceef6; color: #5b6171;
+}
+#nias-sp-order .nias-spbox-status-ic { display: flex; flex-shrink: 0; }
+#nias-sp-order .nias-spbox-status-link {
+    margin-right: auto; font-size: 12px; font-weight: 700;
+    color: #3858e9; background: #eef1fe; border-radius: 8px;
+    padding: 6px 11px; text-decoration: none; box-shadow: none;
+}
+#nias-sp-order .nias-spbox-status-link:hover { background: #e2e8fe; }
 
+/* fields */
+#nias-sp-order .nias-spbox-grid {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 14px 16px; margin-bottom: 14px;
+}
+#nias-sp-order .nias-spbox-grid-3 { grid-template-columns: 1fr 1fr 1fr; }
+@media (max-width: 782px) {
+    #nias-sp-order .nias-spbox-grid,
+    #nias-sp-order .nias-spbox-grid-3 { grid-template-columns: 1fr; }
+}
+
+#nias-sp-order .nias-spbox-label {
+    display: block; font-size: 12.5px; font-weight: 700; margin-bottom: 7px;
+}
+#nias-sp-order .nias-spbox-hint {
+    font-size: 11.5px; color: #9aa0b4; margin-top: 6px; line-height: 1.8;
+}
+
+#nias-sp-order .nias-spbox-input {
+    width: 100%; font-family: inherit; font-size: 13px; color: #16182a;
+    background: #fbfcfe; border: 1px solid #e1e5f0; border-radius: 11px;
+    padding: 10px 13px; outline: none; box-shadow: none; transition: .15s;
+    min-height: 0; line-height: 1.6;
+}
+#nias-sp-order .nias-spbox-input:focus { border-color: #3858e9; background: #fff; }
+#nias-sp-order .nias-spbox-input:disabled,
+#nias-sp-order .nias-spbox-input[readonly] {
+    background: #f3f4f9; color: #6b7280; border-color: #e6e9f2; cursor: default;
+}
+#nias-sp-order .nias-spbox-ltr { direction: ltr; text-align: left; }
+#nias-sp-order .nias-spbox-input::placeholder { color: #b6bccd; }
+
+#nias-sp-order .nias-spbox-idrow { display: flex; gap: 8px; }
+#nias-sp-order .nias-spbox-idrow .nias-spbox-input { flex: 1 1 auto; }
+
+/* buttons */
+#nias-sp-order .nias-spbox-btn {
+    font-family: inherit; font-size: 12.5px; font-weight: 700;
+    border: none; border-radius: 10px; padding: 10px 16px; cursor: pointer;
+    display: inline-flex; align-items: center; gap: 7px; white-space: nowrap;
+    transition: .15s; line-height: 1.5;
+}
+#nias-sp-order .nias-spbox-btn-primary {
+    color: #fff; background: #3858e9; box-shadow: 0 6px 14px rgba(56,88,233,.28);
+}
+#nias-sp-order .nias-spbox-btn-primary:hover { background: #2c49c8; }
+#nias-sp-order .nias-spbox-btn-soft { color: #3858e9; background: #eef1fe; }
+#nias-sp-order .nias-spbox-btn-soft:hover { background: #e2e8fe; }
+#nias-sp-order .nias-spbox-btn-danger { color: #98415a; background: #fdeef1; }
+#nias-sp-order .nias-spbox-btn-danger:hover { background: #fadfe5; }
+
+#nias-sp-order .nias-spbox-actions {
+    display: flex; gap: 10px; flex-wrap: wrap;
+    border-top: 1px solid #f1f2f8; padding-top: 14px; margin-top: 2px;
+}
+
+/* license key */
+#nias-sp-order .nias-spbox-keywrap { margin-bottom: 14px; }
+#nias-sp-order textarea.nias-spbox-key {
+    resize: vertical; min-height: 52px; font-family: Consolas, Monaco, "Courier New", monospace;
+    font-size: 11.5px; line-height: 1.6; background: #f7f8fc; color: #4b5163;
+}
+#nias-sp-order .nias-spbox-keywrap .nias-spbox-btn { align-self: stretch; }
+
+/* manage-license panel (existing license) */
+#nias-sp-order .nias-spbox-manage {
+    background: #f7f8fc; border: 1px solid #eceef6; border-radius: 12px;
+    padding: 14px 16px 4px; margin-bottom: 14px;
+}
+#nias-sp-order .nias-spbox-manage-title {
+    font-size: 12.5px; font-weight: 800; color: #3858e9; margin-bottom: 12px;
+    display: flex; align-items: center; gap: 7px;
+}
+#nias-sp-order .nias-spbox-manage .nias-spbox-input { background: #fff; }
+#nias-sp-order .nias-spbox-manage textarea.nias-spbox-input { resize: vertical; min-height: 44px; }
+
+/* EDD download course-ids field */
 #nias-spot-course textarea { width: 100%; direction: ltr; min-height: 80px; }

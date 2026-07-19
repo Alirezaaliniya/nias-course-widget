@@ -345,6 +345,14 @@ function nias_curriculum_ajax_save()
     if (isset($_POST['spot_license_course']) && function_exists('nias_spot_store_course_meta') && nias_spot_enabled()) {
         nias_spot_store_course_meta($product_id, wp_unslash($_POST['spot_license_course']));
     }
+    if (isset($_POST['spot_license_devices']) && function_exists('nias_spot_store_license_extras') && nias_spot_enabled()) {
+        nias_spot_store_license_extras(
+            $product_id,
+            wp_unslash($_POST['spot_license_devices']),
+            wp_unslash($_POST['spot_license_offline'] ?? ''),
+            wp_unslash($_POST['spot_license_limit'] ?? '')
+        );
+    }
 
     // Custom product meta values (when the feature is enabled).
     if (function_exists('nias_meta_enabled') && nias_meta_enabled() && isset($_POST['meta_values'])) {
@@ -404,6 +412,9 @@ function nias_curriculum_render_page()
             'enabled'      => $spot_enabled,
             'downloadUrl'  => get_post_meta($product_id, '_spotplayer_download_url', true),
             'licenseCourse'=> $spot_enabled ? get_post_meta($product_id, '_nias_spot_course', true) : '',
+            'devices'      => $spot_enabled ? get_post_meta($product_id, '_nias_spot_devices', true) : '',
+            'offline'      => $spot_enabled ? get_post_meta($product_id, '_nias_spot_offline', true) : '',
+            'limit'        => $spot_enabled ? get_post_meta($product_id, '_nias_spot_limit', true) : '',
             'extDownload'  => NIAS_SPOT_EXT_DOWNLOAD_URL,
             'extTutorial'  => NIAS_SPOT_EXT_TUTORIAL_URL,
         ),
@@ -607,6 +618,22 @@ function nias_curriculum_render_page()
                         <label class="nc-spot-label" for="nc-spot-license"><?php echo esc_html__('شناسه دوره‌های اسپات پلیر', 'nias-course-widget'); ?></label>
                         <textarea id="nc-spot-license" class="nc-spot-input" dir="ltr" rows="2" placeholder="aaaaaaaaaaaaaaaaaaaaaaaa,bbbbbbbbbbbbbbbbbbbbbbbb"><?php echo esc_textarea($boot['spot']['licenseCourse']); ?></textarea>
                         <p class="nc-spot-hint"><?php echo esc_html__('شناسه دوره‌ها را با جداکننده , وارد کنید. با خرید محصول، لایسنس به‌صورت خودکار ساخته می‌شود. با «ذخیره همه تغییرات» ذخیره می‌شود.', 'nias-course-widget'); ?></p>
+
+                        <div style="display:grid;grid-template-columns:1fr 1fr;gap:0 12px;margin-top:14px">
+                            <div>
+                                <label class="nc-spot-label" for="nc-spot-devices"><?php echo esc_html__('حداکثر دستگاه‌ها', 'nias-course-widget'); ?></label>
+                                <input type="number" id="nc-spot-devices" class="nc-spot-input" dir="ltr" min="1" max="99" value="<?php echo esc_attr($boot['spot']['devices']); ?>" placeholder="<?php echo esc_attr__('پیش‌فرض پنل', 'nias-course-widget'); ?>">
+                            </div>
+                            <div>
+                                <label class="nc-spot-label" for="nc-spot-offline"><?php echo esc_html__('مهلت آفلاین (روز)', 'nias-course-widget'); ?></label>
+                                <input type="number" id="nc-spot-offline" class="nc-spot-input" dir="ltr" min="1" value="<?php echo esc_attr($boot['spot']['offline']); ?>" placeholder="<?php echo esc_attr__('پیش‌فرض پنل', 'nias-course-widget'); ?>">
+                            </div>
+                        </div>
+                        <p class="nc-spot-hint"><?php echo esc_html__('تعداد کل دستگاه‌هایی که خریدار می‌تواند لایسنس را رویشان فعال کند و مدت مشاهده بدون اینترنت. خالی = پیش‌فرض پنل اسپات پلیر.', 'nias-course-widget'); ?></p>
+
+                        <label class="nc-spot-label" for="nc-spot-limit" style="margin-top:14px"><?php echo esc_html__('بازه جلسات قابل دسترس', 'nias-course-widget'); ?></label>
+                        <input type="text" id="nc-spot-limit" class="nc-spot-input" dir="ltr" value="<?php echo esc_attr($boot['spot']['limit']); ?>" placeholder="1,4-6,10-">
+                        <p class="nc-spot-hint"><?php echo esc_html__('محدود کردن دسترسی به جلسات خاص؛ مثلاً «1,4-6,10-» یعنی جلسه ۱، جلسات ۴ تا ۶ و از ۱۰ به بعد. خالی = همه جلسات. روی همه دوره‌های این محصول اعمال می‌شود.', 'nias-course-widget'); ?></p>
                     </section>
                     <?php endif; ?>
 
@@ -1404,6 +1431,12 @@ function nias_curriculum_script()
             var spLicEl = document.getElementById('nc-spot-license');
             if (spUrlEl) { body.append('spot_download_url', spUrlEl.value); }
             if (spLicEl) { body.append('spot_license_course', spLicEl.value); }
+            var spDevEl = document.getElementById('nc-spot-devices');
+            var spOffEl = document.getElementById('nc-spot-offline');
+            var spLimEl = document.getElementById('nc-spot-limit');
+            if (spDevEl) { body.append('spot_license_devices', spDevEl.value); }
+            if (spOffEl) { body.append('spot_license_offline', spOffEl.value); }
+            if (spLimEl) { body.append('spot_license_limit', spLimEl.value); }
             if (DATA.instructors && DATA.instructors.enabled) {
                 var instCbs = document.querySelectorAll('.nc-inst-cb');
                 var instIds = [];
