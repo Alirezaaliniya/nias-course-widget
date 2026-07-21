@@ -350,7 +350,9 @@ function nias_curriculum_ajax_save()
             $product_id,
             wp_unslash($_POST['spot_license_devices']),
             wp_unslash($_POST['spot_license_offline'] ?? ''),
-            wp_unslash($_POST['spot_license_limit'] ?? '')
+            wp_unslash($_POST['spot_license_limit'] ?? ''),
+            wp_unslash($_POST['spot_license_expires'] ?? ''),
+            wp_unslash($_POST['spot_license_plat'] ?? '')
         );
     }
 
@@ -414,6 +416,8 @@ function nias_curriculum_render_page()
             'licenseCourse'=> $spot_enabled ? get_post_meta($product_id, '_nias_spot_course', true) : '',
             'devices'      => $spot_enabled ? get_post_meta($product_id, '_nias_spot_devices', true) : '',
             'offline'      => $spot_enabled ? get_post_meta($product_id, '_nias_spot_offline', true) : '',
+            'expires'      => $spot_enabled ? nias_spot_expires_label(get_post_meta($product_id, '_nias_spot_expires', true)) : '',
+            'plat'         => $spot_enabled ? nias_spot_parse_plat(get_post_meta($product_id, '_nias_spot_devices_plat', true)) : array_fill_keys(array_keys(nias_spot_platforms()), ''),
             'limit'        => $spot_enabled ? get_post_meta($product_id, '_nias_spot_limit', true) : '',
             'extDownload'  => NIAS_SPOT_EXT_DOWNLOAD_URL,
             'extTutorial'  => NIAS_SPOT_EXT_TUTORIAL_URL,
@@ -630,6 +634,22 @@ function nias_curriculum_render_page()
                             </div>
                         </div>
                         <p class="nc-spot-hint"><?php echo esc_html__('تعداد کل دستگاه‌هایی که خریدار می‌تواند لایسنس را رویشان فعال کند و مدت مشاهده بدون اینترنت. خالی = پیش‌فرض پنل اسپات پلیر.', 'nias-course-widget'); ?></p>
+
+                        <label class="nc-spot-label" style="margin-top:14px"><?php echo esc_html__('سقف دستگاه به تفکیک پلتفرم', 'nias-course-widget'); ?></label>
+                        <div style="display:grid;grid-template-columns:repeat(6,1fr);gap:8px">
+                            <?php foreach (nias_spot_platforms() as $pkey => $plabel) : ?>
+                                <div>
+                                    <span style="display:block;font-size:11px;color:#6b7280;margin-bottom:4px;text-align:center"><?php echo esc_html($plabel); ?></span>
+                                    <input type="number" class="nc-spot-input nc-spot-plat" data-plat="<?php echo esc_attr($pkey); ?>" dir="ltr" min="0" max="9" style="text-align:center;padding:8px 4px"
+                                           value="<?php echo esc_attr($boot['spot']['plat'][$pkey]); ?>" placeholder="<?php echo esc_attr__('خودکار', 'nias-course-widget'); ?>">
+                                </div>
+                            <?php endforeach; ?>
+                        </div>
+                        <p class="nc-spot-hint"><?php echo esc_html__('حداکثر ۹ برای هر پلتفرم. خالی = پیروی از سقف کل، و ۰ = آن پلتفرم غیرفعال شود. برای اعمال شدن، «حداکثر دستگاه‌ها» هم باید مقدار داشته باشد.', 'nias-course-widget'); ?></p>
+
+                        <label class="nc-spot-label" for="nc-spot-expires" style="margin-top:14px"><?php echo esc_html__('مدت دسترسی', 'nias-course-widget'); ?></label>
+                        <input type="text" id="nc-spot-expires" class="nc-spot-input" dir="ltr" value="<?php echo esc_attr($boot['spot']['expires']); ?>" placeholder="<?php echo esc_attr__('بدون انقضا', 'nias-course-widget'); ?>">
+                        <p class="nc-spot-hint"><?php echo esc_html__('عدد = تعداد روز از زمان فعال‌سازی لایسنس، تاریخ میلادی YYYY-MM-DD = انقضای مطلق، 0 = بدون انقضا، -1 = دسترسی غیرفعال. خالی = استفاده از مدت پیش‌فرض تنظیمات.', 'nias-course-widget'); ?></p>
 
                         <label class="nc-spot-label" for="nc-spot-limit" style="margin-top:14px"><?php echo esc_html__('بازه جلسات قابل دسترس', 'nias-course-widget'); ?></label>
                         <input type="text" id="nc-spot-limit" class="nc-spot-input" dir="ltr" value="<?php echo esc_attr($boot['spot']['limit']); ?>" placeholder="1,4-6,10-">
@@ -1436,6 +1456,12 @@ function nias_curriculum_script()
             var spLimEl = document.getElementById('nc-spot-limit');
             if (spDevEl) { body.append('spot_license_devices', spDevEl.value); }
             if (spOffEl) { body.append('spot_license_offline', spOffEl.value); }
+            var spExpEl = document.getElementById('nc-spot-expires');
+            if (spExpEl) { body.append('spot_license_expires', spExpEl.value); }
+            var spPlatEls = document.querySelectorAll('.nc-spot-plat');
+            if (spPlatEls.length) {
+                body.append('spot_license_plat', Array.prototype.map.call(spPlatEls, function (el) { return el.value.trim(); }).join(','));
+            }
             if (spLimEl) { body.append('spot_license_limit', spLimEl.value); }
             if (DATA.instructors && DATA.instructors.enabled) {
                 var instCbs = document.querySelectorAll('.nc-inst-cb');

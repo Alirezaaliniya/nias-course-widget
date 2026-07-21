@@ -54,6 +54,119 @@ function nias_spot_hex2rgba($h, $o = 1)
     return 'rgba(' . implode(',', $rgb) . ',' . min($o, 1) . ')';
 }
 
+/* =========================================================================
+ * data.expires / data.confs / awm helpers
+ *
+ * Field semantics confirmed against the live panel API (panel.spotplayer.ir),
+ * not the public docs — the docs list neither expires nor the confs bits.
+ *
+ *   data.expires = { "<courseId>": <value> }   "مدت دسترسی دوره‌ها"
+ *       -1            دسترسی غیرفعال (revokes access)
+ *        0            بدون انقضا
+ *        1..N         مدت به روز, counted from license activation
+ *        >=1e12       تاریخ مطلق, unix ms at midnight Asia/Tehran
+ * ===================================================================== */
+
+/** Bit values of data.confs, in the order the panel defines them. */
+function nias_spot_confs_map()
+{
+    return array(
+        'conf_hidden'   => 1,   // نمایش مطالب غیرفعال
+        'conf_record'   => 2,   // نمایش برنامه هنگام ضبط
+        'conf_vm'       => 4,   // اجرا در ماشین مجازی
+        'conf_disabled' => 8,   // لایسنس غیرفعال
+        'conf_noproc'   => 16,  // عدم بررسی پردازش‌ها
+    );
+}
+
+/** Build the data.confs bitmask from the saved toggles. */
+function nias_spot_confs_value()
+{
+    $confs = 0;
+    foreach (nias_spot_confs_map() as $key => $bit) {
+        if (nias_spot_opt($key) === 'on') {
+            $confs |= $bit;
+        }
+    }
+    return $confs;
+}
+
+/**
+ * Normalize a user-entered access duration into the value the API expects.
+ * Accepts: '' (unset), '0', '-1', a day count, or a YYYY-MM-DD date.
+ *
+ * @return string '' when unset/invalid, otherwise the numeric value as a string.
+ */
+function nias_spot_sanitize_expires($value)
+{
+    $value = trim((string) $value);
+    if ($value === '' || $value === '0') {
+        return $value === '0' ? '0' : '';
+    }
+    if ($value === '-1') {
+        return '-1';
+    }
+    if (preg_match('/^\d{1,5}$/', $value)) {
+        return (string) (int) $value;
+    }
+    if (preg_match('/^\d{4}-\d{2}-\d{2}$/', $value)) {
+        try {
+            $d = new DateTime($value . ' 00:00:00', new DateTimeZone('Asia/Tehran'));
+            return (string) ($d->getTimestamp() * 1000);
+        } catch (Exception $e) {
+            return '';
+        }
+    }
+    return '';
+}
+
+/** Whether a normalized expires value is usable in a payload. */
+function nias_spot_expires_set($value)
+{
+    return $value !== '' && $value !== null;
+}
+
+/** Render a stored expires value back into the form the admin typed. */
+function nias_spot_expires_label($value)
+{
+    if ($value === '' || $value === null) {
+        return '';
+    }
+    $value = (int) $value;
+    if ($value >= 1000000000000) {
+        try {
+            $d = new DateTime('@' . (int) ($value / 1000));
+            $d->setTimezone(new DateTimeZone('Asia/Tehran'));
+            return $d->format('Y-m-d');
+        } catch (Exception $e) {
+            return (string) $value;
+        }
+    }
+    return (string) $value;
+}
+
+/**
+ * Derive the audio-watermark payload from the license watermark texts.
+ * The panel requires exactly 10 digits, so an Iranian 09xxxxxxxxx number is
+ * used without its leading zero. Returns null when no text qualifies.
+ */
+function nias_spot_awm_payload($j)
+{
+    if (nias_spot_opt('awm') !== 'on' || empty($j['watermark']['texts'])) {
+        return null;
+    }
+    foreach ($j['watermark']['texts'] as $t) {
+        $digits = preg_replace('/\D+/', '', isset($t['text']) ? $t['text'] : '');
+        if (strlen($digits) === 11 && $digits[0] === '0') {
+            $digits = substr($digits, 1);
+        }
+        if (strlen($digits) === 10) {
+            return array('text' => $digits);
+        }
+    }
+    return null;
+}
+
 /**
  * Default / stored license-building code.
  * NOTE: $order / $user / $payment variable names are intentional — user code
@@ -135,11 +248,16 @@ function nias_spot_apply_watermark_style($j)
     $margin   = (int) nias_spot_opt('wm_margin');
     $position = (int) nias_spot_opt('wm_position');
 
+    $reposition = (int) nias_spot_opt('wm_reposition');
+
     if ($margin >= 1 && !isset($j['watermark']['margin'])) {
         $j['watermark']['margin'] = $margin;
     }
     if ($position >= 1 && !isset($j['watermark']['position'])) {
         $j['watermark']['position'] = $position;
+    }
+    if ($reposition >= 1 && !isset($j['watermark']['reposition'])) {
+        $j['watermark']['reposition'] = $reposition;
     }
 
     foreach ($j['watermark']['texts'] as &$t) {
@@ -172,6 +290,15 @@ function nias_spot_request_license_put($j)
         throw new Exception('واترمارک لایسنس خالی بود.', 999);
     }
     $j = nias_spot_apply_watermark_style($j);
+
+    // confs / awm are accepted only at creation time — the panel locks them afterwards.
+    if ($confs = nias_spot_confs_value()) {
+        $j['data']['confs'] = $confs;
+    }
+    if ($awm = nias_spot_awm_payload($j)) {
+        $j['awm'] = $awm;
+    }
+
     return nias_spot_request('https://panel.spotplayer.ir/license/edit/', array_merge($j, array(
         'test' => nias_spot_opt('test') === 'on' ? 1 : 0,
     )));
@@ -226,15 +353,18 @@ function nias_spot_save_settings()
     update_option('_nias_spot_code', trim((string) wp_unslash($_POST['nias_spot_code'] ?? '')));
 
     // Watermark style (numbers; empty = panel default).
-    foreach (array('wm_size' => 500, 'wm_opacity' => 100, 'wm_repeat' => 99, 'wm_margin' => 500, 'wm_position' => 511) as $key => $max) {
+    foreach (array('wm_size' => 500, 'wm_opacity' => 100, 'wm_repeat' => 99, 'wm_margin' => 1000, 'wm_position' => 511, 'wm_reposition' => 3600) as $key => $max) {
         $v = trim((string) wp_unslash($_POST['nias_spot_' . $key] ?? ''));
         update_option('_nias_spot_' . $key, ($v !== '' && (int) $v >= 1) ? min($max, (int) $v) : '');
     }
 
-    // On/off toggles.
-    foreach (array('test', 'completed', 'web', 'webonly', 'download', 'wccrs', 'wcspc') as $flag) {
+    // On/off toggles. conf_* map to the data.confs bitmask, awm to the audio watermark.
+    foreach (array('test', 'completed', 'web', 'webonly', 'download', 'wccrs', 'wcspc', 'awm', 'conf_hidden', 'conf_record', 'conf_vm', 'conf_disabled', 'conf_noproc') as $flag) {
         update_option('_nias_spot_' . $flag, (($_POST['nias_spot_' . $flag] ?? 'off') === 'on') ? 'on' : 'off');
     }
+
+    // Default access duration applied to every course of a new license.
+    update_option('_nias_spot_expires', nias_spot_sanitize_expires(wp_unslash($_POST['nias_spot_expires'] ?? '')));
 
     // "Skip old orders" stores the timestamp it was enabled at.
     if (($_POST['nias_spot_time'] ?? 'off') === 'on') {
@@ -378,8 +508,64 @@ function nias_spot_render_license_settings()
                                 <label class="nias-flabel"><?php echo esc_html__('موقعیت', 'nias-course-widget'); ?></label>
                                 <input type="number" class="nias-input nias-sp-ltr" name="nias_spot_wm_position" min="1" max="511" value="<?php echo esc_attr(nias_spot_opt('wm_position')); ?>" placeholder="511">
                             </div>
+                            <div class="nias-field">
+                                <label class="nias-flabel"><?php echo esc_html__('جابه‌جایی (ثانیه)', 'nias-course-widget'); ?></label>
+                                <input type="number" class="nias-input nias-sp-ltr" name="nias_spot_wm_reposition" min="1" max="3600" value="<?php echo esc_attr(nias_spot_opt('wm_reposition')); ?>" placeholder="15">
+                            </div>
                         </div>
                         <div class="nias-fhint"><?php echo esc_html__('موقعیت یک عدد بیتی طبق راهنمای API اسپات پلیر است؛ 511 یعنی نمایش در همه نقاط صفحه. رنگ واترمارک سفید است و فقط شفافیت آن تنظیم می‌شود.', 'nias-course-widget'); ?></div>
+                    </div>
+                <?php nias_set_card_close(); ?>
+
+                <!-- License configuration (data.confs) — creation-time only -->
+                <?php nias_set_card_open('<svg width="20" height="20" viewBox="0 0 24 24" fill="none"><rect x="4" y="4" width="16" height="16" rx="3" stroke="#3858e9" stroke-width="1.8"/><path d="m8 12 3 3 5-6" stroke="#3858e9" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>', __('پیکربندی لایسنس', 'nias-course-widget')); ?>
+                    <div class="nias-card-pad">
+                        <div class="nias-fdesc"><b style="color:#b91c1c"><?php echo esc_html__('توجه: پنل اسپات پلیر این گزینه‌ها را فقط هنگام ساخت لایسنس می‌پذیرد و پس از آن قابل تغییر نیستند. تغییر این تنظیمات فقط روی لایسنس‌هایی که از این پس ساخته می‌شوند اثر دارد.', 'nias-course-widget'); ?></b></div>
+                    </div>
+                    <?php
+                    nias_set_toggle_row(
+                        'nias_spot_conf_disabled',
+                        __('لایسنس غیرفعال', 'nias-course-widget'),
+                        __('لایسنس ساخته می‌شود ولی غیرفعال است و کاربر نمی‌تواند از آن استفاده کند.', 'nias-course-widget'),
+                        'off'
+                    );
+                    nias_set_toggle_row(
+                        'nias_spot_conf_hidden',
+                        __('نمایش مطالب غیرفعال', 'nias-course-widget'),
+                        __('محتوایی که لایسنس به آن دسترسی ندارد در فهرست پلیر نمایش داده نمی‌شود.', 'nias-course-widget'),
+                        'off'
+                    );
+                    nias_set_toggle_row(
+                        'nias_spot_conf_record',
+                        __('نمایش برنامه هنگام ضبط', 'nias-course-widget'),
+                        __('اجازه می‌دهد تصویر پلیر هنگام ضبط صفحه دیده شود. در حالت پیش‌فرض پلیر جلوی ضبط صفحه را می‌گیرد. (روی لینوکس و نسخه وب بی‌اثر است.)', 'nias-course-widget'),
+                        'off'
+                    );
+                    nias_set_toggle_row(
+                        'nias_spot_conf_vm',
+                        __('اجرا در ماشین مجازی', 'nias-course-widget'),
+                        __('اجازه اجرای پلیر داخل ماشین مجازی را می‌دهد.', 'nias-course-widget'),
+                        'off'
+                    );
+                    nias_set_toggle_row(
+                        'nias_spot_conf_noproc',
+                        __('عدم بررسی پردازش‌ها', 'nias-course-widget'),
+                        __('پلیر پردازش‌های در حال اجرای سیستم را بررسی نمی‌کند.', 'nias-course-widget'),
+                        'off'
+                    );
+                    nias_set_toggle_row(
+                        'nias_spot_awm',
+                        __('واترمارک صوتی', 'nias-course-widget'),
+                        __('شماره موبایل خریدار به صورت واترمارک صوتی روی محتوا درج می‌شود. از اولین متن واترمارک که یک شماره معتبر باشد استفاده می‌شود.', 'nias-course-widget'),
+                        'off'
+                    );
+                    ?>
+                    <div class="nias-card-pad nias-stack">
+                        <div class="nias-field" style="max-width:260px">
+                            <label class="nias-flabel"><?php echo esc_html__('مدت دسترسی پیش‌فرض', 'nias-course-widget'); ?></label>
+                            <input type="text" class="nias-input nias-sp-ltr" name="nias_spot_expires" value="<?php echo esc_attr(nias_spot_opt('expires')); ?>" placeholder="0">
+                            <div class="nias-fhint"><?php echo esc_html__('برای دوره‌هایی که مدت دسترسی جداگانه ندارند. خالی یا 0 = بدون انقضا، عدد = تعداد روز از زمان فعال‌سازی، تاریخ میلادی به شکل YYYY-MM-DD = انقضای مطلق، و -1 = دسترسی غیرفعال.', 'nias-course-widget'); ?></div>
+                        </div>
                     </div>
                 <?php nias_set_card_close(); ?>
 
@@ -615,7 +801,21 @@ function nias_spot_admin_order_box_ui($data)
                     <div class="nias-spbox-field">
                         <label class="nias-spbox-label"><?php echo esc_html__('حداکثر دستگاه‌ها', 'nias-course-widget'); ?></label>
                         <input type="number" class="nias-spbox-input nias-spbox-ltr" name="nias-spot-devices" min="1" max="99" value="<?php echo esc_attr($data['device']['p0'] ?? ''); ?>" placeholder="<?php echo esc_attr__('بدون تغییر', 'nias-course-widget'); ?>"/>
-                        <div class="nias-spbox-hint"><?php echo esc_html__('تعداد کل دستگاه‌هایی که خریدار می‌تواند استفاده کند.', 'nias-course-widget'); ?></div>
+                        <div class="nias-spbox-hint"><?php echo esc_html__('تعداد کل دستگاه‌هایی که خریدار می‌تواند استفاده کند. این مقدار بر سقف هر پلتفرم ارجحیت دارد.', 'nias-course-widget'); ?></div>
+                    </div>
+                    <div class="nias-spbox-field">
+                        <label class="nias-spbox-label"><?php echo esc_html__('سقف دستگاه به تفکیک پلتفرم', 'nias-course-widget'); ?></label>
+                        <div class="nias-spbox-platgrid">
+                            <?php foreach (nias_spot_platforms() as $pkey => $plabel) : ?>
+                                <div class="nias-spbox-plat">
+                                    <span><?php echo esc_html($plabel); ?></span>
+                                    <input type="number" class="nias-spbox-input nias-spbox-ltr" name="nias-spot-dev[<?php echo esc_attr($pkey); ?>]" min="0" max="9"
+                                           value="<?php echo esc_attr(nias_spot_device_slot($data['device'] ?? array(), $pkey)); ?>"
+                                           placeholder="<?php echo esc_attr__('خودکار', 'nias-course-widget'); ?>"/>
+                                </div>
+                            <?php endforeach; ?>
+                        </div>
+                        <div class="nias-spbox-hint"><?php echo esc_html__('حداکثر ۹ برای هر پلتفرم. خالی = پیروی از سقف کل، و ۰ = آن پلتفرم غیرفعال شود.', 'nias-course-widget'); ?></div>
                     </div>
                     <div class="nias-spbox-field">
                         <label class="nias-spbox-label"><?php echo esc_html__('بازه جلسات قابل دسترس', 'nias-course-widget'); ?></label>
@@ -629,6 +829,19 @@ function nias_spot_admin_order_box_ui($data)
                         }
                         ?></textarea>
                         <div class="nias-spbox-hint"><?php echo esc_html__('هر خط: «شناسه دوره:بازه» — یا فقط بازه برای همه دوره‌های سفارش. خالی = بدون تغییر.', 'nias-course-widget'); ?></div>
+                    </div>
+                    <div class="nias-spbox-field">
+                        <label class="nias-spbox-label"><?php echo esc_html__('مدت دسترسی دوره‌ها', 'nias-course-widget'); ?></label>
+                        <textarea class="nias-spbox-input nias-spbox-ltr" name="nias-spot-expires" rows="2" placeholder="courseId:30"><?php
+                        if (!empty($data['data']['expires']) && is_array($data['data']['expires'])) {
+                            $lines = array();
+                            foreach ($data['data']['expires'] as $cid => $val) {
+                                $lines[] = $cid . ':' . nias_spot_expires_label($val);
+                            }
+                            echo esc_textarea(implode("\n", $lines));
+                        }
+                        ?></textarea>
+                        <div class="nias-spbox-hint"><?php echo esc_html__('هر خط: «شناسه دوره:مقدار» — یا فقط مقدار برای همه دوره‌های سفارش. مقدار: 0 = بدون انقضا، عدد = روز از فعال‌سازی، YYYY-MM-DD = تاریخ انقضا، -1 = قطع دسترسی. خالی = بدون تغییر.', 'nias-course-widget'); ?></div>
                     </div>
                 </div>
             </div>
@@ -687,15 +900,17 @@ function nias_spot_store_course_meta($post_id, $course)
  * Store the per-product license extras (device cap, offline days, lesson
  * ranges) with validation. Empty/invalid values are stored as ''.
  */
-function nias_spot_store_license_extras($post_id, $devices, $offline, $limit)
+function nias_spot_store_license_extras($post_id, $devices, $offline, $limit, $expires = '', $plat = '')
 {
     $devices = trim((string) $devices);
     $offline = trim((string) $offline);
     $limit   = trim((string) $limit);
 
     update_post_meta($post_id, '_nias_spot_devices', ($devices !== '' && (int) $devices >= 1) ? min(99, (int) $devices) : '');
-    update_post_meta($post_id, '_nias_spot_offline', ($offline !== '' && (int) $offline >= 1) ? (int) $offline : '');
+    update_post_meta($post_id, '_nias_spot_devices_plat', nias_spot_format_plat(nias_spot_parse_plat($plat)));
+    update_post_meta($post_id, '_nias_spot_offline', ($offline !== '' && (int) $offline >= 1) ? min(65536, (int) $offline) : '');
     update_post_meta($post_id, '_nias_spot_limit', preg_match('/^\d+(-\d*)?(,\d+(-\d*)?)*$/', $limit) ? $limit : '');
+    update_post_meta($post_id, '_nias_spot_expires', nias_spot_sanitize_expires($expires));
 }
 
 /** Validate a lesson-range string like "0-", "1,4-6,10-". */
@@ -722,11 +937,73 @@ function nias_spot_product_extra(WC_Product $p, $key)
  * Despite the docs claiming 0-99, the API rejects per-platform values
  * above 9 ("مقدار باید حداکثر 9 باشد"), so platform slots are capped at 9.
  */
-function nias_spot_device_payload($total)
+function nias_spot_device_payload($total, $plat = array())
 {
-    $total = min(99, max(1, (int) $total));
-    $per   = min(9, $total);
-    return array('p0' => $total, 'p1' => $per, 'p2' => $per, 'p3' => $per, 'p4' => $per, 'p5' => $per, 'p6' => $per);
+    $total  = min(99, max(1, (int) $total));
+    $per    = min(9, $total);
+    $device = array('p0' => $total);
+    foreach (nias_spot_platforms() as $key => $label) {
+        $v = isset($plat[$key]) ? trim((string) $plat[$key]) : '';
+        // Empty means "follow the overall cap"; 0 disables the platform entirely.
+        $device[$key] = ($v === '') ? $per : min(9, max(0, (int) $v));
+    }
+    return $device;
+}
+
+/** Per-platform device slots, in the order the panel defines them. */
+function nias_spot_platforms()
+{
+    return array(
+        'p1' => 'ویندوز',
+        'p2' => 'مکینتاش',
+        'p3' => 'لینوکس',
+        'p4' => 'اندروید',
+        'p5' => 'آیفون',
+        'p6' => 'وب',
+    );
+}
+
+/** "2,1,,1,0,1" -> array('p1'=>2,'p2'=>1,'p3'=>'',...). Invalid entries become ''. */
+function nias_spot_parse_plat($str)
+{
+    $parts = array_map('trim', explode(',', (string) $str));
+    $out   = array();
+    $i     = 0;
+    foreach (array_keys(nias_spot_platforms()) as $key) {
+        $v         = isset($parts[$i]) ? $parts[$i] : '';
+        $out[$key] = ($v !== '' && ctype_digit($v)) ? (string) min(9, (int) $v) : '';
+        $i++;
+    }
+    return $out;
+}
+
+/** Inverse of nias_spot_parse_plat(); returns '' when nothing is set. */
+function nias_spot_format_plat($plat)
+{
+    $vals = array();
+    $any  = false;
+    foreach (array_keys(nias_spot_platforms()) as $key) {
+        $v = isset($plat[$key]) ? trim((string) $plat[$key]) : '';
+        $v = ($v !== '' && ctype_digit($v)) ? (string) min(9, (int) $v) : '';
+        if ($v !== '') {
+            $any = true;
+        }
+        $vals[] = $v;
+    }
+    return $any ? implode(',', $vals) : '';
+}
+
+/** Read a device slot from an API response, which uses {"max":N} or a bare N. */
+function nias_spot_device_slot($device, $key)
+{
+    if (!isset($device[$key])) {
+        return '';
+    }
+    $v = $device[$key];
+    if (is_array($v)) {
+        return isset($v['max']) ? (string) $v['max'] : '';
+    }
+    return (string) $v;
 }
 
 /**
@@ -740,6 +1017,11 @@ function nias_spot_woo_order_license_extras(WC_Order $ord)
     $devices = 0;
     $offline = 0;
     $limit   = array();
+    $expires = array();
+    $plat    = array_fill_keys(array_keys(nias_spot_platforms()), '');
+
+    // Falls back to the global default when a product sets no duration of its own.
+    $default_expires = nias_spot_sanitize_expires(nias_spot_opt('expires'));
 
     foreach ($ord->get_items() as $i) {
         if (!($i instanceof WC_Order_Item_Product) || !(($p = $i->get_product()) instanceof WC_Product) || !($c = $p->get_meta('_nias_spot_course'))) {
@@ -747,22 +1029,40 @@ function nias_spot_woo_order_license_extras(WC_Order $ord)
         }
         $devices = max($devices, (int) nias_spot_product_extra($p, '_nias_spot_devices'));
         $offline = max($offline, (int) nias_spot_product_extra($p, '_nias_spot_offline'));
+
+        // Per-platform caps: the most permissive value across the order's items wins.
+        foreach (nias_spot_parse_plat(nias_spot_product_extra($p, '_nias_spot_devices_plat')) as $k => $v) {
+            if ($v !== '') {
+                $plat[$k] = ($plat[$k] === '') ? $v : (string) max((int) $plat[$k], (int) $v);
+            }
+        }
+
         $range   = trim((string) nias_spot_product_extra($p, '_nias_spot_limit'));
-        if ($range !== '' && nias_spot_valid_limit_range($range)) {
-            foreach (explode(',', $c) as $cid) {
+        $exp     = nias_spot_sanitize_expires(nias_spot_product_extra($p, '_nias_spot_expires'));
+        if (!nias_spot_expires_set($exp)) {
+            $exp = $default_expires;
+        }
+        foreach (explode(',', $c) as $cid) {
+            if ($range !== '' && nias_spot_valid_limit_range($range)) {
                 $limit[$cid] = $range;
+            }
+            if (nias_spot_expires_set($exp)) {
+                $expires[$cid] = (int) $exp;
             }
         }
     }
 
     if ($devices >= 1) {
-        $extras['device'] = nias_spot_device_payload($devices);
+        $extras['device'] = nias_spot_device_payload($devices, $plat);
     }
     if ($offline >= 1) {
         $extras['offline'] = $offline;
     }
     if (!empty($limit)) {
-        $extras['data'] = array('limit' => $limit);
+        $extras['data']['limit'] = $limit;
+    }
+    if (!empty($expires)) {
+        $extras['data']['expires'] = $expires;
     }
     return $extras;
 }
@@ -836,7 +1136,11 @@ function nias_spot_build_update_payload($courses)
 
     $devices = trim((string) ($_POST['nias-spot-devices'] ?? ''));
     if ($devices !== '' && (int) $devices >= 1) {
-        $payload['device'] = nias_spot_device_payload($devices);
+        $plat = array();
+        foreach (array_keys(nias_spot_platforms()) as $pkey) {
+            $plat[$pkey] = trim((string) ($_POST['nias-spot-dev'][$pkey] ?? ''));
+        }
+        $payload['device'] = nias_spot_device_payload($devices, $plat);
     }
 
     $limit = array();
@@ -857,7 +1161,29 @@ function nias_spot_build_update_payload($courses)
         }
     }
     if (!empty($limit)) {
-        $payload['data'] = array('limit' => $limit);
+        $payload['data']['limit'] = $limit;
+    }
+
+    $expires = array();
+    foreach (preg_split('/[\r\n]+/', (string) wp_unslash($_POST['nias-spot-expires'] ?? '')) as $line) {
+        $line = trim($line);
+        if ($line === '') {
+            continue;
+        }
+        if (strpos($line, ':') !== false) {
+            list($cid, $val) = array_map('trim', explode(':', $line, 2));
+            $val = nias_spot_sanitize_expires($val);
+            if (preg_match('/^[0-9a-f]{24}$/i', $cid) && nias_spot_expires_set($val)) {
+                $expires[$cid] = (int) $val;
+            }
+        } elseif (nias_spot_expires_set($val = nias_spot_sanitize_expires($line))) {
+            foreach ($courses as $cid) {
+                $expires[$cid] = (int) $val;
+            }
+        }
+    }
+    if (!empty($expires)) {
+        $payload['data']['expires'] = $expires;
     }
 
     return $payload;
