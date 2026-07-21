@@ -388,8 +388,8 @@ function nias_spot_render_license_settings()
                     <?php
                     nias_set_toggle_row(
                         'nias_spot_web',
-                        __('نمایش نسخه وب در سایت', 'nias-course-widget'),
-                        __('در صورتی که نسخه وب برای لایسنس فعال باشد، پلیر تحت وب در سایت شما نمایش داده می‌شود.', 'nias-course-widget'),
+                        __('نمایش بخش «مشاهده در پلیر وب»', 'nias-course-widget'),
+                        __('در صورتی که نسخه وب برای لایسنس فعال باشد، پلیر تحت وب در سایت شما نمایش داده می‌شود. با خاموش بودن، این بخش به کاربر نمایش داده نمی‌شود.', 'nias-course-widget'),
                         'off'
                     );
                     nias_set_toggle_row(
@@ -400,13 +400,13 @@ function nias_spot_render_license_settings()
                         '',
                         'data-nias-show-when="nias_spot_web=on"'
                     );
+                    // Not gated on webonly: a stale webonly=on used to hide this row
+                    // with no way to reach it again.
                     nias_set_toggle_row(
                         'nias_spot_download',
-                        __('نمایش لیست دانلود', 'nias-course-widget'),
-                        __('چون برنامه فایل‌ها را خودکار دانلود و نمایش می‌دهد، فعال کردن این گزینه پیشنهاد نمی‌شود و پشتیبانی کاربران در این حالت به عهده ناشر است.', 'nias-course-widget'),
-                        'off',
-                        '',
-                        'data-nias-show-when="nias_spot_webonly=off"'
+                        __('نمایش بخش «دانلود ویدیوها»', 'nias-course-widget'),
+                        __('چون برنامه فایل‌ها را خودکار دانلود و نمایش می‌دهد، فعال کردن این گزینه پیشنهاد نمی‌شود و پشتیبانی کاربران در این حالت به عهده ناشر است. در حالت «فقط نمایش نسخه وب» این بخش نمایش داده نمی‌شود.', 'nias-course-widget'),
+                        'off'
                     );
                     if ($platform === 1) {
                         nias_set_toggle_row(
@@ -1239,6 +1239,180 @@ function nias_spot_shortcode()
     return $p === 1 ? nias_spot_woo_shortcode() : ($p === 2 ? nias_spot_edd_shortcode() : 'ووکامرس یا EDD نصب نشده است.');
 }
 
+/* =========================================================================
+ * Remote JS lists (player downloads / course files) fetched server-side
+ *
+ * The SpotPlayer panel exposes these two lists only as JS files that assign
+ * window.spotplayer_players / window.spotplayer_courses. Loading them with a
+ * <script src> in the page and rendering via document.write is unreliable:
+ * the block renders nothing whenever the panel is slow or unreachable, and
+ * document.write is a no-op when the account page is injected over AJAX.
+ * So we fetch the same URLs from PHP, pull the array out of the JS, cache it
+ * and render plain HTML — no external script involved.
+ * ===================================================================== */
+
+/** Pull the balanced JSON array assigned to <var> out of a JS source string. */
+function nias_spot_extract_js_array($body, $var)
+{
+    if (!is_string($body) || !preg_match('/' . preg_quote($var, '/') . '\s*=\s*(?=\[)/', $body, $m, PREG_OFFSET_CAPTURE)) {
+        return null;
+    }
+
+    $start  = $m[0][1] + strlen($m[0][0]);
+    $depth  = 0;
+    $in_str = false;
+    $quote  = '';
+    $esc    = false;
+
+    for ($i = $start, $len = strlen($body); $i < $len; $i++) {
+        $ch = $body[$i];
+        if ($in_str) {
+            if ($esc) {
+                $esc = false;
+            } elseif ($ch === '\\') {
+                $esc = true;
+            } elseif ($ch === $quote) {
+                $in_str = false;
+            }
+            continue;
+        }
+        if ($ch === '"' || $ch === "'") {
+            $in_str = true;
+            $quote  = $ch;
+        } elseif ($ch === '[' || $ch === '{') {
+            $depth++;
+        } elseif ($ch === ']' || $ch === '}') {
+            if (--$depth === 0) {
+                $decoded = json_decode(substr($body, $start, $i - $start + 1), true);
+                return is_array($decoded) ? $decoded : null;
+            }
+        }
+    }
+    return null;
+}
+
+/**
+ * Fetch one of the panel's JS list endpoints and return the decoded array.
+ * Successes are cached for $ttl; failures for 5 minutes so an unreachable
+ * panel doesn't add a timeout to every single page view.
+ *
+ * @return array|null
+ */
+function nias_spot_fetch_js_array($url, $var, $cache_key, $ttl)
+{
+    $cached = get_transient($cache_key);
+    if (is_array($cached)) {
+        return $cached;
+    }
+    if ($cached === 'fail') {
+        return null;
+    }
+
+    $response = wp_remote_get($url, array(
+        'timeout'   => 15,
+        'sslverify' => false,
+        'headers'   => array('X-WpSpot' => 'nias-' . (defined('NIAS_COURSE_VERSION') ? NIAS_COURSE_VERSION : '1')),
+    ));
+
+    $data = (is_wp_error($response) || wp_remote_retrieve_response_code($response) !== 200)
+        ? null
+        : nias_spot_extract_js_array(wp_remote_retrieve_body($response), $var);
+
+    if ($data === null) {
+        set_transient($cache_key, 'fail', 5 * MINUTE_IN_SECONDS);
+        return null;
+    }
+
+    set_transient($cache_key, $data, $ttl);
+    return $data;
+}
+
+/** Message shown in place of a remote list that could not be fetched. */
+function nias_spot_render_remote_fail($text, $link_url, $link_text)
+{
+    ?>
+    <div class="nias-sp_remote-fail">
+        <span><?php echo esc_html($text); ?></span>
+        <a href="<?php echo esc_url($link_url); ?>" target="_blank" rel="noopener"><?php echo esc_html($link_text); ?></a>
+    </div>
+    <?php
+}
+
+/** Step ❶ — the player download buttons, rendered from the cached panel list. */
+function nias_spot_render_players($domain, $license_id)
+{
+    $players = nias_spot_fetch_js_array(
+        'https://' . $domain . '/player/?f=js&l=' . rawurlencode((string) $license_id),
+        'spotplayer_players',
+        'nias_spot_players_' . md5($domain),
+        12 * HOUR_IN_SECONDS
+    );
+
+    if (!$players) {
+        nias_spot_render_remote_fail(
+            __('فهرست نسخه‌های پلیر در دسترس نیست.', 'nias-course-widget'),
+            'https://' . $domain . '/player/',
+            __('دانلود پلیر از سایت اسپات پلیر', 'nias-course-widget')
+        );
+        return;
+    }
+
+    foreach ($players as $p) {
+        $file = isset($p['file']) ? $p['file'] : '';
+        $name = isset($p['name']) ? $p['name'] : '';
+        ?>
+        <a target="_blank" rel="noopener"
+           <?php echo $file ? 'href="' . esc_url('https://' . $domain . $file) . '"' : ''; ?>
+           class="<?php echo !empty($p['disable']) ? 'disable' : ''; ?>">
+            <?php if (!empty($p['image'])) : ?>
+                <img alt="<?php echo esc_attr($name); ?>" src="<?php echo esc_url('https://' . $domain . $p['image']); ?>">
+            <?php endif; ?>
+            <b><?php echo esc_html($name); ?></b>
+            <u><?php echo esc_html($file ? ($p['version'] ?? '') : __('به زودی', 'nias-course-widget')); ?></u>
+        </a>
+        <?php
+    }
+}
+
+/** Step ❸ — the per-lesson download list, rendered from the cached panel list. */
+function nias_spot_render_download_list($burl, $icon_url)
+{
+    $courses = nias_spot_fetch_js_array(
+        $burl . '?f=js',
+        'spotplayer_courses',
+        'nias_spot_courses_' . md5($burl),
+        HOUR_IN_SECONDS
+    );
+
+    if (!$courses) {
+        nias_spot_render_remote_fail(
+            __('فهرست فایل‌های دوره در دسترس نیست. پلیر فایل‌ها را به صورت خودکار دانلود می‌کند.', 'nias-course-widget'),
+            $burl,
+            __('باز کردن فهرست در اسپات پلیر', 'nias-course-widget')
+        );
+        return;
+    }
+
+    foreach ($courses as $c) {
+        ?>
+        <li>
+            <h4 onclick="niasSpotToggle(this.parentNode)">
+                <img src="<?php echo esc_url($icon_url); ?>" alt=""><?php echo esc_html($c['name'] ?? ''); ?>
+            </h4>
+            <ul>
+                <?php foreach ((isset($c['items']) && is_array($c['items'])) ? $c['items'] : array() as $v) : ?>
+                    <li class="nias-sp_<?php echo esc_attr($v['type'] ?? ''); ?>">
+                        <a href="<?php echo esc_url($burl . ($c['_id'] ?? '') . '/' . ($v['_id'] ?? '') . '.spot'); ?>">
+                            <img src="<?php echo esc_url($icon_url); ?>" alt=""><?php echo esc_html($v['name'] ?? ''); ?>
+                        </a>
+                    </li>
+                <?php endforeach; ?>
+            </ul>
+        </li>
+        <?php
+    }
+}
+
 function nias_spot_shop_failed($err)
 {
     ?>
@@ -1257,6 +1431,10 @@ function nias_spot_shop_success($data, $product = '', $course = null)
 
     $domain   = nias_spot_opt('domain') ?: 'app.spotplayer.ir';
     $icon_url = plugin_dir_url(__FILE__) . 'arow.svg';
+    $show_web = nias_spot_opt('web') === 'on';
+    // "Web only" is meaningless without the web player itself; honouring a stale
+    // webonly=on while web is off would hide every section and leave a blank page.
+    $web_only = $show_web && nias_spot_opt('webonly') === 'on';
     ?>
     <script type="application/javascript">
         function niasSpotCopy(txt, lbl) {
@@ -1271,14 +1449,12 @@ function nias_spot_shop_success($data, $product = '', $course = null)
             document.body.appendChild(el); el.select(); document.execCommand('copy'); document.body.removeChild(el);
         }
         function niasSpotToggle(el) { el.className = el.className === 'active' ? '' : 'active'; }
-        let spotplayer_players;
-        let spotplayer_courses;
     </script>
     <div id="nias-sp">
         <?php if ($product) : ?><h1><?php echo esc_html($product); ?></h1><?php endif; ?>
         <div id="nias-sp-warn"><?php echo esc_html__('مطالب این دوره دارای واترمارک‌های پیدا و پنهان هستند و هرگونه کپی‌برداری و نشر آن قابل پیگیری بوده و موجب پیگرد قانونی خواهد شد.', 'nias-course-widget'); ?></div>
 
-        <?php if (nias_spot_opt('web') === 'on') : ?>
+        <?php if ($show_web) : ?>
             <div id="nias-sp-web">
                 <h2><?php echo esc_html__('مشاهده در پلیر وب', 'nias-course-widget'); ?></h2>
                 <p><?php echo esc_html__('پس از فعال کردن لایسنس در این مرورگر، فقط در همین دستگاه و مرورگر می‌توانید دوره را مشاهده کنید و یک دستگاه از ظرفیت لایسنس کم خواهد شد.', 'nias-course-widget'); ?></p>
@@ -1293,31 +1469,20 @@ function nias_spot_shop_success($data, $product = '', $course = null)
             </div>
         <?php endif; ?>
 
-        <?php if (nias_spot_opt('webonly') !== 'on') : ?>
+        <?php if (!$web_only) : ?>
             <div id="nias-sp-app">
                 <h2><?php echo esc_html__('مشاهده در اپلیکیشن', 'nias-course-widget'); ?></h2>
                 <p><?php echo esc_html__('ابتدا پلیر را با توجه به سیستم‌عامل خود دانلود و نصب کنید. سپس در صفحه ثبت دوره جدید کلید لایسنس را وارد، مکان ذخیره‌سازی را انتخاب و فرم را تایید کنید.', 'nias-course-widget'); ?></p>
 
                 <div id="nias-sp_players">
-                    <h3><b>❶</b> <?php echo esc_html__('دانلود و نصب پلیر', 'nias-course-widget'); ?></h3>
+                    <h3><?php echo esc_html__('دانلود و نصب پلیر', 'nias-course-widget'); ?></h3>
                     <div>
-                        <script src="https://<?php echo esc_attr($domain); ?>/player/?f=js&l=<?php echo esc_attr($data['_id']); ?>"></script>
-                        <script type="application/javascript">
-                            document.write(window.spotplayer_players.map(function (p) {
-                                return [
-                                    '<a target="_blank" ' + (p.file ? ('href="https://<?php echo esc_js($domain); ?>' + p.file + '"') : '') + ' class="' + (p.disable ? 'disable' : '') + '">',
-                                    ' <img alt="' + p.name + '" src="https://<?php echo esc_js($domain); ?>' + p.image + '">',
-                                    ' <b>' + p.name + '</b>',
-                                    ' <u>' + (p.file ? p.version : 'به زودی') + '</u>',
-                                    '</a>'
-                                ].join('');
-                            }).join(''));
-                        </script>
+                        <?php nias_spot_render_players($domain, $data['_id']); ?>
                     </div>
                 </div>
 
                 <div id="nias-sp_license">
-                    <h3><b>❷</b> <?php echo esc_html__('کپی و وارد نمودن کلید در پلیر', 'nias-course-widget'); ?></h3>
+                    <h3><?php echo esc_html__('کپی و وارد نمودن کلید در پلیر', 'nias-course-widget'); ?></h3>
                     <textarea readonly><?php echo esc_textarea($data['key']); ?></textarea>
                     <button class="nias-sp_color_back" onclick="niasSpotCopy('<?php echo esc_js($data['key']); ?>', 'کلید لایسنس')"><?php echo esc_html__('کپی کلید', 'nias-course-widget'); ?></button>
                 </div>
@@ -1325,26 +1490,10 @@ function nias_spot_shop_success($data, $product = '', $course = null)
                 <?php if (nias_spot_opt('download') === 'on') :
                     $burl = 'https://' . $domain . '/' . $data['_id'] . '/' . md5(hex2bin(substr($data['key'], 24, 64))) . '/'; ?>
                     <div id="nias-sp_videos">
-                        <h3><b>❸</b> <?php echo esc_html__('دانلود ویدیوها', 'nias-course-widget'); ?></h3>
+                        <h3><?php echo esc_html__('دانلود ویدیوها', 'nias-course-widget'); ?></h3>
                         <p><?php echo esc_html__('اگرچه پلیر فایل‌های دوره را خودکار دانلود و نمایش می‌دهد، می‌توانید فایل‌ها را از لینک‌های زیر به‌صورت مجزا دانلود کنید.', 'nias-course-widget'); ?></p>
                         <ul>
-                            <script src="<?php echo esc_url($burl); ?>?f=js"></script>
-                            <script type="application/javascript">
-                                document.write(window.spotplayer_courses.map(function (c) {
-                                    return [
-                                        '<li><h4 onclick="niasSpotToggle(this.parentNode)">',
-                                        '<img src="<?php echo esc_js($icon_url); ?>">' + c.name,
-                                        '</h4><ul>',
-                                        c.items.map(function (v) {
-                                            return [
-                                                '<li class="nias-sp_' + v.type + '"><a href="<?php echo esc_js($burl); ?>' + c._id + '/' + v._id + '.spot">',
-                                                '<img src="<?php echo esc_js($icon_url); ?>" />' + v.name,
-                                                '</a></li>'].join('');
-                                        }).join(''),
-                                        '</ul></li>'
-                                    ].join('');
-                                }).join(''));
-                            </script>
+                            <?php nias_spot_render_download_list($burl, $icon_url); ?>
                         </ul>
                     </div>
                 <?php endif; ?>
