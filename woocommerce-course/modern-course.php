@@ -326,6 +326,15 @@ function nias_modern_course_build_data($product_id)
     $cert_applies = nias_modern_course_cert_applies($product_id);
     $cert_page_id = (int) carbon_get_theme_option('certificate_display_page');
     $cert_url     = $cert_page_id ? get_permalink($cert_page_id) : '';
+    // Unlock threshold: the "minimum progress" certificate rule when set,
+    // otherwise the historical 80%.
+    $cert_threshold = 80;
+    if ($cert_applies && function_exists('nias_cert_conditions_for')) {
+        $rules = nias_cert_conditions_for($product_id);
+        if ((int) $rules['min_progress'] > 0) {
+            $cert_threshold = (int) $rules['min_progress'];
+        }
+    }
 
     return array(
         'productId'    => $product_id,
@@ -339,9 +348,15 @@ function nias_modern_course_build_data($product_id)
         'chapters'     => $chapters,
         'certificate'  => array(
             'enabled'   => $cert_applies,
-            'threshold' => 80,
+            'threshold' => $cert_threshold,
             'pageUrl'   => $cert_url ? $cert_url : '',
         ),
+        // Overall progress is mirrored to the server so the certificate's
+        // "minimum progress" rule can be enforced.
+        'progressSync' => ($purchased && $user && $user->ID) ? array(
+            'url'   => admin_url('admin-ajax.php'),
+            'nonce' => wp_create_nonce('nias_course_progress'),
+        ) : null,
     );
 }
 
@@ -832,6 +847,23 @@ function nias_modern_course_script()
         NMC.prototype.persist = function () {
             var s = this.state;
             try { localStorage.setItem(this.KEY, JSON.stringify({ progress: s.progress, times: s.times, currentId: s.currentId, open: s.open })); } catch (e) {}
+            this.syncProgress();
+        };
+        // Debounced push of the overall % to the server (only when it grows).
+        NMC.prototype.syncProgress = function () {
+            var sync = this.d.progressSync, self = this;
+            if (!sync || !window.fetch) return;
+            clearTimeout(this._syncT);
+            this._syncT = setTimeout(function () {
+                var pct = self.overall();
+                if (pct <= (self._synced || 0)) return;
+                var body = new URLSearchParams();
+                body.append('action', 'nias_course_progress_sync');
+                body.append('nonce', sync.nonce);
+                body.append('product_id', self.d.productId);
+                body.append('pct', pct);
+                fetch(sync.url, { method: 'POST', credentials: 'same-origin', body: body }).then(function () { self._synced = pct; }).catch(function () {});
+            }, 1500);
         };
 
         // ---- derived ----

@@ -4,7 +4,7 @@
  * Plugin Name: Nias course | دوره ساز نیاس
  * Description:   پلاگین دوره ساز نیاس ویجت "دوره ساز نیاس" را به ویرایشگر المنتور شما اضافه میکند که میتوانید دوره مورد نظر خود را درون تمپلیت محصول بسازیدو قالب خود را به یک قالب فروش دوره و فایل تبدیل کنید | این پلاگین بصورت رایگان منتشر شده و رایگان هم خواهد ماند❤️
  * Plugin URI:  https://nias.ir/product/nias-course-widget/
- * Version:     1.3.3
+ * Version:     1.4.0
  * Author:      Alireza aliniya
  * Author URI:  https://nias.ir/
  * Text Domain: nias-course-widget
@@ -16,7 +16,7 @@
 if (! defined('ABSPATH')) {
     exit; // Exit if accessed directly.
 }
-define('NIAS_COURSE_VERSION', '1.3.3');
+define('NIAS_COURSE_VERSION', '1.4.0');
 
 define('NIAS_FUNCTIONS' , plugin_dir_path(__FILE__).'inc/functions.php');
 define('NIAS_COURSE', plugin_dir_path(__FILE__) );
@@ -62,6 +62,12 @@ require(NIAS_WOOCOMMERCE . '/quiz-frontend.php');
 require(__DIR__ . '/widgets/videomodal.php');
 require(NIAS_COURSE_INC . '/certificate-show.php');
 require(NIAS_COURSE_INC . '/certificate-config-user.php');
+require(NIAS_COURSE_INC . '/certificate/registry.php');
+require(NIAS_COURSE_INC . '/certificate/conditions.php');
+require(NIAS_COURSE_INC . '/certificate/renderer.php');
+require(NIAS_COURSE_INC . '/certificate/designer.php');
+require(NIAS_COURSE_INC . '/certificate/verify.php');
+require(NIAS_COURSE_INC . '/certificate/admin-issued.php');
 require(NIAS_COURSE_INC . '/instructors.php');
 require(NIAS_COURSE_INC . '/instructor-dashboard.php');
 require(NIAS_WOOCOMMERCE . '/my-account.php');

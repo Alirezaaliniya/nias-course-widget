@@ -85,6 +85,17 @@ function nias_settings_certificate_fields()
         'certificate_seal_image'          => 'image',
         'certificate_signature_image'     => 'image',
         'certificate_signer_name'         => 'text',
+        // 1.4: designer, verification and conditions.
+        'certificate_design_mode'         => 'radio',
+        'certificate_default_template'    => 'select',
+        'certificate_verify_page'         => 'select',
+        'certificate_verify_mask_name'    => 'radio',
+        'certificate_cond_order_status'   => 'radio',
+        'certificate_cond_quiz'           => 'radio',
+        'certificate_cond_min_progress'   => 'number',
+        'certificate_cond_wait_days'      => 'number',
+        'certificate_cond_require_name'   => 'radio',
+        'certificate_cond_approval'       => 'radio',
     );
 }
 
@@ -156,6 +167,9 @@ function nias_course_save_theme_options($fields)
         switch ($type) {
             case 'image':
                 $value = esc_url_raw($raw);
+                break;
+            case 'number':
+                $value = (string) max(0, (int) $raw);
                 break;
             default:
                 $value = sanitize_text_field($raw);
@@ -294,6 +308,8 @@ function nias_settings_topbar($active)
                 <a href="<?php echo esc_url($main_url); ?>" class="nias-tab <?php echo $active === 'main' ? 'active' : ''; ?>"><?php echo esc_html__('تنظیمات اصلی', 'nias-course-widget'); ?></a>
                 <?php if ($cert_on) : ?>
                     <a href="<?php echo esc_url($cert_url); ?>" class="nias-tab <?php echo $active === 'cert' ? 'active' : ''; ?>"><?php echo esc_html__('تنظیمات مدرک دوره', 'nias-course-widget'); ?> <span class="nias-tab-badge"><?php echo esc_html__('فعال', 'nias-course-widget'); ?></span></a>
+                    <a href="<?php echo esc_url(admin_url('admin.php?page=nias-course-cert-designer')); ?>" class="nias-tab <?php echo $active === 'designer' ? 'active' : ''; ?>"><?php echo esc_html__('طراح مدرک', 'nias-course-widget'); ?></a>
+                    <a href="<?php echo esc_url(admin_url('admin.php?page=nias-course-cert-issued')); ?>" class="nias-tab <?php echo $active === 'issued' ? 'active' : ''; ?>"><?php echo esc_html__('مدارک صادرشده', 'nias-course-widget'); ?></a>
                 <?php endif; ?>
                 <?php if ($spot_on) : ?>
                     <a href="<?php echo esc_url($spot_url); ?>" class="nias-tab <?php echo $active === 'spot' ? 'active' : ''; ?>"><?php echo esc_html__('لایسنس اسپات پلیر', 'nias-course-widget'); ?> <span class="nias-tab-badge"><?php echo esc_html__('فعال', 'nias-course-widget'); ?></span></a>
@@ -410,6 +426,19 @@ function nias_set_text_field($name, $label, $placeholder = '')
 {
     $current = carbon_get_theme_option($name);
     echo '<div class="nias-field"><label class="nias-flabel">' . esc_html($label) . '</label><input type="text" class="nias-input" name="' . esc_attr($name) . '" value="' . esc_attr($current) . '" placeholder="' . esc_attr($placeholder) . '"></div>';
+}
+
+function nias_set_number_field($name, $label, $desc, $default = 0, $max = '')
+{
+    $current = carbon_get_theme_option($name);
+    if ($current === '' || $current === false) {
+        $current = $default;
+    }
+    echo '<div class="nias-field" style="max-width:260px"><label class="nias-flabel">' . esc_html($label) . '</label>';
+    if ($desc) {
+        echo '<div class="nias-fdesc">' . esc_html($desc) . '</div>';
+    }
+    echo '<input type="number" min="0"' . ($max !== '' ? ' max="' . esc_attr($max) . '"' : '') . ' class="nias-input" dir="ltr" name="' . esc_attr($name) . '" value="' . esc_attr($current) . '"></div>';
 }
 
 function nias_set_date_field($name, $label, $wrap_attr = '')
@@ -744,6 +773,8 @@ function nias_course_render_certificate_settings()
         $page_options[$page->ID] = $page->post_title;
     }
 
+    $template_options = function_exists('nias_cert_templates_list') ? nias_cert_templates_list() : array();
+
     $category_options = array();
     $categories = get_terms(array('taxonomy' => 'product_cat', 'hide_empty' => false));
     if (!is_wp_error($categories)) {
@@ -782,6 +813,66 @@ function nias_course_render_certificate_settings()
                     </div>
                 <?php nias_set_card_close(); ?>
 
+                <!-- Design mode card -->
+                <?php nias_set_card_open('<svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M12 20h9M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z" stroke="#3858e9" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>', __('حالت طراحی مدرک', 'nias-course-widget')); ?>
+                    <div class="nias-row-block">
+                        <div class="nias-row-desc"><?php echo esc_html__('در حالت «کلاسیک» مدرک با همان طرح قبلی و تصاویر و متن‌های پایین همین صفحه ساخته می‌شود. در حالت «طراح پیشرفته» مدرک از قالبی ساخته می‌شود که خودتان در «طراح مدرک» با کشیدن و رها کردن طراحی کرده‌اید.', 'nias-course-widget'); ?></div>
+                        <?php
+                        nias_set_segmented('certificate_design_mode', array(
+                            'classic'  => __('کلاسیک (طرح فعلی)', 'nias-course-widget'),
+                            'designer' => __('طراح پیشرفته (بوم)', 'nias-course-widget'),
+                        ), 'classic');
+                        ?>
+                    </div>
+                    <div class="nias-row-block nias-row-sep" data-nias-show-when="certificate_design_mode=designer">
+                        <?php
+                        if ($template_options) {
+                            nias_set_select_field('certificate_default_template', __('قالب پیش‌فرض', 'nias-course-widget'), __('برای هر دوره می‌توانید در صفحهٔ ویرایش محصول (باکس «مدرک دوره») قالب جداگانه انتخاب کنید.', 'nias-course-widget'), array('' => __('— انتخاب قالب —', 'nias-course-widget')) + $template_options);
+                        } else {
+                            echo '<div class="nias-row-desc">' . esc_html__('هنوز قالبی نساخته‌اید. تا زمان ساخت قالب، مدارک با طرح کلاسیک صادر می‌شوند.', 'nias-course-widget') . '</div>';
+                        }
+                        ?>
+                        <a class="nias-btn-soft" style="display:inline-flex;margin-top:12px;text-decoration:none" href="<?php echo esc_url(admin_url('admin.php?page=nias-course-cert-designer')); ?>"><?php echo esc_html__('باز کردن طراح مدرک', 'nias-course-widget'); ?></a>
+                    </div>
+                <?php nias_set_card_close(); ?>
+
+                <!-- Conditions card -->
+                <?php nias_set_card_open('<svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M9 11l3 3 8-8" stroke="#3858e9" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M20 12v7a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h9" stroke="#3858e9" stroke-width="1.8" stroke-linecap="round"/></svg>', __('شرایط دریافت مدرک', 'nias-course-widget')); ?>
+                    <div class="nias-row-block">
+                        <div class="nias-row-desc"><?php echo esc_html__('این شرایط برای همهٔ دوره‌ها اعمال می‌شود و در صفحهٔ ویرایش هر محصول (باکس «مدرک دوره») می‌توان شرایط اختصاصی تعریف کرد. دانشجو در لیست مدارک خود می‌بیند کدام شرط هنوز کامل نشده است. مدارکی که قبلاً صادر شده‌اند با سخت‌تر شدن شرایط باطل نمی‌شوند.', 'nias-course-widget'); ?></div>
+                        <div class="nias-row-title" style="margin:14px 0 10px"><?php echo esc_html__('وضعیت سفارش قابل قبول', 'nias-course-widget'); ?></div>
+                        <?php
+                        nias_set_radio_cards('certificate_cond_order_status', array(
+                            'completed_processing' => __('تکمیل‌شده یا در حال انجام', 'nias-course-widget'),
+                            'completed'            => __('فقط سفارش‌های تکمیل‌شده', 'nias-course-widget'),
+                        ), 'completed_processing');
+                        ?>
+                    </div>
+                    <?php
+                    nias_set_toggle_row('certificate_cond_quiz', __('الزام قبولی در آزمون متصل به دوره', 'nias-course-widget'), __('اگر آزمونی به دوره متصل باشد، تا قبولی در آن مدرک صادر نمی‌شود.', 'nias-course-widget'), 'on');
+                    ?>
+                    <div class="nias-row-block nias-row-sep">
+                        <div style="display:flex;gap:16px;flex-wrap:wrap">
+                            <?php
+                            nias_set_number_field('certificate_cond_min_progress', __('حداقل درصد پیشرفت دوره', 'nias-course-widget'), __('۰ یعنی غیرفعال. پیشرفت از نمای مدرن دوره ثبت می‌شود.', 'nias-course-widget'), 0, 100);
+                            nias_set_number_field('certificate_cond_wait_days', __('حداقل روز پس از خرید', 'nias-course-widget'), __('۰ یعنی غیرفعال.', 'nias-course-widget'), 0);
+                            ?>
+                        </div>
+                    </div>
+                    <?php
+                    nias_set_toggle_row('certificate_cond_require_name', __('الزام ثبت نام و نام خانوادگی', 'nias-course-widget'), __('تا زمانی که دانشجو نام و نام خانوادگی خود را کامل نکند مدرک صادر نمی‌شود؛ فرم تکمیل نام در همان صفحهٔ مدارک نمایش داده می‌شود.', 'nias-course-widget'), 'off');
+                    nias_set_toggle_row('certificate_cond_approval', __('نیاز به تأیید دستی مدیر', 'nias-course-widget'), __('مدارک جدید با وضعیت «در انتظار تأیید» ثبت می‌شوند و پس از تأیید شما در صفحهٔ «مدارک صادرشده» قابل دانلود و استعلام خواهند بود.', 'nias-course-widget'), 'off');
+                    ?>
+                <?php nias_set_card_close(); ?>
+
+                <!-- Verification card -->
+                <?php nias_set_card_open('<svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M12 3 4 6v6c0 5 3.4 8.4 8 9 4.6-.6 8-4 8-9V6l-8-3Z" stroke="#3858e9" stroke-width="1.8" stroke-linejoin="round"/><path d="m9 12 2 2 4-4" stroke="#3858e9" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>', __('استعلام مدرک', 'nias-course-widget')); ?>
+                    <div class="nias-row-block">
+                        <?php nias_set_select_field('certificate_verify_page', __('صفحهٔ استعلام مدرک', 'nias-course-widget'), __('صفحه‌ای که شورت‌کد [nias_certificate_verify] را در آن قرار داده‌اید. با انتخاب آن، QR مدارک جدید به فرم استعلام اشاره می‌کند (لینک‌های QR مدارک قدیمی همچنان کار می‌کنند). اگر خالی بماند، مثل قبل از صفحهٔ نمایش مدرک استفاده می‌شود.', 'nias-course-widget'), $page_options); ?>
+                    </div>
+                    <?php nias_set_toggle_row('certificate_verify_mask_name', __('پوشاندن بخشی از نام در نتیجهٔ استعلام', 'nias-course-widget'), __('برای حفظ حریم خصوصی، نام دارنده به شکل «ع***ا م***ی» نمایش داده می‌شود.', 'nias-course-widget'), 'off'); ?>
+                <?php nias_set_card_close(); ?>
+
                 <!-- Shortcodes card -->
                 <div class="nias-shortcodes">
                     <div class="nias-sc-head">
@@ -793,6 +884,7 @@ function nias_course_render_certificate_settings()
                         <div class="nias-sc-item"><code dir="ltr">[nias_certificate]</code><span><?php echo esc_html__('نمایش مدرک', 'nias-course-widget'); ?></span></div>
                         <div class="nias-sc-item"><code dir="ltr">[nias_certificate_preview]</code><span><?php echo esc_html__('پیش‌نمایش', 'nias-course-widget'); ?></span></div>
                         <div class="nias-sc-item"><code dir="ltr">[nias_button_certificate]</code><span><?php echo esc_html__('دکمه هدایت به دریافت مدرک', 'nias-course-widget'); ?></span></div>
+                        <div class="nias-sc-item"><code dir="ltr">[nias_certificate_verify]</code><span><?php echo esc_html__('فرم استعلام مدرک با کد', 'nias-course-widget'); ?></span></div>
                     </div>
                     <div class="nias-sc-warn"><?php echo esc_html__('⚠ حواست باشه بعد از تست، شورت‌کد پیش‌نمایش رو برداری.', 'nias-course-widget'); ?></div>
                 </div>
@@ -878,6 +970,8 @@ function nias_course_settings_assets($hook)
     if (
         strpos($hook, 'nias-course-settings') === false &&
         strpos($hook, 'nias-course-certificate') === false &&
+        strpos($hook, 'nias-course-cert-designer') === false &&
+        strpos($hook, 'nias-course-cert-issued') === false &&
         strpos($hook, 'nias-spotplayer-license') === false &&
         strpos($hook, 'nias-course-instructors') === false &&
         strpos($hook, 'nias-course-quiz') === false &&

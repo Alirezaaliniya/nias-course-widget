@@ -218,9 +218,18 @@ function nias_spot_request($url, $data = null)
         throw new Exception($response->get_error_message());
     }
 
-    $rep = json_decode(wp_remote_retrieve_body($response), true);
+    $code = (int) wp_remote_retrieve_response_code($response);
+    $rep  = json_decode(wp_remote_retrieve_body($response), true);
+
     if (is_array($rep) && ($ex = isset($rep['ex']) ? $rep['ex'] : null)) {
-        throw new Exception($ex['msg']);
+        // The panel's own message, plus the status so a generic "خطای نامشخصی"
+        // can still be told apart from a missing/deleted license.
+        throw new Exception(trim($ex['msg']) . ' (HTTP ' . $code . ')');
+    }
+    // Without this a non-JSON error page (502, timeout page) decoded to null and
+    // was returned as an empty array, so a failed save reported success.
+    if ($code < 200 || $code >= 300) {
+        throw new Exception('پاسخ نامعتبر از پنل اسپات پلیر (HTTP ' . $code . ').');
     }
     return is_array($rep) ? $rep : array();
 }
@@ -800,7 +809,7 @@ function nias_spot_admin_order_box_ui($data)
                 <div class="nias-spbox-grid">
                     <div class="nias-spbox-field">
                         <label class="nias-spbox-label"><?php echo esc_html__('حداکثر دستگاه‌ها', 'nias-course-widget'); ?></label>
-                        <input type="number" class="nias-spbox-input nias-spbox-ltr" name="nias-spot-devices" min="1" max="99" value="<?php echo esc_attr($data['device']['p0'] ?? ''); ?>" placeholder="<?php echo esc_attr__('بدون تغییر', 'nias-course-widget'); ?>"/>
+                        <input type="number" class="nias-spbox-input nias-spbox-ltr" name="nias-spot-devices" min="1" max="99" value="<?php echo esc_attr(nias_spot_device_slot($data['device'] ?? array(), 'p0')); ?>" placeholder="<?php echo esc_attr__('بدون تغییر', 'nias-course-widget'); ?>"/>
                         <div class="nias-spbox-hint"><?php echo esc_html__('تعداد کل دستگاه‌هایی که خریدار می‌تواند استفاده کند. این مقدار بر سقف هر پلتفرم ارجحیت دارد.', 'nias-course-widget'); ?></div>
                     </div>
                     <div class="nias-spbox-field">
@@ -823,7 +832,7 @@ function nias_spot_admin_order_box_ui($data)
                         if (!empty($data['data']['limit']) && is_array($data['data']['limit'])) {
                             $lines = array();
                             foreach ($data['data']['limit'] as $cid => $range) {
-                                $lines[] = $cid . ':' . $range;
+                                $lines[] = $cid . ':' . nias_spot_limit_label($range);
                             }
                             echo esc_textarea(implode("\n", $lines));
                         }
@@ -991,6 +1000,34 @@ function nias_spot_format_plat($plat)
         $vals[] = $v;
     }
     return $any ? implode(',', $vals) : '';
+}
+
+/**
+ * Render a lesson-range back into the "1,4-6,10-" form the admin types.
+ * The API returns ranges as [[start,end]] pairs (999999 = open ended), so the
+ * stored value cannot be printed directly.
+ */
+function nias_spot_limit_label($range)
+{
+    if (!is_array($range)) {
+        return (string) $range;
+    }
+    $parts = array();
+    foreach ($range as $pair) {
+        if (!is_array($pair) || !isset($pair[0])) {
+            continue;
+        }
+        $a = (int) $pair[0];
+        $b = isset($pair[1]) ? (int) $pair[1] : $a;
+        if ($b >= 999999) {
+            $parts[] = $a . '-';
+        } elseif ($a === $b) {
+            $parts[] = (string) $a;
+        } else {
+            $parts[] = $a . '-' . $b;
+        }
+    }
+    return implode(',', $parts);
 }
 
 /** Read a device slot from an API response, which uses {"max":N} or a bare N. */

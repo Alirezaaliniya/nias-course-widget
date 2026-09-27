@@ -354,14 +354,16 @@ class CertificateMPDF
 }
 
 
-// Modified shortcode function
-function nias_certificate_shortcode($atts)
+/**
+ * Footer JS/CSS for the [nias_certificate] list (download progress + states).
+ */
+function nias_certificate_list_assets()
 {
-    // Initialize verification variable
-    $nias_course_certificate_verify = false;
-    $verification_message = '';
-
-    // Add JavaScript for handling form submission and progress bar
+    static $done = false;
+    if ($done) {
+        return;
+    }
+    $done = true;
     wp_enqueue_script('jquery');
     add_action('wp_footer', function () {
 ?>
@@ -505,9 +507,54 @@ function nias_certificate_shortcode($atts)
                 border-radius: 5px;
                 margin: 10px 0;
             }
+
+            .nias-cert-state {
+                display: inline-block;
+                font-size: 13px;
+                font-weight: 600;
+                padding: 4px 10px;
+                border-radius: 99px;
+            }
+            .nias-cert-state.pending { background: #fff3cd; color: #856404; }
+            .nias-cert-state.revoked { background: #f8d7da; color: #721c24; }
+            .nias-cert-state.locked { background: #eef0f3; color: #555; }
+
+            .nias-cert-checks {
+                list-style: none;
+                margin: 8px 0 0;
+                padding: 0;
+                text-align: right;
+                font-size: 13px;
+                line-height: 1.9;
+            }
+            .nias-cert-checks li { display: flex; gap: 6px; align-items: baseline; }
+            .nias-cert-checks .ok { color: #1e7e34; }
+            .nias-cert-checks .no { color: #b02a37; }
+            .nias-cert-checks small { display: block; color: #777; font-size: 12px; }
+
+            .nias-cert-nameform {
+                background: #fff;
+                border: 1px solid #ffeaa7;
+                border-radius: 8px;
+                padding: 14px;
+                margin: 12px 0;
+            }
+            .nias-cert-nameform-t { font-weight: 700; margin-bottom: 10px; }
+            .nias-cert-nameform-row { display: flex; gap: 8px; flex-wrap: wrap; }
+            .nias-cert-nameform-row input[type=text] { flex: 1; min-width: 140px; padding: 8px 10px; border: 1px solid #ddd; border-radius: 4px; }
         </style>
 <?php
     });
+}
+
+// Modified shortcode function
+function nias_certificate_shortcode($atts)
+{
+    // Initialize verification variable
+    $nias_course_certificate_verify = false;
+    $verification_message = '';
+
+    nias_certificate_list_assets();
 
     // بررسی پارامتر code در URL
     $code_param = isset($_GET['code']) ? sanitize_text_field($_GET['code']) : '';
@@ -532,8 +579,14 @@ function nias_certificate_shortcode($atts)
             }
         }
 
+        // A revoked certificate no longer verifies.
+        $registry_row = ($stored_certificate_code_1 === $code_param || $stored_certificate_code_2 === $code_param) && function_exists('nias_cert_get_by_code')
+            ? nias_cert_get_by_code($code_param)
+            : null;
+        $is_revoked = $registry_row && $registry_row['status'] === 'revoked';
+
         // بررسی تطابق با هر کدام از کدها
-        if ($stored_certificate_code_1 === $code_param || $stored_certificate_code_2 === $code_param) {
+        if (($stored_certificate_code_1 === $code_param || $stored_certificate_code_2 === $code_param) && !$is_revoked) {
             // کد معتبر است - تنظیم پیام موفقیت
             $nias_course_certificate_verify = true;
             $verification_message = '<div class="certificate-success">
@@ -545,7 +598,12 @@ function nias_certificate_shortcode($atts)
             $nias_course_certificate_verify = false;
 
             // کد نامعتبر است - تنظیم پیام خطا
-            $verification_message = '<div class="certificate-error">
+            $verification_message = $is_revoked
+                ? '<div class="certificate-error">
+                        <h3>❌ این گواهی باطل شده است</h3>
+                        <p>اعتبار این گواهی توسط صادرکننده لغو شده است.</p>
+                    </div>'
+                : '<div class="certificate-error">
                         <h3>❌ گواهی نامعتبر است</h3>
                         <p>کدی که وارد کرده‌اید در سیستم یافت نشد.</p>
                     </div>';
@@ -588,10 +646,16 @@ function nias_certificate_shortcode($atts)
         return $wrap_open . '<div class="certificate-error"><h3>برای مشاهده مدارک</h3><p>برای دیدن مدارک خود ابتدا وارد حساب کاربری شوید.</p></div></div>';
     }
 
-    // Get user's eligible courses
-    $eligible_courses = get_user_purchased_courses($user_id);
+    // All purchased certificate courses with their state. Visitors arriving
+    // through a verification link only see issued certificates.
+    $courses = nias_cert_user_courses($user_id);
+    if (!$is_self) {
+        $courses = array_filter($courses, function ($c) {
+            return $c['status'] === 'ready';
+        });
+    }
 
-    if (empty($eligible_courses)) {
+    if (empty($courses)) {
         return '<div class="certificate-download-container" style="max-width: 800px; margin: auto; padding: 20px; background-color: #f9f9f9; border-radius: 10px;">
                     <h2>مدارک دوره</h2>
                     <div class="no-certificate-message" style="text-align: center; padding: 30px; background: #fff3cd; border: 1px solid #ffeaa7; border-radius: 5px; color: #856404;">
@@ -603,12 +667,29 @@ function nias_certificate_shortcode($atts)
                 </div>';
     }
 
+    // Name form when the "require name" rule blocks at least one course.
+    $name_form = '';
+    if ($is_self) {
+        foreach ($courses as $c) {
+            foreach ($c['checks'] as $chk) {
+                if ($chk['key'] === 'name' && !$chk['ok']) {
+                    $name_form = nias_cert_name_form_html($user_id);
+                    break 2;
+                }
+            }
+        }
+        if (isset($_GET['nias_cert_name']) && $_GET['nias_cert_name'] === 'saved') {
+            $name_form = '<div class="certificate-success">نام شما ذخیره شد و روی مدرک درج می‌شود.</div>' . $name_form;
+        }
+    }
+
     $download_url = admin_url('admin-ajax.php');
     $nonce = wp_create_nonce('generate_certificate_nonce');
         $output = '<div class="certificate-download-container" style="max-width: 800px; margin: auto; padding: 20px; background-color: #f9f9f9; border-radius: 10px; z-index: 99;position:relative;">
         ' . $verification_message . '
         <h2>مدارک دوره‌ها</h2>
         <p><strong>کاربر:</strong> ' . esc_html($user_data->display_name) . ' (ID: ' . esc_html($user_id) . ')</p>
+        ' . $name_form . '
         <table class="certificate-table">
             <thead>
                 <tr>
@@ -620,39 +701,13 @@ function nias_certificate_shortcode($atts)
             </thead>
             <tbody>';
 
-        foreach ($eligible_courses as $product_id => $course_data) {
+        foreach ($courses as $product_id => $course_data) {
             $output .= sprintf(
-                '<tr>
-                <td>%s</td>
-                <td>%s</td>
-                <td>%s</td>
-                <td>
-                    <form method="post" action="%s" class="certificate-form">
-                        <input type="hidden" name="action" value="generate_certificate">
-                        <input type="hidden" name="user_id" value="%s">
-                        <input type="hidden" name="name" value="%s">
-                        <input type="hidden" name="course" value="%s">
-                        <input type="hidden" name="date" value="%s">
-                        <input type="hidden" name="certificate_code" value="%s">
-                        <input type="hidden" name="nonce" value="%s">
-                        <button type="submit" class="button">دانلود گواهی</button>
-                    </form>
-                    <div class="progress-container" style="display: none;">
-                        <div class="progress-bar"></div>
-                        <div class="progress-text">در حال ساخت گواهی...</div>
-                    </div>
-                </td>
-            </tr>',
+                '<tr><td>%s</td><td>%s</td><td>%s</td><td>%s</td></tr>',
                 esc_html($course_data['name']),
                 esc_html($course_data['date']),
-                esc_html($course_data['certificate_code']),
-                esc_url($download_url),
-                esc_attr($user_id),
-                esc_attr($user_data->display_name),
-                esc_attr($course_data['name']),
-                esc_attr($course_data['date']),
-                esc_attr($course_data['certificate_code']),
-                esc_attr($nonce)
+                $course_data['status'] === 'locked' ? '—' : esc_html($course_data['certificate_code']),
+                nias_certificate_action_cell($user_id, $product_id, $course_data, $download_url, $nonce)
             );
         }
 
@@ -664,6 +719,50 @@ function nias_certificate_shortcode($atts)
         return $output;
 }
 
+/**
+ * Last column of the certificate list: download form, or the reason the
+ * certificate is not available yet.
+ */
+function nias_certificate_action_cell($user_id, $product_id, $course_data, $download_url, $nonce)
+{
+    switch ($course_data['status']) {
+        case 'ready':
+            return sprintf(
+                '<form method="post" action="%s" class="certificate-form">
+                    <input type="hidden" name="action" value="generate_certificate">
+                    <input type="hidden" name="user_id" value="%s">
+                    <input type="hidden" name="product_id" value="%s">
+                    <input type="hidden" name="certificate_code" value="%s">
+                    <input type="hidden" name="nonce" value="%s">
+                    <button type="submit" class="button">دانلود گواهی</button>
+                </form>
+                <div class="progress-container" style="display: none;">
+                    <div class="progress-bar"></div>
+                    <div class="progress-text">در حال ساخت گواهی...</div>
+                </div>',
+                esc_url($download_url),
+                esc_attr($user_id),
+                esc_attr($product_id),
+                esc_attr($course_data['certificate_code']),
+                esc_attr($nonce)
+            );
+
+        case 'pending':
+            return '<span class="nias-cert-state pending">در انتظار تأیید مدیر</span>';
+
+        case 'revoked':
+            return '<span class="nias-cert-state revoked">باطل‌شده</span>';
+
+        default:
+            $html = '<span class="nias-cert-state locked">شرایط دریافت هنوز کامل نشده</span><ul class="nias-cert-checks">';
+            foreach ($course_data['checks'] as $chk) {
+                $html .= '<li class="' . ($chk['ok'] ? 'ok' : 'no') . '"><span>' . ($chk['ok'] ? '✔' : '✖') . '</span><span>' . esc_html($chk['label'])
+                    . ($chk['hint'] !== '' ? '<small>' . esc_html($chk['hint']) . '</small>' : '') . '</span></li>';
+            }
+            return $html . '</ul>';
+    }
+}
+
 // Add AJAX handler for PDF generation
 function handle_certificate_generation()
 {
@@ -672,9 +771,8 @@ function handle_certificate_generation()
     }
 
     $user_id = isset($_POST['user_id']) ? intval($_POST['user_id']) : 0;
-    $course = isset($_POST['course']) ? sanitize_text_field($_POST['course']) : '';
-    $date = isset($_POST['date']) ? sanitize_text_field($_POST['date']) : '';
-    $certificate_code = isset($_POST['certificate_code']) ? sanitize_text_field($_POST['certificate_code']) : '';
+    $product_id = isset($_POST['product_id']) ? intval($_POST['product_id']) : 0;
+    $certificate_code = isset($_POST['certificate_code']) ? sanitize_text_field(wp_unslash($_POST['certificate_code'])) : '';
 
     if (empty($user_id) || empty($certificate_code)) {
         wp_die('Required fields are missing / فیلدهای ضروری خالی هستند');
@@ -686,54 +784,39 @@ function handle_certificate_generation()
         wp_die('User not found / کاربر یافت نشد');
     }
 
-    // گرفتن نام و نام خانوادگی از فیلدهای کاربر
-    $first_name = get_user_meta($user_id, 'first_name', true);
-    $last_name = get_user_meta($user_id, 'last_name', true);
-    
-    // ترکیب نام و نام خانوادگی
-    $full_name = trim($first_name . ' ' . $last_name);
-    
-    // اگر نام و نام خانوادگی خالی بود، از نام نمایشی استفاده کن
-    if (empty($full_name)) {
-        $full_name = $user->display_name;
+    // Forms rendered before 1.4 do not send product_id: find the course the
+    // code belongs to.
+    if (!$product_id) {
+        global $wpdb;
+        $meta_key = $wpdb->get_var($wpdb->prepare(
+            "SELECT meta_key FROM {$wpdb->usermeta} WHERE user_id = %d AND meta_key LIKE %s AND meta_value = %s LIMIT 1",
+            $user_id,
+            $wpdb->esc_like('certificate_code_') . '%',
+            $certificate_code
+        ));
+        $product_id = $meta_key ? (int) substr($meta_key, 17) : 0;
     }
 
-    if (empty($full_name)) {
+    // The code must belong to this user and course — everything printed on the
+    // certificate is derived server-side, never taken from the request.
+    if (!$product_id || get_user_meta($user_id, 'certificate_code_' . $product_id, true) !== $certificate_code) {
+        wp_die('Invalid certificate code / کد گواهی نامعتبر است');
+    }
+
+    $courses = nias_cert_user_courses($user_id);
+    if (!isset($courses[$product_id]) || $courses[$product_id]['status'] !== 'ready') {
+        wp_die('Certificate is not available / این گواهی در حال حاضر قابل دریافت نیست');
+    }
+
+    $data = nias_cert_build_data($user_id, $product_id, $certificate_code, $courses[$product_id]['date']);
+    if (empty($data['student_name'])) {
         wp_die('User name not found / نام کاربر یافت نشد');
     }
 
-    // پاک کردن تمام buffer های خروجی
-    while (ob_get_level()) {
-        ob_end_clean();
-    }
-
     try {
-        // Create QR code for certificate verification
-        $verification_url = add_query_arg(
-            array(
-                'code' => urlencode($certificate_code),
-                'user_id' => $user_id
-            ),
-            get_certificate_display_page_url()
-        );
-        $qr = new QrCode($verification_url);
-        $writer = new PngWriter();
-        $result = $writer->write($qr);
-        $qr_image_data = $result->getDataUri();
-
-        // ایجاد گواهی با mPDF
-        $certificate = new CertificateMPDF();
-        $certificate->createCertificate($full_name, $course, $date, $certificate_code, $qr_image_data);
-
-        // تنظیم header های HTTP برای دانلود PDF
-        header('Content-Type: application/pdf');
-        header('Content-Disposition: attachment; filename="certificate_' . sanitize_file_name($full_name) . '_' . sanitize_file_name($certificate_code) . '.pdf"');
-        header('Cache-Control: no-cache, must-revalidate');
-        header('Pragma: public');
-
-        $certificate->output('certificate.pdf', 'I');
-    } catch (Exception $e) {
-        wp_die('Error generating certificate: ' . $e->getMessage() . ' / خطا در تولید گواهی');
+        nias_cert_output_pdf($data, nias_cert_template_for($product_id), 'D');
+    } catch (\Throwable $e) {
+        wp_die('Error generating certificate: ' . esc_html($e->getMessage()) . ' / خطا در تولید گواهی');
     }
 
     exit;
@@ -743,102 +826,179 @@ add_action('wp_ajax_generate_certificate', 'handle_certificate_generation');
 add_action('wp_ajax_nopriv_generate_certificate', 'handle_certificate_generation');
 add_shortcode('nias_certificate', 'nias_certificate_shortcode');
 
+/**
+ * Every purchased course that offers a certificate, with its state.
+ *
+ * status: ready (downloadable) | pending (awaiting admin approval) |
+ *         revoked | locked (conditions not met — see 'checks').
+ *
+ * @param int $user_id
+ * @return array<int,array> product_id => name, date, order_id, certificate_code, product_id, status, checks
+ */
+function nias_cert_user_courses($user_id)
+{
+    static $cache = array();
+    $user_id = (int) $user_id;
+    if (!$user_id) {
+        return array();
+    }
+    if (isset($cache[$user_id])) {
+        return $cache[$user_id];
+    }
+
+    $bought = array();
+    try {
+        $orders = wc_get_orders(array(
+            'customer_id' => $user_id,
+            'status'      => array('completed', 'processing'),
+            'limit'       => -1,
+        ));
+    } catch (Exception $e) {
+        return array();
+    }
+
+    foreach ((array) $orders as $order) {
+        foreach ($order->get_items() as $item) {
+            if (!($item instanceof WC_Order_Item_Product)) {
+                continue;
+            }
+            // Get product ID from order item
+            $product_id = $item['product_id'];
+            if (!empty($item['variation_id'])) {
+                $product_id = $item['variation_id'];
+            }
+            if (!$product_id || !wc_get_product($product_id)) {
+                continue;
+            }
+            // Whether this product is eligible for a certificate, honoring the
+            // "نحوه نمایش مدرک" setting (همه / محصول انتخابی / دسته‌بندی / هیچکدام).
+            if (!nias_certificate_product_eligible($product_id)) {
+                continue;
+            }
+
+            $status = $order->get_status();
+            $date   = $order->get_date_completed() ? $order->get_date_completed()->date('Y-m-d') : $order->get_date_created()->date('Y-m-d');
+            $prev   = isset($bought[$product_id]) ? $bought[$product_id] : null;
+            // Prefer a completed order, then the earliest one.
+            if (!$prev
+                || ($status === 'completed' && $prev['order_status'] !== 'completed')
+                || ($status === $prev['order_status'] && $date < $prev['order_date'])) {
+                $bought[$product_id] = array(
+                    'name'         => wc_get_product($product_id)->get_name(),
+                    'order_id'     => $order->get_id(),
+                    'order_status' => $status,
+                    'order_date'   => $date,
+                );
+            }
+        }
+    }
+
+    $out = array();
+    foreach ($bought as $product_id => $b) {
+        $eval = nias_cert_evaluate($user_id, $product_id, array('order_status' => $b['order_status'], 'order_date' => $b['order_date']));
+        $code = (string) get_user_meta($user_id, 'certificate_code_' . $product_id, true);
+        $row  = nias_cert_get_for($user_id, $product_id);
+
+        // Once issued, a certificate stays issued (unless revoked) even if the
+        // admin tightens the rules later. A legacy code counts as issued. The
+        // order itself must still be in a counting status.
+        $issued     = ($row && $row['status'] !== 'pending') || (!$row && $code !== '');
+        $order_ok   = in_array($b['order_status'], array('completed', 'processing'), true);
+        $grant      = $eval['ok'] || ($issued && $order_ok && (!$row || $row['status'] === 'valid'));
+
+        $state = 'locked';
+        if ($grant) {
+            if ($code === '') {
+                $code = generate_certificate_code($user_id, $product_id);
+                update_user_meta($user_id, 'certificate_code_' . $product_id, $code);
+            }
+            $row   = nias_cert_sync_registry($user_id, $product_id, $code, $b, $eval['rules'], $row);
+            $state = $row ? ($row['status'] === 'valid' ? 'ready' : $row['status']) : 'ready';
+        } elseif ($row && $row['status'] === 'revoked') {
+            $state = 'revoked';
+        } elseif ($row && $row['status'] === 'pending') {
+            $state = 'pending';
+        }
+
+        $out[$product_id] = array(
+            'name'             => $b['name'],
+            'date'             => nias_certificate_resolve_date($user_id, $product_id, $b['order_date']),
+            'order_id'         => $b['order_id'],
+            'certificate_code' => $code,
+            'product_id'       => $product_id,
+            'status'           => $state,
+            'checks'           => $eval['checks'],
+        );
+    }
+
+    $cache[$user_id] = apply_filters('nias_certificate_user_courses', $out, $user_id);
+    return $cache[$user_id];
+}
+
+/**
+ * Make sure the registry has an up-to-date row for an issued certificate.
+ * Writes only when something changed, so listing pages stay read-only.
+ *
+ * @return array|null
+ */
+function nias_cert_sync_registry($user_id, $product_id, $code, $bought, $rules, $row)
+{
+    $name   = nias_cert_student_name($user_id);
+    $course = $bought['name'];
+    if (!$row) {
+        return nias_cert_upsert($user_id, $product_id, array(
+            'code'         => $code,
+            'student_name' => $name,
+            'course_name'  => $course,
+            'issued_at'    => $bought['order_date'] . ' 00:00:00',
+            'template_id'  => nias_cert_template_for($product_id),
+            'status'       => $rules['approval'] === 'on' ? 'pending' : 'valid',
+        ));
+    }
+    if ($row['code'] !== nias_cert_normalize_code($code) || $row['student_name'] !== $name || $row['course_name'] !== $course) {
+        return nias_cert_upsert($user_id, $product_id, array('code' => $code, 'student_name' => $name, 'course_name' => $course));
+    }
+    return $row;
+}
+
 // تابع بهبود یافته برای دریافت دوره‌های خریداری شده
+/**
+ * Courses whose certificate is ready to download (pre-1.4 contract: only
+ * eligible courses, keyed by product id, with name/date/order_id/code).
+ *
+ * @param int $user_id
+ * @return array
+ */
 function get_user_purchased_courses($user_id)
 {
     if (empty($user_id)) {
-        //error_log('get_user_purchased_courses: user_id empty');
         return [];
     }
-
-    $eligible_products = [];
-
-    try {
-        // Get all customer orders using WooCommerce functions
-        $orders = wc_get_orders(array(
-            'customer_id' => $user_id,
-            'status' => array('completed', 'processing'), // اضافه کردن processing
-            'limit' => -1,
-        ));
-
-        //error_log('Orders found for user ' . $user_id . ': ' . count($orders));
-
-        if (empty($orders)) {
-            // اگر سفارشی یافت نشد، بررسی کنید که آیا کاربر وجود دارد
-            $user = get_userdata($user_id);
-            if ($user) {
-                //error_log('User exists but no orders found for user ID: ' . $user_id);
-            } else {
-                //error_log('User not found with ID: ' . $user_id);
-            }
-            return [];
-        }
-
-        foreach ($orders as $order) {
-            //error_log('Processing order ID: ' . $order->get_id() . ' with status: ' . $order->get_status());
-
-            foreach ($order->get_items() as $item) {
-                if (!($item instanceof WC_Order_Item_Product)) {
-                    continue;
-                }
-
-                // Get product ID from order item
-                $product_id = $item['product_id'];
-                if (!empty($item['variation_id'])) {
-                    $product_id = $item['variation_id'];
-                }
-
-                if (!$product_id) continue;
-
-                // Get product object
-                $product = wc_get_product($product_id);
-                if (!$product) continue;
-
-                //error_log('Processing product: ' . $product->get_name() . ' (ID: ' . $product_id . ')');
-
-                // Whether this product is eligible for a certificate, honoring the
-                // "نحوه نمایش مدرک" setting (همه / محصول انتخابی / دسته‌بندی / هیچکدام).
-                $is_certificate_eligible = nias_certificate_product_eligible($product_id);
-
-                // Quiz gate: if a quiz is linked to this course, the user must have
-                // passed it before the course's certificate becomes available.
-                if ($is_certificate_eligible && function_exists('nias_quiz_course_gate_passed') && !nias_quiz_course_gate_passed($user_id, $product_id)) {
-                    $is_certificate_eligible = false;
-                }
-
-                if ($is_certificate_eligible) {
-                    // Get or generate certificate code
-                    $certificate_code = get_user_meta($user_id, 'certificate_code_' . $product_id, true);
-                    if (empty($certificate_code)) {
-                        $certificate_code = generate_certificate_code($user_id, $product_id);
-                        update_user_meta($user_id, 'certificate_code_' . $product_id, $certificate_code);
-                    }
-
-                    $order_date = $order->get_date_completed() ? $order->get_date_completed()->date('Y-m-d') : $order->get_date_created()->date('Y-m-d');
-                    $eligible_products[$product_id] = [
-                        'name' => $product->get_name(),
-                        'date' => nias_certificate_resolve_date($user_id, $product_id, $order_date),
-                        'order_id' => $order->get_id(),
-                        'certificate_code' => $certificate_code
-                    ];
-
-                    //error_log('Added eligible product: ' . $product->get_name());
-                }
-            }
-        }
-
-        //error_log('Total eligible products for user ' . $user_id . ': ' . count($eligible_products));
-
-    } catch (Exception $e) {
-        //error_log('Error in get_user_purchased_courses: ' . $e->getMessage());
-        return [];
-    }
-
-    return $eligible_products;
+    return array_filter(nias_cert_user_courses($user_id), function ($c) {
+        return $c['status'] === 'ready';
+    });
 }
 
 function nias_certificate_preview_shortcode($atts)
 {
+    // Designer mode: render the default template as HTML (CSS mm units).
+    $tpl = nias_cert_template_for(0);
+    if ($tpl && ($design = nias_cert_get_design($tpl))) {
+        $data = nias_cert_sample_data();
+        list($pw, $ph) = nias_cert_page_dims($design['page']);
+        $bg = 'background-color:' . esc_attr($design['page']['bgColor']) . ';';
+        if (!empty($design['page']['bgImage'])) {
+            $bg .= 'background-image:url(' . esc_url($design['page']['bgImage']) . ');background-size:100% 100%;';
+        }
+        $inner = '';
+        foreach ($design['elements'] as $el) {
+            // Browsers show scrollbars for overflow:auto; mPDF uses it for shrink-to-fit.
+            $inner .= str_replace('overflow:auto;', 'overflow:hidden;', nias_cert_element_html($el, $data));
+        }
+        $font = "@font-face{font-family:vazir;src:url('" . esc_url(NIAS_FONTS_URL . 'Vazir.ttf') . "')}@font-face{font-family:vazir;font-weight:bold;src:url('" . esc_url(NIAS_FONTS_URL . 'Vazir-Bold.ttf') . "')}";
+        return '<style>' . $font . '</style><div style="overflow:auto;max-width:100%"><div style="position:relative;margin:0 auto;width:' . nias_cert_num($pw) . 'mm;height:' . nias_cert_num($ph) . 'mm;' . $bg . 'box-shadow:0 0 10px rgba(0,0,0,.1);direction:ltr;overflow:hidden">' . $inner . '</div></div>';
+    }
+
     // Sample data for testing
     $name = "John Doe";
     $course = "Advanced Web Development";
