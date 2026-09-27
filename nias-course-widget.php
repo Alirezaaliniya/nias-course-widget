@@ -68,6 +68,7 @@ require(NIAS_COURSE_INC . '/certificate/renderer.php');
 require(NIAS_COURSE_INC . '/certificate/designer.php');
 require(NIAS_COURSE_INC . '/certificate/verify.php');
 require(NIAS_COURSE_INC . '/certificate/admin-issued.php');
+require(NIAS_COURSE_INC . '/certificate/account.php');
 require(NIAS_COURSE_INC . '/instructors.php');
 require(NIAS_COURSE_INC . '/instructor-dashboard.php');
 require(NIAS_WOOCOMMERCE . '/my-account.php');

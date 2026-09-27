@@ -176,7 +176,7 @@ function nias_cert_verify_result_html($result)
         }
         $html .= '</dl>';
         if ($is_owner && $state === 'valid') {
-            $html .= '<a class="ncv-btn ncv-btn-sm" href="' . esc_url(get_certificate_display_page_url()) . '">' . esc_html__('مشاهده و دانلود مدارک من', 'nias-course-widget') . '</a>';
+            $html .= '<a class="ncv-btn ncv-btn-sm" href="' . esc_url((function_exists('nias_cert_account_url') && nias_cert_account_url()) ? nias_cert_account_url() : get_certificate_display_page_url()) . '">' . esc_html__('مشاهده و دانلود مدارک من', 'nias-course-widget') . '</a>';
         }
     }
     $html .= '</div>';

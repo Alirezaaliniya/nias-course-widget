@@ -96,6 +96,9 @@ function nias_settings_certificate_fields()
         'certificate_cond_wait_days'      => 'number',
         'certificate_cond_require_name'   => 'radio',
         'certificate_cond_approval'       => 'radio',
+        'certificate_account_endpoint'    => 'radio',
+        'certificate_account_slug'        => 'text',
+        'certificate_account_title'       => 'text',
     );
 }
 
@@ -863,6 +866,20 @@ function nias_course_render_certificate_settings()
                     nias_set_toggle_row('certificate_cond_require_name', __('الزام ثبت نام و نام خانوادگی', 'nias-course-widget'), __('تا زمانی که دانشجو نام و نام خانوادگی خود را کامل نکند مدرک صادر نمی‌شود؛ فرم تکمیل نام در همان صفحهٔ مدارک نمایش داده می‌شود.', 'nias-course-widget'), 'off');
                     nias_set_toggle_row('certificate_cond_approval', __('نیاز به تأیید دستی مدیر', 'nias-course-widget'), __('مدارک جدید با وضعیت «در انتظار تأیید» ثبت می‌شوند و پس از تأیید شما در صفحهٔ «مدارک صادرشده» قابل دانلود و استعلام خواهند بود.', 'nias-course-widget'), 'off');
                     ?>
+                <?php nias_set_card_close(); ?>
+
+                <!-- My Account tab card -->
+                <?php nias_set_card_open('<svg width="20" height="20" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="8" r="4" stroke="#3858e9" stroke-width="1.8"/><path d="M4 21a8 8 0 0 1 16 0" stroke="#3858e9" stroke-width="1.8" stroke-linecap="round"/></svg>', __('نمایش مدارک در حساب کاربری', 'nias-course-widget')); ?>
+                    <?php nias_set_toggle_row('certificate_account_endpoint', __('افزودن تب «مدارک من» به حساب کاربری', 'nias-course-widget'), __('یک برگهٔ جدید (اندپوینت) به منوی حساب کاربری ووکامرس اضافه می‌شود که دانشجو در آن مدارک دوره‌های خود، وضعیت شرایط دریافت و دکمهٔ دانلود را می‌بیند. نیازی به ذخیرهٔ دوبارهٔ پیوندهای یکتا نیست.', 'nias-course-widget'), 'off'); ?>
+                    <div class="nias-row-block nias-row-sep" data-nias-show-when="certificate_account_endpoint=on">
+                        <div style="display:flex;gap:16px;flex-wrap:wrap">
+                            <div style="flex:1;min-width:220px"><?php nias_set_text_field('certificate_account_title', __('عنوان منو', 'nias-course-widget'), __('مدارک من', 'nias-course-widget')); ?></div>
+                            <div style="flex:1;min-width:220px"><?php nias_set_text_field('certificate_account_slug', __('آدرس اندپوینت (لاتین)', 'nias-course-widget'), 'my-certificates'); ?></div>
+                        </div>
+                        <?php if (function_exists('nias_cert_account_url') && nias_cert_account_url()) : ?>
+                            <div class="nias-row-desc" style="margin-top:10px"><?php echo esc_html__('آدرس فعلی:', 'nias-course-widget'); ?> <a href="<?php echo esc_url(nias_cert_account_url()); ?>" target="_blank" dir="ltr"><?php echo esc_html(nias_cert_account_url()); ?></a></div>
+                        <?php endif; ?>
+                    </div>
                 <?php nias_set_card_close(); ?>
 
                 <!-- Verification card -->
