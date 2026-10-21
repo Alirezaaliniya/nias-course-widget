@@ -6,21 +6,8 @@
 // از تکمیل‌شده تغییر کند، دسترسی نمی‌دهند؛ به همین دلیل از wc_customer_bought_product
 // (که هر سفارش پرداخت‌شده را خریداری‌شده می‌شمارد) استفاده نمی‌کنیم.
 function nias_has_bought_course($user_id, $user_login, $product_id) {
-    $args = [
-        'customer_id' => $user_id,
-        'limit'       => -1,
-        'status'      => 'wc-completed',
-    ];
-    $orders = wc_get_orders($args);
-    foreach ($orders as $order) {
-        foreach ($order->get_items() as $item) {
-            if ($item->get_product_id() == $product_id) {
-                return true;
-            }
-        }
-    }
-
-    return false;
+    // Shared, per-request cached lookup (inc/purchases.php).
+    return nias_course_user_completed($user_id, $product_id);
 }
 
 

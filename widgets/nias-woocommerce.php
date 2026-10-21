@@ -1129,20 +1129,7 @@ class Nias_course_woocommerce extends \Elementor\Widget_Base
                 // completed orders (e.g. 'processing') — or an order whose status
                 // later moves away from completed — do not grant access, so we do
                 // not use wc_customer_bought_product (which counts any paid order).
-                $args = [
-                    'customer_id' => $current_user->ID,
-                    'limit'       => -1,
-                    'status'      => 'wc-completed',
-                ];
-                $orders = wc_get_orders($args);
-                foreach ($orders as $order) {
-                    foreach ($order->get_items() as $item) {
-                        if ($item->get_product_id() == $product_id) {
-                            $bought_course = true;
-                            break 2; // Exit both loops after finding the purchase
-                        }
-                    }
-                }
+                $bought_course = nias_course_user_completed($current_user->ID, $product_id);
             }
         }
 

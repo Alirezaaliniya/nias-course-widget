@@ -33,24 +33,8 @@ function nias_course_endpoint_content() {
         return;
     }
 
-    // دریافت سفارش‌های تکمیل شده کاربر
-    $args = [
-        'customer_id' => $current_user->ID,
-        'limit'       => -1,
-        'status'      => 'wc-completed',
-    ];
-    $orders = wc_get_orders($args);
-    
-    // ذخیره محصولات خریداری شده در یک آرایه
-    $purchased_courses = [];
-    foreach ($orders as $order) {
-        foreach ($order->get_items() as $item) {
-            $product_id = $item->get_product_id();
-            if (!in_array($product_id, $purchased_courses)) {
-                $purchased_courses[] = $product_id;
-            }
-        }
-    }
+    // محصولات سفارش‌های تکمیل شده کاربر
+    $purchased_courses = nias_course_completed_product_ids($current_user->ID);
     
     if (empty($purchased_courses)) {
         echo '<p>شما هنوز هیچ دوره‌ای خریداری نکرده‌اید.</p>';
@@ -97,20 +81,7 @@ function nias_course_display_content($product_id) {
     if (is_user_logged_in() && !empty($current_user->ID) && !empty($product_id)) {
         // دسترسی فقط با سفارشِ «تکمیل‌شده» داده می‌شود؛ سفارش‌های پرداخت‌شدهٔ
         // تکمیل‌نشده یا سفارشی که از حالت تکمیل‌شده خارج شود دسترسی نمی‌دهند.
-        $args = [
-            'customer_id' => $current_user->ID,
-            'limit'       => -1,
-            'status'      => 'wc-completed',
-        ];
-        $orders = wc_get_orders($args);
-        foreach ($orders as $order) {
-            foreach ($order->get_items() as $item) {
-                if ($item->get_product_id() == $product_id) {
-                    $bought_course = true;
-                    break 2;
-                }
-            }
-        }
+        $bought_course = nias_course_user_completed($current_user->ID, $product_id);
     }
 
     $sections = carbon_get_post_meta($product_id, 'course_sections');
@@ -419,25 +390,7 @@ function nias_modern_account_enabled()
  */
 function nias_course_get_purchased_course_ids($user_id)
 {
-    $ids = array();
-    $user_id = intval($user_id);
-    if (!$user_id || !function_exists('wc_get_orders')) {
-        return $ids;
-    }
-    $orders = wc_get_orders(array(
-        'customer_id' => $user_id,
-        'limit'       => -1,
-        'status'      => 'wc-completed',
-    ));
-    foreach ($orders as $order) {
-        foreach ($order->get_items() as $item) {
-            $pid = $item->get_product_id();
-            if ($pid && !in_array($pid, $ids, true)) {
-                $ids[] = (int) $pid;
-            }
-        }
-    }
-    return $ids;
+    return nias_course_completed_product_ids($user_id);
 }
 
 /** URL of a course's display page (the focused modern course view). */

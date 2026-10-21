@@ -471,6 +471,237 @@ function nias_cf_write_option_multivalue($root, $values)
 }
 
 /* -------------------------------------------------------------------------
+ * Compact curriculum storage (1.4.1)
+ *
+ * The Carbon format stores one postmeta row per field, so a large course can
+ * own thousands of rows (7,000+ seen in production). WordPress loads every
+ * meta row of a post whenever any of its meta is read — WooCommerce does that
+ * for each product on listing pages — which made those products very slow.
+ *
+ * The curriculum now lives in a single row (_nias_course_sections) holding the
+ * exact array the Carbon reader used to return. Legacy rows are converted
+ * lazily on read and in small admin batches; a non-autoloaded backup of the
+ * original rows is kept in nias_cs_backup_{post_id}.
+ * ---------------------------------------------------------------------- */
+
+define('NIAS_CS_META', '_nias_course_sections');
+
+// The compact format is used only when this file provides the Carbon helpers;
+// with the real Carbon Fields plugin active, its legacy format stays in charge.
+define('NIAS_CS_COMPACT', !function_exists('carbon_get_post_meta') && !function_exists('carbon_set_post_meta'));
+
+/**
+ * Normalize a curriculum to exactly what the legacy reader returned
+ * (flatten → value tree → format), so every consumer sees the same shape.
+ *
+ * @param mixed $value
+ * @return array
+ */
+function nias_cs_normalize($value)
+{
+    $rows = array();
+    nias_cf_flatten_complex($rows, array('course_sections'), array(), $value, nias_course_sections_schema());
+    $objects = array();
+    foreach ($rows as $key => $val) {
+        // Mirror the DB round-trip of the legacy format (everything a string).
+        if ($val === null) {
+            $val = '';
+        } elseif (is_array($val) || is_object($val)) {
+            $val = maybe_serialize($val);
+        } else {
+            $val = (string) $val;
+        }
+        $objects[] = (object) array('key' => $key, 'value' => $val);
+    }
+    $tree = nias_cf_build_value_tree($objects);
+    if ($tree === null || !isset($tree['course_sections'])) {
+        return array();
+    }
+    return nias_cf_format_complex($tree['course_sections'], nias_course_sections_schema());
+}
+
+/** Delete a post's legacy Carbon rows for course_sections. */
+function nias_cs_delete_legacy_rows($post_id)
+{
+    global $wpdb;
+    $wpdb->query($wpdb->prepare(
+        "DELETE FROM {$wpdb->postmeta}
+         WHERE post_id = %d AND (meta_key = %s OR meta_key LIKE %s)",
+        intval($post_id),
+        '_course_sections',
+        $wpdb->esc_like('_course_sections|') . '%'
+    ));
+    wp_cache_delete(intval($post_id), 'post_meta');
+}
+
+/**
+ * Store a (normalized) curriculum in the compact row.
+ *
+ * update_metadata() is used instead of update_post_meta() on purpose: the
+ * latter silently redirects revisions to their parent post, which would let an
+ * old revision overwrite the live product's curriculum.
+ */
+function nias_cs_store($post_id, $sections)
+{
+    // The meta API unslashes its input; slash so backslashes survive.
+    return update_metadata('post', intval($post_id), NIAS_CS_META, wp_slash($sections));
+}
+
+/** Read the compact row of exactly this post (no revision redirect). */
+function nias_cs_read_row($post_id)
+{
+    return get_metadata('post', intval($post_id), NIAS_CS_META, true);
+}
+
+/** Has the one-time conversion of every product finished? */
+function nias_cs_migration_complete()
+{
+    return get_option('nias_cs_migrated') === NIAS_COURSE_VERSION;
+}
+
+/**
+ * Convert one post's legacy rows to the compact row.
+ *
+ * The legacy rows are deleted only after the compact copy has been read back
+ * and matches; the raw rows are also kept in a non-autoloaded backup option.
+ *
+ * @param int  $post_id
+ * @param bool $ok      set to true when the legacy rows were converted and removed
+ * @return array the curriculum (empty when the post had none)
+ */
+function nias_cs_migrate_post($post_id, &$ok = null)
+{
+    $ok      = false;
+    $post_id = intval($post_id);
+    $rows    = nias_cf_fetch_rows('post', $post_id, 'course_sections');
+    if (empty($rows)) {
+        $ok = true;
+        return array();
+    }
+
+    $tree     = nias_cf_build_value_tree($rows);
+    $sections = ($tree !== null && isset($tree['course_sections']))
+        ? nias_cf_format_complex($tree['course_sections'], nias_course_sections_schema())
+        : array();
+
+    $backup_key = 'nias_cs_backup_' . $post_id;
+    if (get_option($backup_key, null) === null) {
+        $backup = array();
+        foreach ($rows as $r) {
+            $backup[$r->key] = $r->value;
+        }
+        add_option($backup_key, $backup, '', 'no');
+    }
+
+    nias_cs_store($post_id, $sections);
+    wp_cache_delete($post_id, 'post_meta');
+    $check = nias_cs_read_row($post_id);
+    if (is_array($check) && $check === $sections) {
+        nias_cs_delete_legacy_rows($post_id);
+        $ok = true;
+    } else {
+        // Keep the legacy rows (still readable) and stop retrying this post.
+        $skip = (array) get_option('nias_cs_skip', array());
+        $skip[$post_id] = time();
+        update_option('nias_cs_skip', $skip, false);
+    }
+    return $sections;
+}
+
+/**
+ * Read a curriculum (compact row first, legacy rows as a fallback).
+ *
+ * @param int $post_id
+ * @return array
+ */
+function nias_cs_get($post_id)
+{
+    $post_id = intval($post_id);
+    if (!$post_id) {
+        return array();
+    }
+    $data = nias_cs_read_row($post_id);
+    if (is_array($data)) {
+        return $data;
+    }
+    $skip = (array) get_option('nias_cs_skip', array());
+    if (nias_cs_migration_complete() && !isset($skip[$post_id])) {
+        return array();
+    }
+    if (isset($skip[$post_id])) {
+        // Conversion failed earlier: serve the legacy rows as before.
+        return nias_cf_read_complex('post', $post_id, 'course_sections', nias_course_sections_schema());
+    }
+    return nias_cs_migrate_post($post_id);
+}
+
+/**
+ * Save a curriculum in the compact row and drop any legacy rows.
+ *
+ * @param int   $post_id
+ * @param mixed $value
+ */
+function nias_cs_set($post_id, $value)
+{
+    $post_id = intval($post_id);
+    nias_cs_store($post_id, nias_cs_normalize($value));
+    nias_cs_delete_legacy_rows($post_id);
+}
+
+/**
+ * Convert legacy rows in small batches on admin requests until none remain.
+ * Products that are never opened on the front end are converted too, so
+ * WooCommerce listing pages stop loading thousands of rows.
+ */
+add_action('admin_init', 'nias_cs_migrate_batch');
+function nias_cs_migrate_batch()
+{
+    if (!NIAS_CS_COMPACT || nias_cs_migration_complete() || wp_doing_ajax()) {
+        return;
+    }
+    global $wpdb;
+    $skip = array_map('intval', array_keys((array) get_option('nias_cs_skip', array())));
+    $not  = $skip ? ' AND post_id NOT IN (' . implode(',', $skip) . ')' : '';
+    $ids  = $wpdb->get_col($wpdb->prepare(
+        "SELECT DISTINCT post_id FROM {$wpdb->postmeta} WHERE meta_key LIKE %s{$not} LIMIT 5",
+        $wpdb->esc_like('_course_sections|') . '%'
+    ));
+    if (empty($ids)) {
+        update_option('nias_cs_migrated', NIAS_COURSE_VERSION);
+        return;
+    }
+    $start = microtime(true);
+    foreach ($ids as $id) {
+        nias_cs_migrate_post((int) $id);
+        if (microtime(true) - $start > 5) {
+            break;
+        }
+    }
+}
+
+/**
+ * Emergency restore of the original Carbon rows from the backup option.
+ *
+ * @param int $post_id
+ * @return bool
+ */
+function nias_cs_restore_legacy($post_id)
+{
+    $post_id = intval($post_id);
+    $backup  = get_option('nias_cs_backup_' . $post_id, null);
+    if (!is_array($backup)) {
+        return false;
+    }
+    nias_cs_delete_legacy_rows($post_id);
+    foreach ($backup as $key => $val) {
+        add_metadata('post', $post_id, $key, wp_slash($val));
+    }
+    delete_metadata('post', $post_id, NIAS_CS_META);
+    delete_option('nias_cs_migrated');
+    return true;
+}
+
+/* -------------------------------------------------------------------------
  * Public drop-in replacements for the Carbon Fields helpers
  * ---------------------------------------------------------------------- */
 
@@ -502,7 +733,7 @@ if (!function_exists('carbon_get_post_meta')) {
     function carbon_get_post_meta($post_id, $name)
     {
         if ($name === 'course_sections') {
-            return nias_cf_read_complex('post', $post_id, 'course_sections', nias_course_sections_schema());
+            return nias_cs_get($post_id);
         }
         return get_post_meta($post_id, '_' . $name, true);
     }
@@ -519,7 +750,7 @@ if (!function_exists('carbon_set_post_meta')) {
     function carbon_set_post_meta($post_id, $name, $value)
     {
         if ($name === 'course_sections') {
-            nias_cf_write_post_complex($post_id, 'course_sections', $value, nias_course_sections_schema());
+            nias_cs_set($post_id, $value);
             return;
         }
         update_post_meta($post_id, '_' . $name, $value);
