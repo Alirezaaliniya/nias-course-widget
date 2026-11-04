@@ -191,6 +191,7 @@ function nias_quiz_store_result($user_id, $quiz_id, $result)
         }
     }
     update_user_meta($user_id, $key, $record);
+    do_action('nias_quiz_result_saved', $user_id, $quiz_id, $record);
 }
 
 /** Has a user passed a given quiz? */

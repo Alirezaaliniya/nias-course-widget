@@ -58,7 +58,7 @@ function nias_cert_sanitize_design($raw)
         'elements' => array(),
     );
 
-    $types = array('text', 'image', 'qr', 'rect', 'line');
+    $types = array('text', 'image', 'qr', 'barcode', 'rect', 'ellipse', 'line');
     $clamp = function ($v, $min, $max, $def) {
         if (!is_numeric($v)) {
             return $def;
@@ -92,11 +92,26 @@ function nias_cert_sanitize_design($raw)
                 $clean['color']      = sanitize_hex_color(isset($el['color']) ? $el['color'] : '') ?: '#000000';
                 $clean['bg']         = sanitize_hex_color(isset($el['bg']) ? $el['bg'] : '') ?: '';
                 $clean['align']      = (isset($el['align']) && in_array($el['align'], array('left', 'center', 'right', 'justify'), true)) ? $el['align'] : 'center';
+                $clean['dir']        = (isset($el['dir']) && $el['dir'] === 'ltr') ? 'ltr' : 'rtl';
                 break;
             case 'image':
                 $clean['src'] = esc_url_raw(isset($el['src']) ? $el['src'] : '');
                 break;
+            case 'qr':
+                $clean['content'] = (isset($el['content']) && $el['content'] === 'custom') ? 'custom' : 'verify';
+                $clean['text']    = sanitize_textarea_field(isset($el['text']) ? $el['text'] : '');
+                $clean['color']   = sanitize_hex_color(isset($el['color']) ? $el['color'] : '') ?: '#000000';
+                // Templates saved before 1.5 have no bg: keep them white.
+                $clean['bg']      = !isset($el['bg']) ? '#ffffff' : (sanitize_hex_color($el['bg']) ?: '');
+                break;
+            case 'barcode':
+                $clean['text']     = sanitize_text_field(isset($el['text']) ? $el['text'] : '{code}');
+                $clean['color']    = sanitize_hex_color(isset($el['color']) ? $el['color'] : '') ?: '#000000';
+                $clean['bg']       = sanitize_hex_color(isset($el['bg']) ? $el['bg'] : '') ?: '';
+                $clean['showText'] = !empty($el['showText']);
+                break;
             case 'rect':
+            case 'ellipse':
             case 'line':
                 $clean['bg']          = sanitize_hex_color(isset($el['bg']) ? $el['bg'] : '') ?: '';
                 $clean['borderColor'] = sanitize_hex_color(isset($el['borderColor']) ? $el['borderColor'] : '') ?: '';
@@ -177,6 +192,7 @@ function nias_cert_preset_labels()
         'classic' => __('کلاسیک (از تصاویر و متن‌های فعلی شما)', 'nias-course-widget'),
         'modern'  => __('مدرن با نوار رنگی', 'nias-course-widget'),
         'minimal' => __('مینیمال', 'nias-course-widget'),
+        'formal'  => __('رسمی با QR و بارکد', 'nias-course-widget'),
         'blank'   => __('صفحهٔ خالی', 'nias-course-widget'),
     );
 }
@@ -263,6 +279,38 @@ function nias_cert_preset($key)
             $el[] = $box('qr', 138.5, 150, 20, 20);
             break;
 
+        case 'formal':
+            $page['bgColor'] = '#ffffff';
+            $el[] = $box('rect', 6, 6, 285, 198, array('name' => 'قاب بیرونی', 'bg' => '#0f2f57'));
+            $el[] = $box('rect', 9, 9, 279, 192, array('name' => 'زمینه', 'bg' => '#fffefa', 'borderColor' => '#b8913a', 'borderWidth' => 0.8));
+            $el[] = $box('rect', 13, 13, 271, 184, array('name' => 'قاب داخلی', 'borderColor' => '#e4d3a3', 'borderWidth' => 0.3, 'bg' => ''));
+            foreach (array(array(10, 10), array(277, 10), array(10, 190), array(277, 190)) as $i => $c) {
+                $el[] = $box('ellipse', $c[0], $c[1], 10, 10, array('name' => 'گوشه ' . ($i + 1), 'bg' => '#b8913a'));
+            }
+            $logo = nias_cert_setting('certificate_watermark', '') ?: nias_cert_setting('certificate_icon', '');
+            if ($logo) {
+                $el[] = $box('image', 136, 18, 25, 25, array('name' => 'لوگو', 'src' => $logo));
+            }
+            $el[] = $t('{site_name}', 40, 45, 217, 8, 12, array('color' => '#b8913a', 'bold' => true));
+            $el[] = $t('گواهی‌نامهٔ پایان دوره', 40, 55, 217, 16, 30, array('bold' => true, 'color' => '#0f2f57', 'name' => 'عنوان'));
+            $el[] = $t('Certificate of Completion', 40, 71, 217, 7, 11, array('color' => '#8a94a6', 'dir' => 'ltr'));
+            $el[] = $t('بدین‌وسیله گواهی می‌شود', 40, 84, 217, 8, 13, array('color' => '#4b5563'));
+            $el[] = $t('{student_name}', 40, 93, 217, 16, 28, array('bold' => true, 'color' => '#111827', 'name' => 'نام دانشجو'));
+            $el[] = $box('line', 98.5, 110, 100, 0.4, array('name' => 'خط زیر نام', 'bg' => '#b8913a'));
+            $el[] = $t('«{course_name}» را با موفقیت به پایان رسانده است.', 40, 114, 217, 14, 15, array('color' => '#374151', 'name' => 'نام دوره'));
+            $el[] = $t("تاریخ صدور\n{date}", 205, 150, 65, 15, 11, array('color' => '#374151'));
+            $el[] = $box('line', 213, 178, 50, 0.3, array('name' => 'خط امضا', 'bg' => '#9ca3af'));
+            $el[] = $t('{signer_name}', 205, 180, 65, 7, 10, array('color' => '#374151', 'name' => 'امضاکننده'));
+            $sign = nias_cert_setting('certificate_signature_image', '');
+            if ($sign) {
+                $el[] = $box('image', 218, 160, 40, 18, array('name' => 'امضا', 'src' => $sign));
+            }
+            $el[] = $box('qr', 27, 150, 30, 30, array('name' => 'QR استعلام'));
+            $el[] = $t('استعلام با اسکن QR', 22, 181, 40, 5, 7, array('color' => '#6b7280'));
+            $el[] = $box('barcode', 101, 166, 95, 17, array('name' => 'بارکد', 'text' => '{code}', 'color' => '#111827', 'showText' => true));
+            $el[] = $t('اعتبار این مدرک از طریق {site_url} قابل استعلام است.', 70, 186, 157, 5, 7.5, array('color' => '#8a94a6'));
+            break;
+
         case 'blank':
         default:
             break;
@@ -327,6 +375,9 @@ function nias_cert_render_designer_page()
         'presets'         => nias_cert_preset_labels(),
         'pageSizes'       => nias_cert_page_sizes(),
         'fontUrl'         => NIAS_FONTS_URL,
+        // Real (transparent) QR of the sample link, used as a mask on the
+        // canvas so colour changes preview exactly.
+        'sampleQr'        => nias_cert_qr_data_uri(nias_cert_sample_data()['verify_url'], '#000000', ''),
     );
     ?>
     <div class="nias-settings-app" dir="rtl">
@@ -375,7 +426,16 @@ function nias_cert_ajax_tpl_create()
     if ($title === '') {
         $title = __('قالب مدرک', 'nias-course-widget') . ' ' . (count(nias_cert_templates_list()) + 1);
     }
-    $id = nias_cert_create_template($title, nias_cert_preset($preset));
+    // Import: a design exported from this or another site (sanitized like any save).
+    $design = nias_cert_preset($preset);
+    if (!empty($_POST['design'])) {
+        $imported = json_decode(wp_unslash($_POST['design']), true);
+        if (!is_array($imported) || !isset($imported['elements'])) {
+            wp_send_json_error(array('message' => __('فایل قالب نامعتبر است.', 'nias-course-widget')));
+        }
+        $design = $imported;
+    }
+    $id = nias_cert_create_template($title, $design);
     if (!$id) {
         wp_send_json_error(array('message' => __('ساخت قالب ناموفق بود.', 'nias-course-widget')));
     }

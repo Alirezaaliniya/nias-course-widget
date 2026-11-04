@@ -18,7 +18,7 @@ if (!defined('ABSPATH')) {
  * @package nias-course-widget
  */
 
-define('NIAS_CERT_DB_VERSION', '1');
+define('NIAS_CERT_DB_VERSION', '2');
 
 /* -------------------------------------------------------------------------
  * Settings helper
@@ -80,13 +80,131 @@ function nias_cert_maybe_install_table()
         issued_at datetime NULL DEFAULT NULL,
         status varchar(20) NOT NULL DEFAULT 'valid',
         note text NULL,
+        design_ref varchar(40) NOT NULL DEFAULT '',
+        emailed_at datetime NULL DEFAULT NULL,
         updated_at datetime NULL DEFAULT NULL,
         PRIMARY KEY  (id),
         UNIQUE KEY code (code),
         KEY user_product (user_id,product_id),
         KEY status (status)
     ) {$charset};");
+    // Frozen designs, shared by every certificate issued from the same
+    // version of a template (keyed by content hash, so 10 000 certificates
+    // from one template store the design once).
+    dbDelta("CREATE TABLE " . nias_cert_designs_table() . " (
+        hash char(40) NOT NULL,
+        template_id bigint(20) unsigned NOT NULL DEFAULT 0,
+        design longtext NOT NULL,
+        created_at datetime NULL DEFAULT NULL,
+        PRIMARY KEY  (hash)
+    ) {$charset};");
+    dbDelta("CREATE TABLE " . nias_cert_log_table() . " (
+        id bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+        cert_id bigint(20) unsigned NOT NULL DEFAULT 0,
+        code varchar(64) NOT NULL DEFAULT '',
+        result varchar(12) NOT NULL DEFAULT '',
+        source varchar(10) NOT NULL DEFAULT 'web',
+        visitor char(16) NOT NULL DEFAULT '',
+        user_id bigint(20) unsigned NOT NULL DEFAULT 0,
+        agent varchar(190) NOT NULL DEFAULT '',
+        referer varchar(190) NOT NULL DEFAULT '',
+        created_at datetime NOT NULL,
+        PRIMARY KEY  (id),
+        KEY cert_id (cert_id),
+        KEY created_at (created_at)
+    ) {$charset};");
     update_option('nias_cert_db_version', NIAS_CERT_DB_VERSION);
+}
+
+function nias_cert_designs_table()
+{
+    global $wpdb;
+    return $wpdb->prefix . 'nias_cert_designs';
+}
+
+function nias_cert_log_table()
+{
+    global $wpdb;
+    return $wpdb->prefix . 'nias_cert_verify_log';
+}
+
+/* -------------------------------------------------------------------------
+ * Frozen designs
+ * ---------------------------------------------------------------------- */
+
+/** Whether issued certificates keep the design they were issued with. */
+function nias_cert_freeze_on()
+{
+    return nias_cert_setting('certificate_freeze_design', 'on') === 'on';
+}
+
+/**
+ * Freeze the design a product currently issues with and return its
+ * reference: 'classic', or the sha1 of the stored design JSON.
+ *
+ * @param int $product_id
+ * @return string
+ */
+function nias_cert_freeze_design_for($product_id)
+{
+    $tpl    = nias_cert_template_for($product_id);
+    $design = $tpl ? nias_cert_get_design($tpl) : null;
+    if (!$design) {
+        return 'classic';
+    }
+    global $wpdb;
+    $json = wp_json_encode($design, JSON_UNESCAPED_UNICODE);
+    $hash = sha1($json);
+    $wpdb->query($wpdb->prepare(
+        'INSERT IGNORE INTO ' . nias_cert_designs_table() . ' (hash, template_id, design, created_at) VALUES (%s, %d, %s, %s)',
+        $hash,
+        $tpl,
+        $json,
+        current_time('mysql')
+    ));
+    return $hash;
+}
+
+/**
+ * What a registry row renders with: a design array, or 0 for the classic
+ * layout. Rows issued before 1.5.1 (no reference) or with freezing turned
+ * off follow the product's current template.
+ *
+ * @param array $row
+ * @return array|int
+ */
+function nias_cert_design_for_row($row)
+{
+    $ref = isset($row['design_ref']) ? (string) $row['design_ref'] : '';
+    if ($ref !== '' && nias_cert_freeze_on()) {
+        if ($ref === 'classic') {
+            return 0;
+        }
+        static $cache = array();
+        if (!array_key_exists($ref, $cache)) {
+            global $wpdb;
+            $json        = $wpdb->get_var($wpdb->prepare('SELECT design FROM ' . nias_cert_designs_table() . ' WHERE hash = %s', $ref));
+            $decoded     = $json ? json_decode($json, true) : null;
+            $cache[$ref] = is_array($decoded) ? nias_cert_sanitize_design($decoded) : null;
+        }
+        if ($cache[$ref]) {
+            return $cache[$ref];
+        }
+    }
+    $tpl = nias_cert_template_for((int) $row['product_id']);
+    return $tpl ? $tpl : 0;
+}
+
+/** Point a certificate at the product's current template (admin action). */
+function nias_cert_refreeze($id)
+{
+    global $wpdb;
+    $row = nias_cert_get($id);
+    if (!$row) {
+        return false;
+    }
+    $ref = nias_cert_freeze_design_for((int) $row['product_id']);
+    return $wpdb->update(nias_cert_table(), array('design_ref' => $ref, 'template_id' => nias_cert_template_for((int) $row['product_id']), 'updated_at' => current_time('mysql')), array('id' => (int) $id)) !== false;
 }
 
 /* -------------------------------------------------------------------------
@@ -131,10 +249,50 @@ function nias_cert_user_has_real_name($user_id)
  * Read
  * ---------------------------------------------------------------------- */
 
-/** Normalize a submitted code (trim, upper-case, strip spaces). */
+/**
+ * Normalize a submitted code: Persian/Arabic digits → Latin, dash variants →
+ * "-", upper-case, and drop anything that cannot be part of a code (spaces,
+ * zero-width characters pasted from PDFs, etc.).
+ */
 function nias_cert_normalize_code($code)
 {
-    return strtoupper(preg_replace('/\s+/', '', sanitize_text_field((string) $code)));
+    $code = sanitize_text_field((string) $code);
+    $code = strtr($code, array(
+        '۰' => '0', '۱' => '1', '۲' => '2', '۳' => '3', '۴' => '4', '۵' => '5', '۶' => '6', '۷' => '7', '۸' => '8', '۹' => '9',
+        '٠' => '0', '١' => '1', '٢' => '2', '٣' => '3', '٤' => '4', '٥' => '5', '٦' => '6', '٧' => '7', '٨' => '8', '٩' => '9',
+        '–' => '-', '—' => '-', '−' => '-', 'ـ' => '-',
+    ));
+    $code = strtoupper(preg_replace('/[^A-Za-z0-9\-_]/', '', $code));
+    return substr($code, 0, 64);
+}
+
+/** Whether a code is already used (registry or legacy user meta). */
+function nias_cert_code_exists($code)
+{
+    global $wpdb;
+    $code = nias_cert_normalize_code($code);
+    if ($code === '') {
+        return false;
+    }
+    if ($wpdb->get_var($wpdb->prepare('SELECT id FROM ' . nias_cert_table() . ' WHERE code = %s LIMIT 1', $code))) {
+        return true;
+    }
+    return (bool) $wpdb->get_var($wpdb->prepare(
+        "SELECT umeta_id FROM {$wpdb->usermeta} WHERE meta_value = %s AND (meta_key LIKE %s OR meta_key = 'usercertificate_code') LIMIT 1",
+        $code,
+        $wpdb->esc_like('certificate_code_') . '%'
+    ));
+}
+
+/** $n characters from $alphabet using a CSPRNG. */
+function nias_cert_random_chars($alphabet, $n)
+{
+    $out = '';
+    $max = strlen($alphabet) - 1;
+    for ($i = 0; $i < $n; $i++) {
+        $out .= $alphabet[random_int(0, $max)];
+    }
+    return $out;
 }
 
 /** @return array|null */
@@ -198,10 +356,18 @@ function nias_cert_get_by_code($code)
 /**
  * Create a registry row for a legacy (pre-registry) code.
  *
+ * Old versions auto-assigned the single per-user code (usercertificate_code)
+ * to every user listed on the Users screen, even without a purchase. Such a
+ * code is only imported when the user really bought a certificate course,
+ * so it can never verify as "valid" on its own.
+ *
  * @return array|null
  */
 function nias_cert_import_legacy($user_id, $product_id, $code)
 {
+    if (!$product_id && function_exists('has_user_purchased_certificate') && !has_user_purchased_certificate($user_id)) {
+        return null;
+    }
     $course = '';
     if ($product_id) {
         $course = get_the_title($product_id);
@@ -276,7 +442,7 @@ function nias_cert_upsert($user_id, $product_id, $args)
     }
 
     $fields = array();
-    foreach (array('student_name', 'course_name', 'issued_at', 'status', 'note') as $k) {
+    foreach (array('student_name', 'course_name', 'issued_at', 'status', 'note', 'design_ref') as $k) {
         if (array_key_exists($k, $args)) {
             $fields[$k] = (string) $args[$k];
         }
@@ -394,24 +560,50 @@ function nias_cert_backfill($limit = 300)
  * ---------------------------------------------------------------------- */
 
 /**
- * The URL printed in a certificate's QR code. Points to the verification form
- * page when one is configured; otherwise keeps the legacy
- * display-page?code=&user_id= link so nothing changes for existing sites.
+ * The URL printed in a certificate's QR code.
+ *
+ * Always code-only (?cert_code=CODE): the user id is no longer exposed, so
+ * the link cannot be used to enumerate accounts. It points to the
+ * verification page when one is configured, otherwise to the certificate
+ * display page — both [nias_certificate_verify] and [nias_certificate]
+ * answer ?cert_code=. Legacy ?code=&user_id= links printed on older
+ * certificates keep working.
  *
  * @param string $code
- * @param int    $user_id
+ * @param int    $user_id unused, kept for backward compatibility
  * @return string
  */
 function nias_cert_verify_url($code, $user_id = 0)
 {
     $page_id = (int) nias_cert_setting('certificate_verify_page', 0);
-    if ($page_id && get_post_status($page_id) === 'publish') {
-        return add_query_arg('cert_code', rawurlencode($code), get_permalink($page_id));
+    $base    = ($page_id && get_post_status($page_id) === 'publish') ? get_permalink($page_id) : get_certificate_display_page_url();
+    $url     = add_query_arg('cert_code', rawurlencode(nias_cert_normalize_code($code)), $base);
+    return apply_filters('nias_certificate_verify_url', $url, $code, $user_id);
+}
+
+/**
+ * Everything needed to render the PDF of a registry row.
+ *
+ * @param array $row
+ * @return array nias_cert_build_data() output
+ */
+function nias_cert_row_data($row)
+{
+    $pid  = (int) $row['product_id'];
+    $date = substr((string) $row['issued_at'], 0, 10);
+    if ($pid) {
+        $date = nias_certificate_resolve_date((int) $row['user_id'], $pid, $date);
     }
-    return add_query_arg(
-        array('code' => rawurlencode($code), 'user_id' => (int) $user_id),
-        get_certificate_display_page_url()
-    );
+    $data = nias_cert_build_data((int) $row['user_id'], $pid, $row['code'], $date);
+    if ($data['course_name'] === '' && $row['course_name'] !== '') {
+        $data['course_name'] = $row['course_name'];
+    }
+    // The name recorded at issuance wins, so a later profile edit cannot
+    // change what an already-issued certificate says.
+    if (!empty($row['student_name'])) {
+        $data['student_name'] = $row['student_name'];
+    }
+    return $data;
 }
 
 /* -------------------------------------------------------------------------

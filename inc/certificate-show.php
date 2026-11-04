@@ -550,101 +550,45 @@ function nias_certificate_list_assets()
 // Modified shortcode function
 function nias_certificate_shortcode($atts)
 {
-    // Initialize verification variable
-    $nias_course_certificate_verify = false;
-    $verification_message = '';
-
     nias_certificate_list_assets();
 
-    // بررسی پارامتر code در URL
-    $code_param = isset($_GET['code']) ? sanitize_text_field($_GET['code']) : '';
-    $user_id_param = isset($_GET['user_id']) ? intval($_GET['user_id']) : 0;
+    $wrap_open = '<div class="certificate-download-container" style="max-width: 800px; margin: auto; padding: 20px; background-color: #f9f9f9; border-radius: 10px;">';
 
-    // اگر پارامتر code موجود است، بررسی اعتبار آن
-    if (!empty($code_param) && $user_id_param > 0) {
-
-        // دریافت کد گواهی ذخیره شده برای کاربر
-        $stored_certificate_code_1 = get_user_meta($user_id_param, 'usercertificate_code', true);
-
-        // دریافت تمام متاهای کاربر که با پیشوند certificate_code_ شروع می‌شوند
-        $user_meta = get_user_meta($user_id_param);
-        $stored_certificate_code_2 = '';
-
-        foreach ($user_meta as $meta_key => $meta_value) {
-            if (strpos($meta_key, 'certificate_code_') === 0) {
-                if ($meta_value[0] === $code_param) {
-                    $stored_certificate_code_2 = $meta_value[0];
-                    break;
-                }
-            }
-        }
-
-        // A revoked certificate no longer verifies.
-        $registry_row = ($stored_certificate_code_1 === $code_param || $stored_certificate_code_2 === $code_param) && function_exists('nias_cert_get_by_code')
-            ? nias_cert_get_by_code($code_param)
-            : null;
-        $is_revoked = $registry_row && $registry_row['status'] === 'revoked';
-
-        // بررسی تطابق با هر کدام از کدها
-        if (($stored_certificate_code_1 === $code_param || $stored_certificate_code_2 === $code_param) && !$is_revoked) {
-            // کد معتبر است - تنظیم پیام موفقیت
-            $nias_course_certificate_verify = true;
-            $verification_message = '<div class="certificate-success">
-                        <h3>✅ گواهی‌ معتبر است</h3>
-                        <p><strong>شناسه کاربر:</strong> ' . esc_html($user_id_param) . '</p>
-                        <p>این گواهی معتبر و قابل اعتماد است.</p>
-                    </div>';
-        } else {
-            $nias_course_certificate_verify = false;
-
-            // کد نامعتبر است - تنظیم پیام خطا
-            $verification_message = $is_revoked
-                ? '<div class="certificate-error">
-                        <h3>❌ این گواهی باطل شده است</h3>
-                        <p>اعتبار این گواهی توسط صادرکننده لغو شده است.</p>
-                    </div>'
-                : '<div class="certificate-error">
-                        <h3>❌ گواهی نامعتبر است</h3>
-                        <p>کدی که وارد کرده‌اید در سیستم یافت نشد.</p>
-                    </div>';
-        }
+    // A verification link (QR) — ?cert_code=CODE, or the legacy
+    // ?code=CODE&user_id=ID — shows that single certificate only. It used to
+    // open the holder's whole certificate list (with every code and a
+    // download button), so one scanned certificate exposed all the others.
+    $code_param    = '';
+    $user_id_param = 0;
+    if (isset($_GET['cert_code'])) {
+        $code_param = sanitize_text_field(wp_unslash($_GET['cert_code']));
+    } elseif (isset($_GET['code'])) {
+        $code_param    = sanitize_text_field(wp_unslash($_GET['code']));
+        $user_id_param = isset($_GET['user_id']) ? (int) $_GET['user_id'] : 0;
+    }
+    $verification_message = '';
+    $verified_owner       = 0;
+    if ($code_param !== '') {
+        $result = nias_cert_verify_lookup($code_param, $user_id_param);
+        ob_start();
+        nias_cert_verify_styles();
+        $verification_message = ob_get_clean() . '<div class="ncv" dir="rtl" style="margin:0 auto 16px"><div class="ncv-card">' . nias_cert_verify_result_html($result) . '</div></div>';
+        $verified_owner = $result['row'] ? (int) $result['row']['user_id'] : 0;
     }
 
-    // ادامه کد قبلی برای نمایش گواهی‌نامه‌ها
-    $user_id = !empty($user_id_param) ? $user_id_param : (isset($_GET['user_id']) ? intval($_GET['user_id']) : 0);
+    $user_id = is_user_logged_in() ? get_current_user_id() : 0;
 
-    // اگر user_id صفر است، سعی کن از کاربر فعلی استفاده کنی
-    if ($user_id === 0 && is_user_logged_in()) {
-        $user_id = get_current_user_id();
-    }
-
-    // اگر هنوز user_id صفر است، خطا نشان بده
-    if ($user_id === 0) {
-        return '<p class="certificate-error">شناسه کاربر مشخص نشده است.</p>';
-    }
-
-    // بررسی وجود کاربر
-    $user_data = get_userdata($user_id);
-    if (!$user_data) {
-        return '<p class="certificate-error">کاربر با این شناسه یافت نشد.</p>';
-    }
-
-    // Permission: a visitor may see a user's certificate list only for their own
-    // account, or when they arrived with a valid verification code for that user.
-    // This keeps the normal "view my certificates" flow working without a ?code=
-    // link, while still protecting other users' lists.
-    $is_self  = is_user_logged_in() && get_current_user_id() === $user_id;
-    $can_view = $is_self || $nias_course_certificate_verify;
-    if (!$can_view) {
-        $wrap_open = '<div class="certificate-download-container" style="max-width: 800px; margin: auto; padding: 20px; background-color: #f9f9f9; border-radius: 10px;">';
-        if (!empty($code_param)) {
-            return $wrap_open . $verification_message . '</div>'; // invalid-code message
-        }
-        if (is_user_logged_in()) {
-            return $wrap_open . '<div class="certificate-error"><h3>دسترسی مجاز نیست</h3><p>اجازهٔ مشاهدهٔ مدارک این کاربر را ندارید.</p></div></div>';
+    // Not logged in, or looking at someone else's certificate: the
+    // verification card is all there is to see.
+    if (!$user_id || ($code_param !== '' && $verified_owner !== $user_id)) {
+        if ($code_param !== '') {
+            return $verification_message;
         }
         return $wrap_open . '<div class="certificate-error"><h3>برای مشاهده مدارک</h3><p>برای دیدن مدارک خود ابتدا وارد حساب کاربری شوید.</p></div></div>';
     }
+
+    $user_data = get_userdata($user_id);
+    $is_self   = true;
 
     // All purchased certificate courses with their state. Visitors arriving
     // through a verification link only see issued certificates.
@@ -656,7 +600,7 @@ function nias_certificate_shortcode($atts)
     }
 
     if (empty($courses)) {
-        return '<div class="certificate-download-container" style="max-width: 800px; margin: auto; padding: 20px; background-color: #f9f9f9; border-radius: 10px;">
+        return $verification_message . '<div class="certificate-download-container" style="max-width: 800px; margin: auto; padding: 20px; background-color: #f9f9f9; border-radius: 10px;">
                     <h2>مدارک دوره</h2>
                     <div class="no-certificate-message" style="text-align: center; padding: 30px; background: #fff3cd; border: 1px solid #ffeaa7; border-radius: 5px; color: #856404;">
                         <h3>هیچ مدرکی یافت نشد</h3>
@@ -778,6 +722,13 @@ function handle_certificate_generation()
         wp_die('Required fields are missing / فیلدهای ضروری خالی هستند');
     }
 
+    // Only the holder (or an admin) downloads from the list. Anyone else who
+    // has a code uses the verification page, which applies its own checks
+    // (status, rate limit, name masking).
+    if (get_current_user_id() !== $user_id && !current_user_can('manage_options')) {
+        wp_die('Access denied / دسترسی مجاز نیست', '', array('response' => 403));
+    }
+
     // دریافت اطلاعات کاربر از دیتابیس
     $user = get_user_by('ID', $user_id);
     if (!$user) {
@@ -814,7 +765,8 @@ function handle_certificate_generation()
     }
 
     try {
-        nias_cert_output_pdf($data, nias_cert_template_for($product_id), 'D');
+        $row = nias_cert_get_for($user_id, $product_id);
+        nias_cert_output_pdf($data, $row ? nias_cert_design_for_row($row) : nias_cert_template_for($product_id), 'D');
     } catch (\Throwable $e) {
         wp_die('Error generating certificate: ' . esc_html($e->getMessage()) . ' / خطا در تولید گواهی');
     }
@@ -835,14 +787,14 @@ add_shortcode('nias_certificate', 'nias_certificate_shortcode');
  * @param int $user_id
  * @return array<int,array> product_id => name, date, order_id, certificate_code, product_id, status, checks
  */
-function nias_cert_user_courses($user_id)
+function nias_cert_user_courses($user_id, $fresh = false)
 {
     static $cache = array();
     $user_id = (int) $user_id;
     if (!$user_id) {
         return array();
     }
-    if (isset($cache[$user_id])) {
+    if (!$fresh && isset($cache[$user_id])) {
         return $cache[$user_id];
     }
 
@@ -952,6 +904,9 @@ function nias_cert_sync_registry($user_id, $product_id, $code, $bought, $rules, 
             'course_name'  => $course,
             'issued_at'    => $bought['order_date'] . ' 00:00:00',
             'template_id'  => nias_cert_template_for($product_id),
+            // Freeze the current design so later template edits do not
+            // change what this certificate looks like.
+            'design_ref'   => nias_cert_freeze_on() ? nias_cert_freeze_design_for($product_id) : '',
             'status'       => $rules['approval'] === 'on' ? 'pending' : 'valid',
         ));
     }
@@ -985,6 +940,7 @@ function nias_certificate_preview_shortcode($atts)
     $tpl = nias_cert_template_for(0);
     if ($tpl && ($design = nias_cert_get_design($tpl))) {
         $data = nias_cert_sample_data();
+        $data['_html'] = true;
         list($pw, $ph) = nias_cert_page_dims($design['page']);
         $bg = 'background-color:' . esc_attr($design['page']['bgColor']) . ';';
         if (!empty($design['page']['bgImage'])) {

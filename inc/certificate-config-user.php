@@ -17,21 +17,19 @@ use Endroid\QrCode\ErrorCorrectionLevel\ErrorCorrectionLevelHigh;
  * @return string Random alphanumeric code
  */
 function generate_certificate_code($user_id, $product_id) {
-    // Define characters to use in the random code
-    $characters = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ';
-    $code_length = 10; // Length of the code
-    $code = '';
-    
-    // Generate random code
-    for ($i = 0; $i < $code_length; $i++) {
-        $code .= $characters[rand(0, strlen($characters) - 1)];
+    // CSPRNG over an alphabet without look-alikes (0/O, 1/I): 14 random
+    // characters ≈ 70 bits, so codes cannot be guessed or enumerated, and are
+    // easy to read off a printed certificate. Same CERT-XXXX-XXXXXXXXXX shape
+    // as before.
+    $alphabet = '23456789ABCDEFGHJKLMNPQRSTUVWXYZ';
+    $code     = '';
+    for ($attempt = 0; $attempt < 10; $attempt++) {
+        $code = 'CERT-' . nias_cert_random_chars($alphabet, 4) . '-' . nias_cert_random_chars($alphabet, 10);
+        if (!function_exists('nias_cert_code_exists') || !nias_cert_code_exists($code)) {
+            break;
+        }
     }
-    
-    // Add user ID and product ID to make it unique
-    $unique_prefix = substr(md5($user_id . '-' . $product_id), 0, 4);
-    
-    // Add a prefix to make it look more like a certificate
-    return 'CERT-' . $unique_prefix . '-' . $code;
+    return apply_filters('nias_certificate_generated_code', $code, $user_id, $product_id);
 }
 
 function add_certificate_meta_to_existing_product_purchasers() {
@@ -105,14 +103,21 @@ function display_certificate_code_field($user) {
     
     // Get the certificate code if it exists
     $certificate_code = get_user_meta($user->ID, 'usercertificate_code', true);
+    // Only staff may change a code; a student editing their own profile must
+    // not be able to type in a code that would then verify as genuine.
+    $can_edit = current_user_can('edit_users');
     ?>
     <h3><?php _e('اطلاعات مدرک', 'nias-course-widget'); ?></h3>
-    
+
     <table class="form-table">
         <tr>
             <th><label for="usercertificate_code"><?php _e('کد گواهی', 'nias-course-widget'); ?></label></th>
             <td>
-                <input type="text" name="usercertificate_code" id="usercertificate_code" 
+                <?php if (!$can_edit) : ?>
+                    <code dir="ltr"><?php echo $certificate_code ? esc_html($certificate_code) : '—'; ?></code>
+                </td></tr></table>
+                <?php return; endif; ?>
+                <input type="text" name="usercertificate_code" id="usercertificate_code"
                     value="<?php echo esc_attr($certificate_code); ?>" class="regular-text" />
                 <?php if (empty($certificate_code)) : ?>
                     <p class="description"><?php _e('هنوز کد گواهی اختصاص داده نشده است.', 'nias-course-widget'); ?></p>
@@ -132,14 +137,17 @@ add_action('show_user_profile', 'display_certificate_code_field');
 add_action('edit_user_profile', 'display_certificate_code_field');
 // Save the certificate field when the user profile is updated
 function save_certificate_code_field($user_id) {
-    // Check if current user has permission to edit users or is editing their own profile
-    if (!current_user_can('edit_users') && get_current_user_id() != $user_id) {
+    // Codes are issued by the system; only staff may change them.
+    if (!current_user_can('edit_users')) {
         return false;
     }
-    
+
     // Update the certificate code if it's set in the form
     if (isset($_POST['usercertificate_code'])) {
-        $code = sanitize_text_field($_POST['usercertificate_code']);
+        $code = nias_cert_normalize_code(wp_unslash($_POST['usercertificate_code']));
+        if ($code !== '' && $code !== nias_cert_normalize_code(get_user_meta($user_id, 'usercertificate_code', true)) && nias_cert_code_exists($code)) {
+            return false; // never let two people share one code
+        }
         
         // If submitted code is empty but user should have a certificate (purchased product)
         if (empty($code) && has_user_purchased_certificate($user_id)) {
@@ -167,8 +175,9 @@ function has_user_purchased_certificate($user_id) {
     $allowed_product_ids = array();
     
     if ($display_type === 'all') {
-        // All products are allowed
-        return true;
+        // Every product counts, but the user must still have bought one
+        // (checked below) — returning true here handed a certificate code
+        // to every account.
     } elseif ($display_type === 'selected') {
         // Get specifically selected products
         $allowed_product_ids = carbon_get_theme_option('certificate_selected_products') ?: array();
@@ -236,16 +245,18 @@ add_filter('manage_users_columns', 'add_certificate_column');
  */
 function show_certificate_column_content($value, $column_name, $user_id) {
     if ('certificate_code' === $column_name) {
-        $certificate_code = get_user_meta($user_id, 'usercertificate_code', true);
-        
-        // If empty but user has purchased certificate product, generate code now
-        if (empty($certificate_code) && has_user_purchased_certificate($user_id)) {
-            $certificate_code = generate_certificate_code($user_id, 0);
-            update_user_meta($user_id, 'usercertificate_code', $certificate_code);
-            error_log("Auto-generated certificate code for user ID: $user_id during user list display");
+        // Read-only: rendering a list must not issue certificates (it used to
+        // run an orders query and write a code for every row on the screen).
+        global $wpdb;
+        $count = (int) $wpdb->get_var($wpdb->prepare(
+            'SELECT COUNT(*) FROM ' . nias_cert_table() . " WHERE user_id = %d AND status = 'valid'",
+            (int) $user_id
+        ));
+        if ($count) {
+            return '<a href="' . esc_url(admin_url('admin.php?page=nias-course-cert-issued&user_id=' . (int) $user_id)) . '">' . esc_html(sprintf(_n('%s مدرک', '%s مدرک', $count, 'nias-course-widget'), number_format_i18n($count))) . '</a>';
         }
-        
-        return $certificate_code ? $certificate_code : '—';
+        $certificate_code = get_user_meta($user_id, 'usercertificate_code', true);
+        return $certificate_code ? esc_html($certificate_code) : '—';
     }
     return $value;
 }
@@ -279,13 +290,7 @@ function generate_certificate_verification_button($user_id) {
     }
     
     // Generate the verification link with both user ID and certificate code
-    $verification_link = add_query_arg(
-        array(
-            'code' => $certificate_code,
-            'user_id' => $user_id
-        ), 
-        get_certificate_display_page_url()
-    );
+    $verification_link = nias_cert_verify_url($certificate_code);
     
     // Create a button HTML
     $button_html = sprintf(
@@ -321,13 +326,7 @@ function userbutton_certificate_shortcode($atts) {
     }
     
     // Generate the verification link with both user ID and certificate code
-    $verification_link = add_query_arg(
-        array(
-            'code' => $certificate_code,
-            'user_id' => $user_id
-        ), 
-        get_certificate_display_page_url()
-    );
+    $verification_link = nias_cert_verify_url($certificate_code);
     
     // Create a button HTML
     $button_html = sprintf(
@@ -366,13 +365,7 @@ function user_certificate_iframe_shortcode($atts) {
     }
     
     // Generate the verification link
-    $verification_link = add_query_arg(
-        array(
-            'code' => $certificate_code,
-            'user_id' => $user_id
-        ), 
-        get_certificate_display_page_url()
-    );
+    $verification_link = nias_cert_verify_url($certificate_code);
     
     // Create an iframe HTML
     $iframe_html = sprintf(
@@ -393,225 +386,25 @@ function user_certificate_iframe_shortcode($atts) {
  * @return string HTML content with certificate information
  */
 function user_certificate_shortcode($atts) {
-    // Get the certificate code and user ID from URL parameters
-    $certificate_code = isset($_GET['code']) ? sanitize_text_field($_GET['code']) : '';
-    $user_id = isset($_GET['user_id']) ? intval($_GET['user_id']) : 0;
-    
-    // If no code is provided, show an error message
-    if (empty($certificate_code)) {
-        return '<p>Error: No certificate code provided.</p>';
+    // Legacy [certificate_info]: now answered by the central verification
+    // (registry status, revocation, name masking, rate limiting) instead of
+    // the old code that always printed "تأیید شده".
+    $code    = '';
+    $user_id = 0;
+    if (isset($_GET['cert_code'])) {
+        $code = sanitize_text_field(wp_unslash($_GET['cert_code']));
+    } elseif (isset($_GET['code'])) {
+        $code    = sanitize_text_field(wp_unslash($_GET['code']));
+        $user_id = isset($_GET['user_id']) ? (int) $_GET['user_id'] : 0;
     }
-    
-    // If user ID is provided, directly fetch the user
-    if ($user_id > 0) {
-        $user = get_userdata($user_id);
-        
-        // Check if the user exists and the certificate code matches
-        if ($user && get_user_meta($user_id, 'usercertificate_code', true) === $certificate_code) {
-            $users = array($user);
-        } else {
-            $users = array();
-        }
-    } else {
-        // Query users with this certificate code
-        $user_query = new WP_User_Query(array(
-            'meta_key'   => 'usercertificate_code',
-            'meta_value' => $certificate_code,
-            'number'     => 1
-        ));
-        
-        $users = $user_query->get_results();
+    if ($code === '') {
+        return do_shortcode('[nias_certificate_verify]');
     }
-    
-    // Start output buffering
     ob_start();
-    
-    if (!empty($users)) {
-        $user = $users[0];
-        $user_info = get_userdata($user->ID);
-        
-        // دریافت نام و نام خانوادگی از user_meta
-        $first_name = get_user_meta($user->ID, 'first_name', true);
-        $last_name = get_user_meta($user->ID, 'last_name', true);
-        
-        // پاک کردن فاصله‌های اضافی
-        $first_name = trim($first_name);
-        $last_name = trim($last_name);
-        
-        // ترکیب نام و نام خانوادگی
-        $name = '';
-        if (!empty($first_name) && !empty($last_name)) {
-            $name = $first_name . ' ' . $last_name;
-        } elseif (!empty($first_name)) {
-            $name = $first_name;
-        } elseif (!empty($last_name)) {
-            $name = $last_name;
-        } else {
-            // اگر نام و نام خانوادگی خالی بود، از display_name استفاده کن
-            $name = $user_info->display_name;
-            
-            // اگر display_name هم خالی بود، از username استفاده کن
-            if (empty($name)) {
-                $name = $user_info->user_login;
-            }
-        }
-        
-        // اگر هنوز نام خالی است، از مقدار پیش‌فرض استفاده کن
-        if (empty($name)) {
-            $name = 'مهمان(نام شما در سایت ثبت نشده این موضوع را از پشتیبان سایت پیگیری کنید)';
-        }
-        
-        // Get course from usercertificate_meta, or use a default
-        $course = get_user_meta($user->ID, 'usercertificate_course', true);
-        if (empty($course)) {
-            $course = 'WordPress + Elementor + Coding';
-        }
-        
-        // Get date from usercertificate_date, or use current date
-        $date = get_user_meta($user->ID, 'usercertificate_date', true);
-        if (empty($date)) {
-            $date = date('F j, Y');
-        }
-        
-        // Generate the verification link using the selected page
-        $verification_link = add_query_arg(
-            array(
-                'code' => $certificate_code,
-                'user_id' => $user->ID
-            ), 
-            get_certificate_display_page_url()
-        );
-        
-// Attempt to generate and display the certificate
-try {
-    // Generate verification URL
-    $verification_url = add_query_arg(
-        array(
-            'code' => $certificate_code,
-            'user_id' => $user->ID
-        ), 
-        get_certificate_display_page_url()
-    );
-    
-    // Create QR code using Endroid library
-    $qr = new QrCode($verification_url);
-    $qr->setSize(300);
-    $qr->setMargin(10);
-    $writer = new PngWriter();
-    $result = $writer->write($qr);
-    
-    ?>
-    <div class="certificate-verification-container">
-        <h2>تاییدیه مدرک</h2>
-        <div class="certificate-details">
-            <p><strong>نام:</strong> <?php echo esc_html($name); ?></p>
-            <p><strong>کد مدرک:</strong> <?php echo esc_html($certificate_code); ?></p>
-            <p><strong>شناسه کاربری:</strong> <?php echo esc_html($user->ID); ?></p>
-            <p><strong>دوره:</strong> <?php echo esc_html($course); ?></p>
-            <p><strong>تاریخ صدور:</strong> <?php echo esc_html($date); ?></p>
-            
-            <p><strong>وضعیت تأیید:</strong> <span class="verification-status verified">تأیید شده</span></p>
-            
-            <div class="certificate-actions">
-                <button onclick="generateCertificate()">مشاهده گواهی</button>
-            </div>
-        </div>
-    </div>
-    
-    <script>
-    function generateCertificate() {
-        // Redirect to download the certificate with necessary parameters
-        window.location.href = '<?php echo add_query_arg(
-            array(
-                'download_certificate' => '1', 
-                'code' => $certificate_code, 
-                'user_id' => $user->ID
-            ), 
-            home_url()
-        ); ?>';
-    }
-    </script>
-    
-    <style>
-        .certificate-verification-container {
-            max-width: 600px;
-            margin: 0 auto;
-            padding: 20px;
-            border: 1px solid #ddd;
-            border-radius: 8px;
-            background-color: #f9f9f9;
-        }
-        .certificate-details {
-            margin-top: 15px;
-        }
-        .verification-status.verified {
-            color: green;
-            font-weight: bold;
-        }
-        .certificate-actions {
-            margin-top: 20px;
-            text-align: center;
-        }
-        .certificate-actions button {
-            padding: 10px 20px;
-            background-color: #4CAF50;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-        }
-    </style>
-   <?php
-} catch (Exception $e) {
-    // If certificate generation fails, show basic verification info
-    ?>
-    <div class="certificate-verification-container">
-        <h2>تاییدیه مدرک</h2>
-        <div class="certificate-details">
-            <p><strong>نام:</strong> <?php echo esc_html($name); ?></p>
-            <p><strong>کد مدرک:</strong> <?php echo esc_html($certificate_code); ?></p>
-            <p><strong>شناسه کاربری:</strong> <?php echo esc_html($user->ID); ?></p>
-            <p><strong>دوره:</strong> <?php echo esc_html($course); ?></p>
-            <p><strong>تاریخ صدور:</strong> <?php echo esc_html($date); ?></p>
-            
-            <p><strong>وضعیت تأیید:</strong> <span class="verification-status verified">تأیید شده</span></p>
-            
-            <p class="info-message">گواهی با موفقیت تأیید شد. تولید گواهی به طور موقت در دسترس نیست.</p>
-        </div>
-    </div>
-    
-    <style>
-        .certificate-verification-container {
-            max-width: 600px;
-            margin: 0 auto;
-            padding: 20px;
-            border: 1px solid #ddd;
-            border-radius: 8px;
-            background-color: #f9f9f9;
-        }
-        .certificate-details {
-            margin-top: 15px;
-        }
-        .verification-status.verified {
-            color: green;
-            font-weight: bold;
-        }
-        .info-message {
-            color: #666;
-            font-style: italic;
-            margin-top: 15px;
-        }
-    </style>
-    <?php
-    
-    // Log the error for debugging
-    error_log("Certificate generation error: " . $e->getMessage());
-}
-    } else {
-        // If no user found, show an error message
-        echo '<p>Error: No user found with the provided certificate code.</p>';
-    }
-    
+    nias_cert_verify_styles();
+    echo '<div class="ncv" dir="rtl"><div class="ncv-card">';
+    echo nias_cert_verify_result_html(nias_cert_verify_lookup($code, $user_id)); // phpcs:ignore -- escaped inside
+    echo '</div></div>';
     return ob_get_clean();
 }
 

@@ -6,6 +6,9 @@ if (!defined('ABSPATH')) {
 use Mpdf\Mpdf;
 use Endroid\QrCode\QrCode;
 use Endroid\QrCode\Writer\PngWriter;
+use Endroid\QrCode\Color\Color;
+use Endroid\QrCode\Encoding\Encoding;
+use Endroid\QrCode\ErrorCorrectionLevel\ErrorCorrectionLevelMedium;
 
 /**
  * Certificate rendering.
@@ -285,14 +288,152 @@ function nias_cert_local_src($url)
     return $url;
 }
 
-/** QR code PNG data URI. */
-function nias_cert_qr_data_uri($text)
+/**
+ * QR code PNG data URI.
+ *
+ * Error correction "Medium" (15%) survives print wear and small logos/stains
+ * better than the library default "Low".
+ *
+ * @param string $text
+ * @param string $fg  foreground hex
+ * @param string $bg  background hex, '' = transparent
+ * @return string
+ */
+function nias_cert_qr_data_uri($text, $fg = '#000000', $bg = '#ffffff')
 {
+    static $cache = array();
+    $key = md5($text . '|' . $fg . '|' . $bg);
+    if (isset($cache[$key])) {
+        return $cache[$key];
+    }
     $qr = new QrCode((string) $text);
-    $qr->setSize(400);
+    $qr->setSize(600);
     $qr->setMargin(0);
+    $qr->setEncoding(new Encoding('UTF-8'));
+    $qr->setErrorCorrectionLevel(new ErrorCorrectionLevelMedium());
+    $f = nias_cert_hex_rgb($fg ? $fg : '#000000');
+    $qr->setForegroundColor(new Color($f[0], $f[1], $f[2]));
+    if ($bg === '') {
+        $qr->setBackgroundColor(new Color(255, 255, 255, 127));
+    } else {
+        $b = nias_cert_hex_rgb($bg);
+        $qr->setBackgroundColor(new Color($b[0], $b[1], $b[2]));
+    }
     $writer = new PngWriter();
-    return $writer->write($qr)->getDataUri();
+    return $cache[$key] = $writer->write($qr)->getDataUri();
+}
+
+/** "#rrggbb" → [r, g, b]. */
+function nias_cert_hex_rgb($hex)
+{
+    $hex = ltrim((string) sanitize_hex_color((string) $hex), '#');
+    if (strlen($hex) === 3) {
+        $hex = $hex[0] . $hex[0] . $hex[1] . $hex[1] . $hex[2] . $hex[2];
+    }
+    if (strlen($hex) !== 6) {
+        return array(0, 0, 0);
+    }
+    return array(hexdec(substr($hex, 0, 2)), hexdec(substr($hex, 2, 2)), hexdec(substr($hex, 4, 2)));
+}
+
+/* -------------------------------------------------------------------------
+ * Barcode (Code 128, subset B)
+ * ---------------------------------------------------------------------- */
+
+/**
+ * Module widths of a Code 128-B barcode, alternating bar/space and starting
+ * with a bar, including the 10-module quiet zones on both sides (returned as
+ * the first and last "space" entries; the first entry is a 0-width bar).
+ *
+ * Characters outside printable ASCII cannot be encoded and are dropped.
+ *
+ * @param string $text
+ * @return int[] empty when nothing is encodable
+ */
+function nias_cert_code128_widths($text)
+{
+    static $p = array(
+        '212222', '222122', '222221', '121223', '121322', '131222', '122213', '122312', '132212', '221213',
+        '221312', '231212', '112232', '122132', '122231', '113222', '123122', '123221', '223211', '221132',
+        '221231', '213212', '223112', '312131', '311222', '321122', '321221', '312212', '322112', '322211',
+        '212123', '212321', '232121', '111323', '131123', '131321', '112313', '132113', '132311', '211313',
+        '231113', '231311', '112133', '112331', '132131', '113123', '113321', '133121', '313121', '211331',
+        '231131', '213113', '213311', '213131', '311123', '311321', '331121', '312113', '312311', '332111',
+        '314111', '221411', '431111', '111224', '111422', '121124', '121421', '141122', '141221', '112214',
+        '112412', '122114', '122411', '142112', '142211', '241211', '221114', '413111', '241112', '134111',
+        '111242', '121142', '121241', '114212', '124112', '124211', '411212', '421112', '421211', '212141',
+        '214121', '412121', '111143', '111341', '131141', '114113', '114311', '411113', '411311', '113141',
+        '114131', '311141', '411131', '211412', '211214', '211232', '2331112',
+    );
+    $text = preg_replace('/[^\x20-\x7E]/', '', (string) $text);
+    if ($text === '') {
+        return array();
+    }
+    $codes = array(104); // Start B
+    $sum   = 104;
+    $len   = strlen($text);
+    for ($i = 0; $i < $len; $i++) {
+        $v       = ord($text[$i]) - 32;
+        $codes[] = $v;
+        $sum    += $v * ($i + 1);
+    }
+    $codes[] = $sum % 103;
+    $codes[] = 106; // Stop
+
+    $w = array(0, 10); // zero bar + left quiet zone
+    foreach ($codes as $c) {
+        foreach (str_split($p[$c]) as $d) {
+            $w[] = (int) $d;
+        }
+    }
+    $w[] = 10; // right quiet zone (follows the stop's final bar)
+    return $w;
+}
+
+/**
+ * Write a barcode as an SVG file (mPDF draws SVG as vectors, so bars stay
+ * razor-sharp at any print resolution) and return its path.
+ *
+ * @return string '' when nothing is encodable
+ */
+function nias_cert_barcode_svg_file($text, $w_mm, $h_mm, $color)
+{
+    $svg = nias_cert_barcode_svg($text, $w_mm, $h_mm, $color);
+    if ($svg === '') {
+        return '';
+    }
+    $file = trailingslashit(nias_cert_temp_dir()) . 'bc-' . md5($svg) . '.svg';
+    if (!file_exists($file)) {
+        file_put_contents($file, $svg);
+    }
+    return $file;
+}
+
+/** Barcode SVG markup sized in mm ('' when nothing is encodable). */
+function nias_cert_barcode_svg($text, $w_mm, $h_mm, $color)
+{
+    $widths = nias_cert_code128_widths($text);
+    if (!$widths) {
+        return '';
+    }
+    $total = array_sum($widths);
+    $mw    = $w_mm / $total;
+    $x     = 0.0;
+    $rects = '';
+    foreach ($widths as $i => $n) {
+        if ($i % 2 === 0 && $n > 0) {
+            $rects .= '<rect x="' . nias_cert_num4($x) . '" y="0" width="' . nias_cert_num4($n * $mw) . '" height="' . nias_cert_num4($h_mm) . '"/>';
+        }
+        $x += $n * $mw;
+    }
+    $fill = sanitize_hex_color($color) ? sanitize_hex_color($color) : '#000000';
+    return '<svg xmlns="http://www.w3.org/2000/svg" width="' . nias_cert_num4($w_mm) . 'mm" height="' . nias_cert_num4($h_mm) . 'mm" viewBox="0 0 ' . nias_cert_num4($w_mm) . ' ' . nias_cert_num4($h_mm) . '"><g fill="' . $fill . '" shape-rendering="crispEdges">' . $rects . '</g></svg>';
+}
+
+/** Float with up to 4 decimals. */
+function nias_cert_num4($n)
+{
+    return rtrim(rtrim(number_format((float) $n, 4, '.', ''), '0'), '.');
 }
 
 /** "#rrggbb" + opacity → CSS rgba(). */
@@ -347,12 +488,51 @@ function nias_cert_element_html($el, $data)
             return '<div style="' . $box . 'overflow:hidden;"><img src="' . esc_attr(nias_cert_local_src($el['src'])) . '" style="width:' . $w . 'mm;height:' . $h . 'mm;' . ($opacity < 1 ? 'opacity:' . nias_cert_num($opacity) . ';' : '') . '"></div>';
 
         case 'qr':
-            $uri = nias_cert_qr_data_uri(!empty($data['verify_url']) ? $data['verify_url'] : home_url('/'));
-            $side = min((float) $el['w'], (float) $el['h']);
-            return '<div style="' . $box . '"><img src="' . $uri . '" style="width:' . nias_cert_num($side) . 'mm;height:' . nias_cert_num($side) . 'mm;"></div>';
+            $content = (isset($el['content']) && $el['content'] === 'custom')
+                ? trim(nias_cert_apply_tokens(isset($el['text']) ? $el['text'] : '', $data))
+                : (!empty($data['verify_url']) ? $data['verify_url'] : home_url('/'));
+            if ($content === '') {
+                return '';
+            }
+            $uri  = nias_cert_qr_data_uri($content, isset($el['color']) ? $el['color'] : '#000000', isset($el['bg']) ? (string) $el['bg'] : '#ffffff');
+            $side = nias_cert_num(min((float) $el['w'], (float) $el['h']));
+            return '<div style="' . $box . '"><img src="' . $uri . '" style="width:' . $side . 'mm;height:' . $side . 'mm;"></div>';
+
+        case 'barcode':
+            $value = trim(nias_cert_apply_tokens(isset($el['text']) && $el['text'] !== '' ? $el['text'] : '{code}', $data));
+            $value = preg_replace('/[^\x20-\x7E]/', '', $value);
+            $color = sanitize_hex_color(isset($el['color']) ? $el['color'] : '') ? $el['color'] : '#000000';
+            $label = !empty($el['showText']);
+            $lh    = $label ? min(5, (float) $el['h'] * 0.3) : 0; // mm reserved for the human-readable line
+            $bar_h = max(1, (float) $el['h'] - $lh);
+            if (!empty($data['_html'])) {
+                // Browser preview: inline SVG instead of a server file path.
+                $svg = nias_cert_barcode_svg($value, (float) $el['w'], $bar_h, $color);
+                if ($svg === '') {
+                    return '';
+                }
+                $img = '<div style="width:' . $w . 'mm;height:' . nias_cert_num($bar_h) . 'mm;line-height:0">' . $svg . '</div>';
+            } else {
+                $file = nias_cert_barcode_svg_file($value, (float) $el['w'], $bar_h, $color);
+                if ($file === '') {
+                    return '';
+                }
+                $img = '<img src="' . esc_attr($file) . '" style="width:' . $w . 'mm;height:' . nias_cert_num($bar_h) . 'mm;">';
+            }
+            $css = $box;
+            $bg  = nias_cert_rgba(isset($el['bg']) ? $el['bg'] : '', $opacity);
+            if ($bg) {
+                $css .= 'background-color:' . $bg . ';';
+            }
+            $html = '<div style="' . $css . '">' . $img;
+            if ($label) {
+                $html .= '<div style="direction:ltr;text-align:center;font-family:vazir;font-size:' . nias_cert_num(max(5, $lh * 1.8)) . 'pt;line-height:1;padding-top:0.6mm;color:' . $color . ';letter-spacing:0.3mm;">' . esc_html($value) . '</div>';
+            }
+            return $html . '</div>';
 
         case 'rect':
         case 'line':
+        case 'ellipse':
             $css = $box;
             $bg  = nias_cert_rgba(isset($el['bg']) ? $el['bg'] : '', $opacity);
             if ($bg) {
@@ -361,7 +541,9 @@ function nias_cert_element_html($el, $data)
             if (!empty($el['borderWidth']) && !empty($el['borderColor'])) {
                 $css .= 'border:' . nias_cert_num($el['borderWidth']) . 'mm solid ' . nias_cert_rgba($el['borderColor'], $opacity) . ';';
             }
-            if (!empty($el['radius'])) {
+            if ($el['type'] === 'ellipse') {
+                $css .= 'border-radius:' . nias_cert_num($el['w'] / 2) . 'mm / ' . nias_cert_num($el['h'] / 2) . 'mm;';
+            } elseif (!empty($el['radius'])) {
                 $css .= 'border-radius:' . nias_cert_num($el['radius']) . 'mm;';
             }
             return '<div style="' . $css . '"></div>';
@@ -374,7 +556,8 @@ function nias_cert_element_html($el, $data)
             $color = nias_cert_rgba(isset($el['color']) ? $el['color'] : '#000000', $opacity);
             $size  = isset($el['fontSize']) ? max(4, (float) $el['fontSize']) : 14;
             $lh    = isset($el['lineHeight']) ? max(0.8, (float) $el['lineHeight']) : 1.4;
-            $font  = 'direction:rtl;text-align:' . $align . ';font-family:vazir;font-size:' . nias_cert_num($size) . 'pt;line-height:' . nias_cert_num($lh) . ';color:' . ($color ? $color : '#000') . ';';
+            $dir   = (isset($el['dir']) && $el['dir'] === 'ltr') ? 'ltr' : 'rtl';
+            $font  = 'direction:' . $dir . ';text-align:' . $align . ';font-family:vazir;font-size:' . nias_cert_num($size) . 'pt;line-height:' . nias_cert_num($lh) . ';color:' . ($color ? $color : '#000') . ';';
             $font .= !empty($el['bold']) ? 'font-weight:bold;' : '';
             // mPDF: overflow:auto on a fixed-position block shrinks text to fit.
             $css   = $box . ((!isset($el['fit']) || $el['fit']) ? 'overflow:auto;' : 'overflow:visible;');
@@ -403,6 +586,20 @@ function nias_cert_render_design($design, $data)
     $mpdf = new Mpdf(nias_cert_mpdf_config(array($pw, $ph)));
     $mpdf->SetTitle($data['course_name'] ? $data['course_name'] : 'Certificate');
     $mpdf->SetAuthor(get_bloginfo('name'));
+    $mpdf->SetCreator(get_bloginfo('name'));
+    if (!empty($data['code'])) {
+        // Code + verification link in the file properties, so the PDF
+        // itself says where it can be checked.
+        $mpdf->SetSubject('Certificate ' . $data['code']);
+        $mpdf->SetKeywords($data['code'] . ' ' . $data['verify_url']);
+    }
+    // Opens and prints freely, but cannot be edited or have its text copied
+    // in viewers that honor PDF permissions (Acrobat, browsers, …).
+    // A digitally signed (certified) PDF is protected by the signature
+    // itself; encryption would also break the incremental signing.
+    if (!empty($data['code']) && !nias_cert_signing_active() && apply_filters('nias_certificate_pdf_protect', true, $data)) {
+        $mpdf->SetProtection(array('print', 'print-highres'), '', wp_generate_password(32, true, true));
+    }
 
     $page_css = 'margin:0;';
     $bg_color = sanitize_hex_color(isset($page['bgColor']) ? $page['bgColor'] : '');
@@ -428,27 +625,58 @@ function nias_cert_render_design($design, $data)
  * ---------------------------------------------------------------------- */
 
 /**
+ * Build a certificate PDF and return its bytes, digitally signed when
+ * signing is set up.
+ *
+ * @param array     $data     nias_cert_build_data() output
+ * @param int|array $template designer template id, a design array (frozen
+ *                            snapshot), or 0 for the classic layout
+ * @return string
+ */
+function nias_cert_pdf_bytes($data, $template)
+{
+    $design = is_array($template) ? $template : ($template ? nias_cert_get_design($template) : null);
+    if ($design) {
+        $bytes = nias_cert_render_design($design, $data)->Output('', 'S');
+    } else {
+        $qr   = $data['code'] ? nias_cert_qr_data_uri($data['verify_url']) : '';
+        $cert = new CertificateMPDF();
+        $cert->createCertificate($data['student_name'], $data['course_name'], $data['date_raw'], $data['code'], $qr);
+        $bytes = $cert->output('', 'S');
+    }
+    if (!empty($data['code']) && nias_cert_signing_active()) {
+        $bytes = nias_cert_sign_pdf($bytes, $data);
+    }
+    return $bytes;
+}
+
+/** File name of a certificate PDF. */
+function nias_cert_pdf_filename($data)
+{
+    return 'certificate_' . sanitize_file_name($data['student_name']) . '_' . sanitize_file_name($data['code']) . '.pdf';
+}
+
+/**
  * Build and send a certificate PDF using the right renderer.
  *
- * @param array $data     nias_cert_build_data() output
- * @param int   $template designer template id (0 = classic layout)
- * @param string $dest    mPDF destination: I inline, D download, S string
+ * @param array     $data     nias_cert_build_data() output
+ * @param int|array $template see nias_cert_pdf_bytes()
+ * @param string    $dest     I inline, D download, S return string
  * @return string|void
  */
 function nias_cert_output_pdf($data, $template, $dest = 'I')
 {
+    $bytes = nias_cert_pdf_bytes($data, $template);
+    if ($dest === 'S') {
+        return $bytes;
+    }
     while (ob_get_level()) {
         ob_end_clean();
     }
-    $filename = 'certificate_' . sanitize_file_name($data['student_name']) . '_' . sanitize_file_name($data['code']) . '.pdf';
-
-    if ($template && ($design = nias_cert_get_design($template))) {
-        $mpdf = nias_cert_render_design($design, $data);
-        return $mpdf->Output($filename, $dest);
-    }
-
-    $qr   = $data['code'] ? nias_cert_qr_data_uri($data['verify_url']) : '';
-    $cert = new CertificateMPDF();
-    $cert->createCertificate($data['student_name'], $data['course_name'], $data['date_raw'], $data['code'], $qr);
-    return $cert->output($filename, $dest);
+    $filename = nias_cert_pdf_filename($data);
+    header('Content-Type: application/pdf');
+    header('Content-Length: ' . strlen($bytes));
+    header('Content-Disposition: ' . ($dest === 'D' ? 'attachment' : 'inline') . '; filename="' . $filename . '"');
+    header('Cache-Control: private, max-age=0, must-revalidate');
+    echo $bytes; // phpcs:ignore -- binary PDF
 }

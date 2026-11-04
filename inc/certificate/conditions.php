@@ -105,6 +105,7 @@ function nias_cert_ajax_progress_sync()
     if (!isset($all[$product_id]) || $pct > (int) $all[$product_id]) {
         $all[$product_id] = $pct;
         update_user_meta($user_id, '_nias_course_progress', $all);
+        do_action('nias_course_progress_updated', $user_id, $product_id, $pct);
     }
     wp_send_json_success(array('pct' => (int) $all[$product_id]));
 }

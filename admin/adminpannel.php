@@ -99,6 +99,12 @@ function nias_settings_certificate_fields()
         'certificate_account_endpoint'    => 'radio',
         'certificate_account_slug'        => 'text',
         'certificate_account_title'       => 'text',
+        // 1.5.1: frozen designs + e-mail on issue.
+        'certificate_freeze_design'       => 'radio',
+        'certificate_email_on_issue'      => 'radio',
+        'certificate_email_attach'        => 'radio',
+        'certificate_email_subject'       => 'text',
+        'certificate_email_body'          => 'textarea',
     );
 }
 
@@ -173,6 +179,9 @@ function nias_course_save_theme_options($fields)
                 break;
             case 'number':
                 $value = (string) max(0, (int) $raw);
+                break;
+            case 'textarea':
+                $value = sanitize_textarea_field($raw);
                 break;
             default:
                 $value = sanitize_text_field($raw);
@@ -429,6 +438,15 @@ function nias_set_text_field($name, $label, $placeholder = '')
 {
     $current = carbon_get_theme_option($name);
     echo '<div class="nias-field"><label class="nias-flabel">' . esc_html($label) . '</label><input type="text" class="nias-input" name="' . esc_attr($name) . '" value="' . esc_attr($current) . '" placeholder="' . esc_attr($placeholder) . '"></div>';
+}
+
+function nias_set_textarea_field($name, $label, $default = '', $rows = 8)
+{
+    $current = carbon_get_theme_option($name);
+    if ($current === '' || $current === false || $current === null) {
+        $current = $default;
+    }
+    echo '<div class="nias-field"><label class="nias-flabel">' . esc_html($label) . '</label><textarea class="nias-input" style="height:auto;line-height:1.9;padding:10px 12px" rows="' . (int) $rows . '" name="' . esc_attr($name) . '">' . esc_textarea($current) . '</textarea></div>';
 }
 
 function nias_set_number_field($name, $label, $desc, $default = 0, $max = '')
@@ -837,6 +855,7 @@ function nias_course_render_certificate_settings()
                         ?>
                         <a class="nias-btn-soft" style="display:inline-flex;margin-top:12px;text-decoration:none" href="<?php echo esc_url(admin_url('admin.php?page=nias-course-cert-designer')); ?>"><?php echo esc_html__('باز کردن طراح مدرک', 'nias-course-widget'); ?></a>
                     </div>
+                    <?php nias_set_toggle_row('certificate_freeze_design', __('ثابت ماندن طرح مدارک صادرشده', 'nias-course-widget'), __('هر مدرک با طرحی که هنگام صدور داشت ساخته می‌شود؛ ویرایش یا تعویض قالب فقط روی مدارک جدید اثر دارد (مثل مدرک کاغذی که پس از چاپ تغییر نمی‌کند). برای یک مدرک خاص می‌توانید در «مدارک صادرشده» قالب فعلی را اعمال کنید. مدارک صادرشده پیش از نسخهٔ 1.5.1 همچنان از قالب فعلی پیروی می‌کنند.', 'nias-course-widget'), 'on', '', 'data-nias-show-when="certificate_design_mode=designer"'); ?>
                 <?php nias_set_card_close(); ?>
 
                 <!-- Conditions card -->
@@ -887,7 +906,30 @@ function nias_course_render_certificate_settings()
                     <div class="nias-row-block">
                         <?php nias_set_select_field('certificate_verify_page', __('صفحهٔ استعلام مدرک', 'nias-course-widget'), __('صفحه‌ای که شورت‌کد [nias_certificate_verify] را در آن قرار داده‌اید. با انتخاب آن، QR مدارک جدید به فرم استعلام اشاره می‌کند (لینک‌های QR مدارک قدیمی همچنان کار می‌کنند). اگر خالی بماند، مثل قبل از صفحهٔ نمایش مدرک استفاده می‌شود.', 'nias-course-widget'), $page_options); ?>
                     </div>
-                    <?php nias_set_toggle_row('certificate_verify_mask_name', __('پوشاندن بخشی از نام در نتیجهٔ استعلام', 'nias-course-widget'), __('برای حفظ حریم خصوصی، نام دارنده به شکل «ع***ا م***ی» نمایش داده می‌شود.', 'nias-course-widget'), 'off'); ?>
+                    <?php nias_set_toggle_row('certificate_verify_mask_name', __('پوشاندن بخشی از نام در نتیجهٔ استعلام', 'nias-course-widget'), __('برای حفظ حریم خصوصی، نام دارنده به شکل «ع***ا م***ی» نمایش داده می‌شود. با روشن بودن این گزینه، دکمهٔ «مشاهدهٔ مدرک (PDF)» در نتیجهٔ استعلام نمایش داده نمی‌شود.', 'nias-course-widget'), 'off'); ?>
+                    <div class="nias-row-block nias-row-sep">
+                        <div class="nias-row-title"><?php echo esc_html__('استعلام از طریق API', 'nias-course-widget'); ?></div>
+                        <div class="nias-row-desc"><?php echo esc_html__('سامانه‌های دیگر (کارفرما، LMS) می‌توانند با این آدرس اعتبار مدرک را به‌صورت JSON بررسی کنند. محدودیت تعداد درخواست و پوشاندن نام روی آن هم اعمال می‌شود.', 'nias-course-widget'); ?></div>
+                        <code dir="ltr" style="display:inline-block;margin-top:8px"><?php echo esc_html(rest_url('nias/v1/certificates/')); ?>{CODE}</code>
+                    </div>
+                <?php nias_set_card_close(); ?>
+
+                <!-- E-mail card -->
+                <?php nias_set_card_open('<svg width="20" height="20" viewBox="0 0 24 24" fill="none"><rect x="3" y="5" width="18" height="14" rx="2" stroke="#3858e9" stroke-width="1.8"/><path d="m4 7 8 6 8-6" stroke="#3858e9" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>', __('ارسال خودکار مدرک با ایمیل', 'nias-course-widget')); ?>
+                    <div id="nias-cert-email"></div>
+                    <?php if (isset($_GET['nias_test_mail'])) : ?>
+                        <div class="nias-row-block"><div class="nias-sign-msg <?php echo $_GET['nias_test_mail'] === 'ok' ? 'ok' : 'bad'; ?>" style="padding:10px 14px;border-radius:10px;font-size:13px;background:<?php echo $_GET['nias_test_mail'] === 'ok' ? '#ecfbf1' : '#fff1f1'; ?>"><?php echo $_GET['nias_test_mail'] === 'ok' ? esc_html(sprintf(__('ایمیل آزمایشی به %s ارسال شد.', 'nias-course-widget'), wp_get_current_user()->user_email)) : esc_html__('ارسال ایمیل ناموفق بود؛ تنظیمات SMTP سایت را بررسی کنید.', 'nias-course-widget'); ?></div></div>
+                    <?php endif; ?>
+                    <?php nias_set_toggle_row('certificate_email_on_issue', __('ارسال ایمیل هنگام صدور مدرک', 'nias-course-widget'), __('به‌محض اینکه دانشجو شرایط را کامل کند (تکمیل سفارش، قبولی در آزمون، پیشرفت دوره) یا مدیر مدرک را تأیید کند، ایمیل تبریک همراه لینک استعلام برایش ارسال می‌شود. هر مدرک فقط یک بار ایمیل می‌شود و ارسال در پس‌زمینه انجام می‌شود.', 'nias-course-widget'), 'off'); ?>
+                    <div data-nias-show-when="certificate_email_on_issue=on">
+                        <?php nias_set_toggle_row('certificate_email_attach', __('پیوست کردن فایل PDF مدرک', 'nias-course-widget'), __('اگر امضای دیجیتال فعال باشد، PDF پیوست هم امضاشده است.', 'nias-course-widget'), 'on'); ?>
+                        <div class="nias-row-block nias-row-sep">
+                            <?php nias_set_text_field('certificate_email_subject', __('موضوع ایمیل', 'nias-course-widget'), nias_cert_email_default_subject()); ?>
+                            <?php nias_set_textarea_field('certificate_email_body', __('متن ایمیل', 'nias-course-widget'), nias_cert_email_default_body()); ?>
+                            <div class="nias-row-desc"><?php echo esc_html__('فیلدهای قابل استفاده: {student_name} {course_name} {code} {date} {verify_url} {account_url} {instructor} {site_name}. دکمه‌های «دریافت مدرک» و «صفحهٔ استعلام» خودکار به انتهای ایمیل اضافه می‌شوند.', 'nias-course-widget'); ?></div>
+                            <a class="nias-btn-soft" style="display:inline-flex;margin-top:12px;text-decoration:none" href="<?php echo esc_url(wp_nonce_url(admin_url('admin-post.php?action=nias_cert_test_email'), 'nias_cert_test_email')); ?>"><?php echo esc_html__('ارسال ایمیل آزمایشی به من (با تنظیمات ذخیره‌شده)', 'nias-course-widget'); ?></a>
+                        </div>
+                    </div>
                 <?php nias_set_card_close(); ?>
 
                 <!-- Shortcodes card -->
@@ -968,6 +1010,8 @@ function nias_course_render_certificate_settings()
 
                 <?php nias_set_save_button('nias_save_certificate_settings'); ?>
             </form>
+
+            <?php if (function_exists('nias_cert_sign_settings_card')) { nias_cert_sign_settings_card(); } ?>
 
             <div class="nias-foot"><?php echo wp_kses_post(__('سپاسگزاریم از اینکه سایت خود را با <span style="color:#3858e9;font-weight:600">وردپرس</span> ساخته‌اید.', 'nias-course-widget')); ?></div>
         </div>
