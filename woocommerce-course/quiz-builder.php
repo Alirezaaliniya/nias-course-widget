@@ -76,6 +76,7 @@ function nias_quiz_default_settings()
         'timeMode'   => 'total',
         'timeValue'  => 15,
         'passScore'  => 60,
+        'maxAttempts' => 0,
         'shuffleQ'    => false,
         'shuffleOpt'  => false,
         'showExp'     => true,
@@ -181,6 +182,7 @@ function nias_quiz_sanitize_model($model)
         'timeMode'   => $time_mode,
         'timeValue'  => isset($model['timeValue']) ? max(1, (int) $model['timeValue']) : $def['timeValue'],
         'passScore'  => isset($model['passScore']) ? max(0, min(100, (int) $model['passScore'])) : $def['passScore'],
+        'maxAttempts' => isset($model['maxAttempts']) ? max(0, min(99, (int) $model['maxAttempts'])) : 0,
         'shuffleQ'    => !empty($model['shuffleQ']),
         'shuffleOpt'  => !empty($model['shuffleOpt']),
         'showExp'     => !empty($model['showExp']),
@@ -253,6 +255,9 @@ function nias_quiz_store($post_id, $model)
     ));
     update_post_meta($post_id, NIAS_QUIZ_META, wp_slash(wp_json_encode($model)));
     update_post_meta($post_id, NIAS_QUIZ_COURSE_META, (int) $model['courseId']);
+    if (function_exists('nias_quiz_index_summary')) {
+        nias_quiz_index_summary($post_id, $model);
+    }
 }
 
 /** Create an empty quiz and return its JS model. */
@@ -324,6 +329,111 @@ function nias_quiz_ajax_guard()
     if (!check_ajax_referer('nias_quiz_admin', 'nonce', false)) {
         wp_send_json_error(array('message' => __('درخواست نامعتبر است.', 'nias-course-widget')));
     }
+}
+
+/* ---- list (paged summaries) + single full model, so the builder never loads every quiz ---- */
+
+if (!defined('NIAS_QUIZ_LIST_PER_PAGE')) {
+    define('NIAS_QUIZ_LIST_PER_PAGE', 24);
+}
+
+/** Light card data for the builder list. */
+function nias_quiz_summary($q)
+{
+    $has_essay = false;
+    foreach ((array) $q['questions'] as $x) {
+        if (isset($x['type']) && $x['type'] === 'essay') {
+            $has_essay = true;
+        }
+    }
+    $s = $q;
+    unset($s['questions']);
+    $s['qCount']   = count((array) $q['questions']);
+    $s['hasEssay'] = $has_essay;
+    $s['_summary'] = true;
+    return $s;
+}
+
+/**
+ * One page of quizzes (newest first) with optional title search / category.
+ *
+ * @return array { items, total, page, pages }
+ */
+function nias_quiz_list_page($search = '', $category = '', $page = 1, $per = NIAS_QUIZ_LIST_PER_PAGE)
+{
+    $args = array(
+        'post_type'      => NIAS_QUIZ_CPT,
+        'post_status'    => array('publish', 'draft'),
+        'posts_per_page' => $per,
+        'paged'          => max(1, (int) $page),
+        'orderby'        => 'date',
+        'order'          => 'DESC',
+        'fields'         => 'ids',
+    );
+    if ($search !== '') {
+        $num = (int) ltrim($search, '#');
+        if ($num > 0 && ctype_digit(ltrim($search, '#'))) {
+            $args['post__in'] = array($num);
+        } else {
+            $args['s'] = $search;
+            $args['search_columns'] = array('post_title');
+        }
+    }
+    if ($category !== '') {
+        $args['meta_query'] = array(array('key' => '_nias_quiz_category', 'value' => $category));
+    }
+    $wq = new WP_Query($args);
+    _prime_post_caches($wq->posts, false, true);
+    $items = array();
+    foreach ($wq->posts as $id) {
+        $q = nias_quiz_get((int) $id);
+        if ($q) {
+            $items[] = nias_quiz_summary($q);
+        }
+    }
+    return array('items' => $items, 'total' => (int) $wq->found_posts, 'page' => max(1, (int) $page), 'pages' => (int) $wq->max_num_pages);
+}
+
+/** Distinct quiz categories (from the summary meta; capped). */
+function nias_quiz_categories()
+{
+    global $wpdb;
+    return array_values(array_filter(array_map('strval', $wpdb->get_col($wpdb->prepare(
+        "SELECT DISTINCT meta_value FROM {$wpdb->postmeta} WHERE meta_key = %s AND meta_value <> '' ORDER BY meta_value ASC LIMIT 60",
+        '_nias_quiz_category'
+    )))));
+}
+
+/** Full model for the editor, plus the linked course's label for the picker. */
+function nias_quiz_full_for_editor($id)
+{
+    $q = nias_quiz_get($id);
+    if (!$q) {
+        return null;
+    }
+    $q['courseLabel'] = $q['courseId'] && get_post($q['courseId']) ? get_the_title($q['courseId']) . ' (#' . (int) $q['courseId'] . ')' : '';
+    return $q;
+}
+
+add_action('wp_ajax_nias_quiz_list', 'nias_quiz_ajax_list');
+function nias_quiz_ajax_list()
+{
+    nias_quiz_ajax_guard();
+    $s   = isset($_POST['s']) ? sanitize_text_field(wp_unslash($_POST['s'])) : '';
+    $cat = isset($_POST['cat']) ? sanitize_text_field(wp_unslash($_POST['cat'])) : '';
+    $pg  = isset($_POST['page']) ? (int) $_POST['page'] : 1;
+    wp_send_json_success(nias_quiz_list_page($s, $cat, $pg));
+}
+
+add_action('wp_ajax_nias_quiz_load', 'nias_quiz_ajax_load');
+function nias_quiz_ajax_load()
+{
+    nias_quiz_ajax_guard();
+    $q = nias_quiz_full_for_editor(isset($_POST['quiz_id']) ? (int) $_POST['quiz_id'] : 0);
+    if (!$q) {
+        wp_send_json_error(array('message' => __('آزمون یافت نشد.', 'nias-course-widget')));
+    }
+    wp_send_json_success(array('quiz' => $q));
 }
 
 add_action('wp_ajax_nias_quiz_create', 'nias_quiz_ajax_create');
@@ -398,9 +508,12 @@ function nias_quiz_render_page()
         return;
     }
 
+    $first = nias_quiz_list_page();
     $boot = array(
-        'quizzes'       => nias_quiz_all(),
-        'courseOptions' => nias_quiz_course_options(),
+        'quizzes'       => $first['items'],
+        'total'         => $first['total'],
+        'categories'    => nias_quiz_categories(),
+        'perPage'       => NIAS_QUIZ_LIST_PER_PAGE,
         'ajaxUrl'       => admin_url('admin-ajax.php'),
         'nonce'         => wp_create_nonce('nias_quiz_admin'),
         'shortcodeBase' => '[nias_quiz id="%ID%"]',
@@ -418,6 +531,9 @@ function nias_quiz_render_page()
     <script>window.NIAS_QUIZ = <?php echo wp_json_encode($boot); ?>;</script>
     <?php
     nias_quiz_builder_styles();
+    if (function_exists('nias_picker_enqueue')) {
+        nias_picker_enqueue(); // searchable "linked course" field
+    }
     // Shared student component (used by the in-admin preview, local grading mode).
     if (function_exists('nias_quiz_student_assets')) {
         nias_quiz_student_assets();
@@ -460,6 +576,12 @@ function nias_quiz_builder_styles()
 
     /* list */
     .nqz-cats{display:flex;align-items:center;gap:8px;margin-bottom:16px;flex-wrap:wrap}
+    .nqz-listbar{display:flex;align-items:center;gap:12px;margin-bottom:12px}
+    .nqz-listsearch{flex:1;max-width:420px}
+    .nqz-listcount{font-size:13px;color:#7b868a;font-weight:600}
+    .nqz-more{display:flex;justify-content:center;margin:18px 0 6px}
+    .nqz-empty-list{grid-column:1/-1;padding:24px;text-align:center;color:#7b868a;background:#fafbfc;border:1px dashed #dfe4e8;border-radius:14px}
+    .nqz-coursepick{margin-top:2px}
     .nqz-cat{background:#fff;color:#5b666c;border:1px solid #e1e6e9;font-size:13px;font-weight:600;padding:7px 14px;border-radius:99px;cursor:pointer}
     .nqz-cat.on{background:var(--acc);color:#fff;border-color:var(--acc)}
     .nqz-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(310px,1fr));gap:16px}
@@ -605,8 +727,44 @@ function nias_quiz_builder_script()
         ];
         function typeLabel(k){ for (var i=0;i<TYPES.length;i++){ if(TYPES[i].k===k) return TYPES[i].label; } return k; }
 
-        var state = { screen:'list', catFilter:'all', editId:null, selQ:null, railTab:'questions', addMenu:false };
+        var state = { screen:'list', catFilter:'all', editId:null, selQ:null, railTab:'questions', addMenu:false, search:'', page:1, total:+BOOT.total||0, loading:false };
+        // The list holds light summaries; a quiz's full model is fetched when it is opened.
         var quizzes = Array.isArray(BOOT.quizzes) ? BOOT.quizzes : [];
+        var listReq = 0, listT = null;
+        function qCount(q){ return q.questions ? q.questions.length : (+q.qCount||0); }
+        function hasEssayQ(q){ return q.questions ? q.questions.some(function(x){return x.type==='essay';}) : !!q.hasEssay; }
+        function loadList(append){
+            var my = ++listReq;
+            state.loading = true;
+            var page = append ? state.page + 1 : 1;
+            ajax('nias_quiz_list', { s:state.search, cat:state.catFilter==='all'?'':state.catFilter, page:page }).then(function(res){
+                if (my !== listReq) return;
+                state.loading = false;
+                if (!res || !res.success) { toast('بارگذاری فهرست ناموفق بود'); return; }
+                var d = res.data;
+                // keep already-opened full models
+                var items = d.items.map(function(s){ var f=byId(s.id); return (f && !f._summary) ? f : s; });
+                quizzes = append ? quizzes.concat(items) : items;
+                state.page = d.page; state.total = d.total;
+                if (state.screen==='list') { renderListKeepSearch(); }
+            }).catch(function(){ state.loading=false; });
+        }
+        function renderListKeepSearch(){
+            var inp = ROOT.querySelector('[data-input="listsearch"]'), had = inp && document.activeElement === inp, pos = inp ? inp.selectionStart : 0;
+            render();
+            if (had){ var n = ROOT.querySelector('[data-input="listsearch"]'); if(n){ n.focus(); try{ n.setSelectionRange(pos,pos); }catch(e){} } }
+        }
+        function ensureFull(id, cb){
+            var q = byId(id);
+            if (q && !q._summary) { cb(q); return; }
+            ajax('nias_quiz_load', { quiz_id:id }).then(function(res){
+                if (!res || !res.success) { toast('بارگذاری آزمون ناموفق بود'); return; }
+                var full = res.data.quiz, found = false;
+                quizzes = quizzes.map(function(x){ if (String(x.id)===String(id)) { found = true; return full; } return x; });
+                if (!found) quizzes.unshift(full);
+                cb(full);
+            });
+        }
         var saveTimers = {};
 
         function byId(id){ for (var i=0;i<quizzes.length;i++){ if(String(quizzes[i].id)===String(id)) return quizzes[i]; } return null; }
@@ -658,18 +816,19 @@ function nias_quiz_builder_script()
 
         /* ---------- list screen ---------- */
         function renderList(){
-            var cats = []; quizzes.forEach(function(q){ if(cats.indexOf(q.category)<0) cats.push(q.category); });
+            var cats = (BOOT.categories||[]).slice(0, 30);
+            if (state.catFilter!=='all' && cats.indexOf(state.catFilter)<0) cats.push(state.catFilter);
             var catBtns = '<button class="nqz-cat '+(state.catFilter==='all'?'on':'')+'" data-act="filter" data-v="all">همه آزمون‌ها</button>';
             cats.forEach(function(c){ catBtns += '<button class="nqz-cat '+(state.catFilter===c?'on':'')+'" data-act="filter" data-v="'+esc(c)+'">'+esc(c)+'</button>'; });
 
             var palette = ['#3858e9','#48af3b','#8b5cf6','#f59e0b','#e05656'];
             function hash(s){ var h=0; s=s||''; for(var i=0;i<s.length;i++){ h=(h<<5)-h+s.charCodeAt(i); h|=0; } return h; }
-            var filtered = quizzes.filter(function(q){ return state.catFilter==='all'||q.category===state.catFilter; });
+            var filtered = quizzes; // already filtered and searched on the server
             var cards = '';
             filtered.forEach(function(q){
                 var col = palette[Math.abs(hash(q.category))%palette.length];
                 var time = q.timeMode==='none' ? 'بدون محدودیت' : (q.timeMode==='total'? fa(q.timeValue)+' دقیقه' : fa(q.timeValue)+' ثانیه/سوال');
-                var hasEssay = q.questions.some(function(x){return x.type==='essay';});
+                var hasEssay = hasEssayQ(q);
                 cards +=
                     '<div class="nqz-card">'+
                         '<div class="nqz-card-top"><div style="display:flex;flex-direction:column;gap:7px">'+
@@ -677,7 +836,7 @@ function nias_quiz_builder_script()
                             '<h3 class="nqz-card-title">'+esc(q.title)+'</h3></div>'+
                             '<span class="nqz-card-status" style="background:'+(hasEssay?'#fff4e2':'#eaf7ea')+';color:'+(hasEssay?'#c2841a':'#3e9a32')+'">'+(hasEssay?'تصحیح ترکیبی':'تصحیح خودکار')+'</span>'+
                         '</div>'+
-                        '<div class="nqz-card-meta"><span>'+ICON.list+' '+fa(q.questions.length)+' سوال</span><span>'+ICON.clock+' '+time+'</span><span>'+ICON.target+' قبولی '+fa(q.passScore)+'٪</span></div>'+
+                        '<div class="nqz-card-meta"><span>'+ICON.list+' '+fa(qCount(q))+' سوال</span><span>'+ICON.clock+' '+time+'</span><span>'+ICON.target+' قبولی '+fa(q.passScore)+'٪</span></div>'+
                         '<div class="nqz-sep"></div>'+
                         '<div class="nqz-card-actions">'+
                             '<button class="ed" data-act="edit" data-id="'+q.id+'">'+ICON.edit+' ویرایش</button>'+
@@ -687,14 +846,20 @@ function nias_quiz_builder_script()
                         '</div>'+
                     '</div>';
             });
+            if (!filtered.length && (state.search || state.catFilter!=='all')) {
+                cards += '<div class="nqz-empty-list">آزمونی با این مشخصات پیدا نشد.</div>';
+            }
             cards += '<button class="nqz-new" data-act="new"><span class="ic">'+ICON.plus+'</span><span style="font-size:14px;font-weight:600">ساخت آزمون جدید</span></button>';
+            var more = quizzes.length < state.total
+                ? '<div class="nqz-more"><button class="nqz-btn" data-act="more">'+(state.loading?'در حال بارگذاری…':'نمایش بیشتر ('+fa(state.total-quizzes.length)+' آزمون دیگر)')+'</button></div>' : '';
 
             return ''+
                 '<div class="nqz-top"><div class="nqz-top-l"><span class="nqz-top-ic">'+ICON.logo+'</span><div>'+
                     '<div class="nqz-top-title">آزمون‌ساز نیاس</div><div class="nqz-top-sub">ساخت و مدیریت آزمون‌های دوره</div></div></div>'+
                     '<div class="nqz-top-actions"><button class="nqz-btn nqz-btn-primary" data-act="new">'+ICON.plus+' آزمون جدید</button></div></div>'+
+                '<div class="nqz-listbar"><input class="nqz-in nqz-listsearch" type="search" data-input="listsearch" value="'+esc(state.search)+'" placeholder="جستجوی نام آزمون یا شماره…"><span class="nqz-listcount">'+fa(state.total)+' آزمون</span></div>'+
                 '<div class="nqz-cats">'+catBtns+'</div>'+
-                '<div class="nqz-grid">'+cards+'</div>';
+                '<div class="nqz-grid">'+cards+'</div>'+more;
         }
 
         /* ---------- editor screen ---------- */
@@ -737,8 +902,7 @@ function nias_quiz_builder_script()
                     '<div class="nqz-railfoot"><button class="nqz-addbtn" data-act="toggleadd">'+ICON.plus+' افزودن سوال</button>'+menu+'</div>'+
                     '<div class="nqz-railtotals"><span>'+fa(ed.questions.length)+' سوال</span><span>مجموع '+fa(pts)+' نمره</span></div></div>';
             } else {
-                var courseOpts = '<option value="0">بدون اتصال</option>';
-                (BOOT.courseOptions||[]).forEach(function(c){ courseOpts += '<option value="'+c.value+'" '+(String(c.value)===String(ed.courseId)?'selected':'')+'>'+esc(c.label)+'</option>'; });
+                // (linked course: a searchable picker, attached in render())
                 function seg(v,l){ return '<button class="nqz-seg '+(ed.timeMode===v?'on':'')+'" data-act="timemode" data-v="'+v+'">'+l+'</button>'; }
                 function toggle(label,key){ return '<button class="nqz-toggle" data-act="toggle" data-v="'+key+'"><span class="lbl">'+label+'</span><span class="nqz-track '+(ed[key]?'on':'')+'"><span class="nqz-knob"></span></span></button>'; }
                 var timeIn = ed.timeMode!=='none' ?
@@ -747,10 +911,11 @@ function nias_quiz_builder_script()
                     '<label class="nqz-field"><span class="nqz-flabel">دسته‌بندی</span><input class="nqz-in" data-input="category" value="'+esc(ed.category)+'" placeholder="مثلاً: ریاضی پایه"></label>'+
                     '<div class="nqz-field"><span class="nqz-flabel">زمان‌بندی</span><div class="nqz-segrow">'+seg('total','کل آزمون')+seg('perQuestion','هر سوال')+seg('none','بدون زمان')+'</div>'+timeIn+'</div>'+
                     '<label class="nqz-field"><span class="nqz-flabel">حد نصاب قبولی (٪)</span><input class="nqz-in" type="number" data-input="passScore" value="'+esc(ed.passScore)+'"></label>'+
+                    '<label class="nqz-field"><span class="nqz-flabel">حداکثر دفعات شرکت</span><input class="nqz-in" type="number" min="0" data-input="maxAttempts" value="'+esc(ed.maxAttempts||0)+'"><span class="nqz-hint">۰ یعنی نامحدود. بهترین نمرهٔ دانشجو ثبت می‌شود.</span></label>'+
                     '<div style="display:flex;flex-direction:column;gap:10px">'+toggle('برزدن ترتیب سوال‌ها','shuffleQ')+toggle('برزدن ترتیب گزینه‌ها','shuffleOpt')+toggle('نمایش پاسخ صحیح در پایان','showAnswers')+toggle('نمایش توضیح پاسخ‌ها','showExp')+'</div>'+
                     '<label class="nqz-field"><span class="nqz-flabel">اتصال به دوره</span>'+
-                        '<select class="nqz-in" data-input="courseId">'+courseOpts+'</select>'+
-                        '<span class="nqz-hint">قبولی در این آزمون برای صدور گواهی دوره لازم می‌شود.</span></label>'+
+                        '<div class="nqz-coursepick" data-coursepick></div>'+
+                        '<span class="nqz-hint">به‌عنوان آزمون پایانی زیر دوره نمایش داده می‌شود و قبولی در آن برای صدور گواهی لازم است. برای آزمون وسط جلسات، آن را در ویرایشگر سرفصل‌ها به یک جلسه وصل کنید.</span></label>'+
                     '</div>';
             }
 
@@ -817,6 +982,17 @@ function nias_quiz_builder_script()
         /* ---------- render + events ---------- */
         function render(){
             ROOT.innerHTML = state.screen==='editor' ? renderEditor() : renderList();
+            // Linked course: a searchable picker (never a list of every product).
+            var cp = ROOT.querySelector('[data-coursepick]'), ed = editing();
+            if (cp && ed && window.NiasPicker) {
+                window.NiasPicker.attach(cp, {
+                    source: 'product',
+                    value: ed.courseId ? [{ id: ed.courseId, label: ed.courseLabel || ('#' + ed.courseId) }] : [],
+                    emptyLabel: 'بدون اتصال',
+                    placeholder: 'جستجوی نام دوره…',
+                    onChange: function (v) { var e2 = editing(); if (!e2) return; e2.courseId = v[0] ? +v[0].id : 0; e2.courseLabel = v[0] ? v[0].label : ''; touch(); }
+                });
+            }
         }
 
         ROOT.addEventListener('click', function(e){
@@ -826,7 +1002,8 @@ function nias_quiz_builder_script()
             var id = t.getAttribute('data-id');
             var v = t.getAttribute('data-v');
 
-            if (act==='filter'){ state.catFilter=v; render(); }
+            if (act==='filter'){ state.catFilter=v; render(); loadList(false); }
+            else if (act==='more'){ if(!state.loading){ loadList(true); render(); } }
             else if (act==='new'){ createQuiz(); }
             else if (act==='edit'){ openEditor(id); }
             else if (act==='back'){ state.screen='list'; render(); }
@@ -854,11 +1031,13 @@ function nias_quiz_builder_script()
             if (!el) return;
             var key = el.getAttribute('data-input');
             var val = el.value;
+            if (key==='listsearch'){ state.search=val.trim(); clearTimeout(listT); listT=setTimeout(function(){ loadList(false); }, 300); return; }
             var ed = editing();
             if (key==='title'){ if(ed){ ed.title=val; touch(); } return; }
             if (key==='category'){ if(ed){ ed.category=val; touch(); } return; }
             if (key==='timeValue'){ if(ed){ ed.timeValue=parseInt(val,10)||0; touch(); } return; }
             if (key==='passScore'){ if(ed){ ed.passScore=parseInt(val,10)||0; touch(); } return; }
+            if (key==='maxAttempts'){ if(ed){ ed.maxAttempts=Math.max(0,parseInt(val,10)||0); touch(); } return; }
             if (key==='courseId'){ if(ed){ ed.courseId=parseInt(val,10)||0; touch(); } return; }
             var q = selQuestion();
             if (!q) return;
@@ -899,25 +1078,26 @@ function nias_quiz_builder_script()
         /* ---------- quiz CRUD over AJAX ---------- */
         function createQuiz(){
             ajax('nias_quiz_create').then(function(res){
-                if (res&&res.success&&res.data&&res.data.quiz){ quizzes.unshift(res.data.quiz); openEditor(res.data.quiz.id); }
+                if (res&&res.success&&res.data&&res.data.quiz){ quizzes.unshift(res.data.quiz); state.total++; openEditor(res.data.quiz.id); }
                 else { toast('ساخت آزمون ناموفق بود'); }
             });
         }
         function openEditor(id){
-            var q=byId(id); if(!q) return;
-            state.screen='editor'; state.editId=id; state.railTab='questions'; state.addMenu=false;
-            state.selQ = q.questions[0]?q.questions[0].id:null;
-            render();
+            ensureFull(id, function(q){
+                state.screen='editor'; state.editId=q.id; state.railTab='questions'; state.addMenu=false;
+                state.selQ = q.questions[0]?q.questions[0].id:null;
+                render();
+            });
         }
         function duplicateQuiz(id){
             ajax('nias_quiz_duplicate',{quiz_id:id}).then(function(res){
-                if (res&&res.success&&res.data&&res.data.quiz){ quizzes.unshift(res.data.quiz); render(); toast('کپی شد'); }
+                if (res&&res.success&&res.data&&res.data.quiz){ quizzes.unshift(res.data.quiz); state.total++; render(); toast('کپی شد'); }
             });
         }
         function deleteQuiz(id){
             if (!window.confirm('این آزمون حذف شود؟')) return;
             ajax('nias_quiz_delete',{quiz_id:id}).then(function(res){
-                if (res&&res.success){ quizzes=quizzes.filter(function(q){return String(q.id)!==String(id);}); if(String(state.editId)===String(id)){ state.screen='list'; } render(); toast('حذف شد'); }
+                if (res&&res.success){ quizzes=quizzes.filter(function(q){return String(q.id)!==String(id);}); state.total=Math.max(0,state.total-1); if(String(state.editId)===String(id)){ state.screen='list'; } render(); toast('حذف شد'); }
             });
         }
         function copyText(txt){
@@ -927,6 +1107,7 @@ function nias_quiz_builder_script()
 
         /* ---------- preview (client-side grading) ---------- */
         function openPreview(id){
+            var s=byId(id); if(s && s._summary){ ensureFull(id, function(){ openPreview(id); }); return; }
             var q=byId(id); if(!q) return;
             if (!q.questions.length){ toast('این آزمون سوالی ندارد'); return; }
             if (!window.NiasQuizStudent){ toast('اجزای پیش‌نمایش بارگذاری نشد'); return; }

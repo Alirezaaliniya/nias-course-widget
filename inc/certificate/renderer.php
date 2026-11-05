@@ -118,7 +118,10 @@ function nias_cert_build_data($user_id, $product_id, $code, $date)
     }
 
     $score = '';
-    if ($product_id && function_exists('nias_quiz_for_course')) {
+    if ($product_id && function_exists('nias_quiz_course_average')) {
+        // Several quizzes (lesson quizzes + final exam): their average best score.
+        $score = (string) nias_quiz_course_average($user_id, $product_id);
+    } elseif ($product_id && function_exists('nias_quiz_for_course')) {
         foreach (nias_quiz_for_course($product_id) as $qid) {
             $rec = get_user_meta($user_id, nias_quiz_result_meta_key($qid), true);
             if (is_array($rec) && isset($rec['pct'])) {

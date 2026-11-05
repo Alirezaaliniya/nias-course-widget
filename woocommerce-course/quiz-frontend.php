@@ -53,6 +53,8 @@ function nias_quiz_grade($quiz, $answers)
     $correctCount = 0;
     $wrongCount = 0;
     $essayCount = 0;
+    $essayTotal = 0;
+    $essays = array();
     $review = array();
 
     $questions = isset($quiz['questions']) && is_array($quiz['questions']) ? $quiz['questions'] : array();
@@ -108,12 +110,23 @@ function nias_quiz_grade($quiz, $answers)
                     $c++;
                 }
             }
-            $partial = count($pairs) ? $c / count($pairs) : 0;
-            $ok = $partial === (float) 1;
+            $partial = count($pairs) ? (float) $c / count($pairs) : 0.0;
+            // (int 3/3 is int 1, so compare the counts, not the float.)
+            $ok = count($pairs) > 0 && $c === count($pairs);
             $detail = 'تطبیق درست: ' . nias_fa_digits($c) . ' از ' . nias_fa_digits(count($pairs));
         } elseif ($q['type'] === 'essay') {
             $isAuto = false;
             $essayCount++;
+            $essayTotal += $points;
+            $essays[] = array(
+                'qid'      => $q['id'],
+                'text'     => $q['text'],
+                'answer'   => mb_substr(sanitize_textarea_field(is_array($a) ? '' : (string) $a), 0, 20000),
+                'max'      => $points,
+                'model'    => isset($q['answerText']) ? (string) $q['answerText'] : '', // instructor's reference answer
+                'score'    => null,
+                'feedback' => '',
+            );
             $detail = 'پاسخ تشریحی ثبت شد و در انتظار تصحیح مدرس است.';
         }
 
@@ -145,7 +158,7 @@ function nias_quiz_grade($quiz, $answers)
     }
 
     $pct = $autoTotal ? (int) round($earned / $autoTotal * 100) : 0;
-    $passed = $pct >= (int) (isset($quiz['passScore']) ? $quiz['passScore'] : 0);
+    $passed = $essayCount === 0 && $pct >= (int) (isset($quiz['passScore']) ? $quiz['passScore'] : 0);
 
     return array(
         'pct'          => $pct,
@@ -155,6 +168,10 @@ function nias_quiz_grade($quiz, $answers)
         'correctCount' => $correctCount,
         'wrongCount'   => $wrongCount,
         'essayCount'   => $essayCount,
+        'essayTotal'   => $essayTotal,
+        'essays'       => $essays,
+        // Essays need the instructor: no pass/fail until they are graded.
+        'pending'      => $essayCount > 0,
         'review'       => $review,
     );
 }
@@ -169,29 +186,17 @@ function nias_quiz_result_meta_key($quiz_id)
     return '_nias_quiz_result_' . (int) $quiz_id;
 }
 
-/** Store a user's result, keeping the best (highest pct / first pass). */
+/**
+ * Store one attempt (with its essay answers) and refresh the user's summary:
+ * best score, last score, attempt count, first-pass date, pending essays.
+ */
 function nias_quiz_store_result($user_id, $quiz_id, $result)
 {
-    $key = nias_quiz_result_meta_key($quiz_id);
-    $prev = get_user_meta($user_id, $key, true);
-    $record = array(
-        'pct'       => (int) $result['pct'],
-        'passed'    => !empty($result['passed']),
-        'earned'    => $result['earned'],
-        'autoTotal' => $result['autoTotal'],
-        'date'      => current_time('Y-m-d'),
-    );
-    if (is_array($prev)) {
-        // Keep passed status sticky and the best percentage.
-        if (!empty($prev['passed'])) {
-            $record['passed'] = true;
-        }
-        if ((int) $prev['pct'] > $record['pct']) {
-            $record['pct'] = (int) $prev['pct'];
-        }
-    }
-    update_user_meta($user_id, $key, $record);
+    $attempts   = nias_quiz_user_attempts($user_id, $quiz_id);
+    $attempts[] = nias_quiz_make_attempt($result);
+    $record     = nias_quiz_save_user_results($user_id, $quiz_id, $attempts, 1);
     do_action('nias_quiz_result_saved', $user_id, $quiz_id, $record);
+    return $record;
 }
 
 /** Has a user passed a given quiz? */
@@ -213,13 +218,10 @@ function nias_quiz_for_course($product_id)
     if (!$product_id || !function_exists('nias_quiz_enabled') || !nias_quiz_enabled()) {
         return array();
     }
-    return array_map('intval', get_posts(array(
-        'post_type'      => NIAS_QUIZ_CPT,
-        'posts_per_page' => -1,
-        'post_status'    => array('publish', 'draft'),
-        'fields'         => 'ids',
-        'meta_key'       => NIAS_QUIZ_COURSE_META,
-        'meta_value'     => $product_id,
+    // Lesson quizzes (in lesson order) + quizzes linked to the whole course.
+    return array_values(array_unique(array_merge(
+        nias_quiz_lesson_quiz_ids($product_id),
+        nias_quiz_course_level_ids($product_id)
     )));
 }
 
@@ -264,15 +266,29 @@ function nias_quiz_ajax_submit()
 
     $answers = isset($_POST['answers']) ? json_decode(wp_unslash($_POST['answers']), true) : array();
     $answers = is_array($answers) ? $answers : array();
+    $uid     = get_current_user_id();
 
-    $result = nias_quiz_grade($quiz, $answers);
+    // Attempt limit.
+    if ($uid) {
+        $left = nias_quiz_attempts_left($quiz, nias_quiz_user_record($uid, $quiz_id));
+        if ($left === 0) {
+            wp_send_json_error(array('message' => __('تعداد دفعات مجاز شرکت در این آزمون تمام شده است.', 'nias-course-widget'), 'code' => 'no_attempts'));
+        }
+    }
 
-    if (is_user_logged_in()) {
-        nias_quiz_store_result(get_current_user_id(), $quiz_id, $result);
+    // The student saw the matching answers in a per-user order.
+    $answers = nias_quiz_unpermute_answers($quiz, $answers, $uid);
+    $result  = nias_quiz_grade($quiz, $answers);
+
+    if ($uid) {
+        nias_quiz_store_result($uid, $quiz_id, $result);
         $result['stored'] = true;
+        $result['state']  = nias_quiz_client_state($quiz, $uid);
     } else {
         $result['stored'] = false;
     }
+    // Essays (with the instructor's reference answer) stay on the server.
+    unset($result['essays']);
 
     wp_send_json_success(array('result' => $result));
 }
@@ -297,6 +313,22 @@ function nias_quiz_shortcode($atts)
 }
 
 /**
+ * Options for a server-graded student view (endpoint, nonce, the user's
+ * previous result and attempts left).
+ */
+function nias_quiz_student_config($quiz)
+{
+    $uid = get_current_user_id();
+    return array_merge(array(
+        'mode'     => 'server',
+        'ajaxUrl'  => admin_url('admin-ajax.php'),
+        'nonce'    => wp_create_nonce('nias_quiz_take'),
+        'loggedIn' => is_user_logged_in(),
+        'intro'    => true,
+    ), nias_quiz_client_state($quiz, $uid));
+}
+
+/**
  * Render a quiz in the student view (server-graded).
  *
  * @param array $quiz
@@ -312,12 +344,7 @@ function nias_quiz_render_student($quiz)
     $seq++;
     $uid = 'nqs-' . (int) $quiz['id'] . '-' . $seq;
 
-    $config = array(
-        'mode'      => 'server',
-        'ajaxUrl'   => admin_url('admin-ajax.php'),
-        'nonce'     => wp_create_nonce('nias_quiz_take'),
-        'loggedIn'  => is_user_logged_in(),
-    );
+    $config = nias_quiz_student_config($quiz);
 
     ob_start();
     nias_quiz_student_assets();
@@ -329,7 +356,7 @@ function nias_quiz_render_student($quiz)
                 if (!window.NiasQuizStudent) { return; }
                 window.NiasQuizStudent.mount(
                     document.getElementById(<?php echo wp_json_encode($uid); ?>),
-                    <?php echo wp_json_encode($quiz); ?>,
+                    <?php echo wp_json_encode(nias_quiz_public_model($quiz, get_current_user_id())); ?>,
                     <?php echo wp_json_encode($config); ?>
                 );
             }
@@ -348,7 +375,9 @@ function nias_quiz_render_student($quiz)
 /** Render every quiz linked to a product as student views (used inside modern course). */
 function nias_quiz_render_for_course($product_id)
 {
-    $ids = nias_quiz_for_course($product_id);
+    // Lesson quizzes render inside their lessons; only the course-wide
+    // (final) quizzes go under the course.
+    $ids = (function_exists('nias_quiz_enabled') && nias_quiz_enabled()) ? nias_quiz_course_level_ids($product_id) : array();
     if (empty($ids)) {
         return '';
     }
@@ -364,7 +393,7 @@ function nias_quiz_render_for_course($product_id)
     }
     return '<div class="nqs-course-wrap" dir="rtl"><div class="nqs-course-head">'
         . '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#3858e9" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3 8-8"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>'
-        . '<span>' . esc_html__('آزمون دوره', 'nias-course-widget') . '</span></div>' . $out . '</div>';
+        . '<span>' . esc_html__('آزمون پایانی دوره', 'nias-course-widget') . '</span></div>' . $out . '</div>';
 }
 
 /** Manual placement inside a split modern-course layout. */
@@ -422,6 +451,26 @@ function nias_quiz_student_styles()
     .nqs-note{background:#fff;border:1px solid #e9ecef;border-radius:14px;padding:20px;text-align:center;color:#7b868a}
     .nqs-card{background:#fff;border:1px solid #e9ecef;border-radius:16px}
     .nqs-head{padding:16px 20px;display:flex;align-items:center;gap:16px;flex-wrap:wrap;margin-bottom:16px}
+    .nqs-intro{padding:26px 24px;text-align:center}
+    .nqs-intro-ic{width:56px;height:56px;margin:0 auto 12px;border-radius:16px;display:flex;align-items:center;justify-content:center;background:rgba(30,131,240,.1);color:var(--acc)}
+    .nqs-intro-ic svg{width:26px;height:26px}
+    .nqs-intro-t{font-size:18px;font-weight:800;color:#1f2a30;margin-bottom:16px}
+    .nqs-facts{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:16px}
+    .nqs-fact{background:#f7f9fb;border:1px solid #eef1f4;border-radius:12px;padding:10px 8px;display:flex;flex-direction:column;gap:3px}
+    .nqs-fact span{font-size:12px;color:#8a979e}
+    .nqs-fact b{font-size:14px;color:#2b363c}
+    .nqs-prev{display:flex;align-items:center;gap:14px;text-align:right;border-radius:14px;padding:12px 16px;margin-bottom:4px}
+    .nqs-prev.pass{background:rgba(72,175,59,.1)}
+    .nqs-prev.fail{background:#fff4e2}
+    .nqs-prev-pct{font-size:24px;font-weight:800;min-width:64px;text-align:center}
+    .nqs-prev.pass .nqs-prev-pct{color:#3e9a32}
+    .nqs-prev.fail .nqs-prev-pct{color:#c2841a}
+    .nqs-prev-t{font-weight:700;font-size:14px}
+    .nqs-prev-m{font-size:12.5px;color:#6b777d;margin-top:2px}
+    .nqs-startbtn{margin:18px auto 0;min-width:180px;justify-content:center}
+    .nqs-spin{width:36px;height:36px;margin:6px auto 14px;border-radius:50%;border:3px solid #e6ebef;border-top-color:var(--acc);animation:nqsSpin .8s linear infinite}
+    @keyframes nqsSpin{to{transform:rotate(360deg)}}
+    @media (max-width:560px){.nqs-facts{grid-template-columns:1fr 1fr}}
     .nqs-head-t{font-size:16px;font-weight:700}
     .nqs-head-s{font-size:12.5px;color:#7b868a;margin-top:3px}
     .nqs-timer{display:inline-flex;align-items:center;gap:6px;font-size:14px;font-weight:700;padding:8px 14px;border-radius:10px;background:#f1f4f6;color:#3a464c}
@@ -468,6 +517,18 @@ function nias_quiz_student_styles()
     .nqs-banner{display:flex;align-items:center;gap:24px;flex-wrap:wrap;border-radius:18px;padding:26px 28px;margin-bottom:18px;color:#fff}
     .nqs-banner.pass{background:linear-gradient(135deg,#2fa84a,#1f8f3d)}
     .nqs-banner.fail{background:linear-gradient(135deg,#e0683f,#cf4d4d)}
+    .nqs-banner.wait{background:linear-gradient(135deg,#3b82f6,#2563c9)}
+    .nqs-prev.wait{background:#eef5ff;margin-top:8px}
+    .nqs-prev.wait .nqs-prev-pct{color:#2563c9;display:flex;justify-content:center}
+    .nqs-prev.wait .nqs-prev-pct svg{width:26px;height:26px}
+    .nqs-fb{margin-top:10px;text-align:right;background:#f7faf7;border:1px solid #e2efe2;border-radius:14px;padding:10px 14px}
+    .nqs-fb summary{cursor:pointer;font-size:14px;font-weight:700;color:#2f7d27;display:flex;align-items:center;gap:6px;list-style:none}
+    .nqs-fb summary::-webkit-details-marker{display:none}
+    .nqs-fb-note{margin-top:8px;font-size:13.5px;color:#2b363c;background:#fff;border-radius:10px;padding:9px 12px;white-space:pre-line}
+    .nqs-fb-row{margin-top:8px;padding-top:8px;border-top:1px dashed #dbe8db;display:flex;flex-wrap:wrap;align-items:flex-start;gap:6px 10px}
+    .nqs-fb-q{flex:1;min-width:180px;font-size:13px;color:#4b575d}
+    .nqs-fb-s{font-size:12px;font-weight:800;color:#2f7d27;background:rgba(72,175,59,.13);padding:2px 9px;border-radius:99px}
+    .nqs-fb-c{flex:1 1 100%;font-size:13px;color:#2b363c;background:#fff;border-radius:10px;padding:8px 12px;white-space:pre-line}
     .nqs-ring{position:relative;width:120px;height:120px;flex:none}
     .nqs-ring-c{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;color:#fff}
     .nqs-ring-pct{font-size:30px;font-weight:800;line-height:1}
@@ -537,6 +598,39 @@ function nias_quiz_student_script()
             this.root=root; this.quiz=quiz; this.opts=opts||{}; this.timer=null;
             this.state={ idx:0, answers:{}, phase:'taking', timeLeft:0, result:null, drag:null };
         }
+        // Intro card: what the quiz is, earlier result, attempts left. The
+        // timer only starts when the student presses "start".
+        ST.prototype.intro=function(){
+            if (this.timer){ clearInterval(this.timer); this.timer=null; }
+            this.state={ idx:0, answers:{}, phase:'intro', timeLeft:0, result:null, drag:null };
+            var q=this.quiz, o=this.opts, rec=o.record||null, left=o.attemptsLeft;
+            var time = q.timeMode==='total' ? fa(q.timeValue)+' دقیقه' : (q.timeMode==='perQuestion' ? fa(q.timeValue)+' ثانیه برای هر سوال' : 'بدون محدودیت');
+            var facts=[
+                ['تعداد سوال', fa((q.questions||[]).length)],
+                ['زمان', time],
+                ['حد نصاب قبولی', fa(q.passScore)+'٪'],
+                ['دفعات باقی‌مانده', left==null ? 'نامحدود' : fa(left)]
+            ].map(function(f){ return '<div class="nqs-fact"><span>'+f[0]+'</span><b>'+f[1]+'</b></div>'; }).join('');
+            var prev='';
+            if (rec && rec.best!=null){
+                prev='<div class="nqs-prev '+(rec.passed?'pass':'fail')+'"><div class="nqs-prev-pct">'+fa(rec.best)+'٪</div><div><div class="nqs-prev-t">'+(rec.passed?'در این آزمون قبول شده‌اید':'هنوز به حد نصاب نرسیده‌اید')+'</div>'+
+                     '<div class="nqs-prev-m">بهترین نمره'+(rec.last!==rec.best?' · آخرین تلاش '+fa(rec.last)+'٪':'')+' · '+fa(rec.attempts)+' بار شرکت</div></div></div>';
+            }
+            if (rec && rec.pending>0){
+                prev+='<div class="nqs-prev wait"><div class="nqs-prev-pct">'+ICON.clock+'</div><div><div class="nqs-prev-t">پاسخ تشریحی شما در انتظار تصحیح مدرس است</div>'+
+                      '<div class="nqs-prev-m">نمرهٔ نهایی پس از تصحیح اعلام می‌شود'+(rec.best==null?'':'؛ تا آن زمان بهترین نمرهٔ قبلی شما معتبر است')+'.</div></div></div>';
+            }
+            if (o.feedback){ prev+=this.feedbackHtml(o.feedback); }
+            var can = left==null || left>0;
+            var login = (o.mode==='server'&&o.loggedIn===false) ? '<div class="nqs-note" style="margin-top:14px">برای ثبت نمره، ابتدا وارد حساب کاربری شوید.</div>' : '';
+            this.root.innerHTML='<div class="nqs-card nqs-intro">'+
+                '<div class="nqs-intro-ic">'+ICON.check+'</div><div class="nqs-intro-t">'+esc(q.title)+'</div>'+
+                '<div class="nqs-facts">'+facts+'</div>'+prev+login+
+                (can ? '<button class="nqs-btn submit nqs-startbtn" data-act="begin">'+(rec?ICON.retry+' شرکت دوباره':'شروع آزمون '+ICON.next)+'</button>'
+                     : '<div class="nqs-note" style="margin-top:14px">تعداد دفعات مجاز شرکت در این آزمون تمام شده است.</div>')+
+                '</div>';
+            this.bind();
+        };
         ST.prototype.start=function(){
             var quiz=this.quiz;
             var qs=quiz.questions.slice();
@@ -590,15 +684,30 @@ function nias_quiz_student_script()
             var self=this;
             if (this.opts.mode==='server'){
                 var body='action=nias_quiz_submit&nonce='+encodeURIComponent(this.opts.nonce)+'&quiz_id='+encodeURIComponent(this.quiz.id)+'&answers='+encodeURIComponent(JSON.stringify(this.state.answers));
+                // The student copy has no answers, so grading only happens on the server.
+                this.state.phase='sending'; this.renderSending('');
                 fetch(this.opts.ajaxUrl,{method:'POST',credentials:'same-origin',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:body})
                     .then(function(r){return r.json();})
-                    .then(function(res){ self.state.phase='done'; self.state.result=(res&&res.success&&res.data)?res.data.result:gradeLocal(self.quiz,self.state.answers); self.render(); })
-                    .catch(function(){ self.state.phase='done'; self.state.result=gradeLocal(self.quiz,self.state.answers); self.render(); });
+                    .then(function(res){
+                        if (!(res&&res.success&&res.data&&res.data.result)){ self.renderSending((res&&res.data&&res.data.message)||'ثبت پاسخ‌ها انجام نشد.'); return; }
+                        var r=res.data.result;
+                        if (r.state){ self.opts.record=r.state.record; self.opts.attemptsLeft=r.state.attemptsLeft; self.opts.feedback=r.state.feedback; }
+                        self.state.phase='done'; self.state.result=r; self.render();
+                        if (self.opts.onResult){ try{ self.opts.onResult(r, self.quiz); }catch(e){} }
+                        try{ window.dispatchEvent(new CustomEvent('nias:quiz-result',{detail:{quizId:self.quiz.id,result:r}})); }catch(e){}
+                    })
+                    .catch(function(){ self.renderSending('اتصال برقرار نشد. اینترنت خود را بررسی کنید و دوباره بفرستید.'); });
             } else {
                 this.state.phase='done'; this.state.result=gradeLocal(this.quiz,this.state.answers); this.render();
             }
         };
 
+        ST.prototype.renderSending=function(err){
+            this.root.innerHTML='<div class="nqs-card nqs-intro">'+(err
+                ? '<div class="nqs-note" style="margin-bottom:14px">'+esc(err)+'</div><button class="nqs-btn submit" data-act="resend">'+ICON.retry+' ارسال دوباره</button>'
+                : '<div class="nqs-spin"></div><div class="nqs-intro-t" style="font-size:15px">در حال ثبت و تصحیح پاسخ‌ها…</div>')+'</div>';
+            this.bind();
+        };
         ST.prototype.render=function(){
             if (this.state.phase==='done') this.renderDone();
             else this.renderTaking();
@@ -657,10 +766,21 @@ function nias_quiz_student_script()
                 '</div>';
         };
 
+        // The instructor's grading of the latest essays (score per question + comments).
+        ST.prototype.feedbackHtml=function(fb){
+            var rows=(fb.essays||[]).map(function(e){
+                return '<div class="nqs-fb-row"><div class="nqs-fb-q">'+esc(e.text)+'</div><span class="nqs-fb-s">'+fa(e.score)+' از '+fa(e.max)+'</span>'+
+                    (e.feedback?'<div class="nqs-fb-c">'+esc(e.feedback)+'</div>':'')+'</div>';
+            }).join('');
+            return '<details class="nqs-fb" open><summary>'+ICON.check+' نتیجهٔ تصحیح مدرس: <b>'+fa(fb.final)+'٪</b></summary>'+
+                (fb.note?'<div class="nqs-fb-note">'+esc(fb.note)+'</div>':'')+rows+'</details>';
+        };
         ST.prototype.renderDone=function(){
             var r=this.state.result, quiz=this.quiz, C=326.7;
             var off=C*(1-r.pct/100);
-            var desc = r.passed
+            var desc = r.pending
+                ? 'بخش خودکار آزمون تصحیح شد. نمرهٔ نهایی پس از تصحیح '+fa(r.essayCount)+' سوال تشریحی توسط مدرس اعلام می‌شود'+(this.opts.loggedIn===false?'.':' و در «نمرات من» نمایش داده می‌شود.')
+                : r.passed
                 ? (quiz.courseId ? 'با قبولی در این آزمون، شرط صدور گواهی دوره را برآورده کردید.' : 'شما حد نصاب قبولی این آزمون را کسب کردید.')
                 : ('برای قبولی به حداقل '+fa(quiz.passScore)+'٪ نیاز دارید. می‌توانید دوباره تلاش کنید.');
             var counts='<span>'+ICON.check+' '+fa(r.correctCount)+' درست</span><span>'+fa(r.wrongCount)+' نادرست</span>'+(r.essayCount>0?'<span>'+fa(r.essayCount)+' در انتظار تصحیح</span>':'');
@@ -680,14 +800,14 @@ function nias_quiz_student_script()
 
             this.root.innerHTML=
                 notSaved+
-                '<div class="nqs-banner '+(r.passed?'pass':'fail')+'"><div class="nqs-ring">'+
+                '<div class="nqs-banner '+(r.pending?'wait':(r.passed?'pass':'fail'))+'"><div class="nqs-ring">'+
                     '<svg width="120" height="120" viewBox="0 0 120 120" style="transform:rotate(-90deg)"><circle cx="60" cy="60" r="52" fill="none" stroke="rgba(255,255,255,.35)" stroke-width="11"></circle>'+
                     '<circle cx="60" cy="60" r="52" fill="none" stroke="#fff" stroke-width="11" stroke-linecap="round" stroke-dasharray="326.7" stroke-dashoffset="'+off+'"></circle></svg>'+
                     '<div class="nqs-ring-c"><span class="nqs-ring-pct">'+fa(r.pct)+'٪</span><span class="nqs-ring-l">نمره خودکار</span></div></div>'+
-                    '<div><div class="nqs-res-t">'+(r.passed?'تبریک! قبول شدید 🎉':'متأسفانه قبول نشدید')+'</div>'+
+                    '<div><div class="nqs-res-t">'+(r.pending?'پاسخ‌های شما ثبت شد':(r.passed?'تبریک! قبول شدید 🎉':'متأسفانه قبول نشدید'))+'</div>'+
                     '<div class="nqs-res-d">'+desc+'</div><div class="nqs-res-counts">'+counts+'</div></div></div>'+
                 '<div class="nqs-review">'+review+'</div>'+
-                '<div class="nqs-actions"><button class="nqs-btn retake" data-act="retake">'+ICON.retry+' تلاش مجدد</button>'+
+                '<div class="nqs-actions">'+((this.opts.attemptsLeft==null||this.opts.attemptsLeft>0)?'<button class="nqs-btn retake" data-act="retake">'+ICON.retry+' تلاش مجدد'+(this.opts.attemptsLeft!=null?' ('+fa(this.opts.attemptsLeft)+' بار دیگر)':'')+'</button>':'')+
                     '<button class="nqs-btn backc" data-act="back">بازگشت</button></div>';
         };
 
@@ -720,8 +840,10 @@ function nias_quiz_student_script()
                     else if (act==='next'){ if(self.state.idx<self.qs.length-1) self.goto(self.state.idx+1); }
                     else if (act==='goto'){ self.goto(parseInt(el.getAttribute('data-i'),10)); }
                     else if (act==='submit'){ self.submit(); }
-                    else if (act==='retake'){ self.start(); }
-                    else if (act==='back'){ if(self.opts.onBack){ self.opts.onBack(); } else { self.start(); } }
+                    else if (act==='retake'){ if(self.opts.intro){ self.intro(); } else { self.start(); } }
+                    else if (act==='begin'){ self.start(); }
+                    else if (act==='resend'){ self.submit(); }
+                    else if (act==='back'){ if(self.opts.onBack){ self.opts.onBack(); } else if(self.opts.intro){ self.intro(); } else { self.start(); } }
                 });
             });
         };
@@ -734,7 +856,7 @@ function nias_quiz_student_script()
                 if (!root.classList.contains('nqs')) { root.classList.add('nqs'); }
                 root.style.setProperty('--acc', (opts && opts.accent) || '#1e83f0');
                 var inst = new ST(root, quiz, opts || {});
-                inst.start();
+                if (inst.opts.intro) { inst.intro(); } else { inst.start(); }
                 return inst;
             }
         };

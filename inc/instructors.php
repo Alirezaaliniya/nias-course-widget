@@ -205,12 +205,10 @@ function nias_instructors_render_page()
 
     $instructors = nias_get_instructors();
     $inst_ids    = array_map('intval', wp_list_pluck($instructors, 'ID'));
-    $candidates  = get_users(array(
-        'exclude' => $inst_ids ? $inst_ids : array(0),
-        'orderby' => 'display_name',
-        'order'   => 'ASC',
-        'number'  => 500,
-    ));
+    // Candidates are found by searching (a site can have many thousands of users).
+    if (function_exists('nias_picker_enqueue')) {
+        nias_picker_enqueue();
+    }
     ?>
     <div class="nias-settings-app" dir="rtl">
         <?php nias_settings_topbar('instructors'); ?>
@@ -269,27 +267,16 @@ function nias_instructors_render_page()
             <?php nias_set_card_open('<svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8ZM19 8v6M22 11h-6" stroke="#3858e9" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>', __('افزودن مدرس جدید', 'nias-course-widget')); ?>
                 <div class="nias-card-pad">
                     <div class="nias-fdesc" style="margin-bottom:12px"><?php echo esc_html__('یک کاربر وردپرس را انتخاب کنید تا نقش «مدرس» به او اضافه شود.', 'nias-course-widget'); ?></div>
-                    <?php if (empty($candidates)) : ?>
-                        <div class="nias-inst-empty"><?php echo esc_html__('کاربر دیگری برای افزودن وجود ندارد.', 'nias-course-widget'); ?></div>
-                    <?php else : ?>
-                        <form method="post" class="nias-inst-add">
+                        <form method="post" class="nias-inst-add" onsubmit="var h=this.querySelector('input[name=nias_inst_user]');if(!h||!h.value){alert('<?php echo esc_js(__('ابتدا یک کاربر را جستجو و انتخاب کنید.', 'nias-course-widget')); ?>');return false;}">
                             <?php wp_nonce_field('nias_instructors_manage', 'nias_inst_nonce'); ?>
                             <input type="hidden" name="nias_inst_action" value="add">
-                            <div class="nias-select-wrap nias-inst-grow">
-                                <select class="nias-select" name="nias_inst_user" required>
-                                    <option value=""><?php echo esc_html__('انتخاب کاربر…', 'nias-course-widget'); ?></option>
-                                    <?php foreach ($candidates as $cand) : ?>
-                                        <option value="<?php echo esc_attr($cand->ID); ?>"><?php echo esc_html($cand->display_name . ' — ' . $cand->user_email); ?></option>
-                                    <?php endforeach; ?>
-                                </select>
-                                <span class="nias-select-arrow"><svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="m6 9 6 6 6-6" stroke="#8a90a6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
-                            </div>
+                            <div class="nias-inst-grow" id="nias-inst-pick"></div>
+                            <script>document.addEventListener('DOMContentLoaded',function(){ if(window.NiasPicker){ window.NiasPicker.attach(document.getElementById('nias-inst-pick'),{source:'user',name:'nias_inst_user',emptyLabel:<?php echo wp_json_encode(__('جستجوی نام، ایمیل یا نام کاربری…', 'nias-course-widget')); ?>,placeholder:<?php echo wp_json_encode(__('نام، ایمیل یا نام کاربری…', 'nias-course-widget')); ?>,params:{exclude:<?php echo wp_json_encode(implode(',', $inst_ids)); ?>}}); } });</script>
                             <button type="submit" class="nias-btn-primary">
                                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M12 5v14M5 12h14" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
                                 <?php echo esc_html__('افزودن به مدرسین', 'nias-course-widget'); ?>
                             </button>
                         </form>
-                    <?php endif; ?>
                 </div>
             <?php nias_set_card_close(); ?>
 

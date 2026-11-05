@@ -130,6 +130,102 @@ function nias_instructor_dashboard_product_ids($user_id, $is_admin_scope)
 }
 
 /* -------------------------------------------------------------------------
+ * Order rows for a set of courses (SQL, no order objects)
+ * ---------------------------------------------------------------------- */
+
+/**
+ * Completed-order line items that contain one of the given products.
+ *
+ * Reads only the orders that contain those products, straight from the order
+ * tables (HPOS or the classic posts storage), instead of loading every
+ * completed order of the store. Cached for an hour; any order change clears it.
+ *
+ * @param int[] $product_ids
+ * @return array[] { pid, total, ts, buyerId, email, name }
+ */
+function nias_idash_order_rows($product_ids)
+{
+    global $wpdb;
+    $ids = array_values(array_unique(array_filter(array_map('intval', (array) $product_ids))));
+    if (!$ids) {
+        return array();
+    }
+    sort($ids);
+    $key = 'nias_idash_rows_' . md5(implode(',', $ids) . '|' . (int) get_option('nias_idash_orders_ver', 1));
+    $hit = get_transient($key);
+    if (is_array($hit)) {
+        return $hit;
+    }
+
+    $in    = implode(',', $ids);
+    $items = $wpdb->prefix . 'woocommerce_order_items';
+    $imeta = $wpdb->prefix . 'woocommerce_order_itemmeta';
+    $lines = $wpdb->get_results(
+        "SELECT oi.order_id, CAST(pm.meta_value AS UNSIGNED) pid, lt.meta_value total
+         FROM {$items} oi
+         INNER JOIN {$imeta} pm ON pm.order_item_id = oi.order_item_id AND pm.meta_key = '_product_id'
+         LEFT JOIN {$imeta} lt ON lt.order_item_id = oi.order_item_id AND lt.meta_key = '_line_total'
+         WHERE oi.order_item_type = 'line_item' AND pm.meta_value IN ({$in})"
+    );
+    $order_ids = array_values(array_unique(array_map('intval', wp_list_pluck((array) $lines, 'order_id'))));
+    $orders = array();
+    $hpos = class_exists('Automattic\WooCommerce\Utilities\OrderUtil') && \Automattic\WooCommerce\Utilities\OrderUtil::custom_orders_table_usage_is_enabled();
+    foreach (array_chunk($order_ids, 500) as $chunk) {
+        $list = implode(',', $chunk);
+        if ($hpos) {
+            $rows = $wpdb->get_results(
+                "SELECT o.id, o.customer_id, o.billing_email, o.date_created_gmt created, od.date_completed_gmt completed, a.first_name, a.last_name
+                 FROM {$wpdb->prefix}wc_orders o
+                 LEFT JOIN {$wpdb->prefix}wc_order_operational_data od ON od.order_id = o.id
+                 LEFT JOIN {$wpdb->prefix}wc_order_addresses a ON a.order_id = o.id AND a.address_type = 'billing'
+                 WHERE o.id IN ({$list}) AND o.status = 'wc-completed' AND o.type = 'shop_order'"
+            );
+            foreach ((array) $rows as $r) {
+                $ts = $r->completed ? strtotime($r->completed . ' UTC') : ($r->created ? strtotime($r->created . ' UTC') : 0);
+                $orders[(int) $r->id] = array('ts' => (int) $ts, 'buyerId' => (int) $r->customer_id, 'email' => (string) $r->billing_email, 'name' => trim($r->first_name . ' ' . $r->last_name));
+            }
+        } else {
+            $rows = $wpdb->get_results(
+                "SELECT p.ID id, p.post_date_gmt created,
+                        MAX(CASE WHEN m.meta_key = '_customer_user' THEN m.meta_value END) customer_id,
+                        MAX(CASE WHEN m.meta_key = '_billing_email' THEN m.meta_value END) email,
+                        MAX(CASE WHEN m.meta_key = '_billing_first_name' THEN m.meta_value END) first_name,
+                        MAX(CASE WHEN m.meta_key = '_billing_last_name' THEN m.meta_value END) last_name,
+                        MAX(CASE WHEN m.meta_key = '_date_completed' THEN m.meta_value END) completed
+                 FROM {$wpdb->posts} p
+                 LEFT JOIN {$wpdb->postmeta} m ON m.post_id = p.ID AND m.meta_key IN ('_customer_user','_billing_email','_billing_first_name','_billing_last_name','_date_completed')
+                 WHERE p.ID IN ({$list}) AND p.post_type = 'shop_order' AND p.post_status = 'wc-completed'
+                 GROUP BY p.ID"
+            );
+            foreach ((array) $rows as $r) {
+                $ts = $r->completed ? (int) $r->completed : ($r->created ? strtotime($r->created . ' UTC') : 0);
+                $orders[(int) $r->id] = array('ts' => (int) $ts, 'buyerId' => (int) $r->customer_id, 'email' => (string) $r->email, 'name' => trim($r->first_name . ' ' . $r->last_name));
+            }
+        }
+    }
+    $out = array();
+    foreach ((array) $lines as $l) {
+        $o = isset($orders[(int) $l->order_id]) ? $orders[(int) $l->order_id] : null;
+        if ($o) {
+            $out[] = array_merge($o, array('pid' => (int) $l->pid, 'total' => (float) $l->total));
+        }
+    }
+    set_transient($key, $out, HOUR_IN_SECONDS);
+    return $out;
+}
+
+/** Any order change invalidates the cached dashboard rows. */
+function nias_idash_orders_bump()
+{
+    update_option('nias_idash_orders_ver', (int) get_option('nias_idash_orders_ver', 1) + 1, false);
+}
+add_action('woocommerce_order_status_changed', 'nias_idash_orders_bump');
+add_action('woocommerce_update_order', 'nias_idash_orders_bump');
+add_action('woocommerce_delete_order', 'nias_idash_orders_bump');
+add_action('woocommerce_trash_order', 'nias_idash_orders_bump');
+add_action('woocommerce_order_refunded', 'nias_idash_orders_bump');
+
+/* -------------------------------------------------------------------------
  * Data builder
  * ---------------------------------------------------------------------- */
 
@@ -196,20 +292,13 @@ function nias_instructor_dashboard_data($user_id)
     $cert_on         = (carbon_get_theme_option('nias_course_certificate') === 'on');
 
     if (!empty($product_ids) && function_exists('wc_get_orders')) {
-        $orders = wc_get_orders(array(
-            'status' => 'wc-completed',
-            'limit'  => -1,
-        ));
-        foreach ($orders as $order) {
-            $date = $order->get_date_completed();
-            if (!$date) {
-                $date = $order->get_date_created();
-            }
-            $ts          = $date ? $date->getTimestamp() : 0;
-            $buyer_id    = (int) $order->get_customer_id();
-            $buyer_email = $order->get_billing_email();
-            $buyer_key   = $buyer_id > 0 ? 'u' . $buyer_id : 'e' . strtolower((string) $buyer_email);
-            $buyer_name  = trim($order->get_formatted_billing_full_name());
+        // Only the orders that contain these courses (see nias_idash_order_rows()).
+        foreach (nias_idash_order_rows($product_ids) as $row) {
+            $ts          = $row['ts'];
+            $date        = $ts ? (new DateTime('@' . $ts))->setTimezone(wp_timezone()) : null;
+            $buyer_id    = $row['buyerId'];
+            $buyer_key   = $buyer_id > 0 ? 'u' . $buyer_id : 'e' . strtolower($row['email']);
+            $buyer_name  = $row['name'];
             if ($buyer_name === '' && $buyer_id > 0) {
                 $bu = get_userdata($buyer_id);
                 $buyer_name = $bu ? $bu->display_name : '';
@@ -218,12 +307,12 @@ function nias_instructor_dashboard_data($user_id)
                 $buyer_name = __('کاربر', 'nias-course-widget');
             }
 
-            foreach ($order->get_items() as $item) {
-                $pid = (int) $item->get_product_id();
+            {
+                $pid = $row['pid'];
                 if (!isset($id_lookup[$pid])) {
                     continue;
                 }
-                $line = (float) $item->get_total();
+                $line = $row['total'];
                 $courses[$pid]['revenue']        += $line;
                 $courses[$pid]['students'][$buyer_key] = true;
                 $global_students[$buyer_key]      = true;
@@ -240,7 +329,7 @@ function nias_instructor_dashboard_data($user_id)
                     'course' => $courses[$pid]['title'],
                     'ts'     => $ts,
                     'userId' => $buyer_id,
-                    'orderDate' => $date ? $date->date('Y-m-d') : '',
+                    'orderDate' => $date ? $date->format('Y-m-d') : '',
                 );
                 $enrollments[] = $event;
                 if ($cert_on && $courses[$pid]['certEligible']) {
@@ -555,6 +644,7 @@ function nias_instructor_dashboard_render($user_id)
 
             <!-- ===== right column ===== -->
             <div class="nias-idash-col">
+                <?php if (function_exists('nias_quiz_results_dashboard_card')) echo nias_quiz_results_dashboard_card($user_id); ?>
                 <?php echo nias_instructor_dashboard_students($d); ?>
                 <?php if ($d['certOn'] && !empty($d['recentCerts'])) echo nias_instructor_dashboard_certs($d); ?>
                 <?php if (!empty($d['reviews'])) echo nias_instructor_dashboard_reviews($d); ?>
@@ -856,6 +946,11 @@ function nias_instructor_dashboard_output()
     if (!$is_instructor && !current_user_can('manage_options')) {
         return '<div class="nias-idash nias-idash-gate" dir="rtl">' . nias_instructor_dashboard_styles()
             . '<div class="nias-idash-gate-box">' . esc_html__('این صفحه مخصوص مدرسین است.', 'nias-course-widget') . '</div></div>';
+    }
+
+    // Quiz results / essay grading inside the dashboard page.
+    if (!empty($_GET['nias_qr']) && function_exists('nias_quiz_results_frontend')) {
+        return nias_quiz_results_frontend($user_id);
     }
 
     return nias_instructor_dashboard_render($user_id);

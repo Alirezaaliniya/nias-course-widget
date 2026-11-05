@@ -120,6 +120,16 @@ function nias_course_sanitize_media_group($group, $type)
     return array($out);
 }
 
+/** Lesson gate value: '' (open), 'prev', or a quiz id. */
+function nias_course_sanitize_gate($v)
+{
+    $v = is_scalar($v) ? trim((string) $v) : '';
+    if ($v === 'prev') {
+        return 'prev';
+    }
+    return ctype_digit($v) && (int) $v > 0 ? (string) (int) $v : '';
+}
+
 function nias_course_sanitize_sections($raw)
 {
     $out = array();
@@ -149,6 +159,11 @@ function nias_course_sanitize_sections($raw)
                     'lesson_private'       => (isset($lesson['lesson_private']) && $lesson['lesson_private'] === 'yes'),
                     'lesson_duration'      => sanitize_text_field($lesson['lesson_duration'] ?? ''),
                     'lesson_content'       => nias_course_sanitize_lesson_content($lesson['lesson_content'] ?? ''),
+                    // Quiz shown in this lesson, and the quiz score that unlocks it
+                    // ('' = open, 'prev' = every quiz of the earlier lessons, or a quiz id).
+                    'lesson_quiz'          => absint($lesson['lesson_quiz'] ?? 0) ?: '',
+                    'lesson_gate'          => nias_course_sanitize_gate($lesson['lesson_gate'] ?? ''),
+                    'lesson_gate_min'      => (isset($lesson['lesson_gate_min']) && $lesson['lesson_gate_min'] !== '') ? (string) max(0, min(100, (int) $lesson['lesson_gate_min'])) : '',
                 );
             }
         }

@@ -64,6 +64,9 @@ function nias_course_sections_schema()
             'lesson_private'       => array('type' => 'value'),
             'lesson_duration'      => array('type' => 'value'),
             'lesson_content'       => array('type' => 'value'),
+            'lesson_quiz'          => array('type' => 'value'),
+            'lesson_gate'          => array('type' => 'value'),
+            'lesson_gate_min'      => array('type' => 'value'),
         )),
     );
 }
@@ -646,6 +649,7 @@ function nias_cs_set($post_id, $value)
     $post_id = intval($post_id);
     nias_cs_store($post_id, nias_cs_normalize($value));
     nias_cs_delete_legacy_rows($post_id);
+    do_action('nias_course_sections_saved', $post_id);
 }
 
 /**

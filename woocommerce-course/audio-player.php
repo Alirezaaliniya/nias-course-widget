@@ -39,8 +39,8 @@ function nias_audio_player_assets()
     .nias-ap-btn:hover{transform:scale(1.07)}
     .nias-ap-btn svg{width:20px;height:20px;fill:currentColor}
     .nias-ap-main{flex:1;min-width:0;display:flex;flex-direction:column;gap:6px}
-    .nias-ap-wave{display:flex;align-items:center;gap:2px;height:34px;cursor:pointer;direction:ltr}
-    .nias-ap-bar{flex:1 1 0;min-width:2px;border-radius:99px;background:rgba(30,60,90,.18);transition:background .15s,transform .15s}
+    .nias-ap-wave{display:flex;align-items:center;justify-content:space-between;gap:2px;height:30px;cursor:pointer;direction:ltr;overflow:hidden}
+    .nias-ap-bar{flex:0 0 3px;width:3px;min-height:4px;border-radius:99px;background:rgba(30,60,90,.18);transition:background .15s,transform .15s}
     .nias-ap-bar.on{background:var(--nias-ap-accent)}
     .nias-ap-wave:hover .nias-ap-bar{transform:scaleY(1.08)}
     .nias-ap-time{font-size:12.5px;font-weight:600;color:#5b666c;font-variant-numeric:tabular-nums;direction:ltr;display:flex;justify-content:space-between}
@@ -66,7 +66,7 @@ function nias_audio_player_assets()
             if (!src) { return; }
             box.setAttribute('data-nias-ap-ready', '1');
 
-            var NB = 40, bars = '';
+            var NB = Math.max(24, Math.min(160, Math.floor(((box.clientWidth || 600) - 92) / 6))), bars = '';
             for (var i = 0; i < NB; i++) {
                 var r = Math.abs(Math.sin((i + 1) * 12.9898) * 43758.5453);
                 r = r - Math.floor(r);
@@ -107,10 +107,9 @@ function nias_audio_player_assets()
             a.addEventListener('timeupdate', paint);
             a.addEventListener('ended', function () { btn.innerHTML = PLAY; paint(); });
             wave.addEventListener('click', function (ev) {
-                var b = ev.target && ev.target.closest ? ev.target.closest('.nias-ap-bar') : null;
-                if (!b || !a.duration) { return; }
-                var i = parseInt(b.getAttribute('data-i'), 10);
-                try { a.currentTime = (i + 0.5) / NB * a.duration; } catch (e) {}
+                if (!a.duration) { return; }
+                var r = wave.getBoundingClientRect(), f = Math.max(0, Math.min(1, (ev.clientX - r.left) / r.width));
+                try { a.currentTime = f * a.duration; } catch (e) {}
                 paint();
             });
         }

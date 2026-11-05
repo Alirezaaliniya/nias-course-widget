@@ -216,6 +216,11 @@ body *:not(#wpadminbar *,i){
 .nias-tab { padding: 12px 14px 14px; font-size: 14px; font-weight: 700; cursor: pointer; border-bottom: 2.5px solid transparent; color: #8a90a6; text-decoration: none; display: flex; align-items: center; gap: 7px; white-space: nowrap; flex: none; }
 .nias-tab:hover { color: #3858e9; }
 .nias-tab.active { border-bottom-color: #3858e9; color: #3858e9; }
+/* Desktop: never a horizontal scrollbar — tabs wrap to a second row if needed (phones keep the swipeable row). */
+@media (min-width: 783px) {
+    .nias-set-tabs { flex-wrap: wrap; overflow: visible; row-gap: 0; }
+    .nias-tab { padding: 12px 12px 14px; }
+}
 .nias-tab-badge { font-size: 10px; font-weight: 700; padding: 2px 7px; border-radius: 999px; background: #eef1fe; color: #3858e9; }
 
 .nias-set-main { max-width: 980px; margin: 0 auto; padding: 28px 24px 0; }
@@ -394,6 +399,7 @@ body *:not(#wpadminbar *,i){
 
 @media (max-width: 1180px) {
     .nias-set-shell { flex-direction: column; max-width: 980px; }
+    .nias-set-shell .nias-set-main { width: 100%; }
     .nias-set-aside { flex-basis: auto; width: 100%; position: static; flex-direction: row; flex-wrap: wrap; }
     .nias-ads-title { flex-basis: 100%; }
     .nias-ad { flex: 1 1 280px; }

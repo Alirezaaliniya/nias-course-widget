@@ -331,6 +331,8 @@ function nias_settings_topbar($active)
                 <?php endif; ?>
                 <?php if ($quiz_on) : ?>
                     <a href="<?php echo esc_url($quiz_url); ?>" class="nias-tab <?php echo $active === 'quiz' ? 'active' : ''; ?>"><?php echo esc_html__('آزمون‌ساز', 'nias-course-widget'); ?> <span class="nias-tab-badge"><?php echo esc_html__('فعال', 'nias-course-widget'); ?></span></a>
+                    <?php $nqr_pending = function_exists('nias_quiz_pending_count') ? nias_quiz_pending_count(null) : 0; ?>
+                    <a href="<?php echo esc_url(admin_url('admin.php?page=nias-course-quiz-results')); ?>" class="nias-tab <?php echo $active === 'quizres' ? 'active' : ''; ?>"><?php echo esc_html__('نتایج و تصحیح', 'nias-course-widget'); ?><?php if ($nqr_pending) : ?> <span class="nias-tab-badge" style="background:#2563c9;color:#fff"><?php echo esc_html(nias_fa_digits($nqr_pending)); ?></span><?php endif; ?></a>
                 <?php endif; ?>
                 <a href="<?php echo esc_url(admin_url('admin.php?page=nias-course-player')); ?>" class="nias-tab <?php echo $active === 'player' ? 'active' : ''; ?>"><?php echo esc_html__('پلیر ویدیو', 'nias-course-widget'); ?></a>
                 <?php if ($meta_on) : ?>
@@ -494,6 +496,40 @@ function nias_set_multiselect_field($name, $label, $options, $wrap_attr = '')
         echo '<option value="' . esc_attr($val) . '"' . $sel . '>' . esc_html($text) . '</option>';
     }
     echo '</select><div class="nias-fhint">' . esc_html__('برای انتخاب چند مورد، کلید Ctrl را نگه دارید.', 'nias-course-widget') . '</div></div>';
+}
+
+/**
+ * Searchable multi-select bound to a theme option (stored like a multiselect).
+ * Only the saved items are rendered; everything else is found by searching,
+ * so the page never lists every product/user of the site.
+ *
+ * @param string $source product|quiz|user (see inc/nias-picker.php)
+ */
+function nias_set_picker_field($name, $label, $source, $wrap_attr = '', $hint = '')
+{
+    $current = carbon_get_theme_option($name);
+    $current = is_array($current) ? array_values(array_filter(array_map('intval', $current))) : array();
+    $values  = array();
+    if ($source === 'product') {
+        _prime_post_caches($current, false, false);
+        foreach ($current as $id) {
+            if (get_post($id) && function_exists('nias_picker_product_item')) {
+                $values[] = nias_picker_product_item($id);
+            }
+        }
+    }
+    $cfg = array('source' => $source, 'multiple' => true, 'name' => $name, 'value' => $values, 'placeholder' => __('برای افزودن، نام را جستجو کنید…', 'nias-course-widget'));
+    echo '<div class="nias-field" ' . $wrap_attr . '><label class="nias-flabel">' . esc_html($label) . '</label>';
+    echo '<div class="nias-picker" data-nias-picker="' . esc_attr(wp_json_encode($cfg)) . '"></div>';
+    echo '<div class="nias-fhint">' . esc_html($hint !== '' ? $hint : __('چند حرف از نام را بنویسید تا نتایج نمایش داده شود؛ با × هر مورد حذف می‌شود.', 'nias-course-widget')) . '</div></div>';
+    if (function_exists('nias_picker_enqueue')) {
+        nias_picker_enqueue();
+    }
+    static $boot = false;
+    if (!$boot) {
+        $boot = true;
+        echo "<script>document.addEventListener('DOMContentLoaded',function(){document.querySelectorAll('[data-nias-picker]').forEach(function(el){try{window.NiasPicker.attach(el,JSON.parse(el.getAttribute('data-nias-picker')));}catch(e){}});});</script>";
+    }
 }
 
 function nias_set_save_button($name)
@@ -793,10 +829,7 @@ function nias_course_render_certificate_settings()
     }
 
     // Build option lists.
-    $product_options = array();
-    foreach (get_posts(array('post_type' => 'product', 'posts_per_page' => -1, 'orderby' => 'title', 'order' => 'ASC')) as $product) {
-        $product_options[$product->ID] = $product->post_title;
-    }
+    // (selected products: searchable picker — no list of every product)
 
     $page_options = array('' => __('انتخاب صفحه', 'nias-course-widget'));
     foreach (get_pages(array('post_status' => 'publish', 'sort_column' => 'post_title', 'sort_order' => 'ASC')) as $page) {
@@ -834,7 +867,7 @@ function nias_course_render_certificate_settings()
                             'category' => __('از دسته‌بندی', 'nias-course-widget'),
                             'none'     => __('هیچکدام', 'nias-course-widget'),
                         ), 'none');
-                        nias_set_multiselect_field('certificate_selected_products', __('محصولات انتخابی', 'nias-course-widget'), $product_options, 'data-nias-show-when="certificate_display_type=selected"');
+                        nias_set_picker_field('certificate_selected_products', __('محصولات انتخابی', 'nias-course-widget'), 'product', 'data-nias-show-when="certificate_display_type=selected"');
                         nias_set_multiselect_field('certificate_selected_categories', __('دسته‌بندی‌های انتخابی', 'nias-course-widget'), $category_options, 'data-nias-show-when="certificate_display_type=category"');
                         ?>
                     </div>
@@ -1051,7 +1084,7 @@ function nias_course_settings_assets($hook)
         return;
     }
     wp_enqueue_media();
-    wp_enqueue_style('nias-admin-css', NIASADMIN_URL . '/adminstyle.css', array(), NIAS_COURSE_VERSION);
+    wp_enqueue_style('nias-admin-css', NIASADMIN_URL . '/adminstyle.css', array(), NIAS_COURSE_VERSION . '.' . (int) @filemtime(__DIR__ . '/adminstyle.css'));
     add_action('admin_footer', 'nias_course_settings_inline_js');
 }
 

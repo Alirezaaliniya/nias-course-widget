@@ -101,6 +101,9 @@ function nias_curriculum_sections_to_js($sections)
                     'private' => !empty($lesson['lesson_private']),
                     'duration' => isset($lesson['lesson_duration']) ? $lesson['lesson_duration'] : '',
                     'content' => isset($lesson['lesson_content']) ? $lesson['lesson_content'] : '',
+                    'quiz'    => isset($lesson['lesson_quiz']) ? (int) $lesson['lesson_quiz'] : 0,
+                    'gate'    => isset($lesson['lesson_gate']) ? (string) $lesson['lesson_gate'] : '',
+                    'gateMin' => isset($lesson['lesson_gate_min']) ? (string) $lesson['lesson_gate_min'] : '',
                 );
             }
         }
@@ -148,12 +151,49 @@ function nias_curriculum_js_to_input($chapters)
                     'lesson_private'       => !empty($lesson['private']) ? 'yes' : '',
                     'lesson_duration'      => isset($lesson['duration']) ? $lesson['duration'] : '',
                     'lesson_content'       => isset($lesson['content']) ? $lesson['content'] : '',
+                    'lesson_quiz'          => isset($lesson['quiz']) ? $lesson['quiz'] : '',
+                    'lesson_gate'          => isset($lesson['gate']) ? $lesson['gate'] : '',
+                    'lesson_gate_min'      => isset($lesson['gateMin']) ? $lesson['gateMin'] : '',
                 );
             }
         }
         $sections[] = $section;
     }
     return $sections;
+}
+
+/**
+ * Labels for the quizzes this course already uses (lesson quiz / gate), so the
+ * editor can show them without loading every quiz of the site. Other quizzes
+ * are found with the searchable picker. false = quiz builder is off.
+ *
+ * @return array|false id => {id,label,sub,pass}
+ */
+function nias_curriculum_quiz_labels($sections)
+{
+    if (!function_exists('nias_quiz_enabled') || !nias_quiz_enabled() || !function_exists('nias_picker_quiz_item')) {
+        return false;
+    }
+    $ids = array();
+    foreach ((array) $sections as $s) {
+        foreach ((array) (isset($s['lessons']) ? $s['lessons'] : array()) as $l) {
+            foreach (array('lesson_quiz', 'lesson_gate') as $k) {
+                $v = isset($l[$k]) ? (string) $l[$k] : '';
+                if ($v !== '' && ctype_digit($v)) {
+                    $ids[(int) $v] = true;
+                }
+            }
+        }
+    }
+    $ids = array_keys($ids);
+    update_meta_cache('post', $ids);
+    $out = array();
+    foreach ($ids as $id) {
+        if (get_post_type($id) === NIAS_QUIZ_CPT) {
+            $out[$id] = nias_picker_quiz_item($id);
+        }
+    }
+    return (object) $out;
 }
 
 /* -------------------------------------------------------------------------
@@ -331,6 +371,9 @@ function nias_curriculum_ajax_save()
 
     $sections = nias_course_sanitize_sections(nias_curriculum_js_to_input($chapters));
     carbon_set_post_meta($product_id, 'course_sections', $sections);
+    if (!defined('NIAS_CS_COMPACT') || !NIAS_CS_COMPACT) {
+        do_action('nias_course_sections_saved', $product_id); // (compact storage fires it itself)
+    }
 
     // Course instructors (when the feature is enabled).
     if (function_exists('nias_instructors_enabled') && nias_instructors_enabled() && isset($_POST['instructors'])) {
@@ -410,6 +453,9 @@ function nias_curriculum_render_page()
         'ajaxUrl'        => admin_url('admin-ajax.php'),
         'nonce'          => wp_create_nonce('nias_curriculum_save_' . $product_id),
         'productEditUrl' => get_edit_post_link($product_id, 'raw'),
+        // Quizzes that can be placed in a lesson / required to open one.
+        'quizLabels'     => nias_curriculum_quiz_labels($sections),
+        'quizBuilderUrl' => admin_url('admin.php?page=nias-course-quiz'),
         'spot'           => array(
             'enabled'      => $spot_enabled,
             'downloadUrl'  => get_post_meta($product_id, '_spotplayer_download_url', true),
@@ -721,6 +767,9 @@ function nias_curriculum_render_page()
         window.NIAS_CUR = <?php echo wp_json_encode($boot); ?>;
     </script>
     <?php
+    if (function_exists('nias_picker_enqueue')) {
+        nias_picker_enqueue(); // searchable quiz fields
+    }
     nias_curriculum_script();
 }
 
@@ -864,6 +913,11 @@ function nias_curriculum_styles()
     .nc-media-embed textarea:focus{border-color:var(--acc);background:#fff}
     .nc-media-clear{flex:0 0 auto;height:38px;padding:0 12px;border:1px solid #f4d4dc;background:#fff;color:#e11d48;border-radius:9px;font-size:12.5px;font-weight:700;cursor:pointer}
 
+    .nc-quizbox{display:flex;flex-direction:column;gap:12px;padding:14px;border:1px solid #e6ecf5;background:#f9fbfe;border-radius:13px}
+    .nc-quizbox-t{font-size:13.5px;font-weight:800;color:#1f2733}
+    .nc-quizbox-s{font-size:12px;color:#94a3b8;margin-top:5px;line-height:1.7}
+    .nc-quiz-badge{background:#eaf3ff;color:#1e6fd0}
+    .nc-gate-badge{background:#f3eefe;color:#7a4fd0}
     .nc-private{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:13px 14px;border:1px solid #eef1f6;background:#f7f9fc;border-radius:13px;cursor:pointer;transition:.15s}
     .nc-private.on{border-color:var(--bord);background:var(--soft)}
     .nc-private-l{display:flex;align-items:center;gap:10px}
@@ -1033,7 +1087,7 @@ function nias_curriculum_script()
                         return {
                             id: uid('l'), title: l.title || '', label: l.label || '',
                             icon: mkMedia(l.icon), video: mkMedia(l.video), file: mkMedia(l.file),
-                            private: !!l.private, duration: l.duration || '', content: l.content || ''
+                            private: !!l.private, duration: l.duration || '', content: l.content || '', quiz: parseInt(l.quiz, 10) || 0, gate: l.gate || '', gateMin: l.gateMin || ''
                         };
                     })
                 };
@@ -1134,6 +1188,8 @@ function nias_curriculum_script()
                     h += '<span class="nc-lesson-ico">' + IC.play + '</span>';
                     h += '<span class="nc-lesson-title" data-title-l="' + ls.id + '">' + esc(ls.title || 'بدون عنوان') + '</span>';
                     if (ls.private) h += '<span class="nc-private-badge">' + IC.lockSm + ' خصوصی</span>';
+                    if (ls.quiz) h += '<span class="nc-private-badge nc-quiz-badge">آزمون</span>';
+                    if (ls.gate) h += '<span class="nc-private-badge nc-gate-badge">' + IC.lockSm + ' پیش‌نیاز</span>';
                     if (ls.label) h += '<span class="nc-lesson-label" data-label-l="' + ls.id + '">' + esc(ls.label) + '</span>';
                     h += '<div class="nc-lesson-actions">';
                     h += '<button type="button" class="nc-icon-btn sm" data-copy-lesson="' + ls.id + '" data-cid="' + ch.id + '" title="کپی درس">' + IC.copy + '</button>';
@@ -1242,6 +1298,53 @@ function nias_curriculum_script()
             footEl.innerHTML = footInner();
         }
 
+        /* ---- lesson quiz + "open after passing" ---- */
+        // Quizzes are picked with a search box (the site may have thousands);
+        // labels of the ones already used come with the page (DATA.quizLabels).
+        var QL = DATA.quizLabels || {};
+        function quizLabel(id) { return QL[id] || { id: +id, label: 'آزمون #' + id, sub: '', pass: 0 }; }
+        function gateMode(ls) { return !ls.gate ? '' : (ls.gate === 'prev' ? 'prev' : 'quiz'); }
+        function gatePh(ls) {
+            var q = (ls.gate && ls.gate !== 'prev') ? QL[ls.gate] : null;
+            return q && q.pass ? 'خالی = حد نصاب آزمون (' + faNum(q.pass) + '٪)' : 'خالی = حد نصاب هر آزمون';
+        }
+        function quizBoxHtml(ls) {
+            if (DATA.quizLabels === false) {
+                return DATA.quizBuilderUrl ? '<div class="nc-quizbox"><div class="nc-quizbox-t">آزمون و پیش‌نیاز</div><div class="nc-quizbox-s">آزمون‌ساز غیرفعال است. <a href="' + esc(DATA.quizBuilderUrl) + '" target="_blank">آزمون‌ساز</a></div></div>' : '';
+            }
+            var mode = gateMode(ls);
+            var h = '<div class="nc-quizbox"><div class="nc-quizbox-t">آزمون و پیش‌نیاز</div>';
+            h += '<div><div class="nc-label">آزمون این جلسه</div><div data-pick-quiz></div>' +
+                 '<div class="nc-quizbox-s">اگر جلسه ویدیو یا محتوا نداشته باشد، آزمون جای پلیر نمایش داده می‌شود؛ در غیر این صورت در تب «آزمون جلسه».</div></div>';
+            h += '<div><div class="nc-label">باز شدن این جلسه</div><select class="nc-input" data-field="lessonGateMode">' +
+                 '<option value=""' + (mode === '' ? ' selected' : '') + '>همیشه باز است</option>' +
+                 '<option value="prev"' + (mode === 'prev' ? ' selected' : '') + '>بعد از قبولی در همهٔ آزمون‌های جلسات قبل</option>' +
+                 '<option value="quiz"' + (mode === 'quiz' ? ' selected' : '') + '>بعد از قبولی در یک آزمون مشخص…</option>' +
+                 '</select><div data-pick-gate style="margin-top:8px' + (mode === 'quiz' ? '' : ';display:none') + '"></div></div>';
+            h += '<div data-gate-min' + (mode ? '' : ' style="display:none"') + '><div class="nc-label">حداقل نمرهٔ لازم (٪)</div><input type="number" min="0" max="100" class="nc-input" data-field="lessonGateMin" value="' + esc(ls.gateMin || '') + '" placeholder="' + esc(gatePh(ls)) + '" data-gate-ph>' +
+                 '<div class="nc-quizbox-s">تا دانشجو به این نمره نرسد، محتوای جلسه اصلاً برایش ارسال نمی‌شود.</div></div>';
+            return h + '</div>';
+        }
+        function attachQuizPickers(ls) {
+            if (!window.NiasPicker || DATA.quizLabels === false) return;
+            var a = fieldsEl.querySelector('[data-pick-quiz]'), g = fieldsEl.querySelector('[data-pick-gate]');
+            window.NiasPicker.attach(a, {
+                source: 'quiz', emptyLabel: 'بدون آزمون', placeholder: 'جستجوی نام آزمون یا شماره…',
+                value: ls.quiz ? [quizLabel(ls.quiz)] : [],
+                onChange: function (v) { QL[v[0] ? v[0].id : 0] = v[0]; ls.quiz = v[0] ? +v[0].id : 0; markDirty(); renderList(); }
+            });
+            window.NiasPicker.attach(g, {
+                source: 'quiz', emptyLabel: 'یک آزمون انتخاب کنید…', placeholder: 'جستجوی نام آزمون یا شماره…', clearable: false,
+                value: (ls.gate && ls.gate !== 'prev') ? [quizLabel(ls.gate)] : [],
+                onChange: function (v) {
+                    if (v[0]) { QL[v[0].id] = v[0]; ls.gate = String(v[0].id); }
+                    var ph = fieldsEl.querySelector('[data-gate-ph]');
+                    if (ph) ph.placeholder = gatePh(ls);
+                    markDirty(); renderList();
+                }
+            });
+        }
+
         function renderLessonEditor() {
             var ch = selChapter();
             var ls = selLesson();
@@ -1255,7 +1358,9 @@ function nias_curriculum_script()
             h += '<div><div class="nc-label">ویدیوی پیش‌نمایش</div>' + mediaHtml('lesson', 'video', ls.video, IC.video, 'لینک، فایل یا کد امبد ویدیو را اضافه کنید', 'افزودن', true) + '</div>';
             h += '<div><div class="nc-label">فایل خصوصی درس</div>' + mediaHtml('lesson', 'file', ls.file, IC.file, 'PDF، تمرین یا فایل پیوست', 'افزودن') + '</div>';
             h += '<div class="nc-private' + (ls.private ? ' on' : '') + '" data-private-toggle><div class="nc-private-l"><span class="nc-lock">' + IC.lock + '</span><div><div class="nc-private-t">درس خصوصی است؟</div><div class="nc-private-s">فقط برای کاربران خریدار نمایش داده می‌شود</div></div></div><span class="nc-switch"><span class="nc-knob"></span></span></div>';
+            h += quizBoxHtml(ls);
             fieldsEl.innerHTML = h;
+            attachQuizPickers(ls);
             contentEl.style.display = '';
             setEditorContent(ls.content || '');
             editorLessonId = ls.id;
@@ -1286,7 +1391,7 @@ function nias_curriculum_script()
         }
         function addLesson(cid) {
             var ch = getChapter(cid); if (!ch) return;
-            var ls = { id: uid('l'), title: I18N.newLesson || 'درس جدید', label: '', icon: mkMedia(), video: mkMedia(), file: mkMedia(), private: false, duration: '', content: '' };
+            var ls = { id: uid('l'), title: I18N.newLesson || 'درس جدید', label: '', icon: mkMedia(), video: mkMedia(), file: mkMedia(), private: false, duration: '', content: '', quiz: 0, gate: '', gateMin: '' };
             ch.expanded = true; ch.lessons.push(ls);
             state.selected = { type: 'lesson', chapterId: cid, lessonId: ls.id };
             markDirty(); renderAll();
@@ -1300,7 +1405,7 @@ function nias_curriculum_script()
                 id: uid('c'), title: src.title + (I18N.copySuffix || ' (کپی)'), subtitle: src.subtitle,
                 icon: cloneMedia(src.icon), expanded: true,
                 lessons: src.lessons.map(function (l) {
-                    return { id: uid('l'), title: l.title, label: l.label, icon: cloneMedia(l.icon), video: cloneMedia(l.video), file: cloneMedia(l.file), private: l.private, duration: l.duration || '', content: l.content };
+                    return { id: uid('l'), title: l.title, label: l.label, icon: cloneMedia(l.icon), video: cloneMedia(l.video), file: cloneMedia(l.file), private: l.private, duration: l.duration || '', content: l.content, quiz: l.quiz || 0, gate: l.gate || '', gateMin: l.gateMin || '' };
                 })
             };
             state.chapters.splice(idx + 1, 0, copy);
@@ -1312,7 +1417,7 @@ function nias_curriculum_script()
             var idx = -1; for (var i = 0; i < ch.lessons.length; i++) if (ch.lessons[i].id === lid) { idx = i; break; }
             if (idx < 0) return;
             var src = ch.lessons[idx];
-            var copy = { id: uid('l'), title: src.title + (I18N.copySuffix || ' (کپی)'), label: src.label, icon: cloneMedia(src.icon), video: cloneMedia(src.video), file: cloneMedia(src.file), private: src.private, duration: src.duration || '', content: src.content };
+            var copy = { id: uid('l'), title: src.title + (I18N.copySuffix || ' (کپی)'), label: src.label, icon: cloneMedia(src.icon), video: cloneMedia(src.video), file: cloneMedia(src.file), private: src.private, duration: src.duration || '', content: src.content, quiz: src.quiz || 0, gate: src.gate || '', gateMin: src.gateMin || '' };
             ch.lessons.splice(idx + 1, 0, copy);
             state.selected = { type: 'lesson', chapterId: cid, lessonId: copy.id };
             markDirty(); renderAll();
@@ -1411,7 +1516,7 @@ function nias_curriculum_script()
                 return {
                     title: c.title, subtitle: c.subtitle, icon: c.icon,
                     lessons: c.lessons.map(function (l) {
-                        return { title: l.title, label: l.label, icon: l.icon, video: l.video, file: l.file, private: l.private, duration: l.duration || '', content: l.content };
+                        return { title: l.title, label: l.label, icon: l.icon, video: l.video, file: l.file, private: l.private, duration: l.duration || '', content: l.content, quiz: l.quiz || 0, gate: l.gate || '', gateMin: l.gateMin || '' };
                     })
                 };
             });
@@ -1594,6 +1699,20 @@ function nias_curriculum_script()
                 else if (field === 'lessonTitle') { var ls = selLesson(); if (ls) { ls.title = val; updateText('[data-title-l="' + ls.id + '"]', val || 'بدون عنوان'); updateText('[data-head-title]', val || 'بدون عنوان', editorEl); } }
                 else if (field === 'lessonLabel') { var ls2 = selLesson(); if (ls2) ls2.label = val; }
                 else if (field === 'lessonDuration') { var ls3 = selLesson(); if (ls3) ls3.duration = val; }
+                else if (field === 'lessonGateMode') {
+                    var ls5 = selLesson();
+                    if (ls5) {
+                        // "a specific quiz" keeps the gate empty until one is picked
+                        ls5.gate = val === 'prev' ? 'prev' : (val === 'quiz' ? (ls5.gate && ls5.gate !== 'prev' ? ls5.gate : '') : '');
+                        var gm = editorEl.querySelector('[data-gate-min]'), gpk = editorEl.querySelector('[data-pick-gate]'), gph = editorEl.querySelector('[data-gate-ph]');
+                        if (gm) gm.style.display = val ? '' : 'none';
+                        if (gpk) gpk.style.display = val === 'quiz' ? '' : 'none';
+                        if (gph) gph.placeholder = gatePh(ls5);
+                        if (val === 'quiz' && !ls5.gate && gpk) { var gi = gpk.querySelector('.npk-box'); if (gi) gi.click(); }
+                        renderList();
+                    }
+                }
+                else if (field === 'lessonGateMin') { var ls6 = selLesson(); if (ls6) ls6.gateMin = val === '' ? '' : String(Math.max(0, Math.min(100, parseInt(val, 10) || 0))); }
                 markDirty();
                 return;
             }
