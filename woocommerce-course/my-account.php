@@ -363,6 +363,10 @@ function nias_course_allowed_html($allowed_tags, $context) {
 }
 
 function nias_handle_video_url($url) {
+    // Direct files and HLS streams play in the Nias/Plyr player (HLS via hls.js).
+    if (function_exists('nias_video_player_html') && preg_match('/\.(mp4|m4v|webm|ogv|mov|m3u8)(\?.*)?$/i', trim((string) $url))) {
+        return nias_video_player_html(trim($url));
+    }
     $video_extensions = array('.mp4', '.webm', '.ogg');
     foreach ($video_extensions as $ext) {
         if (strpos($url, $ext) !== false) {

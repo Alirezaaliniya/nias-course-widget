@@ -196,7 +196,7 @@ function nias_cert_public_record($row)
 add_action('template_redirect', 'nias_cert_verify_no_cache', 1);
 function nias_cert_verify_no_cache()
 {
-    $has_code = isset($_GET['cert_code']) || (isset($_GET['code']) && isset($_GET['user_id']));
+    $has_code = isset($_GET['cert_code']) || isset($_GET[NIAS_CERT_VERIFY_QV]) || (isset($_GET['code']) && isset($_GET['user_id']));
     if (!$has_code) {
         return;
     }
@@ -211,18 +211,72 @@ function nias_cert_verify_no_cache()
 }
 
 /* -------------------------------------------------------------------------
+ * Built-in verification page (?nias_verify=CODE)
+ * ---------------------------------------------------------------------- */
+
+/**
+ * Used by QR codes when no verification/display page is configured, so a
+ * printed certificate can always be checked. Classic themes get their own
+ * header and footer; block themes (no header.php) a clean standalone page.
+ */
+add_action('template_redirect', 'nias_cert_builtin_verify_page', 5);
+function nias_cert_builtin_verify_page()
+{
+    if (!isset($_GET[NIAS_CERT_VERIFY_QV]) || is_admin()) {
+        return;
+    }
+    nias_cert_verify_no_cache();
+    status_header(200);
+    $title = __('استعلام اصالت مدرک', 'nias-course-widget') . ' — ' . get_bloginfo('name');
+    add_filter('pre_get_document_title', function () use ($title) { return $title; });
+
+    $block_theme = function_exists('wp_is_block_theme') && wp_is_block_theme();
+    if (!$block_theme && locate_template('header.php')) {
+        // Render as a normal template, AFTER every plugin's template_redirect
+        // setup (Elementor builds its frontend config there; exiting early
+        // left its header scripts without it).
+        add_filter('template_include', function () {
+            return __DIR__ . '/verify-template.php';
+        }, 99);
+        return;
+    }
+    $body = nias_cert_verify_shortcode(array('param' => NIAS_CERT_VERIFY_QV, 'action' => home_url('/')));
+    ?><!doctype html>
+<html <?php language_attributes(); ?> dir="rtl">
+<head>
+<meta charset="<?php bloginfo('charset'); ?>">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title><?php echo esc_html($title); ?></title>
+<style>body{margin:0;background:#f3f6f9;font-family:Vazirmatn,Tahoma,sans-serif;color:#1f2a30}.nvp-top{text-align:center;padding:26px 16px 0}.nvp-top a{color:#1f2a30;text-decoration:none;font-weight:800;font-size:18px}.nvp-top img{max-height:56px;display:block;margin:0 auto 8px}</style>
+</head>
+<body>
+<div class="nvp-top"><a href="<?php echo esc_url(home_url('/')); ?>"><?php if (has_custom_logo()) { echo wp_get_attachment_image(get_theme_mod('custom_logo'), 'medium'); } ?><?php echo esc_html(get_bloginfo('name')); ?></a></div>
+<?php echo $body; // phpcs:ignore -- escaped inside ?>
+</body>
+</html>
+<?php
+    exit;
+}
+
+/* -------------------------------------------------------------------------
  * Shortcode
  * ---------------------------------------------------------------------- */
 
 function nias_cert_verify_shortcode($atts)
 {
     $atts = shortcode_atts(array(
-        'title' => __('استعلام اصالت مدرک', 'nias-course-widget'),
+        'title'  => __('استعلام اصالت مدرک', 'nias-course-widget'),
+        'param'  => 'cert_code',
+        'action' => '',
     ), $atts, 'nias_certificate_verify');
+    $param = in_array($atts['param'], array('cert_code', NIAS_CERT_VERIFY_QV), true) ? $atts['param'] : 'cert_code';
 
     $code    = '';
     $user_id = 0;
-    if (isset($_GET['cert_code'])) {
+    if (isset($_GET[$param]) && $_GET[$param] !== '1') {
+        $code = sanitize_text_field(wp_unslash($_GET[$param]));
+    } elseif (isset($_GET['cert_code'])) {
         $code = sanitize_text_field(wp_unslash($_GET['cert_code']));
     } elseif (isset($_GET['code'])) {
         $code    = sanitize_text_field(wp_unslash($_GET['code']));
@@ -230,7 +284,7 @@ function nias_cert_verify_shortcode($atts)
     }
 
     $result = $code !== '' ? nias_cert_verify_lookup($code, $user_id) : array('state' => 'empty', 'row' => null);
-    $action = get_permalink() ? get_permalink() : home_url(add_query_arg(array()));
+    $action = $atts['action'] !== '' ? $atts['action'] : (get_permalink() ? get_permalink() : home_url('/'));
 
     ob_start();
     nias_cert_verify_styles();
@@ -245,7 +299,7 @@ function nias_cert_verify_shortcode($atts)
                 </div>
             </div>
             <form class="ncv-form" method="get" action="<?php echo esc_url($action); ?>">
-                <input class="ncv-input" type="text" name="cert_code" dir="ltr" autocomplete="off" autocapitalize="characters" spellcheck="false" required maxlength="64"
+                <input class="ncv-input" type="text" name="<?php echo esc_attr($param); ?>" dir="ltr" autocomplete="off" autocapitalize="characters" spellcheck="false" required maxlength="64"
                        value="<?php echo esc_attr($code); ?>" placeholder="CERT-XXXX-XXXXXXXXXX" aria-label="<?php echo esc_attr__('کد مدرک', 'nias-course-widget'); ?>">
                 <button class="ncv-btn" type="submit"><?php echo esc_html__('استعلام', 'nias-course-widget'); ?></button>
             </form>

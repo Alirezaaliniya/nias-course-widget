@@ -33,7 +33,7 @@ function nias_audio_player_assets()
     $printed = true;
     ?>
     <style>
-    .nias-ap{--nias-ap-accent:#1e83f0;box-sizing:border-box;display:flex;align-items:center;gap:14px;width:100%;max-width:560px;margin:10px 0;padding:12px 14px;border-radius:16px;background:linear-gradient(135deg,#f3f7fb,#e9eef5);border:1px solid #e2e8f0;direction:rtl}
+    .nias-ap{--nias-ap-accent:#1e83f0;box-sizing:border-box;display:flex;align-items:center;gap:14px;width:100%;max-width:none;margin:10px 0;padding:12px 16px;border-radius:16px;background:linear-gradient(135deg,#f3f7fb,#e9eef5);border:1px solid #e2e8f0;direction:ltr}
     .nias-ap *{box-sizing:border-box}
     .nias-ap-btn{width:46px;height:46px;flex:none;border:0;border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;color:#fff;background:var(--nias-ap-accent);box-shadow:0 8px 18px -6px rgba(30,131,240,.7);transition:transform .15s}
     .nias-ap-btn:hover{transform:scale(1.07)}
@@ -43,8 +43,8 @@ function nias_audio_player_assets()
     .nias-ap-bar{flex:1 1 0;min-width:2px;border-radius:99px;background:rgba(30,60,90,.18);transition:background .15s,transform .15s}
     .nias-ap-bar.on{background:var(--nias-ap-accent)}
     .nias-ap-wave:hover .nias-ap-bar{transform:scaleY(1.08)}
-    .nias-ap-time{font-size:12.5px;font-weight:600;color:#5b666c;font-variant-numeric:tabular-nums;direction:ltr;align-self:flex-start}
-    .nias-ap-time .sep{opacity:.5;margin:0 4px}
+    .nias-ap-time{font-size:12.5px;font-weight:600;color:#5b666c;font-variant-numeric:tabular-nums;direction:ltr;display:flex;justify-content:space-between}
+    .nias-ap-time .sep{display:none}
     .nias-ap audio{display:none}
     </style>
     <script>
@@ -152,7 +152,7 @@ function nias_audio_player_html($src, $title = '')
 }
 
 /**
- * Print the Plyr video player assets (CSS + JS) once per request.
+ * Print the Nias video player assets once per request.
  */
 function nias_video_player_assets()
 {
@@ -161,53 +161,41 @@ function nias_video_player_assets()
         return;
     }
     $printed = true;
-    $css_url = plugin_dir_url(NIAS_COURSE . 'nias-course-widget.php') . 'assets/niasplyr.css?v=' . NIAS_COURSE_VERSION;
-    $js_url  = plugin_dir_url(NIAS_COURSE . 'nias-course-widget.php') . 'assets/niasplyrscript.js?v=' . NIAS_COURSE_VERSION;
+    if (function_exists('nias_player_script_tags')) {
+        nias_player_script_tags(); // site-wide player settings + nias-player.js
+    }
     ?>
-    <link rel="stylesheet" href="<?php echo esc_url($css_url); ?>" />
-    <script src="<?php echo esc_url($js_url); ?>"></script>
     <script>
     (function () {
         if (window._NiasVideoInit) { return; }
         window._NiasVideoInit = true;
-        function initPlayers() {
-            document.querySelectorAll('.nias-vp-wrap[data-src]:not([data-plyr-ready])').forEach(function (wrap) {
-                wrap.setAttribute('data-plyr-ready', '1');
-                var src = wrap.getAttribute('data-src');
-                var vid = document.createElement('video');
-                vid.setAttribute('playsinline', '');
-                vid.setAttribute('controls', '');
-                vid.style.width = '100%';
-                vid.style.borderRadius = '12px';
-                var source = document.createElement('source');
-                source.src = src;
-                vid.appendChild(source);
-                wrap.appendChild(vid);
-                if (typeof Plyr !== 'undefined') {
-                    new Plyr(vid, {
-                        controls: ['play-large','play','rewind','fast-forward','progress','current-time','duration','mute','volume','settings','fullscreen'],
-                        settings: ['speed'],
-                        speed: { selected: 1, options: [0.5, 0.75, 1, 1.25, 1.5, 1.75, 2] }
-                    });
-                }
-            });
-        }
+        // Upgrade every .nias-vp-wrap placeholder with the Nias player
+        // (mp4/webm/mov/mkv, HLS, DASH). Content added later (accordions,
+        // AJAX) is picked up too.
+        function initPlayers() { if (window.NiasPlayer) { window.NiasPlayer.scan(document); } }
         if (document.readyState === 'loading') {
             document.addEventListener('DOMContentLoaded', initPlayers);
         } else {
             initPlayers();
         }
+        if (window.MutationObserver) {
+            var t = null;
+            new MutationObserver(function (list) {
+                for (var i = 0; i < list.length; i++) {
+                    if (list[i].addedNodes.length) { clearTimeout(t); t = setTimeout(initPlayers, 120); return; }
+                }
+            }).observe(document.documentElement, { childList: true, subtree: true });
+        }
     })();
     </script>
     <style>
     .nias-vp-wrap { width: 100%; max-width: 720px; margin: 10px 0; border-radius: 12px; overflow: hidden; background: #000; }
-    .nias-vp-wrap .plyr { border-radius: 12px; }
     </style>
     <?php
 }
 
 /**
- * Placeholder markup for one video file, upgraded on the client with Plyr.
+ * Placeholder markup for one video, upgraded on the client with the Nias player.
  *
  * @param string $src   Video file URL.
  * @return string
@@ -264,7 +252,7 @@ function _nias_register_shortcode_overrides()
     // runs; it calls wp_oembed_get() which triggers pre_oembed_result first.
     add_filter('pre_oembed_result', function ($result, $url) {
         if ($result !== null) { return $result; }
-        if (preg_match('/\.(mp4|m4v|webm|ogv|mov)(\?.*)?$/i', $url)) {
+        if (preg_match('/\.(mp4|m4v|webm|ogv|mov|m3u8)(\?.*)?$/i', $url)) {
             return nias_video_player_html($url);
         }
         return $result;
@@ -273,7 +261,7 @@ function _nias_register_shortcode_overrides()
     // Fallback: WP_Embed turns unresolved URLs into plain <a> links via
     // embed_maybe_make_link — catch direct video URLs here too.
     add_filter('embed_maybe_make_link', function ($html, $url) {
-        if (preg_match('/\.(mp4|m4v|webm|ogv|mov)(\?.*)?$/i', $url)) {
+        if (preg_match('/\.(mp4|m4v|webm|ogv|mov|m3u8)(\?.*)?$/i', $url)) {
             return nias_video_player_html($url);
         }
         return $html;
@@ -281,7 +269,7 @@ function _nias_register_shortcode_overrides()
 
     // Also intercept the oembed_result filter (fires after a successful fetch).
     add_filter('oembed_result', function ($html, $url) {
-        if (preg_match('/\.(mp4|m4v|webm|ogv|mov)(\?.*)?$/i', $url)) {
+        if (preg_match('/\.(mp4|m4v|webm|ogv|mov|m3u8)(\?.*)?$/i', $url)) {
             return nias_video_player_html($url);
         }
         return $html;
@@ -322,7 +310,7 @@ function nias_audio_upgrade_html($raw)
         '/\[embed\](.*?)\[\/embed\]/is',
         function ($m) {
             $url = trim(strip_tags($m[1]));
-            if (preg_match('/\.(mp4|m4v|webm|ogv|mov)(\?.*)?$/i', $url)) {
+            if (preg_match('/\.(mp4|m4v|webm|ogv|mov|m3u8)(\?.*)?$/i', $url)) {
                 return nias_video_player_html($url);
             }
             return $m[0]; // non-video embeds (YouTube/Aparat) → leave for WP
@@ -361,7 +349,7 @@ function nias_audio_upgrade_html($raw)
 
     // 4. Bare video URL on its own line
     $raw = preg_replace_callback(
-        '~(^|>|\n)(\s*)(https?://[^\s<"\']+\.(?:mp4|m4v|webm|ogv|mov))(\?[^\s<"\']*)?(\s*)(?=<|\n|$)~i',
+        '~(^|>|\n)(\s*)(https?://[^\s<"\']+\.(?:mp4|m4v|webm|ogv|mov|m3u8))(\?[^\s<"\']*)?(\s*)(?=<|\n|$)~i',
         function ($m) {
             $url = $m[3] . (isset($m[4]) ? $m[4] : '');
             return $m[1] . $m[2] . nias_video_player_html($url) . $m[5];
@@ -380,7 +368,7 @@ function nias_audio_upgrade_html($raw)
 
     // 6. <a href="…video…">…</a> links
     $raw = preg_replace_callback(
-        '~<a\b[^>]*\bhref\s*=\s*["\']([^"\']+\.(?:mp4|m4v|webm|ogv|mov)(?:\?[^"\']*)?)["\'][^>]*>.*?</a>~is',
+        '~<a\b[^>]*\bhref\s*=\s*["\']([^"\']+\.(?:mp4|m4v|webm|ogv|mov|m3u8)(?:\?[^"\']*)?)["\'][^>]*>.*?</a>~is',
         function ($m) { return nias_video_player_html($m[1]); },
         $raw
     );
@@ -397,8 +385,15 @@ function nias_audio_upgrade_html($raw)
     // 8. Already-rendered MediaElement <video> with a <source src="…"> inside
     // (but NOT our own nias-vp-wrap videos).
     $raw = preg_replace_callback(
-        '~<video\b(?![^>]*class="[^"]*nias)[^>]*>\s*<source\b[^>]*\bsrc\s*=\s*["\']([^"\']+\.(?:mp4|m4v|webm|ogv|mov)(?:\?[^"\']*)?)["\'][^>]*/?>.*?</video>~is',
-        function ($m) { return nias_video_player_html($m[1]); },
+        '~<video\b(?![^>]*class="[^"]*nias)[^>]*>.*?</video>~is',
+        function ($m) {
+            // src on the <video> tag itself, or on the first <source> inside.
+            if (preg_match('~<video\b[^>]*\bsrc\s*=\s*["\']([^"\']+)["\']~i', $m[0], $u)
+                || preg_match('~<source\b[^>]*\bsrc\s*=\s*["\']([^"\']+)["\']~i', $m[0], $u)) {
+                return nias_video_player_html(html_entity_decode($u[1], ENT_QUOTES));
+            }
+            return $m[0];
+        },
         $raw
     );
 

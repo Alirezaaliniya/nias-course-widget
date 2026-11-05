@@ -7,7 +7,7 @@ defined('ABSPATH') || exit;
  * A single modal plays a lesson preview triggered by any `.nias-preview-tag` /
  * `.video-lesson-preview` element. It supports three preview kinds:
  *   - embed code : raw <iframe>/<script> snippet on the trigger's data-embed
- *   - direct file: an mp4/webm/… URL → played with Plyr
+ *   - direct file / stream: mp4, webm, mov, mkv, HLS, DASH → the Nias player
  *   - other URL  : an embeddable page (Aparat/YouTube…) → shown in an <iframe>
  *
  * Print it once per request via nias_request_preview_modal(); the Elementor
@@ -39,11 +39,11 @@ add_action('elementor/frontend/after_render', function ($element) {
 function nias_modal_player()
 {
     ?>
-    <div id="videoModal" class="nias-video-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.8);justify-content:center;align-items:center;z-index:99999;">
+    <div id="videoModal" class="nias-video-modal" role="dialog" aria-modal="true" aria-label="<?php echo esc_attr__('پیش‌نمایش درس', 'nias-course-widget'); ?>" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.8);justify-content:center;align-items:center;z-index:99999;">
         <div class="nias-video-modal-inner" style="position:relative;width:92%;max-width:880px;">
             <button id="closeModal" type="button" style="position:relative;top:0;right:0;background:#e11d48;color:#fff;font-size:13px;border:none;cursor:pointer;font-family:inherit;border-radius:8px 8px 0 0;padding:7px 14px;">بستن</button>
             <div id="niasModalStage" class="nias-modal-stage" style="position:relative;width:100%;aspect-ratio:16/9;background:#000;border-radius:0 8px 8px 8px;overflow:hidden;">
-                <video id="modalVideo" class="plyr-video" controls playsinline style="width:100%;height:100%;"></video>
+                <div id="niasModalPlayer" style="position:absolute;inset:0;"></div>
                 <div id="niasModalEmbed" class="nias-modal-embed" style="position:absolute;inset:0;display:none;"></div>
             </div>
         </div>
@@ -56,24 +56,23 @@ function nias_modal_player()
     <?php
 }
 
-// Modal behaviour (Plyr for files, iframe/embed for the rest).
+// Modal behaviour (Nias player for files and streams, iframe/embed for the rest).
 function nias_modal_player_script()
 {
+    if (function_exists('nias_player_script_tags')) {
+        nias_player_script_tags();
+    }
     ?>
-    <link rel="stylesheet" href="<?php echo plugin_dir_url(__DIR__) . 'assets/niasplyr.css?v=', NIAS_COURSE_VERSION; ?>" />
-    <script src="<?php echo plugin_dir_url(__DIR__) . 'assets/niasplyrscript.js?v=', NIAS_COURSE_VERSION; ?>"></script>
     <script>
     jQuery(document).ready(function ($) {
-        var $modal   = $('#videoModal');
-        var $embed   = $('#niasModalEmbed');
-        var videoEl  = document.getElementById('modalVideo');
-        var player   = (typeof Plyr !== 'undefined') ? new Plyr('#modalVideo', {
-            controls: ['play-large','play','rewind','fast-forward','progress','current-time','duration','mute','volume','settings','fullscreen'],
-            settings: ['speed'],
-            speed: { selected: 1, options: [0.5, 0.75, 1, 1.25, 1.5, 1.75, 2] }
-        }) : null;
+        var $modal  = $('#videoModal');
+        var $embed  = $('#niasModalEmbed');
+        var host    = document.getElementById('niasModalPlayer');
+        var player  = null;
 
-        function isVideoFile(url) { return /\.(mp4|m4v|webm|ogg|ogv|mov)(\?.*)?$/i.test(url); }
+        // Direct files (mp4/webm/mov/mkv…) and streams (HLS/DASH) play in the
+        // Nias player; anything else is an embeddable page.
+        function isPlayable(url) { return /\.(mp4|m4v|webm|ogg|ogv|mov|mkv|3gp|m3u8|mpd)(\?.*)?$/i.test(url); }
 
         // Re-create <script> nodes so embed snippets (e.g. Aparat) actually run —
         // scripts injected via innerHTML are inert.
@@ -90,41 +89,34 @@ function nias_modal_player_script()
             }
         }
 
-        // Show/hide the Plyr player (its wrapper element, when present).
-        function showVideo(show) {
-            var c = (player && player.elements && player.elements.container) ? player.elements.container : videoEl;
-            if (c) { c.style.display = show ? '' : 'none'; }
-        }
+        function stopPlayer() { if (player) { player.destroy(); player = null; } host.innerHTML = ''; }
 
         function openModal(opts) {
             $modal.css('display', 'flex');
+            stopPlayer();
             if (opts.embed) {
-                if (player) { player.stop(); }
-                showVideo(false);
                 $embed.show()[0].innerHTML = opts.embed;
                 runScripts($embed[0]);
-            } else if (opts.src && isVideoFile(opts.src) && player) {
+            } else if (opts.src && isPlayable(opts.src) && window.NiasPlayer) {
                 $embed.hide()[0].innerHTML = '';
-                showVideo(true);
-                player.source = { type: 'video', sources: [{ src: opts.src }] };
-                player.play();
+                // A preview: no watch tracking, starts right away.
+                player = window.NiasPlayer.create(host, { src: opts.src, track: false, autoplay: true, config: { resume: 'off', seekLock: 'off' } });
+                setTimeout(function () { if (player) { player.r.focus(); } }, 50);
             } else if (opts.src) {
                 // Embeddable page (Aparat/YouTube/…): show it in an iframe.
-                if (player) { player.stop(); }
-                showVideo(false);
                 $embed.show()[0].innerHTML = '<iframe src="' + opts.src + '" allowfullscreen allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; fullscreen"></iframe>';
             }
         }
 
         function closeModal() {
             $modal.hide();
-            if (player) { player.stop(); }
+            stopPlayer();
             $embed.hide()[0].innerHTML = '';
-            showVideo(true);
         }
 
         $('#closeModal').on('click', closeModal);
         $modal.on('click', function (e) { if (e.target === this) { closeModal(); } });
+        $(document).on('keydown', function (e) { if (e.key === 'Escape' && $modal.is(':visible')) { closeModal(); } });
 
         // Delegated so triggers rendered at any time (including dynamic) work.
         $(document).on('click', '.nias-preview-tag, .video-lesson-preview', function (e) {

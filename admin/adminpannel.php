@@ -332,6 +332,7 @@ function nias_settings_topbar($active)
                 <?php if ($quiz_on) : ?>
                     <a href="<?php echo esc_url($quiz_url); ?>" class="nias-tab <?php echo $active === 'quiz' ? 'active' : ''; ?>"><?php echo esc_html__('آزمون‌ساز', 'nias-course-widget'); ?> <span class="nias-tab-badge"><?php echo esc_html__('فعال', 'nias-course-widget'); ?></span></a>
                 <?php endif; ?>
+                <a href="<?php echo esc_url(admin_url('admin.php?page=nias-course-player')); ?>" class="nias-tab <?php echo $active === 'player' ? 'active' : ''; ?>"><?php echo esc_html__('پلیر ویدیو', 'nias-course-widget'); ?></a>
                 <?php if ($meta_on) : ?>
                     <a href="<?php echo esc_url($meta_url); ?>" class="nias-tab <?php echo $active === 'meta' ? 'active' : ''; ?>"><?php echo esc_html__('متا', 'nias-course-widget'); ?> <span class="nias-tab-badge"><?php echo esc_html__('فعال', 'nias-course-widget'); ?></span></a>
                 <?php endif; ?>
@@ -712,6 +713,14 @@ function nias_course_render_main_settings()
                     ?>
                 <?php nias_set_card_close(); ?>
 
+                <!-- Video player: settings live on their own page -->
+                <div class="nias-card" style="display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;padding:16px 18px">
+                    <div>
+                        <div class="nias-row-title"><?php echo esc_html__('پلیر ویدیو و ردیابی تماشا', 'nias-course-widget'); ?></div>
+                        <div class="nias-row-desc"><?php echo esc_html__('ظاهر، کنترل‌ها، سرعت‌ها، واترمارک، جلوگیری از جلو زدن، درصد تکمیل درس و تنظیمات HLS/DASH با پیش‌نمایش زنده.', 'nias-course-widget'); ?></div>
+                    </div>
+                    <a class="nias-btn-soft" style="text-decoration:none;display:inline-flex" href="<?php echo esc_url(admin_url('admin.php?page=nias-course-player')); ?>"><?php echo esc_html__('تنظیمات پلیر', 'nias-course-widget'); ?></a>
+                </div>
                 <?php nias_set_save_button('nias_save_main_settings'); ?>
             </form>
 
@@ -904,7 +913,7 @@ function nias_course_render_certificate_settings()
                 <!-- Verification card -->
                 <?php nias_set_card_open('<svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M12 3 4 6v6c0 5 3.4 8.4 8 9 4.6-.6 8-4 8-9V6l-8-3Z" stroke="#3858e9" stroke-width="1.8" stroke-linejoin="round"/><path d="m9 12 2 2 4-4" stroke="#3858e9" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>', __('استعلام مدرک', 'nias-course-widget')); ?>
                     <div class="nias-row-block">
-                        <?php nias_set_select_field('certificate_verify_page', __('صفحهٔ استعلام مدرک', 'nias-course-widget'), __('صفحه‌ای که شورت‌کد [nias_certificate_verify] را در آن قرار داده‌اید. با انتخاب آن، QR مدارک جدید به فرم استعلام اشاره می‌کند (لینک‌های QR مدارک قدیمی همچنان کار می‌کنند). اگر خالی بماند، مثل قبل از صفحهٔ نمایش مدرک استفاده می‌شود.', 'nias-course-widget'), $page_options); ?>
+                        <?php nias_set_select_field('certificate_verify_page', __('صفحهٔ استعلام مدرک', 'nias-course-widget'), __('صفحه‌ای که شورت‌کد [nias_certificate_verify] را در آن قرار داده‌اید. با انتخاب آن، QR مدارک جدید به فرم استعلام اشاره می‌کند (لینک‌های QR مدارک قدیمی همچنان کار می‌کنند). اگر خالی بماند، صفحهٔ نمایش مدرک و اگر آن هم انتخاب نشده باشد، صفحهٔ استعلام داخلی افزونه (/?nias_verify=کد) استفاده می‌شود؛ پس QR مدارک هیچ‌وقت به صفحهٔ خطا نمی‌رود.', 'nias-course-widget'), $page_options); ?>
                     </div>
                     <?php nias_set_toggle_row('certificate_verify_mask_name', __('پوشاندن بخشی از نام در نتیجهٔ استعلام', 'nias-course-widget'), __('برای حفظ حریم خصوصی، نام دارنده به شکل «ع***ا م***ی» نمایش داده می‌شود. با روشن بودن این گزینه، دکمهٔ «مشاهدهٔ مدرک (PDF)» در نتیجهٔ استعلام نمایش داده نمی‌شود.', 'nias-course-widget'), 'off'); ?>
                     <div class="nias-row-block nias-row-sep">
@@ -1036,7 +1045,8 @@ function nias_course_settings_assets($hook)
         strpos($hook, 'nias-spotplayer-license') === false &&
         strpos($hook, 'nias-course-instructors') === false &&
         strpos($hook, 'nias-course-quiz') === false &&
-        strpos($hook, 'nias-course-meta') === false
+        strpos($hook, 'nias-course-meta') === false &&
+        strpos($hook, 'nias-course-player') === false
     ) {
         return;
     }

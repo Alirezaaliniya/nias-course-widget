@@ -1,7 +1,12 @@
 {
     "require": {
         "endroid/qr-code": "^4.6",
-        "mpdf/mpdf": "8.1",
-        "setasign/fpdi": "~2.3.0"
+        "mpdf/mpdf": "^8.2",
+        "setasign/fpdi": "^2.6.7"
+    },
+    "config": {
+        "platform": {
+            "php": "7.4.33"
+        }
     }
 }

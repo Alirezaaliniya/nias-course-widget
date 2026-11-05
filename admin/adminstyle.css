@@ -210,9 +210,10 @@ body *:not(#wpadminbar *,i){
 .nias-brand-title { font-size: 17px; font-weight: 800; letter-spacing: -.2px; }
 .nias-brand-sub { font-size: 12px; color: #8a90a6; font-weight: 500; }
 .nias-ver { font-size: 12px; font-weight: 600; color: #3858e9; background: #eef1fe; padding: 6px 12px; border-radius: 999px; }
-.nias-set-tabs-wrap { max-width: 980px; margin: 0 auto; padding: 0 24px; }
-.nias-set-tabs { display: flex; gap: 4px; }
-.nias-tab { padding: 12px 18px 14px; font-size: 14px; font-weight: 700; cursor: pointer; border-bottom: 2.5px solid transparent; color: #8a90a6; text-decoration: none; display: flex; align-items: center; gap: 7px; }
+.nias-set-tabs-wrap { max-width: 1240px; margin: 0 auto; padding: 0 24px; }
+/* Many sections: keep each tab on one line and scroll sideways if needed. */
+.nias-set-tabs { display: flex; gap: 2px; overflow-x: auto; scrollbar-width: thin; }
+.nias-tab { padding: 12px 14px 14px; font-size: 14px; font-weight: 700; cursor: pointer; border-bottom: 2.5px solid transparent; color: #8a90a6; text-decoration: none; display: flex; align-items: center; gap: 7px; white-space: nowrap; flex: none; }
 .nias-tab:hover { color: #3858e9; }
 .nias-tab.active { border-bottom-color: #3858e9; color: #3858e9; }
 .nias-tab-badge { font-size: 10px; font-weight: 700; padding: 2px 7px; border-radius: 999px; background: #eef1fe; color: #3858e9; }

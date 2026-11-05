@@ -8,6 +8,7 @@ class ComposerStaticInit1aa62b11b2fbcfda9fa8ef6dadc4f527
 {
     public static $files = array (
         '6124b4c8570aa390c21fafd04a26c69f' => __DIR__ . '/..' . '/myclabs/deep-copy/src/DeepCopy/deep_copy.php',
+        'db356362850385d08a5381de2638b5fd' => __DIR__ . '/..' . '/mpdf/mpdf/src/functions.php',
     );
 
     public static $prefixLengthsPsr4 = array (
@@ -22,11 +23,9 @@ class ComposerStaticInit1aa62b11b2fbcfda9fa8ef6dadc4f527
         ),
         'M' =>
         array (
+            'Mpdf\\PsrLogAwareTrait\\' => 22,
+            'Mpdf\\PsrHttpMessageShim\\' => 24,
             'Mpdf\\' => 5,
-        ),
-        'H' =>
-        array (
-            'Http\\Message\\' => 13,
         ),
         'E' =>
         array (
@@ -56,13 +55,17 @@ class ComposerStaticInit1aa62b11b2fbcfda9fa8ef6dadc4f527
         array (
             0 => __DIR__ . '/..' . '/psr/http-message/src',
         ),
+        'Mpdf\\PsrLogAwareTrait\\' =>
+        array (
+            0 => __DIR__ . '/..' . '/mpdf/psr-log-aware-trait/src',
+        ),
+        'Mpdf\\PsrHttpMessageShim\\' =>
+        array (
+            0 => __DIR__ . '/..' . '/mpdf/psr-http-message-shim/src',
+        ),
         'Mpdf\\' =>
         array (
             0 => __DIR__ . '/..' . '/mpdf/mpdf/src',
-        ),
-        'Http\\Message\\' =>
-        array (
-            0 => __DIR__ . '/..' . '/php-http/message-factory/src',
         ),
         'Endroid\\QrCode\\' =>
         array (

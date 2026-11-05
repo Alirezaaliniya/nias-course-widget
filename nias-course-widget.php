@@ -4,7 +4,7 @@
  * Plugin Name: Nias course | دوره ساز نیاس
  * Description:   پلاگین دوره ساز نیاس ویجت "دوره ساز نیاس" را به ویرایشگر المنتور شما اضافه میکند که میتوانید دوره مورد نظر خود را درون تمپلیت محصول بسازیدو قالب خود را به یک قالب فروش دوره و فایل تبدیل کنید | این پلاگین بصورت رایگان منتشر شده و رایگان هم خواهد ماند❤️
  * Plugin URI:  https://nias.ir/product/nias-course-widget/
- * Version:     1.5.1
+ * Version:     1.6.0
  * Author:      Alireza aliniya
  * Author URI:  https://nias.ir/
  * Text Domain: nias-course-widget
@@ -16,7 +16,7 @@
 if (! defined('ABSPATH')) {
     exit; // Exit if accessed directly.
 }
-define('NIAS_COURSE_VERSION', '1.5.1');
+define('NIAS_COURSE_VERSION', '1.6.0');
 
 define('NIAS_FUNCTIONS' , plugin_dir_path(__FILE__).'inc/functions.php');
 define('NIAS_COURSE', plugin_dir_path(__FILE__) );
@@ -52,12 +52,14 @@ require(NIAS_COURSE_INC . '/purchases.php');
 
 require(NIAS_WOOCOMMERCE . '/spotplayer-sync.php');
 require(NIAS_COURSE_PANEL . '/adminpannel.php');
+require(NIAS_COURSE_PANEL . '/player-settings.php');
 require(NIAS_WOOCOMMERCE . '/spotplayer-license.php');
 require(NIAS_WOOCOMMERCE . '/function-course.php');
 require(NIAS_WOOCOMMERCE . '/audio-player.php');
 require(NIAS_WOOCOMMERCE . '/curriculum-editor.php');
 require(NIAS_WOOCOMMERCE . '/product-meta.php');
 require(NIAS_WOOCOMMERCE . '/modern-course.php');
+require(NIAS_WOOCOMMERCE . '/watch-tracking.php');
 require(NIAS_WOOCOMMERCE . '/quiz-builder.php');
 require(NIAS_WOOCOMMERCE . '/quiz-frontend.php');
 require(__DIR__ . '/widgets/videomodal.php');

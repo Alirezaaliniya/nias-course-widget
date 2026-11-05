@@ -69,10 +69,47 @@ function nias_modern_course_media_url($media)
     return !empty($media['url']) ? $media['url'] : '';
 }
 
-/** Is this URL a directly-playable video file (vs. an embeddable page)? */
+/** Is this URL a directly-playable video file or HLS stream (vs. an embeddable page)? */
 function nias_modern_course_is_video_file($url)
 {
-    return (bool) preg_match('/\.(mp4|m4v|webm|ogg|ogv|mov)(\?.*)?$/i', (string) $url);
+    return (bool) preg_match('/\.(mp4|m4v|webm|ogg|ogv|mov|m3u8)(\?.*)?$/i', (string) $url);
+}
+
+/**
+ * Whether rendered lesson content shows anything: text, embedded media, or
+ * one of our own player placeholders (which are empty <div>s until the
+ * browser builds the player — the old check missed those, so a lesson whose
+ * video lived in its content was treated as "no content").
+ */
+function nias_modern_course_has_content($html)
+{
+    $html = (string) $html;
+    return trim(wp_strip_all_tags($html)) !== ''
+        || (bool) preg_match('/<(iframe|img|video|audio|embed|source|figure)\b|class="(nias-vp-wrap|nias-ap)"/i', $html);
+}
+
+/**
+ * The first video/audio player in rendered lesson content, and the content
+ * without it. Used when a lesson has no dedicated video or file: its media
+ * then plays in the main player (with progress tracking and resume) and the
+ * rest of the content stays in the description tab — the same layout as a
+ * lesson whose video was set in the video field, for mp4 and HLS alike.
+ *
+ * @param string $html rendered content (after nias_audio_upgrade_html)
+ * @return array{src:string,kind:string,rest:string}|null
+ */
+function nias_modern_course_extract_media($html)
+{
+    if (!preg_match('~<div class="(nias-vp-wrap|nias-ap)" data-src="([^"]+)"[^>]*>\s*</div>~i', (string) $html, $m, PREG_OFFSET_CAPTURE)) {
+        return null;
+    }
+    $rest = substr_replace($html, '', $m[0][1], strlen($m[0][0]));
+    $rest = preg_replace('~<p>\s*(?:&nbsp;|<br\s*/?>|\s)*</p>~i', '', $rest); // paragraph left empty by the removal
+    return array(
+        'src'  => html_entity_decode($m[2][0], ENT_QUOTES),
+        'kind' => strtolower($m[1][0]) === 'nias-ap' ? 'audio' : 'file',
+        'rest' => trim($rest),
+    );
 }
 
 /** Is this URL a directly-playable audio file? */
@@ -106,6 +143,14 @@ function nias_modern_course_render_content($content)
     $content = (string) $content;
     if (trim($content) === '') {
         return '';
+    }
+
+    // The modern view prints the player assets itself: mark the inline ones
+    // as printed BEFORE any shortcode/embed runs — [video]/[audio]/oEmbed
+    // overrides would otherwise echo <script>/<style> while the course data
+    // is being built (in the middle of the page, or into AJAX/REST output).
+    if (function_exists('_nias_suppress_inline_player_assets')) {
+        _nias_suppress_inline_player_assets();
     }
 
     global $wp_embed;
@@ -146,10 +191,14 @@ function _nias_suppress_inline_player_assets()
     static $done = false;
     if ($done) { return; }
     $done = true;
+    // While suppressing, the player's own script printer must not mark itself
+    // as printed (the modern view prints it for real later).
+    $GLOBALS['nias_player_suppress'] = true;
     ob_start();
     if (function_exists('nias_audio_player_assets')) { nias_audio_player_assets(); }
     if (function_exists('nias_video_player_assets'))  { nias_video_player_assets(); }
     ob_end_clean(); // discard the CSS/JS — modern-course loads it globally
+    $GLOBALS['nias_player_suppress'] = false;
 }
 
 /**
@@ -272,14 +321,24 @@ function nias_modern_course_build_data($product_id)
             $has_video    = ($raw_video !== '' || $raw_embed !== '');
             $raw_file     = nias_modern_course_media_url(isset($les['file']) ? $les['file'] : array());
             $raw_content  = nias_modern_course_render_content(isset($les['content']) ? $les['content'] : '');
-            $raw_has_text = (trim(wp_strip_all_tags($raw_content)) !== '' || preg_match('/<(iframe|img|video|audio|embed|source|figure)\b/i', $raw_content));
-            $text_primary = (!$has_video && $raw_file === '' && $raw_has_text);
+            // No video field and no file: a video/audio inside the content
+            // becomes the lesson's medium (it is part of the content, so it
+            // follows the content lock).
+            $promoted = (!$has_video && $raw_file === '') ? nias_modern_course_extract_media($raw_content) : null;
+            if ($promoted) {
+                $raw_content = $promoted['rest'];
+            }
+            $raw_has_text = nias_modern_course_has_content($raw_content);
+            $text_primary = (!$has_video && !$promoted && $raw_file === '' && $raw_has_text);
 
             // Strip the locked parts so they never reach the browser.
             $video_url  = $lock_video   ? '' : $raw_video;
             $embed_code = $lock_video   ? '' : $raw_embed;
             $file_url   = $lock_attach  ? '' : $raw_file;
             $content    = $lock_content ? '' : $raw_content;
+            if ($promoted) {
+                $video_url = $lock_content ? '' : $promoted['src'];
+            }
 
             // The player shows a lock cover when the lesson's PRIMARY medium is
             // locked (video/embed first, then a downloadable file, then text).
@@ -288,6 +347,8 @@ function nias_modern_course_build_data($product_id)
             // generic "no content" message.
             if ($has_video) {
                 $player_locked = $lock_video;
+            } elseif ($promoted) {
+                $player_locked = $lock_content;
             } elseif ($raw_file !== '') {
                 $player_locked = $lock_attach;
             } else {
@@ -306,13 +367,13 @@ function nias_modern_course_build_data($product_id)
                 // a clear private notice instead of an "empty" message.
                 'lockedDesc'   => ($lock_content && !$text_primary && $raw_has_text),
                 'lockedRes'    => ($lock_attach && $raw_file !== ''),
-                'videoKind'    => $embed_code !== '' ? 'embedcode' : ($video_url ? (nias_modern_course_is_audio_file($video_url) ? 'audio' : (nias_modern_course_is_video_file($video_url) ? 'file' : 'embed')) : ''),
+                'videoKind'    => $embed_code !== '' ? 'embedcode' : ($video_url ? ($promoted ? $promoted['kind'] : (nias_modern_course_is_audio_file($video_url) ? 'audio' : (nias_modern_course_is_video_file($video_url) ? 'file' : 'embed'))) : ''),
                 'videoSrc'     => $video_url,
                 'videoEmbed'   => $embed_code,
                 'downloadUrl'  => $file_url,
                 'downloadName' => $file_url ? nias_modern_course_file_name($file_url) : '',
                 'content'      => $content,
-                'hasContent'   => (trim(wp_strip_all_tags($content)) !== '' || preg_match('/<(iframe|img|video|audio|embed|source|figure)\b/i', $content)),
+                'hasContent'   => nias_modern_course_has_content($content),
             );
         }
         $chapters[] = array(
@@ -357,6 +418,9 @@ function nias_modern_course_build_data($product_id)
             'url'   => admin_url('admin-ajax.php'),
             'nonce' => wp_create_nonce('nias_course_progress'),
         ) : null,
+        // Nias player: real watched maps (all devices), completion rule, watermark.
+        'watch'        => ($user && $user->ID && function_exists('nias_watch_for_client')) ? (object) nias_watch_for_client($user->ID, $product_id) : (object) array(),
+        'completePct'  => function_exists('nias_watch_complete_pct') ? nias_watch_complete_pct() : 90,
     );
 }
 
@@ -457,19 +521,18 @@ function nias_modern_course_assets()
     }
     $printed = true;
 
-    // Always load Plyr assets so nias-vp-wrap / nias-ap players inside lesson
-    // content (which lands in the DOM via JS) work without a separate inline print.
+    // Always load the Nias player so nias-vp-wrap / nias-ap players inside
+    // lesson content (which lands in the DOM via JS) work without a separate print.
     $base    = plugin_dir_url(NIAS_COURSE . 'nias-course-widget.php');
     $css_ver = NIAS_COURSE_VERSION;
     ?>
-    <link rel="stylesheet" href="<?php echo esc_url($base . 'assets/niasplyr.css?v=' . $css_ver); ?>" />
-    <script src="<?php echo esc_url($base . 'assets/niasplyrscript.js?v=' . $css_ver); ?>"></script>
+    <?php if (function_exists('nias_player_script_tags')) { nias_player_script_tags(); } ?>
     <style>
-    /* Plyr video wrapper used inside lesson content */
+    .nmc-stage{position:relative}
+    /* Nias player inside lesson content */
     .nias-vp-wrap{width:100%;margin:10px 0;border-radius:12px;overflow:hidden;background:#000}
-    .nias-vp-wrap .plyr{border-radius:12px}
     /* Waveform audio player used inside lesson content */
-    .nias-ap{--nias-ap-accent:#1e83f0;box-sizing:border-box;display:flex;align-items:center;gap:14px;width:100%;max-width:560px;margin:10px 0;padding:12px 14px;border-radius:16px;background:linear-gradient(135deg,#f3f7fb,#e9eef5);border:1px solid #e2e8f0;direction:rtl}
+    .nias-ap{--nias-ap-accent:#1e83f0;box-sizing:border-box;display:flex;align-items:center;gap:14px;width:100%;max-width:none;margin:10px 0;padding:12px 16px;border-radius:16px;background:linear-gradient(135deg,#f3f7fb,#e9eef5);border:1px solid #e2e8f0;direction:ltr}
     .nias-ap *{box-sizing:border-box}
     .nias-ap-btn{width:46px;height:46px;flex:none;border:0;border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;color:#fff;background:var(--nias-ap-accent);box-shadow:0 8px 18px -6px rgba(30,131,240,.7);transition:transform .15s}
     .nias-ap-btn:hover{transform:scale(1.07)}
@@ -479,8 +542,8 @@ function nias_modern_course_assets()
     .nias-ap-bar{flex:1 1 0;min-width:2px;border-radius:99px;background:rgba(30,60,90,.18);transition:background .15s,transform .15s}
     .nias-ap-bar.on{background:var(--nias-ap-accent)}
     .nias-ap-wave:hover .nias-ap-bar{transform:scaleY(1.08)}
-    .nias-ap-time{font-size:12.5px;font-weight:600;color:#5b666c;font-variant-numeric:tabular-nums;direction:ltr;align-self:flex-start}
-    .nias-ap-time .sep{opacity:.5;margin:0 4px}
+    .nias-ap-time{font-size:12.5px;font-weight:600;color:#5b666c;font-variant-numeric:tabular-nums;direction:ltr;display:flex;justify-content:space-between}
+    .nias-ap-time .sep{display:none}
     .nias-ap audio{display:none}
     </style>
     <script>
@@ -530,31 +593,16 @@ function nias_modern_course_assets()
             });
         }
 
-        /* ---- Plyr video ---- */
+        /* ---- Nias player for videos inside the content ---- */
         function buildVideo(wrap) {
-            if (!wrap || wrap.getAttribute('data-plyr-ready') === '1') { return; }
-            var src = wrap.getAttribute('data-src');
-            if (!src) { return; }
-            wrap.setAttribute('data-plyr-ready', '1');
-            var vid = document.createElement('video');
-            vid.setAttribute('playsinline', ''); vid.setAttribute('controls', '');
-            vid.style.width = '100%';
-            var source = document.createElement('source'); source.src = src;
-            vid.appendChild(source); wrap.appendChild(vid);
-            if (typeof Plyr !== 'undefined') {
-                new Plyr(vid, {
-                    controls: ['play-large','play','rewind','fast-forward','progress','current-time','duration','mute','volume','settings','fullscreen'],
-                    settings: ['speed'],
-                    speed: { selected: 1, options: [0.5, 0.75, 1, 1.25, 1.5, 1.75, 2] }
-                });
-            }
+            if (wrap && window.NiasPlayer) { window.NiasPlayer.scan(wrap.parentNode || wrap); }
         }
 
         /* ---- scan a container (or whole document) ---- */
         function scanMedia(root) {
             var r = root || document;
             r.querySelectorAll('.nias-ap[data-src]').forEach(buildAudio);
-            r.querySelectorAll('.nias-vp-wrap[data-src]').forEach(buildVideo);
+            if (window.NiasPlayer) { window.NiasPlayer.scan(r); }
         }
 
         /* expose globally so NiasModernCourse can call it after DOM updates */
@@ -587,7 +635,8 @@ function nias_modern_course_script()
     @keyframes nmc-fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
     .nmc-scroll::-webkit-scrollbar{width:8px;height:8px}
     .nmc-scroll::-webkit-scrollbar-thumb{background:#cdd5da;border-radius:99px}
-    .nmc-wrap{max-width:1180px;margin:0 auto;display:flex;flex-direction:column;gap:22px}
+    .nmc-wrap{max-width:1840px;margin:0 auto;display:flex;flex-direction:column;gap:22px}
+    @media (min-width:1400px){.nmc-layout{grid-template-columns:1fr 400px}}
     .nmc-card{background:#fff;border:1px solid #e9ecef;border-radius:18px;box-shadow:0 6px 22px rgba(31,42,48,.05)}
 
     /* header */
@@ -620,9 +669,6 @@ function nias_modern_course_script()
     .nmc-player{background:#0e1518;border-radius:18px;overflow:hidden;box-shadow:0 14px 40px rgba(14,21,24,.28)}
     .nmc-stage{position:relative;width:100%;aspect-ratio:16/9;background:#0e1518}
     .nmc-stage video,.nmc-stage iframe{width:100%;height:100%;border:0;background:#0e1518}
-    .nmc-stage .plyr{width:100%;height:100%}
-    .nmc-stage .plyr--video{height:100%}
-    .nmc-stage .plyr__video-wrapper{height:100%}
     .nmc-embed{position:absolute;inset:0;width:100%;height:100%;overflow:hidden}
     .nmc-embed iframe{width:100%!important;height:100%!important;border:0}
     .nmc-embed .h_iframe-aparat_embed_frame,.nmc-embed .h_iframe-aparat_embed_frame span{position:static!important;padding:0!important;height:100%!important;display:block}
@@ -637,6 +683,17 @@ function nias_modern_course_script()
     .nmc-cover.dl{background:linear-gradient(135deg,#16232a,#0e1518)}
     .nmc-cover.lock{background:linear-gradient(135deg,#1a262d,#0e1518)}
     .nmc-cover.empty{background:linear-gradient(135deg,#1a262d,#0e1518)}
+    .nmc-player.nmc-player-soft{background:#fff;box-shadow:0 1px 2px rgba(14,21,24,.04),0 8px 24px rgba(14,21,24,.06);border:1px solid #edf0f3}
+    .nmc-stage.nmc-stage-soft{aspect-ratio:auto;background:transparent}
+    .nmc-soon{display:flex;flex-direction:column;align-items:center;text-align:center;gap:10px;padding:38px 24px;direction:rtl}
+    .nmc-soon-ic{width:56px;height:56px;border-radius:16px;display:flex;align-items:center;justify-content:center;background:color-mix(in srgb,var(--nmc-accent,#1e83f0) 12%,#fff);color:var(--nmc-accent,#1e83f0)}
+    .nmc-soon-ic svg{width:26px;height:26px}
+    .nmc-soon-t{font-size:17px;font-weight:700;color:#1f2a30}
+    .nmc-soon-m{font-size:13.5px;color:#7b8790;line-height:1.9;max-width:460px}
+    .nmc-soon-btn{margin-top:6px;display:inline-flex;align-items:center;gap:8px;border:1px solid color-mix(in srgb,var(--nmc-accent,#1e83f0) 30%,#fff);background:color-mix(in srgb,var(--nmc-accent,#1e83f0) 7%,#fff);color:var(--nmc-accent,#1e83f0);font:inherit;font-size:13.5px;font-weight:600;padding:9px 16px;border-radius:11px;cursor:pointer;max-width:100%}
+    .nmc-soon-btn span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+    .nmc-soon-btn svg{width:16px;height:16px;flex:none}
+    .nmc-soon-btn:hover{background:color-mix(in srgb,var(--nmc-accent,#1e83f0) 13%,#fff)}
     .nmc-cover-ic{width:78px;height:78px;border-radius:20px;display:flex;align-items:center;justify-content:center}
     .nmc-cover-ic.dl{background:rgba(72,175,59,.16);color:#5fd14b}
     .nmc-cover-ic.lock{width:72px;height:72px;border-radius:50%;background:rgba(255,255,255,.08);color:#fff}
@@ -653,11 +710,23 @@ function nias_modern_course_script()
     .nmc-audio.playing .nmc-audio-art{animation:nmc-pulse 1.6s ease-in-out infinite}
     @keyframes nmc-pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.06)}}
     .nmc-audio-name{color:#eaf1f6;font-size:15px;font-weight:700;max-width:82%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-    .nmc-audio-wave{display:flex;align-items:center;gap:3px;height:56px;width:min(560px,86%);cursor:pointer;direction:ltr}
+    .nmc-audio-track{display:flex;align-items:center;gap:14px;width:min(640px,92%);direction:ltr}
+    .nmc-audio-wave{display:flex;align-items:center;gap:3px;height:56px;flex:1;min-width:0;cursor:pointer;direction:ltr}
+    .nmc-audio-t{color:#aab6bd;font-size:13px;font-weight:600;font-variant-numeric:tabular-nums;min-width:38px;flex:none}
+    .nmc-audio-t.dur{text-align:right}
+    .nmc-audio-skip,.nmc-audio-rate{width:44px;height:44px;flex:none;border:0;border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;color:#dfe8ee;background:rgba(255,255,255,.08);transition:background .15s;font-family:inherit}
+    .nmc-audio-skip:hover,.nmc-audio-rate:hover{background:rgba(255,255,255,.16)}
+    .nmc-audio-skip svg{width:22px;height:22px}
+    .nmc-audio-rate{width:auto;min-width:44px;padding:0 10px;border-radius:22px;font-size:13px;font-weight:700}
+    .nmc-audio-rate.on{background:var(--nmc-accent,#1e83f0);color:#fff}
+    /* Audio lessons are taller than 16:9 on phones: let the stage grow. */
+    .nmc-stage.is-audio{aspect-ratio:auto;min-height:320px}
+    .nmc-stage.is-audio .nmc-audio{height:auto;min-height:320px}
+    @media (max-width:600px){.nmc-audio{gap:14px;padding:22px 14px}.nmc-audio-art{width:64px;height:64px;border-radius:18px}.nmc-audio-track{width:100%;gap:8px}.nmc-audio-wave{height:44px;gap:2px}.nmc-audio-t{font-size:12px;min-width:32px}.nmc-audio-skip{width:40px;height:40px}}
     .nmc-audio-bar{flex:1 1 0;min-width:2px;border-radius:99px;background:rgba(255,255,255,.16);transition:background .15s,transform .15s}
     .nmc-audio-bar.on{background:var(--nmc-accent,#1e83f0)}
     .nmc-audio-wave:hover .nmc-audio-bar{transform:scaleY(1.06)}
-    .nmc-audio-controls{display:flex;align-items:center;gap:16px}
+    .nmc-audio-controls{display:flex;align-items:center;gap:16px;direction:ltr}
     .nmc-audio-btn{width:56px;height:56px;flex:none;border:0;border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;color:#fff;background:var(--nmc-accent,#1e83f0);box-shadow:0 10px 24px -8px rgba(30,131,240,.8);transition:transform .15s}
     .nmc-audio-btn:hover{transform:scale(1.06)}
     .nmc-audio-time{color:#aab6bd;font-size:14px;font-weight:600;font-variant-numeric:tabular-nums;direction:ltr}
@@ -670,7 +739,14 @@ function nias_modern_course_script()
     .nmc-chip{display:inline-flex;align-items:center;gap:5px;background:#f1f4f6;color:#5b666c;font-size:12px;font-weight:600;padding:4px 10px;border-radius:99px}
     .nmc-chip.muted{background:none;color:#7b868a;padding:0}
     .nmc-info-title{margin:0;font-size:20px;font-weight:700}
-    .nmc-nav{display:flex;align-items:center;gap:9px;flex-wrap:wrap;flex-direction: row-reverse;}
+    .nmc-nav{display:flex;align-items:center;gap:9px;flex-wrap:wrap}
+    .nmc-btn svg{flex:none}
+    @media (max-width:600px){
+      .nmc-info-top{padding:16px}
+      .nmc-nav{display:grid;grid-template-columns:1fr 1fr;width:100%;gap:8px}
+      .nmc-nav .nmc-btn{justify-content:center;padding:11px 10px}
+      .nmc-nav [data-act="complete"]{grid-column:1 / -1;order:-1}
+    }
     .nmc-btn{display:inline-flex;align-items:center;gap:6px;font-family:inherit;font-size:13px;font-weight:600;padding:10px 16px;border-radius:10px;cursor:pointer;border:1px solid #e1e6e9;background:#fff;color:#3a464c}
     .nmc-btn:disabled,.nmc-btn.off{opacity:.45;pointer-events:none}
     .nmc-btn.primary{border:0;background:var(--nmc-accent,#1e83f0);color:#fff;font-weight:700}
@@ -732,6 +808,62 @@ function nias_modern_course_script()
     .nmc-les-pct{font-size:12px;font-weight:600}
     .nmc-les-status{width:34px;flex:none;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700}
     .nmc-les-status .dot{width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center}
+    /* "Continue learning" (curriculum head + mobile sheet) */
+    .nmc-continue{display:flex;align-items:center;gap:10px;width:100%;border:0;cursor:pointer;font-family:inherit;text-align:right;background:color-mix(in srgb,var(--nmc-accent,#1e83f0) 9%,#fff);color:#1f2a30;border-radius:12px;padding:10px 12px;margin-top:10px}
+    .nmc-continue .ic{width:34px;height:34px;flex:none;border-radius:50%;display:flex;align-items:center;justify-content:center;background:var(--nmc-accent,#1e83f0);color:#fff}
+    .nmc-continue .ic svg{width:16px;height:16px}
+    .nmc-continue .tx{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
+    .nmc-continue .tx b{font-size:13px;color:var(--nmc-accent,#1e83f0)}
+    .nmc-continue .tx span{font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    /* Mobile bottom bar + lesson sheet (hidden on desktop) */
+    .nmc-mbar,.nmc-sheet,.nmc-sheet-bg{display:none}
+    @media (max-width:900px){
+      body.nmc-has-mbar{padding-bottom:calc(76px + env(safe-area-inset-bottom))}
+      .nmc-mbar{display:flex;position:fixed;left:0;right:0;bottom:0;z-index:99985;align-items:center;gap:8px;padding:10px 10px calc(10px + env(safe-area-inset-bottom));background:rgba(255,255,255,.97);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);border-top:1px solid #e6eaee;box-shadow:0 -8px 24px rgba(31,42,48,.08);direction:rtl;font-family:inherit}
+      .nmc-mbar button{font-family:inherit;border:0;cursor:pointer;color:#1f2a30}
+      .nmc-mbar-nav{width:48px;height:48px;flex:none;border-radius:14px;background:#f1f4f7;display:flex;align-items:center;justify-content:center}
+      .nmc-mbar-nav svg{width:20px;height:20px}
+      .nmc-mbar-nav:disabled{opacity:.35}
+      .nmc-mbar-main{flex:1;min-width:0;height:48px;border-radius:14px;background:var(--nmc-accent,#1e83f0);color:#fff!important;display:flex;align-items:center;gap:10px;padding:0 14px;text-align:right}
+      .nmc-mbar-main .t{display:flex;flex-direction:column;min-width:0;flex:1;line-height:1.35}
+      .nmc-mbar-main .t b{font-size:13.5px}
+      .nmc-mbar-main .t span{font-size:11.5px;opacity:.9;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+      .nmc-mbar-main svg{width:18px;height:18px;flex:none;transform:rotate(180deg)}
+      .nmc-sheet-bg{display:block;position:fixed;inset:0;z-index:99990;background:rgba(10,16,20,.45);opacity:0;pointer-events:none;transition:opacity .25s}
+      .nmc-sheet{display:flex;flex-direction:column;position:fixed;left:0;right:0;bottom:0;z-index:99991;height:88vh;height:88dvh;background:#fff;border-radius:22px 22px 0 0;box-shadow:0 -12px 40px rgba(10,16,20,.25);transform:translateY(105%);transition:transform .3s cubic-bezier(.2,.8,.2,1);direction:rtl;font-family:inherit;padding-bottom:env(safe-area-inset-bottom)}
+      .nmc-sheet.open{transform:translateY(0)}
+      .nmc-sheet-bg.open{opacity:1;pointer-events:auto}
+      .nmc-sheet-head{padding:8px 16px 12px;border-bottom:1px solid #eef1f4;flex:none;touch-action:none}
+      .nmc-sheet-grip{width:44px;height:5px;border-radius:5px;background:#d6dde2;margin:4px auto 10px}
+      .nmc-sheet-top{display:flex;align-items:center;justify-content:space-between;gap:10px}
+      .nmc-sheet-top h3{margin:0;font-size:17px;font-weight:800;color:#1f2a30}
+      .nmc-sheet-top small{display:block;font-size:12px;color:#7b868a;font-weight:500;margin-top:2px}
+      .nmc-sheet-x{width:40px;height:40px;border:0;border-radius:12px;background:#f1f4f7;cursor:pointer;display:flex;align-items:center;justify-content:center;color:#3a464c;flex:none}
+      .nmc-sheet-search{position:relative;margin-top:12px}
+      .nmc-sheet-search input{width:100%;height:44px;border:1px solid #e1e6e9;border-radius:12px;padding:0 40px 0 12px;font-family:inherit;font-size:14px;background:#fafbfc;box-sizing:border-box;direction:rtl}
+      .nmc-sheet-search input:focus{outline:none;border-color:var(--nmc-accent,#1e83f0);background:#fff}
+      .nmc-sheet-search svg{position:absolute;right:12px;top:12px;width:20px;height:20px;color:#9aa4a9}
+      .nmc-sheet-chips{display:flex;gap:8px;margin-top:10px;overflow-x:auto;scrollbar-width:none}
+      .nmc-sheet-chips button{flex:none;height:34px;padding:0 14px;border-radius:99px;border:1px solid #e1e6e9;background:#fff;font-family:inherit;font-size:13px;font-weight:600;color:#56636a;cursor:pointer}
+      .nmc-sheet-chips button.on{background:var(--nmc-accent,#1e83f0);border-color:var(--nmc-accent,#1e83f0);color:#fff}
+      .nmc-sheet-list{flex:1;overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch}
+      .nmc-sheet-empty{padding:40px 20px;text-align:center;color:#8a979e;font-size:14px}
+      .nmc-sheet .nmc-ch-head{padding:14px 16px}
+      .nmc-mark{background:color-mix(in srgb,var(--nmc-accent,#1e83f0) 18%,#fff);color:inherit;border-radius:3px;padding:0 1px}
+      /* Readable, thumb-friendly rows and no scroll-inside-scroll on phones */
+      .nmc-les{min-height:56px;padding:12px 16px 12px 12px}
+      .nmc-les-title{white-space:normal;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;line-height:1.55}
+      .nmc-les-row1{align-items:flex-start}
+      .nmc-cur-list{overflow:visible!important;max-height:none!important}
+      .nmc-wrap.nmc-has-sheet .nmc-side{display:none}
+      /* Mini player while scrolling the lesson text */
+      .nmc-player.nmc-mini{position:fixed;top:calc(8px + env(safe-area-inset-top));left:8px;width:min(56vw,300px);z-index:99980;border-radius:14px;box-shadow:0 12px 32px rgba(10,16,20,.35);animation:nmc-mini-in .25s ease-out}
+      .nmc-mini-ctl{display:none}
+      .nmc-player.nmc-mini .nmc-mini-ctl{display:flex;position:absolute;top:6px;right:6px;z-index:20;gap:6px}
+      .nmc-mini-ctl button{width:30px;height:30px;border:0;border-radius:50%;background:rgba(0,0,0,.6);color:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0}
+      .nmc-mini-ctl svg{width:16px;height:16px}
+      @keyframes nmc-mini-in{from{opacity:0;transform:translateY(-10px)}to{opacity:1;transform:none}}
+    }
 
     /* certificate */
     .nmc-cert-head{padding:20px 24px;border-bottom:1px solid #eef1f4;display:flex;align-items:center;gap:10px}
@@ -807,8 +939,11 @@ function nias_modern_course_script()
             book: '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5a2 2 0 0 1 2-2h12v16H6a2 2 0 0 0-2 2zM18 3v16"/></svg>',
             award: '<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="6"/><path d="M9 13.5L7 22l5-3 5 3-2-8.5"/></svg>',
             caret: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>',
-            prev: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"/></svg>',
-            next: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg>',
+            // RTL: "previous" points right (back toward the start), "next" points left.
+            prev: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg>',
+            next: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"/></svg>',
+            back15: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/><text x="12" y="15.5" font-size="7.5" font-weight="700" text-anchor="middle" fill="currentColor" stroke="none" font-family="sans-serif">15</text></svg>',
+            fwd15: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-3-6.7L21 8"/><path d="M21 3v5h-5"/><text x="12" y="15.5" font-size="7.5" font-weight="700" text-anchor="middle" fill="currentColor" stroke="none" font-family="sans-serif">15</text></svg>',
             lock: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 11h14v9H5zM8 11V7a4 4 0 0 1 8 0v4"/></svg>',
             lockBig: '<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 11h14v9H5zM8 11V7a4 4 0 0 1 8 0v4"/></svg>',
             fileBig: '<svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8zM14 3v5h5"/></svg>',
@@ -834,10 +969,30 @@ function nias_modern_course_script()
             this.state = {
                 progress: saved.progress || {},
                 times: saved.times || {},
+                watch: {},
                 currentId: saved.currentId || (this.flat[0] && this.flat[0].id) || null,
                 open: saved.open || { 0: true },
                 tab: 'desc'
             };
+            // Watched maps: this browser's ∪ the server's (other devices).
+            var lw = saved.watch || {}, sw = data.watch || {}, st = this.state;
+            Object.keys(lw).concat(Object.keys(sw)).forEach(function (id) {
+                if (st.watch[id]) { return; }
+                st.watch[id] = window.NiasPlayer ? window.NiasPlayer.mergeWatch(lw[id], sw[id]) : (lw[id] || sw[id]);
+                if (!st.times[id] && sw[id] && sw[id].t) { st.times[id] = sw[id].t; }
+            });
+            // Progress from the watch maps too, so a new device or a cleared
+            // browser shows what the server knows (not 0%).
+            var donePct = parseInt(data.completePct, 10) || 90;
+            Object.keys(st.watch).forEach(function (id) {
+                var p = st.watch[id] && +st.watch[id].p;
+                if (p > 0) {
+                    var v = p >= donePct ? 100 : Math.floor(p);
+                    if (!(st.progress[id] >= v)) { st.progress[id] = v; }
+                }
+            });
+            this._dirty = {};
+            this.bindWatchFlush();
             if (!this.flat.some(function (l) { return l.id === this.state.currentId; }, this)) {
                 this.state.currentId = this.flat[0] ? this.flat[0].id : null;
             }
@@ -846,7 +1001,7 @@ function nias_modern_course_script()
         NMC.prototype.load = function () { try { return JSON.parse(localStorage.getItem(this.KEY)) || {}; } catch (e) { return {}; } };
         NMC.prototype.persist = function () {
             var s = this.state;
-            try { localStorage.setItem(this.KEY, JSON.stringify({ progress: s.progress, times: s.times, currentId: s.currentId, open: s.open })); } catch (e) {}
+            try { localStorage.setItem(this.KEY, JSON.stringify({ progress: s.progress, times: s.times, watch: s.watch, currentId: s.currentId, open: s.open })); } catch (e) {}
             this.syncProgress();
         };
         // Debounced push of the overall % to the server (only when it grows).
@@ -869,7 +1024,10 @@ function nias_modern_course_script()
         // ---- derived ----
         NMC.prototype.cur = function () { var id = this.state.currentId; return this.flat.find(function (l) { return l.id === id; }) || this.flat[0]; };
         NMC.prototype.pctOf = function (id) { return Math.min(100, Math.round(this.state.progress[id] || 0)); };
-        NMC.prototype.counted = function () { return this.flat.filter(function (l) { return !l.locked; }); };
+        // Lessons that count toward overall progress: accessible and with
+        // something to watch/read. Empty lessons cannot be completed, so
+        // counting them made 100% (and a progress-based certificate) unreachable.
+        NMC.prototype.counted = function () { return this.flat.filter(function (l) { return !l.locked && this.playerType(l) !== 'empty'; }, this); };
         NMC.prototype.overall = function () { var c = this.counted(); if (!c.length) return 0; var s = c.reduce(function (a, l) { return a + this.pctOf(l.id); }.bind(this), 0); return Math.round(s / c.length); };
         NMC.prototype.threshold = function () { var t = this.d.certificate && this.d.certificate.threshold; t = parseInt(t, 10); return isNaN(t) ? 80 : t; };
         NMC.prototype.playerType = function (l) {
@@ -896,6 +1054,7 @@ function nias_modern_course_script()
             root.style.setProperty('--nmc-accent', this.accent);
             if (part === 'full') { this.buildFull(root); }
             else { this.buildPart(root, part); }
+            if ((part === 'full' || part === 'player') && !this._mobile) { this.setupMobile(part === 'full'); }
             this.renderAll();
         };
 
@@ -954,6 +1113,7 @@ function nias_modern_course_script()
             this.renderInfo();
             this.renderSide();
             this.renderCert();
+            this.renderMobile();
         };
 
         // ---- header ----
@@ -1006,30 +1166,37 @@ function nias_modern_course_script()
             var cur = this.cur(), t = this.playerType(cur), self = this;
             var stage = el('div', { 'class': 'nmc-stage' });
 
+            // One player at a time: destroying it also flushes its watch map.
+            if (this._player) { this._player.destroy(); this._player = null; }
+
             if (t === 'video') {
-                var v = el('video', { playsinline: '', preload: 'metadata', src: cur.videoSrc });
-                this._video = v;
-                stage.appendChild(v);
-                // Wrap with Plyr (full controls + speed)
-                if (typeof Plyr !== 'undefined') {
-                    var plyrInst = new Plyr(v, {
-                        controls: ['play-large','play','rewind','fast-forward','progress','current-time','duration','mute','volume','settings','fullscreen'],
-                        settings: ['speed'],
-                        speed: { selected: 1, options: [0.5, 0.75, 1, 1.25, 1.5, 1.75, 2] }
-                    });
-                    // Use Plyr events so progress/resume still work
-                    plyrInst.on('timeupdate', function (e) { self.onVideoTime({ target: v }); });
-                    plyrInst.on('loadedmetadata', function (e) { self.onVideoLoaded({ target: v }); });
-                    plyrInst.on('ended', function () { self.onVideoEnded(); });
-                } else {
-                    v.addEventListener('timeupdate', function (e) { self.onVideoTime(e); });
-                    v.addEventListener('loadedmetadata', function (e) { self.onVideoLoaded(e); });
-                    v.addEventListener('ended', function () { self.onVideoEnded(); });
-                    v.setAttribute('controls', '');
+                this._video = null;
+                var w = this.state.watch[cur.id], lid = cur.id;
+                // Aspect ratio from the player settings (16:9 by default).
+                var ratio = (window.NIAS_PLAYER_CONFIG && window.NIAS_PLAYER_CONFIG.ratio) || '16:9';
+                if (ratio !== '16:9') { stage.style.aspectRatio = ratio.replace(':', '/'); }
+                // End screen: the next lesson that has something to show.
+                var nidx = this.flat.indexOf(cur), nextL = null;
+                for (var nj = nidx + 1; nj < this.flat.length; nj++) {
+                    var nt = this.playerType(this.flat[nj]);
+                    if (nt !== 'empty' && nt !== 'locked') { nextL = this.flat[nj]; break; }
                 }
+                this._player = window.NiasPlayer.create(stage, {
+                    src: cur.videoSrc,
+                    accent: this.accent,
+                    next: nextL ? { title: nextL.title, go: function () { self.selectLesson(nextL.id, true); } } : null,
+                    autoplay: this._autoplayNext ? true : null,
+                    startAt: this.state.times[cur.id] || 0,
+                    watch: (w && w.m) ? { n: w.n, m: w.m } : null,
+                    downloadUrl: cur.downloadUrl || '',
+                    onProgress: function (info) { self.onWatch(lid, info); },
+                    onEnded: function (info) { self.onWatch(lid, info); }
+                });
+                this._autoplayNext = false;
             } else if (t === 'iframe') {
                 stage.appendChild(el('iframe', { src: cur.videoSrc, allow: 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; fullscreen', allowfullscreen: '' }));
             } else if (t === 'audio') {
+                stage.className = 'nmc-stage is-audio';
                 this.buildAudio(stage, cur);
             } else if (t === 'embedcode') {
                 // Raw embed snippet pasted by the admin (iframe/style/script).
@@ -1057,11 +1224,25 @@ function nias_modern_course_script()
                     '<a class="nmc-cover-btn buy" href="' + esc(this.d.buyUrl) + '">تهیه دوره</a>';
                 stage.appendChild(lk);
             } else {
-                var em = el('div', { 'class': 'nmc-cover empty' });
-                em.innerHTML = '<div class="nmc-cover-ic lock">' + ICON.book + '</div><div class="nmc-cover-t">محتوایی برای این درس ثبت نشده است</div>';
+                // Nothing published for this lesson yet: a compact, light card
+                // (not a big black video frame) that points to the next lesson.
+                stage.className = 'nmc-stage nmc-stage-soft';
+                var idx = this.flat.indexOf(cur), next = null;
+                for (var ni = idx + 1; ni < this.flat.length; ni++) {
+                    if (this.playerType(this.flat[ni]) !== 'empty') { next = this.flat[ni]; break; }
+                }
+                var em = el('div', { 'class': 'nmc-soon' });
+                em.innerHTML =
+                    '<div class="nmc-soon-ic">' + ICON.clock + '</div>' +
+                    '<div class="nmc-soon-t">محتوای این درس به‌زودی منتشر می‌شود</div>' +
+                    '<div class="nmc-soon-m">«' + esc(cur.title || 'این درس') + '» هنوز آماده نشده است؛ پس از انتشار، همین‌جا در دسترس خواهد بود.</div>' +
+                    (next ? '<button type="button" class="nmc-soon-btn" data-act="soon-next"><span>ادامه با «' + esc(next.title) + '»</span>' + ICON.next + '</button>' : '');
                 stage.appendChild(em);
+                var nb = em.querySelector('[data-act="soon-next"]');
+                if (nb) { nb.addEventListener('click', function () { self.selectLesson(next.id); }); }
             }
 
+            host.classList.toggle('nmc-player-soft', t === 'empty');
             host.innerHTML = '';
             host.appendChild(stage);
 
@@ -1071,8 +1252,8 @@ function nias_modern_course_script()
             // Init any nias-vp-wrap / nias-ap players inside the text content.
             if (window.NiasMedia) { window.NiasMedia.scan(stage); }
 
-            // restore saved position for the media element (video or audio)
-            if (t === 'video' || t === 'audio') {
+            // restore saved position for the audio element (video resumes inside NiasPlayer)
+            if (t === 'audio') {
                 var saved = this.state.times[cur.id];
                 if (saved && this._video) { try { this._video.currentTime = saved; } catch (e) {} }
             } else {
@@ -1100,10 +1281,16 @@ function nias_modern_course_script()
             au.innerHTML =
                 '<div class="nmc-audio-art">' + ICON.audioBig + '</div>' +
                 '<div class="nmc-audio-name">' + esc(cur.title) + '</div>' +
-                '<div class="nmc-audio-wave" role="slider" aria-label="نوار پخش صوت">' + bars + '</div>' +
+                // Media controls read left→right (like the video player): the
+                // timeline starts at the current time and ends at the duration.
+                '<div class="nmc-audio-track"><span class="nmc-audio-t cur">۰:۰۰</span>' +
+                    '<div class="nmc-audio-wave" role="slider" aria-label="نوار پخش صوت">' + bars + '</div>' +
+                    '<span class="nmc-audio-t dur">۰:۰۰</span></div>' +
                 '<div class="nmc-audio-controls">' +
+                    '<button type="button" class="nmc-audio-skip" data-act="back" aria-label="۱۵ ثانیه عقب">' + ICON.back15 + '</button>' +
                     '<button type="button" class="nmc-audio-btn" data-act="toggle" aria-label="پخش/توقف">' + ICON.playBig + '</button>' +
-                    '<div class="nmc-audio-time"><span class="cur">۰:۰۰</span><span class="sep">/</span><span class="dur">۰:۰۰</span></div>' +
+                    '<button type="button" class="nmc-audio-skip" data-act="fwd" aria-label="۱۵ ثانیه جلو">' + ICON.fwd15 + '</button>' +
+                    '<button type="button" class="nmc-audio-rate" data-act="rate" aria-label="سرعت پخش">' + fa(1) + '×</button>' +
                 '</div>';
 
             var a = el('audio', { src: cur.videoSrc, preload: 'metadata' });
@@ -1133,16 +1320,24 @@ function nias_modern_course_script()
             }
 
             btn.addEventListener('click', function () { if (a.paused) { a.play(); } else { a.pause(); } });
+            au.querySelector('[data-act="back"]').addEventListener('click', function () { try { a.currentTime = Math.max(0, a.currentTime - 15); } catch (e) {} paint(); });
+            au.querySelector('[data-act="fwd"]').addEventListener('click', function () { if (a.duration) { try { a.currentTime = Math.min(a.duration - 0.1, a.currentTime + 15); } catch (e) {} paint(); } });
+            var rates = [1, 1.25, 1.5, 1.75, 2, 0.75], rateBtn = au.querySelector('[data-act="rate"]');
+            rateBtn.addEventListener('click', function () {
+                var i = (rates.indexOf(a.playbackRate) + 1) % rates.length;
+                a.playbackRate = rates[i];
+                rateBtn.textContent = fa(rates[i]) + '×';
+                rateBtn.classList.toggle('on', rates[i] !== 1);
+            });
             a.addEventListener('play', function () { au.classList.add('playing'); btn.innerHTML = ICON.pauseBig; });
             a.addEventListener('pause', function () { au.classList.remove('playing'); btn.innerHTML = ICON.playBig; });
             a.addEventListener('loadedmetadata', function (e) { durEl.textContent = fmt(a.duration); self.onVideoLoaded(e); paint(); });
             a.addEventListener('timeupdate', function (e) { self.onVideoTime(e); paint(); });
             a.addEventListener('ended', function () { self.onVideoEnded(); paint(); });
             wave.addEventListener('click', function (ev) {
-                var b = ev.target && ev.target.closest ? ev.target.closest('.nmc-audio-bar') : null;
-                if (!b || !a.duration) { return; }
-                var i = parseInt(b.getAttribute('data-i'), 10);
-                try { a.currentTime = (i + 0.5) / NB * a.duration; } catch (e) {}
+                if (!a.duration) { return; }
+                var r = wave.getBoundingClientRect(), f = Math.max(0, Math.min(1, (ev.clientX - r.left) / r.width));
+                try { a.currentTime = f * a.duration; } catch (e) {}
                 paint();
             });
         };
@@ -1223,6 +1418,41 @@ function nias_modern_course_script()
         };
 
         // ---- sidebar ----
+        // One lesson row, shared by the side list and the mobile sheet.
+        NMC.prototype.lessonRow = function (l, query) {
+            var self = this, lp = this.pctOf(l.id), sel = l.id === this.state.currentId, doneL = lp >= 100;
+            var status;
+            if (l.locked) status = '<span class="nmc-les-status"><span class="dot" style="background:#f1f4f6;color:#a9b3b8">' + ICON.lock + '</span></span>';
+            else if (doneL) status = '<span class="nmc-les-status">' + ICON.checkC + '</span>';
+            else status = '<span class="nmc-les-status" style="color:' + (lp > 0 ? this.accent : '#c2cacf') + '">' + fa(lp) + '٪</span>';
+            var pctLbl = l.locked ? 'خصوصی' : (doneL ? 'تکمیل‌شده' : (lp > 0 ? fa(lp) + '٪ مشاهده' : (this.playerType(l) === 'empty' ? 'به‌زودی' : 'شروع نشده')));
+            var pctCol = doneL ? '#48af3b' : (lp > 0 ? this.accent : '#9aa4a9');
+            var title = esc(l.title);
+            if (query) {
+                var i = l.title.toLowerCase().indexOf(query.toLowerCase());
+                if (i > -1) { title = esc(l.title.slice(0, i)) + '<mark class="nmc-mark">' + esc(l.title.slice(i, i + query.length)) + '</mark>' + esc(l.title.slice(i + query.length)); }
+            }
+            return '<button type="button" class="nmc-les ' + (sel ? 'sel' : '') + '" data-lesson="' + esc(l.id) + '">' +
+                '<span class="nmc-les-ic ' + (l.locked ? 'lock' : '') + '">' + self.typeIcon(l) + '</span>' +
+                '<span class="nmc-les-body">' +
+                    '<span class="nmc-les-row1"><span class="nmc-les-title">' + title + '</span><span class="nmc-les-badge">' + esc(l.label || self.typeLabel(l)) + '</span></span>' +
+                    '<span class="nmc-les-row2">' + (l.duration ? '<span class="nmc-les-dur">' + ICON.clock + ' ' + esc(l.duration) + '</span>' : '') + '<span class="nmc-les-pct" style="color:' + pctCol + '">' + pctLbl + '</span></span>' +
+                '</span>' + status +
+            '</button>';
+        };
+        /** First lesson that is accessible, has content and is not finished. */
+        NMC.prototype.nextUnfinished = function () {
+            var self = this;
+            return this.counted().filter(function (l) { return self.pctOf(l.id) < 100; })[0] || null;
+        };
+        NMC.prototype.continueHtml = function () {
+            var n = this.nextUnfinished();
+            if (!n || n.id === this.state.currentId) return '';
+            var started = this.pctOf(n.id) > 0;
+            return '<button type="button" class="nmc-continue" data-continue="' + esc(n.id) + '"><span class="ic">' + ICON.play + '</span>' +
+                '<span class="tx"><b>' + (started ? 'ادامهٔ یادگیری' : 'شروع درس بعدی') + '</b><span>' + esc(n.title) + '</span></span></button>';
+        };
+
         NMC.prototype.renderSide = function () {
             var host = this.regions.curriculum; if (!host) return;
             var d = this.d, self = this;
@@ -1235,7 +1465,8 @@ function nias_modern_course_script()
             };
             var head =
                 '<div class="nmc-cur-head"><h3>سرفصل‌های دوره</h3>' +
-                '<span class="nmc-cur-meta">' + fa(d.chapters.length) + ' فصل · ' + fa(totalLessons) + ' درس</span></div>';
+                '<span class="nmc-cur-meta">' + fa(d.chapters.length) + ' فصل · ' + fa(totalLessons) + ' درس</span></div>' +
+                (function (c) { return c ? '<div style="padding:0 18px 12px">' + c + '</div>' : ''; })(this.continueHtml());
 
             var list = '';
             d.chapters.forEach(function (ch, ci) {
@@ -1247,23 +1478,7 @@ function nias_modern_course_script()
 
                 var lessonsHtml = '';
                 if (open) {
-                    ch.lessons.forEach(function (l) {
-                        var lp = self.pctOf(l.id), sel = l.id === self.state.currentId, doneL = lp >= 100;
-                        var status;
-                        if (l.locked) status = '<span class="nmc-les-status"><span class="dot" style="background:#f1f4f6;color:#a9b3b8">' + ICON.lock + '</span></span>';
-                        else if (doneL) status = '<span class="nmc-les-status">' + ICON.checkC + '</span>';
-                        else status = '<span class="nmc-les-status" style="color:' + (lp > 0 ? self.accent : '#c2cacf') + '">' + fa(lp) + '٪</span>';
-                        var pctLbl = doneL ? 'تکمیل‌شده' : (lp > 0 ? fa(lp) + '٪ مشاهده' : 'شروع نشده');
-                        var pctCol = doneL ? '#48af3b' : (lp > 0 ? self.accent : '#9aa4a9');
-                        lessonsHtml +=
-                            '<button type="button" class="nmc-les ' + (sel ? 'sel' : '') + '" data-lesson="' + esc(l.id) + '">' +
-                                '<span class="nmc-les-ic ' + (l.locked ? 'lock' : '') + '">' + self.typeIcon(l) + '</span>' +
-                                '<span class="nmc-les-body">' +
-                                    '<span class="nmc-les-row1"><span class="nmc-les-title">' + esc(l.title) + '</span><span class="nmc-les-badge">' + esc(l.label || self.typeLabel(l)) + '</span></span>' +
-                                    '<span class="nmc-les-row2">' + (l.duration ? '<span class="nmc-les-dur">' + ICON.clock + ' ' + esc(l.duration) + '</span>' : '') + '<span class="nmc-les-pct" style="color:' + pctCol + '">' + pctLbl + '</span></span>' +
-                                '</span>' + status +
-                            '</button>';
-                    });
+                    ch.lessons.forEach(function (l) { lessonsHtml += self.lessonRow(l); });
                 }
 
                 list +=
@@ -1305,6 +1520,208 @@ function nias_modern_course_script()
                     self.selectLesson(b.getAttribute('data-lesson'));
                 });
             });
+            var cont = host.querySelector('[data-continue]');
+            if (cont) { cont.addEventListener('click', function () { self.selectLesson(cont.getAttribute('data-continue')); }); }
+        };
+
+        // ---- mobile: bottom bar, lesson sheet, mini player ----
+        NMC.prototype.isMobile = function () { return window.matchMedia && window.matchMedia('(max-width: 900px)').matches; };
+
+        NMC.prototype.setupMobile = function (fullView) {
+            var self = this;
+            this._mobile = { query: '', filter: 'all', open: {}, isOpen: false };
+            var wrap = this.regions.player && this.regions.player.closest ? this.regions.player.closest('.nmc-wrap') : null;
+            if (fullView && wrap) { wrap.classList.add('nmc-has-sheet'); }
+            var bar = el('div', { 'class': 'nmc-mbar', role: 'navigation', 'aria-label': 'پیمایش درس‌ها' });
+            bar.style.setProperty('--nmc-accent', this.accent);
+            bar.innerHTML =
+                '<button type="button" class="nmc-mbar-nav" data-m="prev" aria-label="درس قبلی">' + ICON.prev + '</button>' +
+                '<button type="button" class="nmc-mbar-main" data-m="open" aria-haspopup="dialog"><span class="t"><b>سرفصل‌ها</b><span></span></span>' + ICON.caret + '</button>' +
+                '<button type="button" class="nmc-mbar-nav" data-m="next" aria-label="درس بعدی">' + ICON.next + '</button>';
+            var bg = el('div', { 'class': 'nmc-sheet-bg' });
+            var sh = el('div', { 'class': 'nmc-sheet', role: 'dialog', 'aria-modal': 'true', 'aria-label': 'سرفصل‌های دوره' });
+            sh.style.setProperty('--nmc-accent', this.accent);
+            sh.innerHTML =
+                '<div class="nmc-sheet-head">' +
+                    '<div class="nmc-sheet-grip"></div>' +
+                    '<div class="nmc-sheet-top"><div><h3>سرفصل‌های دوره</h3><small></small></div>' +
+                    '<button type="button" class="nmc-sheet-x" data-m="close" aria-label="بستن"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>' +
+                    '<div class="nmc-sheet-cont"></div>' +
+                    '<div class="nmc-sheet-search"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg><input type="search" placeholder="جستجوی درس…" aria-label="جستجوی درس" enterkeyhint="search"></div>' +
+                    '<div class="nmc-sheet-chips">' +
+                        '<button type="button" class="on" data-f="all">همه</button><button type="button" data-f="unseen">دیده‌نشده</button>' +
+                        '<button type="button" data-f="progress">ناتمام</button><button type="button" data-f="done">تکمیل‌شده</button>' +
+                    '</div>' +
+                '</div>' +
+                '<div class="nmc-sheet-list"></div>';
+            document.body.appendChild(bg);
+            document.body.appendChild(sh);
+            document.body.appendChild(bar);
+            document.body.classList.add('nmc-has-mbar');
+            this._mbar = bar; this._sheet = sh; this._sheetBg = bg;
+
+            bar.addEventListener('click', function (e) {
+                var b = e.target.closest('[data-m]'); if (!b) return;
+                var m = b.getAttribute('data-m');
+                if (m === 'open') { self.openSheet(); }
+                else if (m === 'prev') { self.go(-1); }
+                else if (m === 'next') { self.go(1); }
+            });
+            bg.addEventListener('click', function () { self.closeSheet(); });
+            sh.querySelector('[data-m="close"]').addEventListener('click', function () { self.closeSheet(); });
+            var input = sh.querySelector('input');
+            input.addEventListener('input', function () { self._mobile.query = input.value.trim(); self.renderSheet(); });
+            sh.querySelectorAll('[data-f]').forEach(function (c) {
+                c.addEventListener('click', function () {
+                    self._mobile.filter = c.getAttribute('data-f');
+                    sh.querySelectorAll('[data-f]').forEach(function (x) { x.classList.toggle('on', x === c); });
+                    self.renderSheet();
+                });
+            });
+            sh.addEventListener('click', function (e) {
+                var ch = e.target.closest('[data-sch]');
+                if (ch) { var ci = ch.getAttribute('data-sch'); self._mobile.open[ci] = !self._mobile.open[ci]; self.renderSheet(); return; }
+                var l = e.target.closest('[data-lesson],[data-continue]');
+                if (l) { var id = l.getAttribute('data-lesson') || l.getAttribute('data-continue'); self.closeSheet(); self.selectLesson(id); }
+            });
+            // Swipe the header down to close.
+            var head = sh.querySelector('.nmc-sheet-head'), y0 = null, dy = 0;
+            head.addEventListener('touchstart', function (e) { if (e.target.closest('input,button')) return; y0 = e.touches[0].clientY; dy = 0; sh.style.transition = 'none'; }, { passive: true });
+            head.addEventListener('touchmove', function (e) { if (y0 === null) return; dy = Math.max(0, e.touches[0].clientY - y0); sh.style.transform = 'translateY(' + dy + 'px)'; }, { passive: true });
+            head.addEventListener('touchend', function () { if (y0 === null) return; sh.style.transition = ''; sh.style.transform = ''; if (dy > 90) { self.closeSheet(); } y0 = null; });
+            // Phone back button closes the sheet instead of leaving the course.
+            window.addEventListener('popstate', function () { if (self._mobile.isOpen) { self.closeSheet(true); } });
+            document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && self._mobile.isOpen) { self.closeSheet(); } });
+
+            this.setupMiniPlayer();
+            this.renderMobile();
+        };
+
+        NMC.prototype.renderMobile = function () {
+            if (!this._mobile || !this._mbar) return;
+            var cur = this.cur(), idx = this.flat.indexOf(cur);
+            this._mbar.querySelector('.nmc-mbar-main .t span').textContent = 'درس ' + fa(idx + 1) + ' از ' + fa(this.flat.length) + ' · ' + (cur ? cur.title : '');
+            this._mbar.querySelector('[data-m="prev"]').disabled = idx <= 0;
+            this._mbar.querySelector('[data-m="next"]').disabled = idx >= this.flat.length - 1;
+            if (this._mobile.isOpen) { this.renderSheet(); }
+        };
+
+        NMC.prototype.sheetMatch = function (l) {
+            var m = this._mobile, p = this.pctOf(l.id);
+            if (m.query && l.title.toLowerCase().indexOf(m.query.toLowerCase()) < 0) return false;
+            if (m.filter === 'unseen') return p === 0 && !l.locked && this.playerType(l) !== 'empty';
+            if (m.filter === 'progress') return p > 0 && p < 100;
+            if (m.filter === 'done') return p >= 100;
+            return true;
+        };
+
+        NMC.prototype.renderSheet = function () {
+            var self = this, sh = this._sheet, m = this._mobile, searching = !!m.query || m.filter !== 'all';
+            var done = this.counted().filter(function (l) { return self.pctOf(l.id) >= 100; }).length;
+            sh.querySelector('.nmc-sheet-top small').textContent = fa(this.d.chapters.length) + ' فصل · ' + fa(this.flat.length) + ' درس · ' + fa(done) + ' تکمیل‌شده';
+            sh.querySelector('.nmc-sheet-cont').innerHTML = searching ? '' : this.continueHtml();
+            var html = '', any = false;
+            this.d.chapters.forEach(function (ch, ci) {
+                var lessons = self.flat.filter(function (l) { return l.ci === ci && self.sheetMatch(l); });
+                if (!lessons.length) return;
+                any = true;
+                var cnt = self.flat.filter(function (l) { return l.ci === ci && !l.locked && self.playerType(l) !== 'empty'; });
+                var dn = cnt.filter(function (l) { return self.pctOf(l.id) >= 100; }).length;
+                var open = searching || !!m.open[ci];
+                html += '<div class="nmc-ch"><button type="button" class="nmc-ch-head ' + (open ? 'open' : '') + '" data-sch="' + ci + '">' +
+                    '<span class="nmc-ch-num ' + (cnt.length && dn === cnt.length ? 'done' : (open ? 'open' : '')) + '">' + fa(ci + 1) + '</span>' +
+                    '<span class="nmc-ch-body"><span class="nmc-ch-title">' + esc(ch.title) + '</span>' +
+                    '<span class="nmc-ch-prog"><span class="nmc-ch-done">' + fa(dn) + ' از ' + fa(cnt.length) + ' تکمیل‌شده</span></span></span>' +
+                    '<span class="nmc-ch-caret ' + (open ? 'open' : '') + '">' + ICON.caret + '</span></button>' +
+                    (open ? '<div class="nmc-ch-lessons">' + lessons.map(function (l) { return self.lessonRow(l, m.query); }).join('') + '</div>' : '') +
+                '</div>';
+            });
+            sh.querySelector('.nmc-sheet-list').innerHTML = any ? html : '<div class="nmc-sheet-empty">درسی با این مشخصات پیدا نشد.</div>';
+        };
+
+        NMC.prototype.openSheet = function () {
+            var m = this._mobile, cur = this.cur();
+            if (!m || m.isOpen) return;
+            m.isOpen = true;
+            if (cur) { m.open[cur.ci] = true; } // the current chapter opens by itself
+            this.renderSheet();
+            this._sheet.classList.add('open');
+            this._sheetBg.classList.add('open');
+            document.documentElement.style.overflow = 'hidden';
+            try { history.pushState({ nmcSheet: 1 }, ''); } catch (e) {}
+            var list = this._sheet.querySelector('.nmc-sheet-list'), sel = list.querySelector('.nmc-les.sel');
+            if (sel) { list.scrollTop = Math.max(0, sel.offsetTop - list.clientHeight / 2 + sel.offsetHeight / 2); }
+        };
+
+        NMC.prototype.closeSheet = function (fromHistory) {
+            var m = this._mobile;
+            if (!m || !m.isOpen) return;
+            m.isOpen = false;
+            this._sheet.classList.remove('open');
+            this._sheetBg.classList.remove('open');
+            document.documentElement.style.overflow = '';
+            if (!fromHistory && history.state && history.state.nmcSheet) { try { history.back(); } catch (e) {} }
+        };
+
+        /** After choosing a lesson, make sure the player is on screen. */
+        NMC.prototype.revealPlayer = function () {
+            var host = this.regions.player;
+            if (!host || !host.getBoundingClientRect) return;
+            if (this._mini) { this.setMini(false); }
+            var r = host.getBoundingClientRect(), topBar = 70;
+            if (r.top < topBar || r.top > window.innerHeight * 0.5) {
+                window.scrollTo({ top: Math.max(0, r.top + window.pageYOffset - topBar), behavior: 'smooth' });
+            }
+        };
+
+        // Mini player: the video keeps playing in a corner while the
+        // student reads the lesson text below (phones only).
+        NMC.prototype.setupMiniPlayer = function () {
+            var self = this, host = this.regions.player;
+            if (!host || !host.parentNode) return;
+            var spacer = el('div', { 'class': 'nmc-mini-spacer' });
+            spacer.style.display = 'none';
+            host.parentNode.insertBefore(spacer, host);
+            var ctl = el('div', { 'class': 'nmc-mini-ctl' });
+            ctl.innerHTML =
+                '<button type="button" data-mini="up" aria-label="بازگشت به پلیر"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/></svg></button>' +
+                '<button type="button" data-mini="close" aria-label="بستن"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button>';
+            ctl.addEventListener('click', function (e) {
+                var b = e.target.closest('[data-mini]'); if (!b) return;
+                e.stopPropagation();
+                if (b.getAttribute('data-mini') === 'close') { if (self._player) { self._player.pause(); } self._miniOff = true; self.setMini(false); }
+                else { self.revealPlayer(); }
+            });
+            this._miniSpacer = spacer; this._miniCtl = ctl;
+            var tick = false;
+            window.addEventListener('scroll', function () {
+                if (tick) return; tick = true;
+                requestAnimationFrame(function () { tick = false; self.checkMini(); });
+            }, { passive: true });
+        };
+        NMC.prototype.checkMini = function () {
+            var host = this.regions.player;
+            if (!host || !this._miniSpacer) return;
+            var ref = this._mini ? this._miniSpacer : host, r = ref.getBoundingClientRect();
+            var playing = !!(this._player && this._player.playing());
+            if (r.bottom > 40) { this._miniOff = false; } // back at the player: allow next time
+            var want = this.isMobile() && !this._miniOff && (playing || this._mini) && r.bottom < 40;
+            if (want !== !!this._mini) { this.setMini(want); }
+        };
+        NMC.prototype.setMini = function (on) {
+            var host = this.regions.player;
+            if (!host || !this._miniSpacer) return;
+            if (on) {
+                this._miniSpacer.style.height = host.offsetHeight + 'px';
+                this._miniSpacer.style.display = 'block';
+                host.classList.add('nmc-mini');
+                host.appendChild(this._miniCtl);
+            } else {
+                this._miniSpacer.style.display = 'none';
+                host.classList.remove('nmc-mini');
+                if (this._miniCtl.parentNode) { this._miniCtl.parentNode.removeChild(this._miniCtl); }
+            }
+            this._mini = !!on;
         };
 
         // ---- certificate ----
@@ -1352,9 +1769,10 @@ function nias_modern_course_script()
         };
 
         // ---- actions ----
-        NMC.prototype.selectLesson = function (id) {
+        NMC.prototype.selectLesson = function (id, autoplay) {
             var l = this.flat.find(function (x) { return x.id === id; });
             if (!l) return;
+            this._autoplayNext = !!autoplay; // coming from the "next lesson" end screen
             this.state.currentId = id;
             this.state.tab = 'desc';
             this.state.open[l.ci] = true;
@@ -1363,6 +1781,8 @@ function nias_modern_course_script()
             this.renderInfo();
             this.renderSide();
             this.renderHeader();
+            this.renderMobile();
+            this.revealPlayer();
         };
         NMC.prototype.go = function (dir) {
             var idx = this.flat.findIndex(function (l) { return l.id === this.state.currentId; }, this);
@@ -1380,8 +1800,83 @@ function nias_modern_course_script()
             if (pct > this.pctOf(id)) {
                 this.state.progress[id] = pct;
                 this.persist();
-                this.renderHeader(); this.renderSide(); this.renderCert();
+                this.renderHeader(); this.renderSide(); this.renderCert(); this.renderMobile();
             }
+        };
+        // ---- Nias player: real watched share → lesson progress ----
+        NMC.prototype.onWatch = function (id, info) {
+            if (!info || !info.duration) return;
+            this.state.times[id] = info.time;
+            if (info.watch) {
+                this.state.watch[id] = { n: info.watch.n, m: info.watch.m, p: info.watchedPct, d: Math.round(info.duration) };
+                this._dirty[id] = 1;
+            }
+            // A lesson is complete once the student has really watched
+            // completePct% of it — reaching the end by seeking is not enough.
+            var done = parseInt(this.d.completePct, 10) || 90;
+            var pct = info.watchedPct >= done ? 100 : Math.floor(info.watchedPct);
+            if (pct > this.pctOf(id)) { this.bump(id, pct); } else { this.saveLocal(); }
+            this.queueWatchSync();
+        };
+        NMC.prototype.saveLocal = function () {
+            clearTimeout(this._saveT);
+            var self = this;
+            this._saveT = setTimeout(function () {
+                var s = self.state;
+                try { localStorage.setItem(self.KEY, JSON.stringify({ progress: s.progress, times: s.times, watch: s.watch, currentId: s.currentId, open: s.open })); } catch (e) {}
+            }, 800);
+        };
+        NMC.prototype.watchPayload = function () {
+            var ids = Object.keys(this._dirty), st = this.state;
+            if (!ids.length || !this.d.progressSync) return null;
+            var items = ids.map(function (id) {
+                var w = st.watch[id];
+                return w ? { id: id, n: w.n, m: w.m, t: Math.round((st.times[id] || 0) * 10) / 10, d: w.d || 0 } : null;
+            }).filter(Boolean);
+            this._dirty = {};
+            var body = new FormData();
+            body.append('action', 'nias_watch_sync');
+            body.append('nonce', this.d.progressSync.nonce);
+            body.append('product_id', this.d.productId);
+            body.append('items', JSON.stringify(items));
+            return body;
+        };
+        // Batched, throttled upload of changed watch maps: at most one request
+        // every 5 s. (A debounce would never fire while a video keeps playing,
+        // because the player reports progress every 2 s.)
+        NMC.prototype.queueWatchSync = function () {
+            if (!this.d.progressSync || !window.fetch || this._watchT) return;
+            var self = this;
+            this._watchT = setTimeout(function () {
+                self._watchT = null;
+                var body = self.watchPayload();
+                if (!body) return;
+                fetch(self.d.progressSync.url, { method: 'POST', credentials: 'same-origin', body: body })
+                    .then(function (r) { return r.json(); })
+                    .then(function (res) {
+                        // Server copy includes other devices' viewing.
+                        if (res && res.success && res.data && res.data.watch) {
+                            Object.keys(res.data.watch).forEach(function (id) {
+                                self.state.watch[id] = window.NiasPlayer.mergeWatch(self.state.watch[id], res.data.watch[id]);
+                            });
+                        }
+                    }).catch(function () {});
+            }, 5000);
+        };
+        // Leaving the page: flush the live player and send with sendBeacon.
+        NMC.prototype.bindWatchFlush = function () {
+            var self = this;
+            var flush = function () {
+                if (self._player) { self._player.flush(); }
+                clearTimeout(self._watchT);
+                self._watchT = null;
+                var body = self.watchPayload();
+                if (body && navigator.sendBeacon) { navigator.sendBeacon(self.d.progressSync.url, body); }
+                var s = self.state;
+                try { localStorage.setItem(self.KEY, JSON.stringify({ progress: s.progress, times: s.times, watch: s.watch, currentId: s.currentId, open: s.open })); } catch (e) {}
+            };
+            window.addEventListener('pagehide', flush);
+            document.addEventListener('visibilitychange', function () { if (document.hidden) { flush(); } });
         };
         NMC.prototype.onVideoTime = function (e) {
             var v = e.target; if (!v.duration) return;
@@ -1669,7 +2164,7 @@ function nias_modern_course_takeover()
         .nmc-sa-back{display:inline-flex;align-items:center;gap:7px;font-size:14px;font-weight:700;color:#1e83f0;text-decoration:none;background:#eef4fe;border-radius:10px;padding:9px 16px}
         .nmc-sa-back:hover{background:#e0ecfd}
         .nmc-sa-title{font-size:15px;font-weight:800;color:#1f2a30;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-        .nmc-sa-page{max-width:1212px;margin:0 auto}
+        .nmc-sa-page{max-width:1888px;margin:0 auto}
     </style>
 </head>
 <body dir="rtl">

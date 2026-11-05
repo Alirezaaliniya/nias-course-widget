@@ -575,10 +575,26 @@ function nias_cert_backfill($limit = 300)
  */
 function nias_cert_verify_url($code, $user_id = 0)
 {
-    $page_id = (int) nias_cert_setting('certificate_verify_page', 0);
-    $base    = ($page_id && get_post_status($page_id) === 'publish') ? get_permalink($page_id) : get_certificate_display_page_url();
-    $url     = add_query_arg('cert_code', rawurlencode(nias_cert_normalize_code($code)), $base);
+    $code = rawurlencode(nias_cert_normalize_code($code));
+    $base = nias_cert_verify_base_page();
+    // No page configured: the plugin's own built-in verification page, so a
+    // printed QR code never leads to a 404.
+    $url = $base ? add_query_arg('cert_code', $code, $base) : add_query_arg(NIAS_CERT_VERIFY_QV, $code, home_url('/'));
     return apply_filters('nias_certificate_verify_url', $url, $code, $user_id);
+}
+
+define('NIAS_CERT_VERIFY_QV', 'nias_verify');
+
+/** Permalink of the configured verification page (or display page), or ''. */
+function nias_cert_verify_base_page()
+{
+    foreach (array('certificate_verify_page', 'certificate_display_page') as $key) {
+        $id = (int) nias_cert_setting($key, 0);
+        if ($id && get_post_status($id) === 'publish') {
+            return get_permalink($id);
+        }
+    }
+    return '';
 }
 
 /**

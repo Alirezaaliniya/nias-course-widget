@@ -4,15 +4,17 @@ namespace Mpdf\Http;
 
 use Mpdf\Log\Context as LogContext;
 use Mpdf\Mpdf;
+use Mpdf\PsrHttpMessageShim\Response;
+use Mpdf\PsrHttpMessageShim\Stream;
+use Mpdf\PsrLogAwareTrait\PsrLogAwareTrait;
 use Psr\Http\Message\RequestInterface;
 use Psr\Log\LoggerInterface;
 
 class CurlHttpClient implements \Mpdf\Http\ClientInterface, \Psr\Log\LoggerAwareInterface
 {
+	use PsrLogAwareTrait;
 
 	private $mpdf;
-
-	private $logger;
 
 	public function __construct(Mpdf $mpdf, LoggerInterface $logger)
 	{
@@ -90,13 +92,13 @@ class CurlHttpClient implements \Mpdf\Http\ClientInterface, \Psr\Log\LoggerAware
 				throw new \Mpdf\MpdfException($message);
 			}
 
-			curl_close($ch);
+			$this->closeCurl($ch);
 
 			return $response;
 		}
 
 		$info = curl_getinfo($ch);
-		if (isset($info['http_code']) && $info['http_code'] !== 200) {
+		if (isset($info['http_code']) && !str_starts_with((string) $info['http_code'], '2')) {
 			$message = sprintf('HTTP error: %d', $info['http_code']);
 			$this->logger->error($message, ['context' => LogContext::REMOTE_CONTENT]);
 
@@ -104,21 +106,22 @@ class CurlHttpClient implements \Mpdf\Http\ClientInterface, \Psr\Log\LoggerAware
 				throw new \Mpdf\MpdfException($message);
 			}
 
-			curl_close($ch);
+			$this->closeCurl($ch);
 
 			return $response->withStatus($info['http_code']);
 		}
 
-		curl_close($ch);
+		$this->closeCurl($ch);
 
 		return $response
 			->withStatus($info['http_code'])
 			->withBody(Stream::create($data));
 	}
 
-	public function setLogger(LoggerInterface $logger)
+	private function closeCurl($ch)
 	{
-		$this->logger = $logger;
+		if (PHP_VERSION_ID < 80000) {
+			curl_close($ch);
+		}
 	}
-
 }
