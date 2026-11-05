@@ -543,19 +543,87 @@ function nias_set_save_button($name)
  * To manage the promo cards, edit the $ads array below — each item has:
  * badge, title, desc, cta (button text), url, accent (hex color) and icon (SVG).
  */
+/**
+ * The Nias Login promo, shared by the settings sidebar and the dashboard widget.
+ * "desc" may contain <b> for the highlighted features.
+ */
+function nias_login_promo()
+{
+    return array(
+        'badge'    => __('پیشنهاد ویژه', 'nias-course-widget'),
+        'title'    => __('نیاس لاگین؛ بهینه‌ترین افزونه ورود و ثبت‌نام', 'nias-course-widget'),
+        'desc'     => __('<b>ثبت‌نام و ورود با موبایل، ایمیل و حساب گوگل</b>، <b>ارسال پیامک سفارش‌های ووکامرس</b>، <b>پشتیبانی از ارسال لایسنس اسپات پلیر</b> و ده‌ها امکان کاربردی دیگر برای بهتر شدن تجربهٔ کاربری و <b>افزایش فروش</b>؛ سبک، سازگار با ووکامرس و بهینه برای سرعت سایت.', 'nias-course-widget'),
+        'features' => array(
+            __('ثبت‌نام و ورود با موبایل، ایمیل و حساب گوگل', 'nias-course-widget'),
+            __('ارسال پیامک وضعیت سفارش‌های ووکامرس', 'nias-course-widget'),
+            __('پشتیبانی از ارسال لایسنس اسپات پلیر', 'nias-course-widget'),
+            __('ده‌ها امکان کاربردی برای تجربهٔ کاربری بهتر و افزایش فروش', 'nias-course-widget'),
+        ),
+        'cta'      => __('مشاهده افزونه', 'nias-course-widget'),
+        'url'      => 'https://nias.ir/product/nias-login-signup/',
+        'accent'   => '#16a34a',
+        'icon'     => '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-8.5 8.5 8.5 8.5 0 0 1-3.8-.9L3 21l1.9-5.7A8.5 8.5 0 1 1 21 11.5Z"/><path d="M8 11h.01M12 11h.01M16 11h.01"/></svg>',
+    );
+}
+
+/* WordPress dashboard (پیشخوان) widget for Nias Login — admins only, placed first. */
+add_action('wp_dashboard_setup', 'nias_login_dashboard_widget');
+function nias_login_dashboard_widget()
+{
+    if (!current_user_can('manage_options') || !apply_filters('nias_login_dashboard_widget', true)) {
+        return;
+    }
+    wp_add_dashboard_widget('nias_login_promo', __('پیشنهاد نیاس: افزونه نیاس لاگین', 'nias-course-widget'), 'nias_login_dashboard_widget_render');
+}
+// Move it to the top of the main column after other plugins added theirs
+// (a user who drags boxes around keeps their own order; it can be hidden from «تنظیمات صفحه»).
+add_action('wp_dashboard_setup', 'nias_login_dashboard_widget_first', 999);
+function nias_login_dashboard_widget_first()
+{
+    global $wp_meta_boxes;
+    if (isset($wp_meta_boxes['dashboard']['normal']['core']['nias_login_promo'])) {
+        $box = array('nias_login_promo' => $wp_meta_boxes['dashboard']['normal']['core']['nias_login_promo']);
+        $wp_meta_boxes['dashboard']['normal']['core'] = $box + $wp_meta_boxes['dashboard']['normal']['core'];
+    }
+}
+
+function nias_login_dashboard_widget_render()
+{
+    $p = nias_login_promo();
+    $check = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 13l4 4L19 7"/></svg>';
+    ?>
+    <div class="nlp" dir="rtl">
+        <style>
+        .nlp{font-family:inherit}
+        .nlp-top{display:flex;align-items:center;gap:12px;margin-bottom:12px}
+        .nlp-ic{width:44px;height:44px;flex:none;border-radius:13px;background:linear-gradient(135deg,#22c55e,#15803d);display:flex;align-items:center;justify-content:center;box-shadow:0 8px 18px -8px rgba(22,163,74,.8)}
+        .nlp-t{font-size:15px;font-weight:800;color:#1d2327;line-height:1.6}
+        .nlp-badge{display:inline-block;font-size:11px;font-weight:700;color:#15803d;background:#dcfce7;border-radius:99px;padding:1px 9px;margin-bottom:3px}
+        .nlp ul{margin:0 0 14px;padding:0;list-style:none}
+        .nlp li{display:flex;align-items:flex-start;gap:8px;margin:0 0 8px;font-size:13.5px;line-height:1.7;color:#2c3338}
+        .nlp li svg{flex:none;margin-top:3px}
+        .nlp li b{font-weight:700}
+        .nlp-cta{display:inline-flex;align-items:center;gap:6px;background:#16a34a;color:#fff!important;text-decoration:none!important;font-weight:700;font-size:13.5px;padding:9px 18px;border-radius:10px}
+        .nlp-cta:hover{background:#15803d}
+        </style>
+        <div class="nlp-top">
+            <span class="nlp-ic"><?php echo $p['icon']; // phpcs:ignore -- static SVG ?></span>
+            <div><span class="nlp-badge"><?php echo esc_html($p['badge']); ?></span><div class="nlp-t"><?php echo esc_html($p['title']); ?></div></div>
+        </div>
+        <ul>
+            <?php foreach ($p['features'] as $i => $f) : ?>
+                <li><?php echo $check; // phpcs:ignore -- static SVG ?><span><?php echo $i < 3 ? '<b>' . esc_html($f) . '</b>' : esc_html($f); ?></span></li>
+            <?php endforeach; ?>
+        </ul>
+        <a class="nlp-cta" href="<?php echo esc_url($p['url']); ?>" target="_blank" rel="noopener"><?php echo esc_html($p['cta']); ?>
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"/></svg></a>
+    </div>
+    <?php
+}
+
 function nias_settings_ads_sidebar()
 {
-    $ads = array(
-        array(
-            'badge'  => __('پیشنهاد ویژه', 'nias-course-widget'),
-            'title'  => __('بهینه‌ترین افزونه ورود و ثبت‌نام پیامکی', 'nias-course-widget'),
-            'desc'   => __('ورود و عضویت سریع کاربران با پیامک؛ سبک، سازگار با ووکامرس و بهینه برای سرعت سایت.', 'nias-course-widget'),
-            'cta'    => __('مشاهده افزونه', 'nias-course-widget'),
-            'url'    => 'https://nias.ir/product/nias-login-signup/',
-            'accent' => '#16a34a',
-            'icon'   => '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-8.5 8.5 8.5 8.5 0 0 1-3.8-.9L3 21l1.9-5.7A8.5 8.5 0 1 1 21 11.5Z"/><path d="M8 11h.01M12 11h.01M16 11h.01"/></svg>',
-        ),
-    );
+    $ads = array(nias_login_promo());
 
     /** Allow other code to add/replace promo cards. */
     if (function_exists('apply_filters')) {
@@ -576,7 +644,7 @@ function nias_settings_ads_sidebar()
                 <?php if (!empty($ad['badge'])) : ?><span class="nias-ad-badge"><?php echo esc_html($ad['badge']); ?></span><?php endif; ?>
                 <?php if (!empty($ad['icon'])) : ?><span class="nias-ad-ic"><?php echo $ad['icon']; ?></span><?php endif; ?>
                 <span class="nias-ad-title"><?php echo esc_html(isset($ad['title']) ? $ad['title'] : ''); ?></span>
-                <?php if (!empty($ad['desc'])) : ?><span class="nias-ad-desc"><?php echo esc_html($ad['desc']); ?></span><?php endif; ?>
+                <?php if (!empty($ad['desc'])) : ?><span class="nias-ad-desc"><?php echo wp_kses($ad['desc'], array('b' => array(), 'strong' => array())); ?></span><?php endif; ?>
                 <?php if (!empty($ad['cta'])) : ?>
                     <span class="nias-ad-cta"><?php echo esc_html($ad['cta']); ?>
                         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"/></svg>
