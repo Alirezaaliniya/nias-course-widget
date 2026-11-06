@@ -15,6 +15,13 @@ function nias_modules_fields()
     return array(
         'nias_drip_enabled' => 'radio',
         'nias_drip_email'   => 'radio',
+        'nias_dev_enabled'     => 'radio',
+        'nias_dev_max'         => 'number',
+        'nias_dev_mode'        => 'radio',
+        'nias_dev_single'      => 'radio',
+        'nias_dev_exempt_inst' => 'radio',
+        'nias_dev_self'        => 'radio',
+        'nias_dev_removals'    => 'number',
     );
 }
 
@@ -26,7 +33,6 @@ add_action('admin_menu', function () {
 function nias_modules_upcoming()
 {
     return array(
-        __('محدودیت دستگاه و ورود همزمان', 'nias-course-widget'),
         __('بستن دسترسی مستقیم به فایل‌ها', 'nias-course-widget'),
         __('دسترسی زمان‌دار و تمدید', 'nias-course-widget'),
         __('یادآوری به دانشجوی غیرفعال', 'nias-course-widget'),
@@ -82,6 +88,35 @@ function nias_modules_page()
                         'data-nias-show-when="nias_drip_enabled=on"'
                     );
                     ?>
+                <?php nias_set_card_close(); ?>
+
+                <?php nias_set_card_open('<svg width="20" height="20" viewBox="0 0 24 24" fill="none"><rect x="6" y="2" width="12" height="20" rx="3" stroke="#3858e9" stroke-width="1.8"/><path d="M11 18h2" stroke="#3858e9" stroke-width="1.8" stroke-linecap="round"/></svg>', __('محدودیت دستگاه و ورود همزمان', 'nias-course-widget')); ?>
+                    <?php
+                    nias_set_toggle_row(
+                        'nias_dev_enabled',
+                        __('فعال‌سازی محدودیت دستگاه', 'nias-course-widget'),
+                        __('جلوی استفادهٔ چند نفر از یک حساب را می‌گیرد. هر مرورگر یک دستگاه حساب می‌شود و حساب فقط روی تعداد مشخصی دستگاه فعال می‌ماند. با همهٔ روش‌های ورود کار می‌کند (ورود پیامکی و گوگلِ نیاس لاگین، ووکامرس و فرم وردپرس). مدیران و مدیران فروشگاه هیچ‌وقت محدود نمی‌شوند.', 'nias-course-widget'),
+                        'off',
+                        __('جدید', 'nias-course-widget')
+                    );
+                    ?>
+                    <div data-nias-show-when="nias_dev_enabled=on">
+                        <div class="nias-row" style="display:flex;flex-wrap:wrap;gap:18px;align-items:flex-start">
+                            <?php nias_set_number_field('nias_dev_max', __('حداکثر تعداد دستگاه', 'nias-course-widget'), __('برای هر کاربر (۱ تا ۲۰).', 'nias-course-widget'), 2, 20); ?>
+                            <div class="nias-field"><label class="nias-flabel"><?php echo esc_html__('وقتی ظرفیت پر است و از دستگاه جدیدی وارد می‌شود', 'nias-course-widget'); ?></label>
+                                <?php nias_set_segmented('nias_dev_mode', array('block' => __('ورود رد شود', 'nias-course-widget'), 'oldest' => __('قدیمی‌ترین دستگاه خارج شود', 'nias-course-widget')), 'block'); ?>
+                                <div class="nias-fdesc" style="margin-top:6px"><?php echo esc_html__('«ورود رد شود»: کاربر پیام می‌بیند که باید از دستگاه‌های قبلی یکی را حذف کند. «قدیمی‌ترین خارج شود»: دستگاهی که مدت بیشتری استفاده نشده خودکار حذف می‌شود.', 'nias-course-widget'); ?></div>
+                            </div>
+                        </div>
+                        <?php
+                        nias_set_toggle_row('nias_dev_single', __('ورود همزمان مجاز نیست', 'nias-course-widget'), __('در هر لحظه فقط یک دستگاه فعال است: با فعالیت روی یک دستگاه، حساب روی دستگاه‌های دیگر خارج می‌شود (دستگاه‌ها در فهرست می‌مانند).', 'nias-course-widget'), 'off');
+                        nias_set_toggle_row('nias_dev_exempt_inst', __('مدرسین محدود نشوند', 'nias-course-widget'), __('مدرس‌ها (که معمولاً از چند دستگاه کار می‌کنند) شامل محدودیت نمی‌شوند.', 'nias-course-widget'), 'on');
+                        nias_set_toggle_row('nias_dev_self', __('حذف دستگاه توسط خود کاربر', 'nias-course-widget'), __('تب «دستگاه‌های من» در حساب کاربری (یا شورت‌کد [nias_my_devices]) که کاربر دستگاه‌هایش را می‌بیند و می‌تواند یکی را حذف کند. مدیر همیشه از صفحهٔ ویرایش کاربر (بخش «دستگاه‌های کاربر») می‌تواند دستگاه‌ها را ببیند و حذف کند.', 'nias-course-widget'), 'on');
+                        ?>
+                        <div class="nias-row" data-nias-show-when="nias_dev_self=on">
+                            <?php nias_set_number_field('nias_dev_removals', __('حداکثر حذف در هر ۳۰ روز', 'nias-course-widget'), __('۰ = بدون محدودیت. محدود کردنش جلوی دست‌به‌دست کردن حساب با حذف و ورود پشت‌سرهم را می‌گیرد.', 'nias-course-widget'), 2, 50); ?>
+                        </div>
+                    </div>
                 <?php nias_set_card_close(); ?>
                 <?php nias_set_save_button('nias_save_modules'); ?>
             </form>
