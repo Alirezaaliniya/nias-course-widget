@@ -284,13 +284,28 @@ function nias_inst_notify_admin($post_id, $user_id, $kind)
         admin_url('admin.php?page=nias-course-approvals')));
 }
 
-function nias_inst_notify_instructor($user_id, $post_id, $approved, $note)
+function nias_inst_notify_instructor($user_id, $post_id, $approved, $note, $kind = 'changes')
 {
     $u = get_userdata($user_id);
     if (!$u || !$u->user_email || !apply_filters('nias_inst_approval_email', true, $post_id, $approved ? 'approved' : 'rejected')) {
         return;
     }
     $title = get_the_title($post_id);
+    if ($kind === 'new') {
+        wp_mail($u->user_email,
+            $approved ? sprintf(__('دورهٔ «%s» منتشر شد', 'nias-course-widget'), $title) : sprintf(__('دورهٔ «%s» منتشر نشد', 'nias-course-widget'), $title),
+            sprintf(__("%1\$s عزیز،
+
+%2\$s%3\$s
+
+%4\$s", 'nias-course-widget'), $u->display_name,
+                $approved ? sprintf(__('مدیر سایت دورهٔ «%1$s» را بررسی و منتشر کرد: %2$s', 'nias-course-widget'), $title, get_permalink($post_id)) : sprintf(__('مدیر سایت دورهٔ «%s» را برای انتشار تأیید نکرد و به پیش‌نویس برگرداند.', 'nias-course-widget'), $title),
+                $note !== '' ? "
+
+" . __('یادداشت مدیر:', 'nias-course-widget') . "
+" . $note : '', get_bloginfo('name')));
+        return;
+    }
     wp_mail($u->user_email,
         $approved ? sprintf(__('تغییرات دورهٔ «%s» تأیید شد', 'nias-course-widget'), $title) : sprintf(__('تغییرات دورهٔ «%s» تأیید نشد', 'nias-course-widget'), $title),
         sprintf(__("%1\$s عزیز،\n\n%2\$s%3\$s\n\n%4\$s", 'nias-course-widget'), $u->display_name,
@@ -421,10 +436,10 @@ add_action('admin_post_nias_inst_review', function () {
         nias_inst_notify_instructor($by, $pid, false, $note);
     } elseif ($op === 'publish') {
         wp_update_post(array('ID' => $pid, 'post_status' => 'publish'));
-        nias_inst_notify_instructor($by, $pid, true, $note);
+        nias_inst_notify_instructor($by, $pid, true, $note, 'new');
     } elseif ($op === 'reject_new') {
         wp_update_post(array('ID' => $pid, 'post_status' => 'draft'));
-        nias_inst_notify_instructor($by, $pid, false, $note);
+        nias_inst_notify_instructor($by, $pid, false, $note, 'new');
     }
     wp_safe_redirect(add_query_arg('done', $op, admin_url('admin.php?page=nias-course-approvals')));
     exit;
