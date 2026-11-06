@@ -971,7 +971,15 @@ function nias_instructor_dashboard_output()
         return $nav('results') . nias_quiz_results_frontend($user_id);
     }
 
-    return $nav('home') . nias_instructor_dashboard_render($user_id);
+    $start = '';
+    if (function_exists('nias_inst_new_course_url') && nias_inst_panel_on() && ($new = nias_inst_new_course_url($user_id))) {
+        $start = '<div class="nip-start" dir="rtl"><div><b>' . esc_html__('دورهٔ جدید بسازید', 'nias-course-widget') . '</b><span>'
+            . esc_html(function_exists('nias_inst_approval_on') && nias_inst_approval_on() && !user_can($user_id, 'manage_options')
+                ? __('عنوان، توضیحات و تصویر را وارد کنید و جلسات را بسازید؛ دوره پس از بررسی مدیر منتشر می‌شود.', 'nias-course-widget')
+                : __('عنوان، توضیحات و تصویر را وارد کنید و جلسات و فصل‌ها را بسازید.', 'nias-course-widget'))
+            . '</span></div><a class="nip-btn pri" href="' . esc_url($new) . '">+ ' . esc_html__('دورهٔ جدید', 'nias-course-widget') . '</a></div>';
+    }
+    return $nav('home') . $start . nias_instructor_dashboard_render($user_id);
 }
 
 add_shortcode('nias_instructor_dashboard', 'nias_instructor_dashboard_shortcode');

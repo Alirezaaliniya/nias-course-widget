@@ -205,6 +205,22 @@ function nias_inst_panel_url($view = '', $args = array())
     return $view ? add_query_arg(array_merge(array('nias_panel' => $view), $args), $base) : $base;
 }
 
+/**
+ * Where «دورهٔ جدید» goes: the panel form for instructors, the WordPress
+ * "add product" / "add «دوره»" screen for a site admin ('' = not allowed).
+ */
+function nias_inst_new_course_url($user_id)
+{
+    if (function_exists('nias_inst_can_create') && nias_inst_can_create($user_id)) {
+        return nias_inst_panel_url('course');
+    }
+    if (user_can($user_id, 'manage_options')) {
+        $type = function_exists('nias_inst_new_course_type') ? nias_inst_new_course_type() : 'product';
+        return admin_url('post-new.php?post_type=' . $type);
+    }
+    return '';
+}
+
 /** Tab bar shown on every dashboard view when the panel is on. */
 function nias_inst_panel_nav($user_id, $active)
 {
@@ -225,6 +241,10 @@ function nias_inst_panel_nav($user_id, $active)
     foreach ($tabs as $k => $t) {
         $h .= '<a class="' . ($k === $active ? 'on' : '') . '" href="' . esc_url($t[1]) . '">' . wp_kses($t[0], array('b' => array())) . '</a>';
     }
+    $new = nias_inst_new_course_url($user_id);
+    if ($new) {
+        $h .= '<a class="nip-new" href="' . esc_url($new) . '">+ ' . esc_html__('دورهٔ جدید', 'nias-course-widget') . '</a>';
+    }
     return $h . '</nav>' . nias_inst_panel_css();
 }
 
@@ -240,6 +260,12 @@ function nias_inst_panel_css()
     .nip-nav a{padding:9px 16px;border-radius:10px;color:#475569;font-weight:700;font-size:14px;text-decoration:none!important}
     .nip-nav a:hover{background:#f1f5f9}
     .nip-nav a.on{background:#3858e9;color:#fff}
+    .nip-nav a.nip-new{margin-right:auto;background:#16a34a;color:#fff;box-shadow:0 6px 14px -6px rgba(22,163,74,.7)}
+    .nip-nav a.nip-new:hover{background:#15803d}
+    .nip-start{display:flex;align-items:center;gap:16px;flex-wrap:wrap;max-width:1280px;margin:0 auto 18px;padding:16px 18px;border-radius:16px;background:linear-gradient(135deg,#eef6ff,#f3fbf4);border:1px solid #dbe7f5;font-family:inherit}
+    .nip-start b{display:block;font-size:16px;color:#1f2937;margin-bottom:3px}
+    .nip-start span{font-size:13.5px;color:#475569}
+    .nip-start .nip-btn{margin-right:auto}
     .nip-nav a b{display:inline-block;margin-right:5px;background:#f59e0b;color:#fff;border-radius:99px;padding:0 7px;font-size:12px}
     .nip-wrap{max-width:1280px;margin:0 auto;font-family:inherit;direction:rtl}
     .nip-h{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:4px 0 14px}
@@ -281,12 +307,14 @@ function nias_inst_panel_courses_view($user_id)
         : nias_inst_course_ids($user_id);
     _prime_post_caches($ids, false, true);
     $h = '<div class="nip-wrap"><div class="nip-h"><h2>' . esc_html__('دوره‌های من', 'nias-course-widget') . '</h2>'
-        . (function_exists('nias_inst_can_create') && nias_inst_can_create($user_id) ? '<a class="nip-btn pri" href="' . esc_url(nias_inst_panel_url('course')) . '">+ ' . esc_html__('دورهٔ جدید', 'nias-course-widget') . '</a>' : '') . '</div>';
+        . (nias_inst_new_course_url($user_id) ? '<a class="nip-btn pri" href="' . esc_url(nias_inst_new_course_url($user_id)) . '">+ ' . esc_html__('دورهٔ جدید', 'nias-course-widget') . '</a>' : '') . '</div>';
     if (function_exists('nias_inst_panel_notice')) {
         $h .= nias_inst_panel_notice();
     }
     if (!$ids) {
-        return $h . '<div class="nip-empty">' . esc_html__('هنوز دوره‌ای به شما سپرده نشده است. مدیر سایت باید شما را در «مدرسین دوره» انتخاب کند.', 'nias-course-widget') . '</div></div>';
+        $new = nias_inst_new_course_url($user_id);
+        return $h . '<div class="nip-empty">' . esc_html($new ? __('هنوز دوره‌ای ندارید. اولین دورهٔ خود را بسازید؛ دوره‌هایی هم که مدیر سایت به شما بسپارد اینجا نمایش داده می‌شوند.', 'nias-course-widget') : __('هنوز دوره‌ای به شما سپرده نشده است. مدیر سایت باید شما را در «مدرسین دوره» انتخاب کند.', 'nias-course-widget'))
+            . ($new ? '<div style="margin-top:14px"><a class="nip-btn pri" href="' . esc_url($new) . '">+ ' . esc_html__('ساخت اولین دوره', 'nias-course-widget') . '</a></div>' : '') . '</div></div>';
     }
     $qa_counts = array();
     if (function_exists('nias_qa_enabled') && nias_qa_enabled()) {
