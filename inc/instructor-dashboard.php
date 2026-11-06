@@ -644,6 +644,7 @@ function nias_instructor_dashboard_render($user_id)
 
             <!-- ===== right column ===== -->
             <div class="nias-idash-col">
+                <?php if (function_exists('nias_qa_dashboard_card')) echo nias_qa_dashboard_card($user_id); ?>
                 <?php if (function_exists('nias_quiz_results_dashboard_card')) echo nias_quiz_results_dashboard_card($user_id); ?>
                 <?php echo nias_instructor_dashboard_students($d); ?>
                 <?php if ($d['certOn'] && !empty($d['recentCerts'])) echo nias_instructor_dashboard_certs($d); ?>
@@ -946,6 +947,11 @@ function nias_instructor_dashboard_output()
     if (!$is_instructor && !current_user_can('manage_options')) {
         return '<div class="nias-idash nias-idash-gate" dir="rtl">' . nias_instructor_dashboard_styles()
             . '<div class="nias-idash-gate-box">' . esc_html__('این صفحه مخصوص مدرسین است.', 'nias-course-widget') . '</div></div>';
+    }
+
+    // Course Q&A inside the dashboard page.
+    if (!empty($_GET['nias_qa']) && function_exists('nias_qa_dashboard_view')) {
+        return nias_qa_dashboard_view($user_id);
     }
 
     // Quiz results / essay grading inside the dashboard page.

@@ -26,6 +26,12 @@ function nias_settings_main_fields()
         'nias_instructors_enabled'    => 'radio',
         'nias_quiz_enabled'           => 'radio',
         'nias_course_cpt'             => 'radio',
+        'nias_qa_enabled'             => 'radio',
+        'nias_qa_scope'               => 'text',
+        'nias_qa_ask'                 => 'text',
+        'nias_qa_view'                => 'text',
+        'nias_qa_moderation'          => 'radio',
+        'nias_qa_notify'              => 'radio',
         'nias_meta_enabled'           => 'radio',
         'nias_modern_course'          => 'radio',
         'nias_lock_private_preview'   => 'radio',
@@ -334,6 +340,9 @@ function nias_settings_topbar($active)
                     <a href="<?php echo esc_url($quiz_url); ?>" class="nias-tab <?php echo $active === 'quiz' ? 'active' : ''; ?>"><?php echo esc_html__('آزمون‌ساز', 'nias-course-widget'); ?> <span class="nias-tab-badge"><?php echo esc_html__('فعال', 'nias-course-widget'); ?></span></a>
                     <?php $nqr_pending = function_exists('nias_quiz_pending_count') ? nias_quiz_pending_count(null) : 0; ?>
                     <a href="<?php echo esc_url(admin_url('admin.php?page=nias-course-quiz-results')); ?>" class="nias-tab <?php echo $active === 'quizres' ? 'active' : ''; ?>"><?php echo esc_html__('نتایج و تصحیح', 'nias-course-widget'); ?><?php if ($nqr_pending) : ?> <span class="nias-tab-badge" style="background:#2563c9;color:#fff"><?php echo esc_html(nias_fa_digits($nqr_pending)); ?></span><?php endif; ?></a>
+                <?php endif; ?>
+                <?php if (function_exists('nias_qa_enabled') && nias_qa_enabled()) : $nqa_n = nias_qa_unanswered_count(null); ?>
+                    <a href="<?php echo esc_url(admin_url('admin.php?page=nias-course-qa')); ?>" class="nias-tab <?php echo $active === 'qa' ? 'active' : ''; ?>"><?php echo esc_html__('پرسش و پاسخ', 'nias-course-widget'); ?><?php if ($nqa_n) : ?> <span class="nias-tab-badge" style="background:#c26a1a;color:#fff"><?php echo esc_html(nias_fa_digits($nqa_n)); ?></span><?php endif; ?></a>
                 <?php endif; ?>
                 <a href="<?php echo esc_url(admin_url('admin.php?page=nias-course-player')); ?>" class="nias-tab <?php echo $active === 'player' ? 'active' : ''; ?>"><?php echo esc_html__('پلیر ویدیو', 'nias-course-widget'); ?></a>
                 <?php if ($meta_on) : ?>
@@ -756,6 +765,24 @@ function nias_course_render_main_settings()
                         'off',
                         __('متا', 'nias-course-widget')
                     );
+                    nias_set_toggle_row(
+                        'nias_qa_enabled',
+                        __('فعالسازی پرسش و پاسخ', 'nias-course-widget'),
+                        __('دانشجوها زیر هر جلسه یا دربارهٔ کل دوره پرسش می‌کنند و مدرس دوره پاسخ می‌دهد. پس از فعال‌سازی، تب «پرسش و پاسخ» در نمای مدرن دوره، زیرمنوی «پرسش و پاسخ» و کارت آن در پیشخوان مدرس نمایش داده می‌شود.', 'nias-course-widget'),
+                        'off',
+                        __('پرسش و پاسخ', 'nias-course-widget')
+                    );
+                    echo '<div class="nias-qa-opts" data-nias-show-when="nias_qa_enabled=on">';
+                    echo '<div class="nias-row-block"><div class="nias-row-title">' . esc_html__('محل پرسش', 'nias-course-widget') . '</div>';
+                    nias_set_segmented('nias_qa_scope', array('both' => __('هر جلسه + کل دوره', 'nias-course-widget'), 'lessons' => __('فقط زیر جلسات', 'nias-course-widget'), 'general' => __('فقط کلی برای دوره', 'nias-course-widget')), 'both');
+                    echo '</div><div class="nias-row-block"><div class="nias-row-title">' . esc_html__('چه کسی می‌تواند بپرسد', 'nias-course-widget') . '</div>';
+                    nias_set_segmented('nias_qa_ask', array('access' => __('شرکت‌کنندگان دوره (خریداران / در دورهٔ رایگان کاربران واردشده)', 'nias-course-widget'), 'logged' => __('همهٔ کاربران واردشده', 'nias-course-widget')), 'access');
+                    echo '</div><div class="nias-row-block"><div class="nias-row-title">' . esc_html__('چه کسی پرسش‌ها را می‌بیند', 'nias-course-widget') . '</div>';
+                    nias_set_segmented('nias_qa_view', array('all' => __('همه (حتی مهمان)', 'nias-course-widget'), 'access' => __('فقط شرکت‌کنندگان دوره', 'nias-course-widget')), 'all');
+                    echo '</div>';
+                    nias_set_toggle_row('nias_qa_moderation', __('انتشار پس از تأیید', 'nias-course-widget'), __('پرسش دانشجو تا تأیید (یا پاسخ) مدرس فقط برای خودش نمایش داده می‌شود.', 'nias-course-widget'), 'off');
+                    nias_set_toggle_row('nias_qa_notify', __('اطلاع‌رسانی ایمیلی', 'nias-course-widget'), __('پرسش جدید برای مدرس(های) دوره (یا مدیر سایت اگر مدرسی تعیین نشده) و پاسخ مدرس برای پرسشگر ایمیل می‌شود.', 'nias-course-widget'), 'on');
+                    echo '</div>';
                     if (function_exists('nias_wc_active') && nias_wc_active()) {
                         nias_set_toggle_row(
                             'nias_course_cpt',
@@ -1161,6 +1188,7 @@ function nias_course_settings_assets($hook)
         strpos($hook, 'nias-spotplayer-license') === false &&
         strpos($hook, 'nias-course-instructors') === false &&
         strpos($hook, 'nias-course-quiz') === false &&
+        strpos($hook, 'nias-course-qa') === false &&
         strpos($hook, 'nias-course-meta') === false &&
         strpos($hook, 'nias-course-player') === false
     ) {

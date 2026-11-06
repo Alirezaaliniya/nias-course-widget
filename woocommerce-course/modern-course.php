@@ -528,6 +528,8 @@ function nias_modern_course_build_data($product_id)
         // Gradebook (every quiz of the course + this user's results) and the
         // endpoint used to reload the course after a quiz opens new lessons.
         'grades'       => $quiz_on ? nias_quiz_gradebook($uid, $product_id, $lesson_refs) : array(),
+        // Q&A (null when the feature is off).
+        'qa'           => function_exists('nias_qa_client_data') ? nias_qa_client_data($product_id) : null,
         'loggedIn'     => (bool) $uid,
         'refresh'      => array(
             'url'   => admin_url('admin-ajax.php'),
@@ -652,6 +654,42 @@ function nias_modern_course_assets()
     .nmc-tab-quiz{display:inline-flex;align-items:center;gap:6px}
     .nmc-tab-score{font-size:11px;font-weight:800;padding:1px 7px;border-radius:99px;background:#eef1f4;color:#7b868a}
     .nmc-tab-score.ok{background:rgba(72,175,59,.14);color:#3e9a32}
+    /* Q&A */
+    .nmc-tab-qa{display:inline-flex;align-items:center;gap:6px}
+    .nmc-qa{padding:2px 0}
+    .nmc-qa-ask{display:flex;flex-direction:column;gap:8px;margin-bottom:14px}
+    .nmc-qa-ask textarea{width:100%;box-sizing:border-box;border:1px solid #dfe5ec;border-radius:12px;padding:10px 12px;font:inherit;font-size:14px;line-height:1.8;resize:vertical;background:#fbfcfd}
+    .nmc-qa-ask textarea:focus{outline:none;border-color:var(--nmc-accent,#1e83f0);background:#fff}
+    .nmc-qa-ask.small{margin:8px 0 0}
+    .nmc-qa-askbar{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+    .nmc-qa-askbar .nmc-btn{margin-right:auto}
+    .nmc-qa-about{height:38px;border:1px solid #dfe5ec;border-radius:10px;padding:0 10px;font:inherit;font-size:13px;background:#fff}
+    .nmc-qa-msg{font-size:12.5px;color:#d64545}
+    .nmc-qa-msg.ok{color:#3e9a32}
+    .nmc-qa-note{background:#f6f8fa;border:1px solid #eceff2;border-radius:12px;padding:12px 14px;font-size:13.5px;color:#4b575d;margin-bottom:14px}
+    .nmc-qa-note a{color:var(--nmc-accent,#1e83f0);font-weight:700}
+    .nmc-qa-filters{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px}
+    .nmc-qa-chip{border:1px solid #e1e6e9;background:#fff;color:#4b575d;font:inherit;font-size:12.5px;font-weight:700;padding:5px 12px;border-radius:99px;cursor:pointer}
+    .nmc-qa-chip.on{background:var(--nmc-accent,#1e83f0);border-color:var(--nmc-accent,#1e83f0);color:#fff}
+    .nmc-qa-item{border:1px solid #eceff2;border-radius:14px;padding:12px 14px;margin-bottom:10px;background:#fff}
+    .nmc-qa-item.resolved{border-color:#d7eed3}
+    .nmc-qa-who{display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-size:12.5px;color:#7b868a}
+    .nmc-qa-who img,.nmc-qa-ini{width:28px;height:28px;border-radius:50%;flex:none}
+    .nmc-qa-ini{display:inline-flex;align-items:center;justify-content:center;background:#eef3f8;color:#5b6b78;font-weight:800;font-size:13px}
+    .nmc-qa-who b{color:#1f2a30;font-size:13.5px}
+    .nmc-qa-tag{font-size:11px;font-weight:800;padding:1px 8px;border-radius:99px;background:#eef1f4;color:#6b777d}
+    .nmc-qa-tag.staff{background:#e8f2ff;color:#1e6fd0}
+    .nmc-qa-tag.wait{background:#fff4e2;color:#c2841a}
+    .nmc-qa-tag.ok{background:rgba(72,175,59,.13);color:#3e9a32;display:inline-block;margin-top:6px}
+    .nmc-qa-where{display:inline-block;margin:6px 0 0 6px;font-size:12px;color:var(--nmc-accent,#1e83f0);font-weight:600}
+    .nmc-qa-text{margin:8px 0 4px;font-size:14px;line-height:1.95;color:#2b363c;overflow-wrap:anywhere}
+    .nmc-qa-ans{margin:8px 14px 0 0;padding:10px 12px;border-radius:12px;background:#f7f9fb;border-right:3px solid #e1e6e9}
+    .nmc-qa-ans.staff{background:#f2f8ff;border-right-color:var(--nmc-accent,#1e83f0)}
+    .nmc-qa-acts{display:flex;gap:12px;flex-wrap:wrap;margin-top:6px}
+    .nmc-qa-link{border:0;background:none;padding:0;font:inherit;font-size:12.5px;font-weight:700;color:var(--nmc-accent,#1e83f0);cursor:pointer}
+    .nmc-qa-link.danger{color:#d64545}
+    .nmc-qa-more{display:flex;justify-content:center;margin-top:8px}
+    .nmc-qa-load{padding:16px;text-align:center;color:#8a979e;font-size:13px}
     .nmc-tab-score.no{background:#fdeaea;color:#d64545}
     .nmc-les-q{display:inline-flex;align-items:center;gap:3px;font-size:11px;font-weight:700;padding:1px 7px;border-radius:99px;background:#eaf3ff;color:#1e6fd0}
     .nmc-les-q svg{width:12px;height:12px}
@@ -1553,6 +1591,148 @@ function nias_modern_course_script()
             }
         };
 
+        // ---- Q&A (پرسش و پاسخ) ----
+        NMC.prototype.qaOn = function () { var q = this.d.qa; return !!(q && (q.canView || !q.loggedIn)); };
+        NMC.prototype.qaCount = function (l) {
+            var q = this.d.qa; if (!q) return 0;
+            var c = q.counts || {};
+            if (q.scope === 'general') return c[''] || 0;
+            return (l && c[l.id]) || 0;
+        };
+        NMC.prototype.qaCall = function (data) {
+            var q = this.d.qa, b = new URLSearchParams();
+            b.append('action', 'nias_qa'); b.append('nonce', q.nonce); b.append('post_id', this.d.productId);
+            Object.keys(data).forEach(function (k) { b.append(k, data[k]); });
+            return fetch(q.url, { method: 'POST', credentials: 'same-origin', body: b }).then(function (r) { return r.json(); });
+        };
+        NMC.prototype.renderQA = function (host, cur) {
+            if (!host) return;
+            var self = this, q = this.d.qa;
+            var key = cur.id;
+            if (!this._qa || this._qa.key !== key) {
+                this._qa = { key: key, filter: q.scope === 'general' ? 'general' : 'lesson', page: 1, items: [], total: 0, loading: false };
+            }
+            var st = this._qa;
+            var filters = q.scope === 'general'
+                ? [['general', 'پرسش‌های دوره']]
+                : (q.scope === 'lessons' ? [['lesson', 'این جلسه'], ['course', 'همهٔ جلسات']] : [['lesson', 'این جلسه'], ['general', 'کل دوره'], ['course', 'همه']]);
+            if (q.loggedIn) filters.push(['mine', 'پرسش‌های من']);
+            if (q.isStaff) filters.push(['unanswered', 'بی‌پاسخ']);
+            var ask;
+            if (!q.loggedIn) ask = '<div class="nmc-qa-note">برای پرسیدن سؤال <a href="' + esc(q.loginUrl) + '">وارد حساب کاربری شوید</a>.</div>';
+            else if (!q.canAsk) ask = '<div class="nmc-qa-note">پرسش و پاسخ مخصوص شرکت‌کنندگان این دوره است.</div>';
+            else {
+                var about = q.scope === 'both'
+                    ? '<select class="nmc-qa-about"><option value="lesson"' + (st.filter !== 'general' ? ' selected' : '') + '>دربارهٔ این جلسه</option><option value="general"' + (st.filter === 'general' ? ' selected' : '') + '>دربارهٔ کل دوره</option></select>' : '';
+                ask = '<form class="nmc-qa-ask"><textarea rows="3" maxlength="3000" placeholder="' + (q.scope === 'general' ? 'پرسش خود دربارهٔ دوره را بنویسید…' : 'پرسش خود دربارهٔ «' + esc(cur.title) + '» را بنویسید…') + '"></textarea>' +
+                      '<div class="nmc-qa-askbar">' + about + '<span class="nmc-qa-msg"></span><button type="submit" class="nmc-btn primary">ارسال پرسش</button></div></form>';
+            }
+            if (!q.canView) {
+                host.innerHTML = ask + '<div class="nmc-empty">پرسش و پاسخ این دوره برای شرکت‌کنندگان دوره نمایش داده می‌شود.</div>';
+                return;
+            }
+            host.innerHTML = ask +
+                '<div class="nmc-qa-filters">' + filters.map(function (f) { return '<button type="button" class="nmc-qa-chip' + (st.filter === f[0] ? ' on' : '') + '" data-qf="' + f[0] + '">' + f[1] + '</button>'; }).join('') + '</div>' +
+                '<div class="nmc-qa-list"><div class="nmc-qa-load">در حال بارگذاری…</div></div>';
+            host.querySelectorAll('[data-qf]').forEach(function (b) {
+                b.addEventListener('click', function () { st.filter = b.getAttribute('data-qf'); st.page = 1; st.items = []; self.renderQA(host, cur); });
+            });
+            var form = host.querySelector('.nmc-qa-ask');
+            if (form) form.addEventListener('submit', function (e) {
+                e.preventDefault();
+                var ta = form.querySelector('textarea'), msg = form.querySelector('.nmc-qa-msg'), btn = form.querySelector('button');
+                var txt = ta.value.trim();
+                if (txt.length < 5) { msg.textContent = 'پرسش را کامل‌تر بنویسید.'; return; }
+                var sel = form.querySelector('.nmc-qa-about');
+                var lesson = q.scope === 'general' ? '' : (sel && sel.value === 'general' ? '' : cur.id);
+                btn.disabled = true; msg.textContent = 'در حال ارسال…';
+                self.qaCall({ op: 'ask', lesson: lesson, content: txt }).then(function (r) {
+                    btn.disabled = false;
+                    if (!r || !r.success) { msg.textContent = (r && r.data && r.data.message) || 'ارسال نشد.'; return; }
+                    q.counts = r.data.counts || q.counts;
+                    ta.value = '';
+                    st.filter = lesson === '' && q.scope !== 'lessons' ? (q.scope === 'general' ? 'general' : 'general') : 'lesson';
+                    st.page = 1; st.items = [];
+                    self._qaFlash = r.data.pending ? 'پرسش شما ثبت شد و پس از تأیید مدرس منتشر می‌شود.' : 'پرسش شما ثبت شد.';
+                    self.renderInfo();
+                }).catch(function () { btn.disabled = false; msg.textContent = 'اتصال برقرار نشد.'; });
+            });
+            if (this._qaFlash) { var m0 = host.querySelector('.nmc-qa-msg'); if (m0) { m0.textContent = this._qaFlash; m0.classList.add('ok'); } this._qaFlash = null; }
+            this.qaLoad(host, cur, false);
+        };
+        NMC.prototype.qaLoad = function (host, cur, more) {
+            var self = this, st = this._qa, list = host.querySelector('.nmc-qa-list');
+            if (st.loading) return;
+            st.loading = true;
+            var page = more ? st.page + 1 : 1;
+            this.qaCall({ op: 'list', scope: st.filter, lesson: cur.id, page: page }).then(function (r) {
+                st.loading = false;
+                if (self._qa !== st) return;
+                if (!r || !r.success) { list.innerHTML = '<div class="nmc-empty">' + esc((r && r.data && r.data.message) || 'بارگذاری نشد.') + '</div>'; return; }
+                st.items = more ? st.items.concat(r.data.items) : r.data.items;
+                st.page = r.data.page; st.total = r.data.total;
+                self.qaRenderList(host, cur);
+            }).catch(function () { st.loading = false; });
+        };
+        NMC.prototype.qaRenderList = function (host, cur) {
+            var self = this, st = this._qa, q = this.d.qa, list = host.querySelector('.nmc-qa-list');
+            if (!st.items.length) {
+                list.innerHTML = '<div class="nmc-empty">' + (st.filter === 'mine' ? 'هنوز پرسشی ثبت نکرده‌اید.' : (st.filter === 'unanswered' ? 'پرسش بی‌پاسخی وجود ندارد.' : 'هنوز پرسشی ثبت نشده است؛ اولین نفر باشید.')) + '</div>';
+                return;
+            }
+            function who(it) {
+                var av = it.avatar ? '<img src="' + esc(it.avatar) + '" alt="">' : '<span class="nmc-qa-ini">' + esc((it.name || '؟').charAt(0)) + '</span>';
+                return '<div class="nmc-qa-who">' + av + '<b>' + esc(it.name) + '</b>' + (it.staff ? '<span class="nmc-qa-tag staff">مدرس</span>' : '') + '<span class="nmc-qa-when">' + esc(it.when) + '</span>' +
+                    (it.pending ? '<span class="nmc-qa-tag wait">منتظر تأیید</span>' : '') + '</div>';
+            }
+            function text(s) { return esc(s).replace(/\n/g, '<br>'); }
+            list.innerHTML = st.items.map(function (it) {
+                var where = (st.filter !== 'lesson') ? '<span class="nmc-qa-where">' + (it.lesson ? esc(it.lessonTitle) : 'کل دوره') + '</span>' : '';
+                var ans = (it.answers || []).map(function (a) {
+                    return '<div class="nmc-qa-ans' + (a.staff ? ' staff' : '') + '">' + who(a) + '<div class="nmc-qa-text">' + text(a.content) + '</div>' +
+                        (a.mine || q.isStaff ? '<button type="button" class="nmc-qa-link" data-qdel="' + a.id + '">حذف</button>' : '') + '</div>';
+                }).join('');
+                var acts = '';
+                if (it.canReply) acts += '<button type="button" class="nmc-qa-link" data-qreply="' + it.id + '">' + (q.isStaff ? 'پاسخ' : 'ادامهٔ پرسش') + '</button>';
+                if (it.canResolve) acts += '<button type="button" class="nmc-qa-link" data-qres="' + it.id + '" data-v="' + (it.resolved ? 'unresolve' : 'resolve') + '">' + (it.resolved ? 'باز کردن دوباره' : 'حل شد') + '</button>';
+                if (q.isStaff) acts += '<button type="button" class="nmc-qa-link" data-qres="' + it.id + '" data-v="' + (it.pending ? 'approve' : 'hide') + '">' + (it.pending ? 'تأیید و انتشار' : 'پنهان کردن') + '</button>';
+                if (it.canDelete) acts += '<button type="button" class="nmc-qa-link danger" data-qdel="' + it.id + '">حذف</button>';
+                return '<article class="nmc-qa-item' + (it.resolved ? ' resolved' : '') + '">' + who(it) +
+                    (it.resolved ? '<span class="nmc-qa-tag ok">حل‌شده</span>' : '') + where +
+                    '<div class="nmc-qa-text">' + text(it.content) + '</div>' + ans +
+                    '<div class="nmc-qa-acts">' + acts + '</div><div class="nmc-qa-replybox" data-qbox="' + it.id + '"></div></article>';
+            }).join('') + (st.items.length < st.total ? '<div class="nmc-qa-more"><button type="button" class="nmc-btn" data-qmore>نمایش بیشتر (' + fa(st.total - st.items.length) + ')</button></div>' : '');
+            var reload = function () { st.items = []; self.qaLoad(host, cur, false); };
+            list.querySelectorAll('[data-qreply]').forEach(function (b) {
+                b.addEventListener('click', function () {
+                    var box = list.querySelector('[data-qbox="' + b.getAttribute('data-qreply') + '"]');
+                    if (box.innerHTML) { box.innerHTML = ''; return; }
+                    box.innerHTML = '<form class="nmc-qa-ask small"><textarea rows="2" maxlength="3000" placeholder="' + (q.isStaff ? 'پاسخ شما…' : 'توضیح بیشتر…') + '"></textarea><div class="nmc-qa-askbar"><span class="nmc-qa-msg"></span><button type="submit" class="nmc-btn primary">ارسال</button></div></form>';
+                    var f = box.querySelector('form'); f.querySelector('textarea').focus();
+                    f.addEventListener('submit', function (e) {
+                        e.preventDefault();
+                        var t = f.querySelector('textarea').value.trim(); if (!t) return;
+                        f.querySelector('button').disabled = true;
+                        self.qaCall({ op: 'reply', id: b.getAttribute('data-qreply'), content: t }).then(function (r) {
+                            if (!r || !r.success) { f.querySelector('button').disabled = false; f.querySelector('.nmc-qa-msg').textContent = (r && r.data && r.data.message) || 'ارسال نشد.'; return; }
+                            reload();
+                        });
+                    });
+                });
+            });
+            list.querySelectorAll('[data-qres]').forEach(function (b) {
+                b.addEventListener('click', function () { self.qaCall({ op: b.getAttribute('data-v'), id: b.getAttribute('data-qres') }).then(function (r) { if (r && r.success && r.data.counts) { q.counts = r.data.counts; } reload(); }); });
+            });
+            list.querySelectorAll('[data-qdel]').forEach(function (b) {
+                b.addEventListener('click', function () {
+                    if (!window.confirm('حذف شود؟')) return;
+                    self.qaCall({ op: 'delete', id: b.getAttribute('data-qdel') }).then(function (r) { if (r && r.success && r.data.counts) { q.counts = r.data.counts; } reload(); });
+                });
+            });
+            var mb = list.querySelector('[data-qmore]');
+            if (mb) mb.addEventListener('click', function () { mb.disabled = true; mb.textContent = 'در حال بارگذاری…'; self.qaLoad(host, cur, true); });
+        };
+
         // ---- quizzes ----
         NMC.prototype.mountQuiz = function (host, l) {
             var q = l.quiz;
@@ -1740,8 +1920,12 @@ function nias_modern_course_script()
 
             var tab = this.state.tab;
             var body;
+            var qaTab = this.qaOn();
+            if (tab === 'qa' && !qaTab) { tab = this.state.tab = 'desc'; }
             if (tab === 'quiz') {
                 body = '<div class="nmc-quiz-tab"></div>';
+            } else if (tab === 'qa') {
+                body = '<div class="nmc-qa"></div>';
             } else if (tab === 'desc') {
                 if (cur.lockedDesc) {
                     // Description withheld server-side because the lesson is private
@@ -1790,6 +1974,7 @@ function nias_modern_course_script()
                     '<button type="button" class="nmc-tab ' + (tab === 'desc' ? 'active' : '') + '" data-act="tabdesc">توضیحات درس</button>' +
                     '<button type="button" class="nmc-tab ' + (tab === 'res' ? 'active' : '') + '" data-act="tabres">منابع و پیوست‌ها</button>' +
                     (quizTab ? '<button type="button" class="nmc-tab nmc-tab-quiz ' + (tab === 'quiz' ? 'active' : '') + '" data-act="tabquiz">' + ICON.quiz + '<span>آزمون جلسه</span>' + (function (r) { return r && r.best != null ? '<span class="nmc-tab-score ' + (r.passed ? 'ok' : 'no') + '">' + fa(r.best) + '٪</span>' : ''; })(this.quizRec(cur)) + '</button>' : '') +
+                    (qaTab ? '<button type="button" class="nmc-tab nmc-tab-qa ' + (tab === 'qa' ? 'active' : '') + '" data-act="tabqa"><span>پرسش و پاسخ</span>' + (function (n) { return n ? '<span class="nmc-tab-score">' + fa(n) + '</span>' : ''; })(this.qaCount(cur)) + '</button>' : '') +
                 '</div>' +
                 '<div class="nmc-tabbody">' + body + '</div>';
 
@@ -1806,6 +1991,9 @@ function nias_modern_course_script()
             var tq = host.querySelector('[data-act="tabquiz"]');
             if (tq) tq.addEventListener('click', function () { self.state.tab = 'quiz'; self.renderInfo(); });
             if (tab === 'quiz') { this.mountQuiz(host.querySelector('.nmc-quiz-tab'), cur); }
+            var tqa = host.querySelector('[data-act="tabqa"]');
+            if (tqa) tqa.addEventListener('click', function () { self.state.tab = 'qa'; self.renderInfo(); });
+            if (tab === 'qa') { this.renderQA(host.querySelector('.nmc-qa'), cur); }
         };
 
         // ---- sidebar ----

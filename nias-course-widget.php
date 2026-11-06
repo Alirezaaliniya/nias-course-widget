@@ -67,6 +67,7 @@ require(NIAS_WOOCOMMERCE . '/quiz-course.php');
 require(NIAS_WOOCOMMERCE . '/quiz-index.php');
 require(NIAS_COURSE_INC . '/nias-picker.php');
 require(NIAS_WOOCOMMERCE . '/quiz-results.php');
+require(NIAS_WOOCOMMERCE . '/qa.php'); // پرسش و پاسخ (optional)
 require(__DIR__ . '/widgets/videomodal.php');
 require(NIAS_COURSE_INC . '/certificate-show.php');
 require(NIAS_COURSE_INC . '/certificate-config-user.php');
