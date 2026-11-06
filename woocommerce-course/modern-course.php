@@ -393,7 +393,7 @@ function nias_modern_course_build_data($product_id)
                     'id'        => $quiz_id,
                     'title'     => $lq['title'],
                     'passScore' => (int) $lq['passScore'],
-                    'qCount'    => count($lq['questions']),
+                    'qCount'    => function_exists('nias_quiz_display_count') ? nias_quiz_display_count($lq) : count($lq['questions']),
                     'record'    => $state['record'],
                 );
                 // The questions only go out when the lesson is open to this user.

@@ -284,6 +284,24 @@ function nias_quiz_ajax_submit()
         }
     }
 
+    // Question bank: grade only the questions this student was given.
+    if (function_exists('nias_quiz_draw_size') && nias_quiz_draw_size($quiz)) {
+        $ids = null;
+        if ($uid) {
+            $m = get_user_meta($uid, '_nias_quiz_draw_' . $quiz_id, true);
+            if (is_array($m) && isset($m['sig'], $m['ids']) && $m['sig'] === nias_quiz_bank_sig($quiz)) {
+                $ids = $m['ids'];
+            }
+        }
+        if ($ids === null) {
+            $ids = nias_quiz_draw_from_token($quiz, isset($_POST['draw']) ? sanitize_text_field(wp_unslash($_POST['draw'])) : '');
+        }
+        if ($ids === null) {
+            wp_send_json_error(array('message' => __('سوال‌های این آزمون تغییر کرده است؛ صفحه را دوباره باز کنید و از نو شرکت کنید.', 'nias-course-widget'), 'code' => 'draw'));
+        }
+        $quiz = nias_quiz_apply_draw($quiz, $ids);
+    }
+
     // The student saw the matching answers in a per-user order.
     $answers = nias_quiz_unpermute_answers($quiz, $answers, $uid);
     $result  = nias_quiz_grade($quiz, $answers);
@@ -297,6 +315,13 @@ function nias_quiz_ajax_submit()
     }
     // Essays (with the instructor's reference answer) stay on the server.
     unset($result['essays']);
+    // Question bank: new questions for the next attempt.
+    if (function_exists('nias_quiz_draw_size') && nias_quiz_draw_size($quiz = nias_quiz_get($quiz_id))) {
+        if ($uid) {
+            nias_quiz_draw_reset($uid, $quiz_id);
+        }
+        $result['nextQuiz'] = nias_quiz_public_model($quiz, $uid);
+    }
 
     wp_send_json_success(array('result' => $result));
 }
@@ -614,7 +639,7 @@ function nias_quiz_student_script()
             var q=this.quiz, o=this.opts, rec=o.record||null, left=o.attemptsLeft;
             var time = q.timeMode==='total' ? fa(q.timeValue)+' دقیقه' : (q.timeMode==='perQuestion' ? fa(q.timeValue)+' ثانیه برای هر سوال' : 'بدون محدودیت');
             var facts=[
-                ['تعداد سوال', fa((q.questions||[]).length)],
+                ['تعداد سوال', fa((q.questions||[]).length)+((q.bankCount>(q.questions||[]).length)?' <small>(تصادفی از '+fa(q.bankCount)+')</small>':'')],
                 ['زمان', time],
                 ['حد نصاب قبولی', fa(q.passScore)+'٪'],
                 ['دفعات باقی‌مانده', left==null ? 'نامحدود' : fa(left)]
@@ -642,6 +667,12 @@ function nias_quiz_student_script()
         ST.prototype.start=function(){
             var quiz=this.quiz;
             var qs=quiz.questions.slice();
+            // Builder preview (no server draw): pick the bank's questions here.
+            if (+quiz.drawCount>0 && !quiz.drawToken && qs.length>+quiz.drawCount){
+                var fixed=qs.filter(function(x){return x.always;}), rest=shuffle(qs.filter(function(x){return !x.always;}));
+                var keep=fixed.concat(rest.slice(0,Math.max(0,+quiz.drawCount-fixed.length)));
+                qs=qs.filter(function(x){ return keep.indexOf(x)>=0; });
+            }
             if (quiz.shuffleQ) qs=shuffle(qs);
             qs=qs.map(function(q){ if(quiz.shuffleOpt&&(q.type==='choice'||q.type==='multi')) return Object.assign({},q,{options:shuffle(q.options)}); return q; });
             this.qs=qs;
@@ -691,7 +722,7 @@ function nias_quiz_student_script()
             if (this.timer){ clearInterval(this.timer); this.timer=null; }
             var self=this;
             if (this.opts.mode==='server'){
-                var body='action=nias_quiz_submit&nonce='+encodeURIComponent(this.opts.nonce)+'&quiz_id='+encodeURIComponent(this.quiz.id)+'&answers='+encodeURIComponent(JSON.stringify(this.state.answers));
+                var body='action=nias_quiz_submit&nonce='+encodeURIComponent(this.opts.nonce)+'&quiz_id='+encodeURIComponent(this.quiz.id)+'&answers='+encodeURIComponent(JSON.stringify(this.state.answers))+'&draw='+encodeURIComponent(this.quiz.drawToken||'');
                 // The student copy has no answers, so grading only happens on the server.
                 this.state.phase='sending'; this.renderSending('');
                 fetch(this.opts.ajaxUrl,{method:'POST',credentials:'same-origin',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:body})
@@ -703,10 +734,12 @@ function nias_quiz_student_script()
                         self.state.phase='done'; self.state.result=r; self.render();
                         if (self.opts.onResult){ try{ self.opts.onResult(r, self.quiz); }catch(e){} }
                         try{ window.dispatchEvent(new CustomEvent('nias:quiz-result',{detail:{quizId:self.quiz.id,result:r}})); }catch(e){}
+                        // Question bank: the next attempt gets a new draw.
+                        if (r.nextQuiz && r.nextQuiz.questions){ self.quiz=r.nextQuiz; }
                     })
                     .catch(function(){ self.renderSending('اتصال برقرار نشد. اینترنت خود را بررسی کنید و دوباره بفرستید.'); });
             } else {
-                this.state.phase='done'; this.state.result=gradeLocal(this.quiz,this.state.answers); this.render();
+                this.state.phase='done'; this.state.result=gradeLocal(Object.assign({},this.quiz,{questions:this.qs||this.quiz.questions}),this.state.answers); this.render();
             }
         };
 

@@ -56,6 +56,12 @@ function nias_quiz_match_perm($quiz_id, $question_id, $count, $user_id)
  */
 function nias_quiz_public_model($quiz, $user_id)
 {
+    // Question bank: only this student's drawn questions leave the server.
+    $bank = count((array) $quiz['questions']);
+    $ids  = nias_quiz_draw_ids($quiz, $user_id);
+    if ($ids !== null) {
+        $quiz = nias_quiz_apply_draw($quiz, $ids);
+    }
     $out = $quiz;
     unset($out['category']);
     $out['questions'] = array();
@@ -79,8 +85,152 @@ function nias_quiz_public_model($quiz, $user_id)
         }
         $out['questions'][] = $pq;
     }
-    $out['qCount'] = count($out['questions']);
+    $out['qCount']    = count($out['questions']);
+    $out['bankCount'] = $bank;
+    if ($ids !== null) {
+        $out['drawToken'] = nias_quiz_draw_token((int) $quiz['id'], $ids);
+    }
+    unset($out['drawCount']);
     return $out;
+}
+
+/* -------------------------------------------------------------------------
+ * Question bank: N random questions per student and per attempt
+ *
+ *   - drawCount > 0 (and less than the questions): each student gets that
+ *     many questions; questions marked «همیشه در آزمون» are always in.
+ *   - Logged-in: the draw is kept in user meta _nias_quiz_draw_{id} until the
+ *     attempt is sent, so reloading the page does not change the questions
+ *     (no picking easy ones). After each attempt a new draw is made.
+ *   - Guests: the draw travels with the quiz as a signed token.
+ *   - Grading uses only the drawn questions; the score is out of them.
+ * ---------------------------------------------------------------------- */
+
+/** Questions per student (0 = all of them). */
+function nias_quiz_draw_size($quiz)
+{
+    $n   = isset($quiz['drawCount']) ? (int) $quiz['drawCount'] : 0;
+    $all = count((array) (isset($quiz['questions']) ? $quiz['questions'] : array()));
+    if ($n <= 0 || $n >= $all) {
+        return 0;
+    }
+    $fixed = count(array_filter((array) $quiz['questions'], function ($q) { return !empty($q['always']); }));
+    return min($all, max($n, $fixed));
+}
+
+/** How many questions a student sees. */
+function nias_quiz_display_count($quiz)
+{
+    $n = nias_quiz_draw_size($quiz);
+    return $n ? $n : count((array) $quiz['questions']);
+}
+
+/** Changes when the bank changes (an old draw is then dropped). */
+function nias_quiz_bank_sig($quiz)
+{
+    $ids = array();
+    foreach ((array) $quiz['questions'] as $q) {
+        $ids[] = $q['id'] . (!empty($q['always']) ? '!' : '');
+    }
+    return substr(md5(implode(',', $ids) . '|' . (int) $quiz['drawCount']), 0, 12);
+}
+
+/** A fresh random draw (ids, in the bank's order). */
+function nias_quiz_new_draw($quiz)
+{
+    $n      = nias_quiz_draw_size($quiz);
+    $fixed  = array();
+    $others = array();
+    foreach ((array) $quiz['questions'] as $q) {
+        if (!empty($q['always'])) {
+            $fixed[] = $q['id'];
+        } else {
+            $others[] = $q['id'];
+        }
+    }
+    // Fisher–Yates with a CSPRNG.
+    for ($i = count($others) - 1; $i > 0; $i--) {
+        $j = random_int(0, $i);
+        $t = $others[$i];
+        $others[$i] = $others[$j];
+        $others[$j] = $t;
+    }
+    $pick = array_flip(array_merge($fixed, array_slice($others, 0, max(0, $n - count($fixed)))));
+    $ids  = array();
+    foreach ((array) $quiz['questions'] as $q) {
+        if (isset($pick[$q['id']])) {
+            $ids[] = $q['id'];
+        }
+    }
+    return $ids;
+}
+
+/** This student's draw (null = the quiz has no bank: all questions). */
+function nias_quiz_draw_ids($quiz, $user_id)
+{
+    if (!nias_quiz_draw_size($quiz)) {
+        return null;
+    }
+    $key = '_nias_quiz_draw_' . (int) $quiz['id'];
+    $sig = nias_quiz_bank_sig($quiz);
+    if ($user_id) {
+        $m = get_user_meta($user_id, $key, true);
+        if (is_array($m) && isset($m['sig'], $m['ids']) && $m['sig'] === $sig) {
+            return $m['ids'];
+        }
+        $ids = nias_quiz_new_draw($quiz);
+        update_user_meta($user_id, $key, array('sig' => $sig, 'ids' => $ids, 't' => time()));
+        return $ids;
+    }
+    static $guest = array(); // the same draw for the whole page
+    if (!isset($guest[(int) $quiz['id']])) {
+        $guest[(int) $quiz['id']] = nias_quiz_new_draw($quiz);
+    }
+    return $guest[(int) $quiz['id']];
+}
+
+/** Forget the draw (after an attempt): the next attempt gets new questions. */
+function nias_quiz_draw_reset($user_id, $quiz_id)
+{
+    delete_user_meta($user_id, '_nias_quiz_draw_' . (int) $quiz_id);
+}
+
+function nias_quiz_apply_draw($quiz, $ids)
+{
+    if ($ids === null) {
+        return $quiz;
+    }
+    $want = array_flip($ids);
+    $quiz['questions'] = array_values(array_filter((array) $quiz['questions'], function ($q) use ($want) {
+        return isset($want[$q['id']]);
+    }));
+    return $quiz;
+}
+
+function nias_quiz_draw_token($quiz_id, $ids)
+{
+    $p = (int) $quiz_id . '|' . implode(',', $ids) . '|' . (time() + DAY_IN_SECONDS);
+    return rtrim(strtr(base64_encode($p), '+/', '-_'), '=') . '.' . substr(hash_hmac('sha256', $p, wp_salt('nonce') . 'nias-draw'), 0, 24);
+}
+
+/** Ids from a token sent back with the answers (null = invalid / other quiz / expired). */
+function nias_quiz_draw_from_token($quiz, $token)
+{
+    $parts = explode('.', (string) $token);
+    if (count($parts) !== 2) {
+        return null;
+    }
+    $p = base64_decode(strtr($parts[0], '-_', '+/'), true);
+    if ($p === false || !hash_equals(substr(hash_hmac('sha256', $p, wp_salt('nonce') . 'nias-draw'), 0, 24), $parts[1])) {
+        return null;
+    }
+    list($qid, $list, $exp) = array_pad(explode('|', $p), 3, '');
+    if ((int) $qid !== (int) $quiz['id'] || (int) $exp < time()) {
+        return null;
+    }
+    $ids   = array_filter(explode(',', $list), 'strlen');
+    $known = wp_list_pluck((array) $quiz['questions'], 'id');
+    return $ids && !array_diff($ids, $known) ? array_values($ids) : null;
 }
 
 /**
@@ -494,7 +644,7 @@ function nias_quiz_gradebook($user_id, $product_id, $lesson_refs = array())
             'id'           => (int) $qid,
             'title'        => $quiz['title'],
             'passScore'    => (int) $quiz['passScore'],
-            'qCount'       => count($quiz['questions']),
+            'qCount'       => nias_quiz_display_count($quiz),
             'lessonId'     => $ref ? $ref['lessonId'] : '',
             'lessonTitle'  => $ref ? $ref['lessonTitle'] : '',
             'chapterTitle' => $ref ? $ref['chapterTitle'] : '',
