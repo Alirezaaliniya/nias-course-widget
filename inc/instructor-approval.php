@@ -387,6 +387,7 @@ function nias_inst_sections_diff($live, $new)
                 'lesson_preview_video' => __('ویدیو', 'nias-course-widget'), 'lesson_download' => __('فایل', 'nias-course-widget'),
                 'lesson_private' => __('خصوصی بودن', 'nias-course-widget'), 'lesson_duration' => __('مدت', 'nias-course-widget'),
                 'lesson_quiz' => __('آزمون', 'nias-course-widget'), 'lesson_gate' => __('پیش‌نیاز', 'nias-course-widget'), 'lesson_label' => __('برچسب', 'nias-course-widget'),
+                'lesson_drip' => __('قطره‌ای', 'nias-course-widget'), 'lesson_drip_day' => __('روز باز شدن', 'nias-course-widget'), 'lesson_drip_time' => __('ساعت باز شدن', 'nias-course-widget'),
             );
             foreach ($fields as $k => $label) {
                 $vx = isset($x[$k]) ? $x[$k] : '';

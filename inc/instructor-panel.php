@@ -345,6 +345,7 @@ function nias_inst_panel_courses_view($user_id)
             . '</div><div class="nip-c-a">'
             . (function_exists('nias_inst_can_create') && nias_inst_can_create($user_id) && nias_can_edit_course($user_id, $pid) ? '<a class="nip-btn" href="' . esc_url(nias_inst_panel_url('course', array('course' => $pid))) . '">' . esc_html__('مشخصات', 'nias-course-widget') . '</a>' : '')
             . (nias_can_edit_course($user_id, $pid) ? '<a class="nip-btn pri" href="' . esc_url(nias_inst_panel_url('curriculum', array('course' => $pid))) . '">' . esc_html__('ویرایش جلسات و فصل‌ها', 'nias-course-widget') . '</a>' : '')
+            . (function_exists('nias_drip_enabled') && nias_drip_enabled() && nias_can_edit_course($user_id, $pid) ? '<a class="nip-btn" href="' . esc_url(nias_inst_panel_url('drip', array('course' => $pid))) . '">' . esc_html__('برنامهٔ قطره‌ای دانشجویان', 'nias-course-widget') . '</a>' : '')
             . '<a class="nip-btn" href="' . esc_url($view) . '" target="_blank" rel="noopener">' . esc_html__('مشاهدهٔ دوره', 'nias-course-widget') . '</a>'
             . (!empty($qa_counts[$pid]) ? '<a class="nip-btn" href="' . esc_url(nias_inst_panel_url('qa', array('qc' => $pid))) . '">' . esc_html__('پرسش‌ها', 'nias-course-widget') . '</a>' : '')
             . '</div></div></article>';
@@ -410,6 +411,15 @@ function nias_inst_panel_dispatch($user_id)
     }
     if ($route === 'quizzes') {
         return nias_inst_panel_nav($user_id, 'quizzes') . nias_inst_panel_quizzes_view($user_id);
+    }
+    if ($route === 'drip' && function_exists('nias_drip_tool_html')) {
+        $pid = isset($_GET['course']) ? (int) $_GET['course'] : 0;
+        if (!nias_drip_enabled() || !$pid || !nias_can_edit_course($user_id, $pid)) {
+            return nias_inst_panel_nav($user_id, 'courses') . '<div class="nip-wrap"><div class="nip-empty">' . esc_html__('به این بخش دسترسی ندارید.', 'nias-course-widget') . '</div></div>';
+        }
+        return nias_inst_panel_nav($user_id, 'courses') . '<div class="nip-wrap"><div class="nip-card" style="padding:18px"><h3 style="margin:0 0 4px">' . esc_html(sprintf(__('برنامهٔ قطره‌ای دانشجویان «%s»', 'nias-course-widget'), get_the_title($pid))) . '</h3>'
+            . '<p style="margin:0 0 14px;color:#64748b;font-size:13px">' . esc_html__('دانشجو را پیدا کنید تا زمان باز شدن جلسات او را ببینید؛ می‌توانید همهٔ جلسات را برایش باز کنید یا شروع دوره‌اش را جابه‌جا کنید.', 'nias-course-widget') . '</p>'
+            . nias_drip_tool_html($pid) . '</div></div>';
     }
     return null;
 }

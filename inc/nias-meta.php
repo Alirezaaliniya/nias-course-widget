@@ -67,6 +67,9 @@ function nias_course_sections_schema()
             'lesson_quiz'          => array('type' => 'value'),
             'lesson_gate'          => array('type' => 'value'),
             'lesson_gate_min'      => array('type' => 'value'),
+            'lesson_drip'          => array('type' => 'value'),
+            'lesson_drip_day'      => array('type' => 'value'),
+            'lesson_drip_time'     => array('type' => 'value'),
         )),
     );
 }

@@ -1168,7 +1168,7 @@ class Nias_course_woocommerce extends \Elementor\Widget_Base
                         <div class="section_content" style="display: <?php echo ('yes' == $settings['nias_openorclose']) ? 'none' : 'block'; ?>">
                             <?php if (!empty($section['lessons'])) { ?>
                                 <ul class="lessons_list">
-                                    <?php foreach ($section['lessons'] as $lesson) { ?>
+                                    <?php foreach ($section['lessons'] as $lesson) { $lesson = function_exists('nias_drip_filter_raw_lesson') ? nias_drip_filter_raw_lesson($lesson, isset($product_id) ? $product_id : 0) : $lesson; /* «قطره‌ای» */ ?>
                                         <li class="lesson_item">
                                             <div class="lesson_header toggle_lesson">
                                                 <div class="nias-right-head">

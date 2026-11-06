@@ -270,6 +270,12 @@ function nias_quiz_ajax_submit()
     $answers = is_array($answers) ? $answers : array();
     $uid     = get_current_user_id();
 
+    // Modules may close a quiz for now (e.g. its drip lesson has not opened).
+    $blocked = (string) apply_filters('nias_quiz_submit_blocked', '', $quiz_id, $uid);
+    if ($blocked !== '') {
+        wp_send_json_error(array('message' => $blocked, 'code' => 'locked'));
+    }
+
     // Attempt limit.
     if ($uid) {
         $left = nias_quiz_attempts_left($quiz, nias_quiz_user_record($uid, $quiz_id));

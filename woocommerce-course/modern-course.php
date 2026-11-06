@@ -306,6 +306,10 @@ function nias_modern_course_build_data($product_id)
     // Quizzes: lesson quizzes and score gates (see quiz-course.php).
     $quiz_on     = function_exists('nias_quiz_enabled') && nias_quiz_enabled() && function_exists('nias_quiz_public_model');
     $uid         = ($user && $user->ID) ? (int) $user->ID : 0;
+    // «محتوای قطره‌ای»: the student's enrolment time (a free course records the first visit).
+    $drip_on  = function_exists('nias_drip_enabled') && nias_drip_enabled();
+    $enrolled = ($drip_on && $uid) ? nias_course_enrolled_at($uid, $product_id, true) : 0;
+    $drip_by  = $drip_on && $uid && nias_drip_bypass($uid, $product_id);
     $seen_quiz   = array(); // quiz ids of the lessons so far (for "prev" gates)
     $lesson_refs = array(); // quiz id => lesson (gradebook)
     $quiz_cache  = array();
@@ -371,6 +375,14 @@ function nias_modern_course_build_data($product_id)
                 }
             }
 
+            // Drip: closed until day N (after enrolment) at HH:MM. A private lesson
+            // this user cannot open keeps its own lock; a score gate comes first.
+            $drip     = null;
+            $drip_cfg = $drip_on ? nias_drip_cfg_js($les) : null;
+            if ($drip_on && !$gate && !($private && !$purchased)) {
+                $drip = nias_drip_state($uid, $product_id, $drip_cfg, $enrolled);
+            }
+
             // The lesson's own quiz.
             $quiz_payload = null;
             $quiz_id      = $quiz_on && !empty($les['quiz']) ? (int) $les['quiz'] : 0;
@@ -385,7 +397,7 @@ function nias_modern_course_build_data($product_id)
                     'record'    => $state['record'],
                 );
                 // The questions only go out when the lesson is open to this user.
-                $lock_quiz = $gate || ($base && (!function_exists('nias_course_lock_part') || nias_course_lock_part('content')));
+                $lock_quiz = $gate || $drip || ($base && (!function_exists('nias_course_lock_part') || nias_course_lock_part('content')));
                 if (!$lock_quiz) {
                     $quiz_payload['model']  = nias_quiz_public_model($lq, $uid);
                     $quiz_payload['config'] = nias_quiz_student_config($lq);
@@ -445,8 +457,8 @@ function nias_modern_course_build_data($product_id)
                 $player_locked = $lock_content;
             }
 
-            // A gated lesson sends nothing but its title until it opens.
-            if ($gate) {
+            // A gated (or not yet dripped) lesson sends nothing but its title until it opens.
+            if ($gate || $drip) {
                 $video_url = $embed_code = $file_url = $content = '';
                 $player_locked = true;
             }
@@ -465,6 +477,9 @@ function nias_modern_course_build_data($product_id)
             $lessons[] = array(
                 'id'           => $lid,
                 'gate'         => $gate,
+                'drip'         => $drip ? array('at' => (int) $drip['at'], 'label' => $drip['label'], 'short' => $drip['at'] ? nias_drip_short_label($drip['at']) : $drip['label']) : null,
+                // Admins / the course's instructors see the rule of a drip lesson (it never closes for them).
+                'dripNote'     => ($drip_by && $drip_cfg && $drip_cfg['on']) ? nias_drip_rel_label($drip_cfg) : '',
                 'quiz'         => $quiz_payload,
                 'title'        => isset($les['title']) ? $les['title'] : '',
                 'label'        => isset($les['label']) ? $les['label'] : '',
@@ -545,6 +560,7 @@ function nias_modern_course_build_data($product_id)
         'refresh'      => array(
             'url'   => admin_url('admin-ajax.php'),
             'nonce' => wp_create_nonce('nias_mc_data_' . $product_id),
+            'now'   => time(),
         ),
     );
 }
@@ -709,6 +725,11 @@ function nias_modern_course_assets()
     .nmc-les-q.wait,.nmc-gr-st.wait,.nmc-gate-st.wait{background:#eef5ff;color:#2563c9}
     .nmc-les-new{font-size:11px;font-weight:700;padding:1px 7px;border-radius:99px;background:#fff3d6;color:#b77a00}
     .nmc-gate .nmc-gate-ic{background:#f3eefe;color:#7a4fd0}
+    .nmc-drip .nmc-gate-ic{background:#fff4e5;color:#b45309}
+    .nmc-drip-cd{font-size:26px;font-weight:800;color:#b45309;letter-spacing:.5px;direction:rtl;unicode-bidi:isolate;font-variant-numeric:tabular-nums}
+    .nmc-drip-cd bdi{direction:ltr;unicode-bidi:isolate;display:inline-block}
+    .nmc-drip-sub{font-size:12.5px;opacity:.8}
+    .nmc-les-q.nmc-drip-note{background:#fff4e5;color:#b45309}
     .nmc-gate-list{display:flex;flex-direction:column;gap:10px;width:100%;max-width:560px;margin-top:6px}
     .nmc-gate-row{display:flex;align-items:center;gap:12px;flex-wrap:wrap;text-align:right;background:#fff;border:1px solid #eceff2;border-radius:14px;padding:12px 14px}
     .nmc-gate-q{flex:1;min-width:160px;display:flex;flex-direction:column;gap:2px}
@@ -1262,7 +1283,57 @@ function nias_modern_course_script()
             if (!this.flat.some(function (l) { return l.id === this.state.currentId; }, this)) {
                 this.state.currentId = this.flat[0] ? this.flat[0].id : null;
             }
+            this.clockSync();
+            this.scheduleDrip();
         }
+        // Server clock (the countdown must not trust the visitor's clock).
+        NMC.prototype.clockSync = function () { var n = this.d.refresh && +this.d.refresh.now; this._skew = n ? n * 1000 - Date.now() : 0; };
+        NMC.prototype.serverNow = function () { return Date.now() + (this._skew || 0); };
+        // Reload the course data when the next drip lesson opens.
+        NMC.prototype.scheduleDrip = function () {
+            clearTimeout(this._dripT);
+            var next = 0;
+            this.flat.forEach(function (l) { if (l.drip && l.drip.at && (!next || l.drip.at < next)) next = l.drip.at; });
+            if (!next) return;
+            var ms = next * 1000 - this.serverNow() + 1500, self = this;
+            if (ms < 2147000000) { this._dripT = setTimeout(function () { self.refresh(); }, Math.max(1000, ms)); }
+        };
+        NMC.prototype.countdown = function (at) {
+            var s = Math.max(0, Math.floor((at * 1000 - this.serverNow()) / 1000));
+            var d = Math.floor(s / 86400), h = Math.floor(s % 86400 / 3600), m = Math.floor(s % 3600 / 60), x = s % 60;
+            var pad = function (v) { return (v < 10 ? '0' : '') + v; };
+            return (d ? fa(d) + ' روز و ' : '') + fa(pad(h) + ':' + pad(m) + ':' + pad(x));
+        };
+        NMC.prototype.countdownHtml = function (at) {
+            var t = this.countdown(at), i = t.lastIndexOf(' ');
+            return i > -1 ? esc(t.slice(0, i + 1)) + '<bdi>' + esc(t.slice(i + 1)) + '</bdi>' : '<bdi>' + esc(t) + '</bdi>';
+        };
+        // Cover of a lesson that opens later (drip content).
+        NMC.prototype.dripCard = function (l) {
+            var self = this, dr = l.drip || {};
+            var box = el('div', { 'class': 'nmc-soon nmc-gate nmc-drip' });
+            if (dr.at) {
+                box.innerHTML =
+                    '<div class="nmc-soon-ic nmc-gate-ic">' + ICON.clock + '</div>' +
+                    '<div class="nmc-soon-t">این جلسه به‌زودی برای شما باز می‌شود</div>' +
+                    '<div class="nmc-soon-m">«' + esc(l.title) + '» طبق برنامهٔ دوره در <b>' + esc(dr.label) + '</b> باز می‌شود.</div>' +
+                    '<div class="nmc-drip-cd" data-drip-cd>' + this.countdownHtml(dr.at) + '</div>' +
+                    '<div class="nmc-soon-m nmc-drip-sub">جلسات این دوره قطره‌ای و به ترتیب باز می‌شوند تا آموزش اثرگذارتر باشد.</div>';
+                var cd = box.querySelector('[data-drip-cd]');
+                this._dripTick = setInterval(function () {
+                    if (!cd.isConnected) { clearInterval(self._dripTick); return; }
+                    cd.innerHTML = self.countdownHtml(dr.at);
+                    if (dr.at * 1000 <= self.serverNow()) { clearInterval(self._dripTick); cd.textContent = 'در حال باز شدن…'; self.refresh(); }
+                }, 1000);
+            } else {
+                box.innerHTML =
+                    '<div class="nmc-soon-ic nmc-gate-ic">' + ICON.clock + '</div>' +
+                    '<div class="nmc-soon-t">این جلسه طبق برنامهٔ دوره باز می‌شود</div>' +
+                    '<div class="nmc-soon-m">«' + esc(l.title) + '»: ' + esc(dr.label) + '. برنامهٔ باز شدن جلسات از زمان ثبت‌نام شما شروع می‌شود.</div>' +
+                    (this.d.buyUrl ? '<a class="nmc-cover-btn buy" href="' + esc(this.d.buyUrl) + '">' + (this.d.free ? 'ورود / ثبت‌نام' : 'تهیه دوره') + '</a>' : '');
+            }
+            return box;
+        };
 
         NMC.prototype.buildFlat = function () {
             this.flat = [];
@@ -1301,11 +1372,13 @@ function nias_modern_course_script()
                 .then(function (res) {
                     if (!res || !res.success || !res.data) return;
                     var before = {};
-                    self.flat.forEach(function (l) { before[l.id] = !!l.gate; });
+                    self.flat.forEach(function (l) { before[l.id] = !!l.gate || !!l.drip; });
                     self.d = res.data;
                     self.buildFlat();
                     self.applyQuizProgress();
-                    var opened = self.flat.filter(function (l) { return before[l.id] && !l.gate; });
+                    var opened = self.flat.filter(function (l) { return before[l.id] && !l.gate && !l.drip; });
+                    self.clockSync(); self.scheduleDrip();
+                    if (opened.some(function (l) { return l.id === self.state.currentId; })) { self.renderPlayer(); self.renderInfo(); }
                     self._justOpened = self._justOpened || {};
                     opened.forEach(function (l) { self._justOpened[l.id] = true; });
                     // Keep the quiz result on screen; the rest follows the new data.
@@ -1351,10 +1424,11 @@ function nias_modern_course_script()
         // something to watch/read. Empty lessons cannot be completed, so
         // counting them made 100% (and a progress-based certificate) unreachable.
         // Score-gated lessons count too: they are part of the course, just not open yet.
-        NMC.prototype.counted = function () { return this.flat.filter(function (l) { return (!l.locked || l.gate) && this.playerType(l) !== 'empty'; }, this); };
+        NMC.prototype.counted = function () { return this.flat.filter(function (l) { return (!l.locked || l.gate || l.drip) && this.playerType(l) !== 'empty'; }, this); };
         NMC.prototype.overall = function () { var c = this.counted(); if (!c.length) return 0; var s = c.reduce(function (a, l) { return a + this.pctOf(l.id); }.bind(this), 0); return Math.round(s / c.length); };
         NMC.prototype.threshold = function () { var t = this.d.certificate && this.d.certificate.threshold; t = parseInt(t, 10); return isNaN(t) ? 80 : t; };
         NMC.prototype.playerType = function (l) {
+            if (l.drip) return 'drip';
             if (l.gate) return 'gated';
             if (l.locked) return 'locked';
             if (l.videoEmbed) return 'embedcode';
@@ -1366,10 +1440,10 @@ function nias_modern_course_script()
         };
         NMC.prototype.quizRec = function (l) { return l && l.quiz ? l.quiz.record : null; };
         NMC.prototype.typeLabel = function (l) {
-            return ({ video: 'ویدیو', audio: 'فایل صوتی', iframe: 'پخش آنلاین', embedcode: 'پخش آنلاین', download: 'فایل دانلودی', text: 'درس متنی', locked: 'درس خصوصی', empty: 'درس', quiz: 'آزمون', gated: 'نیازمند قبولی' })[this.playerType(l)];
+            return ({ video: 'ویدیو', audio: 'فایل صوتی', iframe: 'پخش آنلاین', embedcode: 'پخش آنلاین', download: 'فایل دانلودی', text: 'درس متنی', locked: 'درس خصوصی', empty: 'درس', quiz: 'آزمون', gated: 'نیازمند قبولی', drip: 'به‌زودی' })[this.playerType(l)];
         };
         NMC.prototype.typeIcon = function (l) {
-            return ({ video: ICON.play, audio: ICON.audio, iframe: ICON.iframe, embedcode: ICON.iframe, download: ICON.download, text: ICON.text, locked: ICON.lock, empty: ICON.book, quiz: ICON.quiz, gated: ICON.lock })[this.playerType(l)];
+            return ({ video: ICON.play, audio: ICON.audio, iframe: ICON.iframe, embedcode: ICON.iframe, download: ICON.download, text: ICON.text, locked: ICON.lock, empty: ICON.book, quiz: ICON.quiz, gated: ICON.lock, drip: ICON.clock })[this.playerType(l)];
         };
 
         // ---- mounting ----
@@ -1555,6 +1629,9 @@ function nias_modern_course_script()
             } else if (t === 'gated') {
                 stage.className = 'nmc-stage nmc-stage-soft';
                 stage.appendChild(this.gateCard(cur));
+            } else if (t === 'drip') {
+                stage.className = 'nmc-stage nmc-stage-soft';
+                stage.appendChild(this.dripCard(cur));
             } else if (t === 'locked') {
                 var lk = el('div', { 'class': 'nmc-cover lock' });
                 lk.innerHTML =
@@ -1583,7 +1660,7 @@ function nias_modern_course_script()
                 if (nb) { nb.addEventListener('click', function () { self.selectLesson(next.id); }); }
             }
 
-            host.classList.toggle('nmc-player-soft', t === 'empty' || t === 'quiz' || t === 'gated');
+            host.classList.toggle('nmc-player-soft', t === 'empty' || t === 'quiz' || t === 'gated' || t === 'drip');
             host.innerHTML = '';
             host.appendChild(stage);
 
@@ -1923,7 +2000,7 @@ function nias_modern_course_script()
             var ctype = this.playerType(cur);
             // Quiz lessons complete by passing the quiz, not by a click.
             var completeDisabled = cur.locked || ctype === 'empty' || ctype === 'quiz';
-            var quizTab = !!cur.quiz && ctype !== 'quiz' && ctype !== 'gated';
+            var quizTab = !!cur.quiz && ctype !== 'quiz' && ctype !== 'gated' && ctype !== 'drip';
             if (this.state.tab === 'quiz' && !quizTab) { this.state.tab = 'desc'; }
 
             var resources = [];
@@ -1937,6 +2014,8 @@ function nias_modern_course_script()
                 body = '<div class="nmc-quiz-tab"></div>';
             } else if (tab === 'qa') {
                 body = '<div class="nmc-qa"></div>';
+            } else if (cur.drip && (tab === 'desc' || tab === 'res')) {
+                body = '<div class="nmc-empty">' + (tab === 'desc' ? 'توضیحات' : 'منابع و پیوست') + ' این جلسه پس از باز شدن آن نمایش داده می‌شود' + (cur.drip.at ? ' (' + esc(cur.drip.label) + ')' : '') + '.</div>';
             } else if (tab === 'desc') {
                 if (cur.lockedDesc) {
                     // Description withheld server-side because the lesson is private
@@ -2016,10 +2095,11 @@ function nias_modern_course_script()
             else if (doneL) status = '<span class="nmc-les-status">' + ICON.checkC + '</span>';
             else status = '<span class="nmc-les-status" style="color:' + (lp > 0 ? this.accent : '#c2cacf') + '">' + fa(lp) + '٪</span>';
             var lt = this.playerType(l), qr = this.quizRec(l);
-            var pctLbl = lt === 'gated' ? 'قفل تا قبولی در آزمون' : (l.locked ? 'خصوصی' : (doneL ? 'تکمیل‌شده' : (lp > 0 ? fa(lp) + '٪ مشاهده' : (lt === 'empty' ? 'به‌زودی' : (lt === 'quiz' ? (qr ? (qr.best == null ? 'منتظر نمرهٔ مدرس' : 'هنوز قبول نشده') : 'شرکت نکرده‌اید') : 'شروع نشده')))));
+            var pctLbl = lt === 'drip' ? (l.drip.at ? 'باز می‌شود: ' + l.drip.short : 'طبق برنامهٔ دوره') : lt === 'gated' ? 'قفل تا قبولی در آزمون' : (l.locked ? 'خصوصی' : (doneL ? 'تکمیل‌شده' : (lp > 0 ? fa(lp) + '٪ مشاهده' : (lt === 'empty' ? 'به‌زودی' : (lt === 'quiz' ? (qr ? (qr.best == null ? 'منتظر نمرهٔ مدرس' : 'هنوز قبول نشده') : 'شرکت نکرده‌اید') : 'شروع نشده')))));
             if (lt === 'gated') { status = '<span class="nmc-les-status"><span class="dot" style="background:#f3eefe;color:#7a4fd0">' + ICON.lock + '</span></span>'; }
+            if (lt === 'drip') { status = '<span class="nmc-les-status"><span class="dot" style="background:#fff4e5;color:#b45309">' + ICON.clock + '</span></span>'; }
             var qWait = qr && qr.best == null;
-            var quizChip = (l.quiz && lt !== 'gated') ? '<span class="nmc-les-q ' + (qr ? (qr.passed ? 'ok' : (qWait ? 'wait' : 'no')) : '') + '">' + ICON.quiz + '<span>' + (qr ? (qWait ? 'در انتظار تصحیح' : fa(qr.best) + '٪') : 'آزمون') + '</span></span>' : '';
+            var quizChip = (l.quiz && lt !== 'gated' && lt !== 'drip') ? '<span class="nmc-les-q ' + (qr ? (qr.passed ? 'ok' : (qWait ? 'wait' : 'no')) : '') + '">' + ICON.quiz + '<span>' + (qr ? (qWait ? 'در انتظار تصحیح' : fa(qr.best) + '٪') : 'آزمون') + '</span></span>' : '';
             var pctCol = doneL ? '#48af3b' : (lp > 0 ? this.accent : '#9aa4a9');
             var title = esc(l.title);
             var qn = query ? skey(query).trim().length : 0;
@@ -2031,7 +2111,7 @@ function nias_modern_course_script()
                 '<span class="nmc-les-ic ' + (l.locked ? 'lock' : '') + '">' + self.typeIcon(l) + '</span>' +
                 '<span class="nmc-les-body">' +
                     '<span class="nmc-les-row1"><span class="nmc-les-title">' + title + '</span><span class="nmc-les-badge">' + esc(l.label || self.typeLabel(l)) + '</span></span>' +
-                    '<span class="nmc-les-row2">' + (sel ? '<span class="nmc-les-now"><i></i>در حال مشاهده</span>' : '') + (l.duration ? '<span class="nmc-les-dur">' + ICON.clock + ' ' + esc(l.duration) + '</span>' : '') + '<span class="nmc-les-pct" style="color:' + (lt === 'gated' ? '#7a4fd0' : pctCol) + '">' + pctLbl + '</span>' + quizChip + (self._justOpened && self._justOpened[l.id] ? '<span class="nmc-les-new">تازه باز شد</span>' : '') + '</span>' +
+                    '<span class="nmc-les-row2">' + (sel ? '<span class="nmc-les-now"><i></i>در حال مشاهده</span>' : '') + (l.duration ? '<span class="nmc-les-dur">' + ICON.clock + ' ' + esc(l.duration) + '</span>' : '') + '<span class="nmc-les-pct" style="color:' + (lt === 'gated' ? '#7a4fd0' : (lt === 'drip' ? '#b45309' : pctCol)) + '">' + pctLbl + '</span>' + quizChip + (l.dripNote ? '<span class="nmc-les-q nmc-drip-note" title="برنامهٔ قطره‌ای (برای شما همیشه باز است)">' + ICON.clock + '<span>' + esc(l.dripNote) + '</span></span>' : '') + (self._justOpened && self._justOpened[l.id] ? '<span class="nmc-les-new">تازه باز شد</span>' : '') + '</span>' +
                 '</span>' + status +
             '</button>';
         };

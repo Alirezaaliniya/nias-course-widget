@@ -348,6 +348,7 @@ function nias_settings_topbar($active)
                 <?php if (function_exists('nias_inst_approval_on') && nias_inst_panel_on()) : $nir_n = nias_inst_requests_count(); ?>
                     <a href="<?php echo esc_url(admin_url('admin.php?page=nias-course-approvals')); ?>" class="nias-tab <?php echo $active === 'approvals' ? 'active' : ''; ?>"><?php echo esc_html__('درخواست‌های مدرسین', 'nias-course-widget'); ?><?php if ($nir_n) : ?> <span class="nias-tab-badge" style="background:#b45309;color:#fff"><?php echo esc_html(nias_fa_digits($nir_n)); ?></span><?php endif; ?></a>
                 <?php endif; ?>
+                <a href="<?php echo esc_url(admin_url('admin.php?page=nias-course-modules')); ?>" class="nias-tab <?php echo $active === 'modules' ? 'active' : ''; ?>"><?php echo esc_html__('ماژول‌ها', 'nias-course-widget'); ?><?php if (function_exists('nias_drip_enabled') && nias_drip_enabled()) : ?> <span class="nias-tab-badge"><?php echo esc_html__('فعال', 'nias-course-widget'); ?></span><?php endif; ?></a>
                 <a href="<?php echo esc_url(admin_url('admin.php?page=nias-course-sms')); ?>" class="nias-tab <?php echo $active === 'sms' ? 'active' : ''; ?>"><?php echo esc_html__('پیامک', 'nias-course-widget'); ?><?php if (function_exists('nias_sms_ready') && nias_sms_ready()) : ?> <span class="nias-tab-badge"><?php echo esc_html__('فعال', 'nias-course-widget'); ?></span><?php endif; ?></a>
                 <a href="<?php echo esc_url(admin_url('admin.php?page=nias-course-player')); ?>" class="nias-tab <?php echo $active === 'player' ? 'active' : ''; ?>"><?php echo esc_html__('پلیر ویدیو', 'nias-course-widget'); ?></a>
                 <?php if ($meta_on) : ?>
@@ -1260,6 +1261,7 @@ function nias_course_settings_assets($hook)
         strpos($hook, 'nias-course-qa') === false &&
         strpos($hook, 'nias-course-approvals') === false &&
         strpos($hook, 'nias-course-sms') === false &&
+        strpos($hook, 'nias-course-modules') === false &&
         strpos($hook, 'nias-course-meta') === false &&
         strpos($hook, 'nias-course-player') === false
     ) {

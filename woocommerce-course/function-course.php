@@ -216,6 +216,14 @@ function nias_course_sanitize_sections($raw)
                     'lesson_gate'          => nias_course_sanitize_gate($lesson['lesson_gate'] ?? ''),
                     'lesson_gate_min'      => (isset($lesson['lesson_gate_min']) && $lesson['lesson_gate_min'] !== '') ? (string) max(0, min(100, (int) $lesson['lesson_gate_min'])) : '',
                 );
+                // «قطره‌ای»: opens on day N after enrolment (1 = that day) at HH:MM.
+                $drip = function_exists('nias_drip_clean')
+                    ? nias_drip_clean(isset($lesson['lesson_drip']) && $lesson['lesson_drip'] === 'yes', $lesson['lesson_drip_day'] ?? 1, $lesson['lesson_drip_time'] ?? '')
+                    : array('on' => false, 'day' => 1, 'time' => '');
+                $last = count($sec['lessons']) - 1;
+                $sec['lessons'][$last]['lesson_drip']      = $drip['on'] ? 'yes' : '';
+                $sec['lessons'][$last]['lesson_drip_day']  = $drip['on'] ? (string) $drip['day'] : '';
+                $sec['lessons'][$last]['lesson_drip_time'] = $drip['on'] ? $drip['time'] : '';
             }
         }
 

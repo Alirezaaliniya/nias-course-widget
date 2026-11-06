@@ -74,6 +74,12 @@ function nias_sms_events()
             'tokens' => array('name', 'course', 'code', 'link'),
             'text' => __('{name} عزیز، مدرک دورهٔ «{course}» صادر شد. کد مدرک: {code} {link}', 'nias-course-widget'),
         ),
+        's_drip_open' => array(
+            'to' => 'student', 'label' => __('باز شدن جلسهٔ قطره‌ای', 'nias-course-widget'),
+            'desc' => __('وقتی جلسهٔ جدیدی از دورهٔ قطره‌ای برای دانشجو باز می‌شود (ماژول «محتوای قطره‌ای»).', 'nias-course-widget'),
+            'tokens' => array('name', 'course', 'lesson', 'link'),
+            'text' => __('{name} عزیز، جلسهٔ «{lesson}» از دورهٔ «{course}» برای شما باز شد. {link}', 'nias-course-widget'),
+        ),
         't_new_student' => array(
             'to' => 'teacher', 'label' => __('دانشجوی جدید', 'nias-course-widget'),
             'desc' => __('وقتی کسی در یکی از دوره‌های مدرس ثبت‌نام می‌کند.', 'nias-course-widget'),
@@ -337,6 +343,12 @@ add_action('nias_certificate_issued', function ($row) {
     $link = function_exists('nias_cert_verify_url') ? nias_cert_verify_url($row['code'], (int) $row['user_id']) : home_url('/');
     nias_sms_queue('s_certificate', (int) $row['user_id'], array('course' => get_the_title((int) $row['product_id']), 'code' => (string) $row['code'], 'link' => $link));
 }, 20);
+
+// Drip content: a new lesson opened for the student.
+add_action('nias_drip_lessons_opened', function ($user_id, $post_id, $titles) {
+    $link = function_exists('nias_course_modern_view_url') ? nias_course_modern_view_url($post_id) : get_permalink($post_id);
+    nias_sms_queue('s_drip_open', (int) $user_id, array('course' => get_the_title((int) $post_id), 'lesson' => implode('، ', (array) $titles), 'link' => $link));
+}, 20, 3);
 
 // Instructor course review (approval).
 add_action('nias_inst_reviewed', function ($user_id, $post_id, $approved, $kind) {

@@ -104,6 +104,9 @@ function nias_curriculum_sections_to_js($sections)
                     'quiz'    => isset($lesson['lesson_quiz']) ? (int) $lesson['lesson_quiz'] : 0,
                     'gate'    => isset($lesson['lesson_gate']) ? (string) $lesson['lesson_gate'] : '',
                     'gateMin' => isset($lesson['lesson_gate_min']) ? (string) $lesson['lesson_gate_min'] : '',
+                    'drip'     => !empty($lesson['lesson_drip']),
+                    'dripDay'  => isset($lesson['lesson_drip_day']) && $lesson['lesson_drip_day'] !== '' ? (string) $lesson['lesson_drip_day'] : '',
+                    'dripTime' => isset($lesson['lesson_drip_time']) ? (string) $lesson['lesson_drip_time'] : '',
                 );
             }
         }
@@ -154,6 +157,9 @@ function nias_curriculum_js_to_input($chapters)
                     'lesson_quiz'          => isset($lesson['quiz']) ? $lesson['quiz'] : '',
                     'lesson_gate'          => isset($lesson['gate']) ? $lesson['gate'] : '',
                     'lesson_gate_min'      => isset($lesson['gateMin']) ? $lesson['gateMin'] : '',
+                    'lesson_drip'          => !empty($lesson['drip']) && $lesson['drip'] !== 'false' ? 'yes' : '',
+                    'lesson_drip_day'      => isset($lesson['dripDay']) ? $lesson['dripDay'] : '',
+                    'lesson_drip_time'     => isset($lesson['dripTime']) ? $lesson['dripTime'] : '',
                 );
             }
         }
@@ -488,6 +494,11 @@ function nias_curriculum_render_editor($product_id, $ctx)
         // Quizzes that can be placed in a lesson / required to open one.
         'quizLabels'     => nias_curriculum_quiz_labels($sections),
         'quizBuilderUrl' => $ctx['quizUrl'] ? $ctx['quizUrl'] : admin_url('admin.php?page=nias-course-quiz'),
+        // «محتوای قطره‌ای» module.
+        'drip'           => array(
+            'enabled' => function_exists('nias_drip_enabled') && nias_drip_enabled(),
+            'url'     => current_user_can('manage_options') ? admin_url('admin.php?page=nias-course-modules') : '',
+        ),
         'spot'           => array(
             'enabled'      => $spot_enabled,
             'downloadUrl'  => get_post_meta($product_id, '_spotplayer_download_url', true),
@@ -946,6 +957,9 @@ function nias_curriculum_styles()
     .nc-media-clear{flex:0 0 auto;height:38px;padding:0 12px;border:1px solid #f4d4dc;background:#fff;color:#e11d48;border-radius:9px;font-size:12.5px;font-weight:700;cursor:pointer}
 
     .nc-quizbox{display:flex;flex-direction:column;gap:12px;padding:14px;border:1px solid #e6ecf5;background:#f9fbfe;border-radius:13px}
+    .nc-drip-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+    .nc-dripbox .nc-private{margin:0}
+    .nc-drip-badge{background:#fff4e5!important;color:#b45309!important}
     .nc-quizbox-t{font-size:13.5px;font-weight:800;color:#1f2733}
     .nc-quizbox-s{font-size:12px;color:#94a3b8;margin-top:5px;line-height:1.7}
     .nc-quiz-badge{background:#eaf3ff;color:#1e6fd0}
@@ -1119,7 +1133,7 @@ function nias_curriculum_script()
                         return {
                             id: uid('l'), title: l.title || '', label: l.label || '',
                             icon: mkMedia(l.icon), video: mkMedia(l.video), file: mkMedia(l.file),
-                            private: !!l.private, duration: l.duration || '', content: l.content || '', quiz: parseInt(l.quiz, 10) || 0, gate: l.gate || '', gateMin: l.gateMin || ''
+                            private: !!l.private, duration: l.duration || '', content: l.content || '', quiz: parseInt(l.quiz, 10) || 0, gate: l.gate || '', gateMin: l.gateMin || '', drip: !!l.drip, dripDay: l.dripDay || '', dripTime: l.dripTime || ''
                         };
                     })
                 };
@@ -1222,6 +1236,7 @@ function nias_curriculum_script()
                     if (ls.private) h += '<span class="nc-private-badge">' + IC.lockSm + ' خصوصی</span>';
                     if (ls.quiz) h += '<span class="nc-private-badge nc-quiz-badge">آزمون</span>';
                     if (ls.gate) h += '<span class="nc-private-badge nc-gate-badge">' + IC.lockSm + ' پیش‌نیاز</span>';
+                    if (ls.drip && DATA.drip && DATA.drip.enabled) h += '<span class="nc-private-badge nc-drip-badge">روز ' + faNum(ls.dripDay || 1) + (ls.dripTime ? ' · ' + faNum(ls.dripTime) : '') + '</span>';
                     if (ls.label) h += '<span class="nc-lesson-label" data-label-l="' + ls.id + '">' + esc(ls.label) + '</span>';
                     h += '<div class="nc-lesson-actions">';
                     h += '<button type="button" class="nc-icon-btn sm" data-copy-lesson="' + ls.id + '" data-cid="' + ch.id + '" title="کپی درس">' + IC.copy + '</button>';
@@ -1357,6 +1372,27 @@ function nias_curriculum_script()
                  '<div class="nc-quizbox-s">تا دانشجو به این نمره نرسد، محتوای جلسه اصلاً برایش ارسال نمی‌شود.</div></div>';
             return h + '</div>';
         }
+        /* ---- «قطره‌ای»: opens on day N after enrolment, at HH:MM ---- */
+        function dripBoxHtml(ls) {
+            var D = DATA.drip || {};
+            if (!D.enabled) {
+                return ls.drip ? '<div class="nc-quizbox"><div class="nc-quizbox-t">محتوای قطره‌ای</div><div class="nc-quizbox-s">این جلسه قطره‌ای تنظیم شده، ولی ماژول «محتوای قطره‌ای» خاموش است' + (D.url ? ' — <a href="' + esc(D.url) + '" target="_blank">ماژول‌ها</a>' : '') + '.</div></div>' : '';
+            }
+            var h = '<div class="nc-quizbox nc-dripbox">';
+            h += '<div class="nc-private' + (ls.drip ? ' on' : '') + '" data-drip-toggle><div class="nc-private-l"><span class="nc-lock">' + IC.lock + '</span><div><div class="nc-private-t">قطره‌ای</div><div class="nc-private-s">این جلسه چند روز پس از ثبت‌نام دانشجو باز شود</div></div></div><span class="nc-switch"><span class="nc-knob"></span></span></div>';
+            if (ls.drip) {
+                h += '<div class="nc-drip-grid">' +
+                    '<div><div class="nc-label">روز</div><input type="number" min="1" max="3650" step="1" class="nc-input" data-field="lessonDripDay" value="' + esc(ls.dripDay || '1') + '" placeholder="۱"></div>' +
+                    '<div><div class="nc-label">ساعت</div><input type="time" class="nc-input" data-field="lessonDripTime" value="' + esc(ls.dripTime || '') + '" step="60"></div>' +
+                '</div>' +
+                '<div class="nc-quizbox-s" data-drip-hint>' + dripHint(ls) + '</div>';
+            }
+            return h + '</div>';
+        }
+        function dripHint(ls) {
+            var d = parseInt(ls.dripDay, 10) || 1, t = ls.dripTime || '00:00';
+            return 'روز ۱ همان روز ثبت‌نام است. با این تنظیم، جلسه ' + (d === 1 ? 'در همان روز ثبت‌نام' : faNum(d - 1) + ' روز بعد از روز ثبت‌نام') + '، ساعت ' + faNum(t) + ' باز می‌شود (به وقت سایت). تا آن زمان محتوا، فایل و آزمون جلسه به دانشجو نمایش داده نمی‌شود.';
+        }
         function attachQuizPickers(ls) {
             if (!window.NiasPicker || DATA.quizLabels === false) return;
             var a = fieldsEl.querySelector('[data-pick-quiz]'), g = fieldsEl.querySelector('[data-pick-gate]');
@@ -1391,6 +1427,7 @@ function nias_curriculum_script()
             h += '<div><div class="nc-label">فایل خصوصی درس</div>' + mediaHtml('lesson', 'file', ls.file, IC.file, 'PDF، تمرین یا فایل پیوست', 'افزودن') + '</div>';
             h += '<div class="nc-private' + (ls.private ? ' on' : '') + '" data-private-toggle><div class="nc-private-l"><span class="nc-lock">' + IC.lock + '</span><div><div class="nc-private-t">درس خصوصی است؟</div><div class="nc-private-s">فقط برای کاربران خریدار نمایش داده می‌شود</div></div></div><span class="nc-switch"><span class="nc-knob"></span></span></div>';
             h += quizBoxHtml(ls);
+            h += dripBoxHtml(ls);
             fieldsEl.innerHTML = h;
             attachQuizPickers(ls);
             contentEl.style.display = '';
@@ -1437,7 +1474,7 @@ function nias_curriculum_script()
                 id: uid('c'), title: src.title + (I18N.copySuffix || ' (کپی)'), subtitle: src.subtitle,
                 icon: cloneMedia(src.icon), expanded: true,
                 lessons: src.lessons.map(function (l) {
-                    return { id: uid('l'), title: l.title, label: l.label, icon: cloneMedia(l.icon), video: cloneMedia(l.video), file: cloneMedia(l.file), private: l.private, duration: l.duration || '', content: l.content, quiz: l.quiz || 0, gate: l.gate || '', gateMin: l.gateMin || '' };
+                    return { id: uid('l'), title: l.title, label: l.label, icon: cloneMedia(l.icon), video: cloneMedia(l.video), file: cloneMedia(l.file), private: l.private, duration: l.duration || '', content: l.content, quiz: l.quiz || 0, gate: l.gate || '', gateMin: l.gateMin || '', drip: !!l.drip, dripDay: l.dripDay || '', dripTime: l.dripTime || '' };
                 })
             };
             state.chapters.splice(idx + 1, 0, copy);
@@ -1449,7 +1486,7 @@ function nias_curriculum_script()
             var idx = -1; for (var i = 0; i < ch.lessons.length; i++) if (ch.lessons[i].id === lid) { idx = i; break; }
             if (idx < 0) return;
             var src = ch.lessons[idx];
-            var copy = { id: uid('l'), title: src.title + (I18N.copySuffix || ' (کپی)'), label: src.label, icon: cloneMedia(src.icon), video: cloneMedia(src.video), file: cloneMedia(src.file), private: src.private, duration: src.duration || '', content: src.content, quiz: src.quiz || 0, gate: src.gate || '', gateMin: src.gateMin || '' };
+            var copy = { id: uid('l'), title: src.title + (I18N.copySuffix || ' (کپی)'), label: src.label, icon: cloneMedia(src.icon), video: cloneMedia(src.video), file: cloneMedia(src.file), private: src.private, duration: src.duration || '', content: src.content, quiz: src.quiz || 0, gate: src.gate || '', gateMin: src.gateMin || '', drip: !!src.drip, dripDay: src.dripDay || '', dripTime: src.dripTime || '' };
             ch.lessons.splice(idx + 1, 0, copy);
             state.selected = { type: 'lesson', chapterId: cid, lessonId: copy.id };
             markDirty(); renderAll();
@@ -1548,7 +1585,7 @@ function nias_curriculum_script()
                 return {
                     title: c.title, subtitle: c.subtitle, icon: c.icon,
                     lessons: c.lessons.map(function (l) {
-                        return { title: l.title, label: l.label, icon: l.icon, video: l.video, file: l.file, private: l.private, duration: l.duration || '', content: l.content, quiz: l.quiz || 0, gate: l.gate || '', gateMin: l.gateMin || '' };
+                        return { title: l.title, label: l.label, icon: l.icon, video: l.video, file: l.file, private: l.private, duration: l.duration || '', content: l.content, quiz: l.quiz || 0, gate: l.gate || '', gateMin: l.gateMin || '', drip: !!l.drip, dripDay: l.dripDay || '', dripTime: l.dripTime || '' };
                     })
                 };
             });
@@ -1706,6 +1743,7 @@ function nias_curriculum_script()
                 if (tgt) { tgt[key] = mkMedia(); markDirty(); renderEditor(); }
                 return;
             }
+            if (t.closest('[data-drip-toggle]')) { var lsd = selLesson(); if (lsd) { lsd.drip = !lsd.drip; if (lsd.drip && !lsd.dripDay) lsd.dripDay = '1'; markDirty(); renderEditor(); renderList(); } return; }
             if (t.closest('[data-private-toggle]')) { var ls = selLesson(); if (ls) { ls.private = !ls.private; markDirty(); renderEditor(); renderList(); } return; }
             if (t.closest('[data-save]')) { saveAll(); return; }
             if (t.closest('[data-duplicate]')) {
@@ -1741,6 +1779,15 @@ function nias_curriculum_script()
                         if (gpk) gpk.style.display = val === 'quiz' ? '' : 'none';
                         if (gph) gph.placeholder = gatePh(ls5);
                         if (val === 'quiz' && !ls5.gate && gpk) { var gi = gpk.querySelector('.npk-box'); if (gi) gi.click(); }
+                        renderList();
+                    }
+                }
+                else if (field === 'lessonDripDay' || field === 'lessonDripTime') {
+                    var lsd2 = selLesson();
+                    if (lsd2) {
+                        if (field === 'lessonDripDay') lsd2.dripDay = val === '' ? '' : String(Math.max(1, Math.min(3650, parseInt(val, 10) || 1)));
+                        else lsd2.dripTime = /^\d{2}:\d{2}$/.test(val) ? val : '';
+                        var hint = editorEl.querySelector('[data-drip-hint]'); if (hint) hint.textContent = dripHint(lsd2);
                         renderList();
                     }
                 }

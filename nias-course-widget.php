@@ -87,6 +87,8 @@ require(NIAS_COURSE_INC . '/instructor-panel.php'); // پنل مدرس (optional
 require(NIAS_COURSE_INC . '/instructor-approval.php'); // course creation + «نیاز به تأیید»
 require(NIAS_COURSE_INC . '/sms.php'); // پیامک رویدادها (through Nias Login only)
 require(NIAS_COURSE_INC . '/secure-media.php'); // لینک اختصاصی فایل‌های درس (optional)
+require(NIAS_COURSE_INC . '/drip.php'); // محتوای قطره‌ای (optional module)
+require(NIAS_COURSE_INC . '/modules.php'); // صفحهٔ «ماژول‌ها»
 require(NIAS_WOOCOMMERCE . '/my-account.php');
 require(NIAS_COURSE_INC . '/shortcodes.php');
 
