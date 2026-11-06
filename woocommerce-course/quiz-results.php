@@ -42,6 +42,9 @@ function nias_quiz_grader_scope($user_id)
     foreach (nias_get_instructor_courses($user_id) as $p) {
         $ids = array_merge($ids, nias_quiz_for_course((int) $p->ID));
     }
+    if (function_exists('nias_inst_panel_user') && nias_inst_panel_user($user_id)) {
+        $ids = array_merge($ids, nias_inst_quiz_ids($user_id)); // quizzes they built in the panel
+    }
     return array_values(array_unique(array_map('intval', $ids)));
 }
 

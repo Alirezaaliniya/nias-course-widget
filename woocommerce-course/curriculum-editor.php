@@ -359,8 +359,12 @@ function nias_curriculum_ajax_save()
     if (!$product_id || !check_ajax_referer('nias_curriculum_save_' . $product_id, 'nonce', false)) {
         wp_send_json_error(array('message' => __('درخواست نامعتبر است.', 'nias-course-widget')));
     }
-    if (!current_user_can('edit_post', $product_id)) {
+    $full = current_user_can('edit_post', $product_id); // admin / editor: every part of the page
+    if (!$full && !(function_exists('nias_can_edit_course') && nias_can_edit_course(get_current_user_id(), $product_id))) {
         wp_send_json_error(array('message' => __('دسترسی لازم را ندارید.', 'nias-course-widget')));
+    }
+    if (!current_user_can('unfiltered_html') && function_exists('nias_course_trust_existing')) {
+        nias_course_trust_existing($product_id);
     }
 
     $raw = isset($_POST['chapters']) ? wp_unslash($_POST['chapters']) : '';
@@ -370,9 +374,20 @@ function nias_curriculum_ajax_save()
     }
 
     $sections = nias_course_sanitize_sections(nias_curriculum_js_to_input($chapters));
+    // «نیاز به تأیید»: an instructor's edit of a live course waits for the admin.
+    if (!$full && function_exists('nias_inst_needs_approval') && nias_inst_needs_approval(get_current_user_id(), $product_id)) {
+        nias_course_pending_set($product_id, 'sections', $sections, get_current_user_id());
+        wp_send_json_success(array('message' => __('ذخیره شد و برای تأیید مدیر ارسال شد؛ پس از تأیید روی دوره اعمال می‌شود.', 'nias-course-widget'), 'pending' => true));
+    }
     carbon_set_post_meta($product_id, 'course_sections', $sections);
     if (!defined('NIAS_CS_COMPACT') || !NIAS_CS_COMPACT) {
         do_action('nias_course_sections_saved', $product_id); // (compact storage fires it itself)
+    }
+
+    // Instructor panel: only chapters/lessons; instructors, SpotPlayer and
+    // custom meta stay with the site admin.
+    if (!$full) {
+        wp_send_json_success(array('message' => __('تغییرات ذخیره شد.', 'nias-course-widget')));
     }
 
     // Course instructors (when the feature is enabled).
@@ -425,11 +440,28 @@ function nias_curriculum_render_page()
         echo '<div class="notice notice-error"><p>' . esc_html__('محصول معتبری انتخاب نشده است.', 'nias-course-widget') . '</p></div></div>';
         return;
     }
+    nias_curriculum_render_editor($product_id, array());
+}
+
+/**
+ * The editor itself (wp-admin page and the instructor panel).
+ *
+ * @param array $ctx panel (bool), back (url), quizUrl (url), admin (bool: show SpotPlayer / instructors / meta)
+ */
+function nias_curriculum_render_editor($product_id, $ctx)
+{
+    $ctx     = wp_parse_args($ctx, array('panel' => false, 'back' => '', 'quizUrl' => '', 'admin' => true));
+    $product = get_post($product_id);
 
     wp_enqueue_media();
     wp_enqueue_editor(); // loads the wp.editor JS API for dynamic TinyMCE init
 
-    $sections  = carbon_get_post_meta($product_id, 'course_sections');
+    // Instructors continue on their pending version (see inc/instructor-approval.php).
+    $sections  = function_exists('nias_course_sections_for_editor') ? nias_course_sections_for_editor($product_id, get_current_user_id()) : carbon_get_post_meta($product_id, 'course_sections');
+    if ($ctx['admin'] && !$ctx['panel'] && function_exists('nias_course_pending_get') && ($pend = nias_course_pending_get($product_id))) {
+        $pu = get_userdata(isset($pend['by']) ? (int) $pend['by'] : 0);
+        echo '<div class="notice notice-warning" style="margin:12px 0"><p>' . esc_html(sprintf(__('%s تغییراتی در این دوره ثبت کرده که در انتظار تأیید است. تأیید آن، نسخهٔ مدرس را جایگزین جلسات فعلی می‌کند.', 'nias-course-widget'), $pu ? $pu->display_name : __('یک مدرس', 'nias-course-widget'))) . ' <a href="' . esc_url(admin_url('admin.php?page=nias-course-approvals')) . '">' . esc_html__('بررسی درخواست', 'nias-course-widget') . '</a></p></div>';
+    }
     $sections  = is_array($sections) ? $sections : array();
     $spot_enabled = function_exists('nias_spot_enabled') && nias_spot_enabled();
 
@@ -452,10 +484,10 @@ function nias_curriculum_render_page()
         'productTitle'   => $product->post_title,
         'ajaxUrl'        => admin_url('admin-ajax.php'),
         'nonce'          => wp_create_nonce('nias_curriculum_save_' . $product_id),
-        'productEditUrl' => get_edit_post_link($product_id, 'raw'),
+        'productEditUrl' => $ctx['back'] ? $ctx['back'] : get_edit_post_link($product_id, 'raw'),
         // Quizzes that can be placed in a lesson / required to open one.
         'quizLabels'     => nias_curriculum_quiz_labels($sections),
-        'quizBuilderUrl' => admin_url('admin.php?page=nias-course-quiz'),
+        'quizBuilderUrl' => $ctx['quizUrl'] ? $ctx['quizUrl'] : admin_url('admin.php?page=nias-course-quiz'),
         'spot'           => array(
             'enabled'      => $spot_enabled,
             'downloadUrl'  => get_post_meta($product_id, '_spotplayer_download_url', true),
@@ -532,7 +564,7 @@ function nias_curriculum_render_page()
                     </button>
                     <?php endif; ?>
                     <a class="nc-btn nc-btn-ghost" id="nc-back" href="<?php echo esc_url($boot['productEditUrl']); ?>">
-                        <?php echo esc_html__('بازگشت به محصول', 'nias-course-widget'); ?>
+                        <?php echo esc_html($ctx['panel'] ? __('بازگشت به دوره‌های من', 'nias-course-widget') : __('بازگشت به محصول', 'nias-course-widget')); ?>
                     </a>
                 </div>
             </div>
@@ -585,7 +617,7 @@ function nias_curriculum_render_page()
                 </div>
             </div>
 
-            <?php nias_meta_render_curriculum_box($product_id); ?>
+            <?php if ($ctx['admin']) { nias_meta_render_curriculum_box($product_id); } ?>
         </div>
 
         <div id="nc-modal-root"></div>

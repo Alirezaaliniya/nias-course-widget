@@ -87,7 +87,58 @@ function nias_course_sanitize_lesson_content($raw)
     if (current_user_can('unfiltered_html')) {
         return $raw;
     }
-    return wp_kses_post($raw);
+    $clean = nias_course_kses_limited($raw);
+    // Content sent back unchanged (e.g. an admin's embed script in a lesson the
+    // instructor did not edit — the editor may only have re-wrapped it) keeps
+    // its stored form. See nias_course_trust_existing().
+    if (!empty($GLOBALS['nias_cs_trusted'])) {
+        $k = nias_course_content_key($clean);
+        if (isset($GLOBALS['nias_cs_trusted'][$k])) {
+            return $GLOBALS['nias_cs_trusted'][$k];
+        }
+    }
+    return $clean;
+}
+
+/** Post HTML + iframe embeds (Aparat / YouTube…), never scripts — for users without unfiltered_html. */
+function nias_course_kses_limited($raw)
+{
+    $allowed = wp_kses_allowed_html('post');
+    $allowed['iframe'] = array('src' => true, 'width' => true, 'height' => true, 'frameborder' => true, 'allow' => true, 'allowfullscreen' => true,
+        'webkitallowfullscreen' => true, 'mozallowfullscreen' => true, 'title' => true, 'loading' => true, 'referrerpolicy' => true, 'style' => true, 'class' => true, 'id' => true, 'name' => true, 'scrolling' => true);
+    return wp_kses((string) $raw, $allowed);
+}
+
+/** Comparison key that ignores editor re-wrapping (empty paragraphs, spacing between tags, attribute quoting). */
+function nias_course_content_key($html)
+{
+    $h = preg_replace('~<p>(\s|&nbsp;|<br\s*/?>)*</p>~i', '', (string) $html);
+    $h = preg_replace('~>\s+<~', '><', $h);
+    $h = preg_replace('~\s+~u', ' ', $h);
+    $h = str_replace("'", '"', $h);
+    return md5(trim($h));
+}
+
+/**
+ * Before saving a curriculum as a user without unfiltered_html: remember the
+ * stored lesson content / embed values, so values sent back unchanged are not
+ * re-filtered (that would strip an admin's embed code from every lesson).
+ */
+function nias_course_trust_existing($post_id)
+{
+    $GLOBALS['nias_cs_trusted'] = array();
+    foreach ((array) carbon_get_post_meta($post_id, 'course_sections') as $s) {
+        foreach ((array) (isset($s['lessons']) ? $s['lessons'] : array()) as $l) {
+            if (!empty($l['lesson_content'])) {
+                $GLOBALS['nias_cs_trusted'][nias_course_content_key(nias_course_kses_limited($l['lesson_content']))] = (string) $l['lesson_content'];
+            }
+            foreach ((array) (isset($l['lesson_preview_video']) ? $l['lesson_preview_video'] : array()) as $g) {
+                if (!empty($g['video_embed'])) {
+                    $GLOBALS['nias_cs_trusted'][nias_course_content_key(nias_course_kses_limited($g['video_embed']))] = (string) $g['video_embed'];
+                }
+            }
+        }
+    }
 }
 
 function nias_course_sanitize_media_group($group, $type)

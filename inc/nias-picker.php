@@ -43,9 +43,9 @@ function nias_picker_can($source)
 {
     switch ($source) {
         case 'quiz':
-            return current_user_can('manage_options') || current_user_can('edit_products') || current_user_can('edit_posts');
         case 'product':
-            return current_user_can('manage_options') || current_user_can('edit_products') || current_user_can('edit_posts');
+            return current_user_can('manage_options') || current_user_can('edit_products') || current_user_can('edit_posts')
+                || (function_exists('nias_inst_panel_user') && nias_inst_panel_user()); // instructor panel (scoped below)
         case 'user':
             return current_user_can('manage_options') || current_user_can('list_users');
     }
@@ -85,6 +85,18 @@ function nias_picker_post_ids($post_type, $q, $statuses)
         $args['orderby'] = 'relevance';
     }
     $ids = get_posts($args);
+    // Instructor panel: only their courses / their quizzes.
+    if (!current_user_can('edit_posts') && function_exists('nias_inst_panel_user') && nias_inst_panel_user()) {
+        $uid  = get_current_user_id();
+        $mine = in_array(NIAS_QUIZ_CPT, (array) $post_type, true) ? nias_inst_quiz_ids($uid) : nias_inst_course_ids($uid);
+        $args['post__in'] = $mine ? $mine : array(0);
+        $ids = get_posts($args);
+        $num = (int) ltrim($q, '#');
+        if ($num > 0 && in_array($num, $mine, true) && !in_array($num, $ids, true)) {
+            array_unshift($ids, $num);
+        }
+        return array_map('intval', $ids);
+    }
     // "#123" or "123" also finds by id.
     $num = (int) ltrim($q, '#');
     if ($num > 0 && ctype_digit(ltrim($q, '#')) && in_array(get_post_type($num), (array) $post_type, true) && !in_array($num, $ids, true)) {

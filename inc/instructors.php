@@ -296,6 +296,9 @@ function nias_instructors_render_page()
                 </form>
             <?php nias_set_card_close(); ?>
 
+            <!-- Instructor panel -->
+            <?php if (function_exists('nias_inst_panel_settings_card')) { nias_inst_panel_settings_card(); } ?>
+
             <!-- Add instructor -->
             <?php nias_set_card_open('<svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8ZM19 8v6M22 11h-6" stroke="#3858e9" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>', __('افزودن مدرس جدید', 'nias-course-widget')); ?>
                 <div class="nias-card-pad">

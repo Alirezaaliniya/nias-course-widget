@@ -323,11 +323,24 @@ function nias_quiz_register_page()
 /** Shared guard for the builder AJAX endpoints. */
 function nias_quiz_ajax_guard()
 {
-    if (!current_user_can('manage_options') || !nias_quiz_enabled()) {
+    // Site admins, or instructors through the instructor panel (see inc/instructor-panel.php).
+    $ok = current_user_can('manage_options') || (function_exists('nias_can_use_quiz_builder') && nias_can_use_quiz_builder());
+    if (!$ok || !nias_quiz_enabled()) {
         wp_send_json_error(array('message' => __('دسترسی لازم را ندارید.', 'nias-course-widget')));
     }
     if (!check_ajax_referer('nias_quiz_admin', 'nonce', false)) {
         wp_send_json_error(array('message' => __('درخواست نامعتبر است.', 'nias-course-widget')));
+    }
+}
+
+/** Per-quiz guard: an instructor only touches their own / their courses' quizzes. */
+function nias_quiz_ajax_guard_item($id)
+{
+    if (current_user_can('manage_options')) {
+        return;
+    }
+    if (!function_exists('nias_can_manage_quiz') || !nias_can_manage_quiz(get_current_user_id(), $id)) {
+        wp_send_json_error(array('message' => __('به این آزمون دسترسی ندارید.', 'nias-course-widget')));
     }
 }
 
@@ -382,6 +395,14 @@ function nias_quiz_list_page($search = '', $category = '', $page = 1, $per = NIA
     if ($category !== '') {
         $args['meta_query'] = array(array('key' => '_nias_quiz_category', 'value' => $category));
     }
+    // Instructor panel: only their own quizzes and those of their courses.
+    if (!current_user_can('manage_options') && function_exists('nias_inst_panel_user') && nias_inst_panel_user()) {
+        $mine = nias_inst_quiz_ids(get_current_user_id());
+        $args['post__in'] = isset($args['post__in']) ? array_values(array_intersect($args['post__in'], $mine)) : $mine;
+        if (!$args['post__in']) {
+            $args['post__in'] = array(0);
+        }
+    }
     $wq = new WP_Query($args);
     _prime_post_caches($wq->posts, false, true);
     $items = array();
@@ -429,6 +450,7 @@ add_action('wp_ajax_nias_quiz_load', 'nias_quiz_ajax_load');
 function nias_quiz_ajax_load()
 {
     nias_quiz_ajax_guard();
+    nias_quiz_ajax_guard_item(isset($_POST['quiz_id']) ? (int) $_POST['quiz_id'] : 0);
     $q = nias_quiz_full_for_editor(isset($_POST['quiz_id']) ? (int) $_POST['quiz_id'] : 0);
     if (!$q) {
         wp_send_json_error(array('message' => __('آزمون یافت نشد.', 'nias-course-widget')));
@@ -456,8 +478,14 @@ function nias_quiz_ajax_save()
     if (!$post || $post->post_type !== NIAS_QUIZ_CPT) {
         wp_send_json_error(array('message' => __('آزمون یافت نشد.', 'nias-course-widget')));
     }
+    nias_quiz_ajax_guard_item($id);
     $raw   = isset($_POST['quiz']) ? json_decode(wp_unslash($_POST['quiz']), true) : array();
     $model = nias_quiz_sanitize_model($raw);
+    // An instructor can only link the quiz to one of their own courses.
+    if (!current_user_can('manage_options') && $model['courseId'] && !in_array((int) $model['courseId'], nias_inst_course_ids(get_current_user_id()), true)) {
+        $prev = nias_quiz_get($id);
+        $model['courseId'] = $prev ? (int) $prev['courseId'] : 0;
+    }
     nias_quiz_store($id, $model);
     wp_send_json_success(array('message' => __('تغییرات ذخیره شد.', 'nias-course-widget')));
 }
@@ -471,6 +499,7 @@ function nias_quiz_ajax_delete()
     if (!$post || $post->post_type !== NIAS_QUIZ_CPT) {
         wp_send_json_error(array('message' => __('آزمون یافت نشد.', 'nias-course-widget')));
     }
+    nias_quiz_ajax_guard_item($id);
     wp_delete_post($id, true);
     wp_send_json_success(array('message' => __('آزمون حذف شد.', 'nias-course-widget')));
 }
@@ -480,6 +509,7 @@ function nias_quiz_ajax_duplicate()
 {
     nias_quiz_ajax_guard();
     $id   = isset($_POST['quiz_id']) ? (int) $_POST['quiz_id'] : 0;
+    nias_quiz_ajax_guard_item($id);
     $src  = nias_quiz_get($id);
     if (!$src) {
         wp_send_json_error(array('message' => __('آزمون یافت نشد.', 'nias-course-widget')));
@@ -507,7 +537,22 @@ function nias_quiz_render_page()
     if (!current_user_can('manage_options')) {
         return;
     }
+    ?>
+    <div class="nias-settings-app" dir="rtl">
+        <?php nias_settings_topbar('quiz'); ?>
+        <div class="nias-set-shell">
+        <div class="nias-set-main">
+            <?php nias_quiz_builder_app(); ?>
+        </div>
+        <?php nias_settings_ads_sidebar(); ?>
+        </div>
+    </div>
+    <?php
+}
 
+/** The builder app (wp-admin page and the instructor panel). */
+function nias_quiz_builder_app()
+{
     $first = nias_quiz_list_page();
     $boot = array(
         'quizzes'       => $first['items'],
@@ -519,15 +564,7 @@ function nias_quiz_render_page()
         'shortcodeBase' => '[nias_quiz id="%ID%"]',
     );
     ?>
-    <div class="nias-settings-app" dir="rtl">
-        <?php nias_settings_topbar('quiz'); ?>
-        <div class="nias-set-shell">
-        <div class="nias-set-main">
-            <div id="nias-quiz-app" class="nqz-app"><div class="nqz-boot"><?php echo esc_html__('در حال بارگذاری آزمون‌ساز…', 'nias-course-widget'); ?></div></div>
-        </div>
-        <?php nias_settings_ads_sidebar(); ?>
-        </div>
-    </div>
+    <div id="nias-quiz-app" class="nqz-app" dir="rtl"><div class="nqz-boot"><?php echo esc_html__('در حال بارگذاری آزمون‌ساز…', 'nias-course-widget'); ?></div></div>
     <script>window.NIAS_QUIZ = <?php echo wp_json_encode($boot); ?>;</script>
     <?php
     nias_quiz_builder_styles();

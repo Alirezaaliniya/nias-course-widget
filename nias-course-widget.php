@@ -83,6 +83,8 @@ require(NIAS_COURSE_INC . '/certificate/admin-issued.php');
 require(NIAS_COURSE_INC . '/certificate/account.php');
 require(NIAS_COURSE_INC . '/instructors.php');
 require(NIAS_COURSE_INC . '/instructor-dashboard.php');
+require(NIAS_COURSE_INC . '/instructor-panel.php'); // پنل مدرس (optional)
+require(NIAS_COURSE_INC . '/instructor-approval.php'); // course creation + «نیاز به تأیید»
 require(NIAS_WOOCOMMERCE . '/my-account.php');
 require(NIAS_COURSE_INC . '/shortcodes.php');
 

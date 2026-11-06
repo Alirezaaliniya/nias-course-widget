@@ -949,17 +949,29 @@ function nias_instructor_dashboard_output()
             . '<div class="nias-idash-gate-box">' . esc_html__('این صفحه مخصوص مدرسین است.', 'nias-course-widget') . '</div></div>';
     }
 
+    $nav = function ($active) use ($user_id) {
+        return function_exists('nias_inst_panel_nav') ? nias_inst_panel_nav($user_id, $active) : '';
+    };
+
+    // Instructor panel views (courses, curriculum editor, quiz builder).
+    if (function_exists('nias_inst_panel_dispatch')) {
+        $panel = nias_inst_panel_dispatch($user_id);
+        if ($panel !== null) {
+            return $panel;
+        }
+    }
+
     // Course Q&A inside the dashboard page.
     if (!empty($_GET['nias_qa']) && function_exists('nias_qa_dashboard_view')) {
-        return nias_qa_dashboard_view($user_id);
+        return $nav('qa') . nias_qa_dashboard_view($user_id);
     }
 
     // Quiz results / essay grading inside the dashboard page.
     if (!empty($_GET['nias_qr']) && function_exists('nias_quiz_results_frontend')) {
-        return nias_quiz_results_frontend($user_id);
+        return $nav('results') . nias_quiz_results_frontend($user_id);
     }
 
-    return nias_instructor_dashboard_render($user_id);
+    return $nav('home') . nias_instructor_dashboard_render($user_id);
 }
 
 add_shortcode('nias_instructor_dashboard', 'nias_instructor_dashboard_shortcode');
