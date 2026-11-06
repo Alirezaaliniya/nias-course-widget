@@ -80,6 +80,18 @@ function nias_sms_events()
             'tokens' => array('name', 'course', 'lesson', 'link'),
             'text' => __('{name} عزیز، جلسهٔ «{lesson}» از دورهٔ «{course}» برای شما باز شد. {link}', 'nias-course-widget'),
         ),
+        's_access_expiring' => array(
+            'to' => 'student', 'label' => __('یادآوری پایان دسترسی', 'nias-course-widget'),
+            'desc' => __('چند روز مانده به پایان دسترسی زمان‌دار (ماژول «دسترسی زمان‌دار و تمدید»).', 'nias-course-widget'),
+            'tokens' => array('name', 'course', 'days', 'date', 'link'),
+            'text' => __('{name} عزیز، دسترسی شما به دورهٔ «{course}» {days} روز دیگر ({date}) تمام می‌شود. تمدید: {link}', 'nias-course-widget'),
+        ),
+        's_access_expired' => array(
+            'to' => 'student', 'label' => __('پایان دسترسی', 'nias-course-widget'),
+            'desc' => __('روزی که دسترسی زمان‌دار دانشجو تمام می‌شود.', 'nias-course-widget'),
+            'tokens' => array('name', 'course', 'link'),
+            'text' => __('{name} عزیز، دسترسی شما به دورهٔ «{course}» به پایان رسید. برای تمدید: {link}', 'nias-course-widget'),
+        ),
         't_new_student' => array(
             'to' => 'teacher', 'label' => __('دانشجوی جدید', 'nias-course-widget'),
             'desc' => __('وقتی کسی در یکی از دوره‌های مدرس ثبت‌نام می‌کند.', 'nias-course-widget'),
@@ -114,6 +126,7 @@ function nias_sms_token_labels()
         'name' => __('نام گیرنده', 'nias-course-widget'), 'student' => __('نام دانشجو', 'nias-course-widget'), 'course' => __('نام دوره', 'nias-course-widget'),
         'lesson' => __('نام جلسه', 'nias-course-widget'), 'quiz' => __('نام آزمون', 'nias-course-widget'), 'score' => __('نمره', 'nias-course-widget'),
         'status' => __('وضعیت', 'nias-course-widget'), 'code' => __('کد مدرک', 'nias-course-widget'), 'link' => __('لینک', 'nias-course-widget'),
+        'days' => __('روزهای باقی‌مانده', 'nias-course-widget'), 'date' => __('تاریخ پایان', 'nias-course-widget'),
     );
 }
 
@@ -343,6 +356,14 @@ add_action('nias_certificate_issued', function ($row) {
     $link = function_exists('nias_cert_verify_url') ? nias_cert_verify_url($row['code'], (int) $row['user_id']) : home_url('/');
     nias_sms_queue('s_certificate', (int) $row['user_id'], array('course' => get_the_title((int) $row['product_id']), 'code' => (string) $row['code'], 'link' => $link));
 }, 20);
+
+// Time-limited access: reminders before the end, and on the end day.
+add_action('nias_access_expiring_notice', function ($user_id, $post_id, $until, $days) {
+    nias_sms_queue('s_access_expiring', (int) $user_id, array('course' => get_the_title((int) $post_id), 'days' => nias_fa_digits($days), 'date' => function_exists('nias_access_date') ? nias_access_date($until) : '', 'link' => function_exists('nias_access_renew_url') ? nias_access_renew_url($post_id) : get_permalink($post_id)));
+}, 20, 4);
+add_action('nias_access_expired_notice', function ($user_id, $post_id) {
+    nias_sms_queue('s_access_expired', (int) $user_id, array('course' => get_the_title((int) $post_id), 'link' => function_exists('nias_access_renew_url') ? nias_access_renew_url($post_id) : get_permalink($post_id)));
+}, 20, 2);
 
 // Drip content: a new lesson opened for the student.
 add_action('nias_drip_lessons_opened', function ($user_id, $post_id, $titles) {

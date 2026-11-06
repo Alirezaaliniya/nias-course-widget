@@ -1129,7 +1129,7 @@ class Nias_course_woocommerce extends \Elementor\Widget_Base
                 // completed orders (e.g. 'processing') — or an order whose status
                 // later moves away from completed — do not grant access, so we do
                 // not use wc_customer_bought_product (which counts any paid order).
-                $bought_course = nias_course_user_completed($current_user->ID, $product_id);
+                $bought_course = function_exists('nias_user_has_course_access') ? nias_user_has_course_access($current_user->ID, $product_id) : nias_course_user_completed($current_user->ID, $product_id);
             }
         }
 
@@ -1168,7 +1168,7 @@ class Nias_course_woocommerce extends \Elementor\Widget_Base
                         <div class="section_content" style="display: <?php echo ('yes' == $settings['nias_openorclose']) ? 'none' : 'block'; ?>">
                             <?php if (!empty($section['lessons'])) { ?>
                                 <ul class="lessons_list">
-                                    <?php foreach ($section['lessons'] as $lesson) { $lesson = function_exists('nias_drip_filter_raw_lesson') ? nias_drip_filter_raw_lesson($lesson, isset($product_id) ? $product_id : 0) : $lesson; /* «قطره‌ای» */ ?>
+                                    <?php foreach ($section['lessons'] as $lesson) { $lesson = apply_filters('nias_course_raw_lesson', $lesson, isset($product_id) ? (int) $product_id : 0); /* drip, protected files */ ?>
                                         <li class="lesson_item">
                                             <div class="lesson_header toggle_lesson">
                                                 <div class="nias-right-head">

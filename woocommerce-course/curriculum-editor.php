@@ -494,6 +494,8 @@ function nias_curriculum_render_editor($product_id, $ctx)
         // Quizzes that can be placed in a lesson / required to open one.
         'quizLabels'     => nias_curriculum_quiz_labels($sections),
         'quizBuilderUrl' => $ctx['quizUrl'] ? $ctx['quizUrl'] : admin_url('admin.php?page=nias-course-quiz'),
+        // «بستن دسترسی مستقیم به فایل‌ها»: lesson video/file uploads go to the protected folder.
+        'protect'        => function_exists('nias_protect_enabled') && nias_protect_enabled(),
         // «محتوای قطره‌ای» module.
         'drip'           => array(
             'enabled' => function_exists('nias_drip_enabled') && nias_drip_enabled(),
@@ -1570,7 +1572,22 @@ function nias_curriculum_script()
             var target = scope === 'chapter' ? ch : selLesson();
             if (!target || !target[key]) return;
             var isImage = (key === 'icon');
+            var prot = !isImage && !!DATA.protect;
+            // New uploads of lesson media land in the protected folder (server: upload_dir filter).
+            var setProt = function (on) {
+                try {
+                    if (window.wp && wp.Uploader && wp.Uploader.defaults) {
+                        var d = wp.Uploader.defaults.multipart_params = wp.Uploader.defaults.multipart_params || {};
+                        if (on) d.nias_protected = 1; else delete d.nias_protected;
+                    }
+                    var up = frame && frame.uploader && frame.uploader.uploader && frame.uploader.uploader.uploader;
+                    if (up && up.getOption) { var mp = up.getOption('multipart_params') || {}; if (on) mp.nias_protected = 1; else delete mp.nias_protected; up.setOption('multipart_params', mp); }
+                } catch (e) {}
+            };
+            setProt(prot);
             var frame = wp.media({ title: isImage ? (I18N.pickImage || 'انتخاب تصویر') : (I18N.pickFile || 'انتخاب فایل'), multiple: false });
+            frame.on('open', function () { setProt(prot); });
+            frame.on('close', function () { setProt(false); });
             frame.on('select', function () {
                 var att = frame.state().get('selection').first().toJSON();
                 target[key] = { type: 'upload', upload: att.url, url: '' };

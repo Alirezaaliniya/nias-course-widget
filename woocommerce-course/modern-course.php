@@ -467,12 +467,15 @@ function nias_modern_course_build_data($product_id)
             $video_kind    = $embed_code !== '' ? 'embedcode' : ($video_url ? ($promoted ? $promoted['kind'] : (nias_modern_course_is_audio_file($video_url) ? 'audio' : (nias_modern_course_is_video_file($video_url) ? 'file' : 'embed'))) : '');
             $download_name = $file_url ? nias_modern_course_file_name($file_url) : '';
             // «لینک اختصاصی»: a private lesson's own files get per-user links.
-            if ($private && function_exists('nias_secure_media_url')) {
+            // Public lessons are wrapped only for files in the protected folder.
+            if (function_exists('nias_secure_media_url')) {
                 if (in_array($video_kind, array('file', 'audio'), true)) {
-                    $video_url = nias_secure_media_url($video_url, $product_id, 'video');
+                    $video_url = nias_secure_media_url($video_url, $product_id, 'video', !$private);
                 }
-                $file_url = nias_secure_media_url($file_url, $product_id, 'file');
+                $file_url = nias_secure_media_url($file_url, $product_id, 'file', !$private);
             }
+            // Media inside the lesson text (e.g. a protected file in a [video] shortcode).
+            $content = (string) apply_filters('nias_lesson_content_html', $content, $product_id, $private);
 
             $lessons[] = array(
                 'id'           => $lid,
@@ -557,6 +560,8 @@ function nias_modern_course_build_data($product_id)
         // Q&A (null when the feature is off).
         'qa'           => function_exists('nias_qa_client_data') ? nias_qa_client_data($product_id) : null,
         'loggedIn'     => (bool) $uid,
+        // Time-limited access (module): {until, date, expired, daysLeft, renewUrl, soon} or null.
+        'access'       => apply_filters('nias_modern_course_access', null, $product_id, $uid),
         'refresh'      => array(
             'url'   => admin_url('admin-ajax.php'),
             'nonce' => wp_create_nonce('nias_mc_data_' . $product_id),
@@ -726,6 +731,9 @@ function nias_modern_course_assets()
     .nmc-les-new{font-size:11px;font-weight:700;padding:1px 7px;border-radius:99px;background:#fff3d6;color:#b77a00}
     .nmc-gate .nmc-gate-ic{background:#f3eefe;color:#7a4fd0}
     .nmc-drip .nmc-gate-ic{background:#fff4e5;color:#b45309}
+    .nmc-stat-acc{text-decoration:none}
+    .nmc-stat-acc.soon{background:#fff4e5!important;color:#b45309!important}
+    .nmc-stat-acc.no{background:#fdeeee!important;color:#b42318!important}
     .nmc-drip-cd{font-size:26px;font-weight:800;color:#b45309;letter-spacing:.5px;direction:rtl;unicode-bidi:isolate;font-variant-numeric:tabular-nums}
     .nmc-drip-cd bdi{direction:ltr;unicode-bidi:isolate;display:inline-block}
     .nmc-drip-sub{font-size:12.5px;opacity:.8}
@@ -1543,6 +1551,12 @@ function nias_modern_course_script()
                         '<span class="nmc-stat">' + ICON.clock + ' ' + fa(d.chapters.length) + ' فصل</span>' +
                         '<span class="nmc-stat ok">' + ICON.check + ' ' + fa(completed) + ' درس تکمیل‌شده</span>' +
                         (function (g) { return g ? '<button type="button" class="nmc-stat nmc-stat-q" data-act="gradescroll">' + ICON.quiz + ' ' + g + '</button>' : ''; })(this.gradeSummary()) +
+                        (function (a) {
+                            if (!a) return '';
+                            if (a.expired) return '<a class="nmc-stat nmc-stat-acc no" href="' + esc(a.renewUrl) + '">' + ICON.clock + ' دسترسی تمام شد · تمدید</a>';
+                            return a.soon ? '<a class="nmc-stat nmc-stat-acc soon" href="' + esc(a.renewUrl) + '">' + ICON.clock + ' ' + fa(a.daysLeft) + ' روز تا پایان دسترسی · تمدید</a>'
+                                          : '<span class="nmc-stat nmc-stat-acc">' + ICON.clock + ' دسترسی تا ' + esc(a.date) + '</span>';
+                        })(this.d.access) +
                     '</div>' +
                 '</div>' +
                 '<div class="nmc-h-side">' +
@@ -1633,7 +1647,14 @@ function nias_modern_course_script()
                 stage.className = 'nmc-stage nmc-stage-soft';
                 stage.appendChild(this.dripCard(cur));
             } else if (t === 'locked') {
-                var lk = el('div', { 'class': 'nmc-cover lock' });
+                var lk = el('div', { 'class': 'nmc-cover lock' }), ax = this.d.access;
+                if (ax && ax.expired) {
+                    lk.innerHTML =
+                        '<div class="nmc-cover-ic lock">' + ICON.clock + '</div>' +
+                        '<div class="nmc-cover-t">دسترسی شما به این دوره به پایان رسیده است</div>' +
+                        '<div class="nmc-cover-m">مدت دسترسی شما در ' + esc(ax.date) + ' تمام شد. با تمدید، دوباره به همهٔ جلسات و پیشرفت قبلی‌تان دسترسی خواهید داشت.</div>' +
+                        '<a class="nmc-cover-btn buy" href="' + esc(ax.renewUrl) + '">تمدید دسترسی</a>';
+                } else
                 lk.innerHTML =
                     '<div class="nmc-cover-ic lock">' + ICON.lockBig + '</div>' +
                     '<div class="nmc-cover-t">این درس خصوصی است</div>' +

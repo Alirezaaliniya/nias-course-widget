@@ -98,7 +98,8 @@ function nias_user_has_course_access($user_id, $post_id)
     if (!$user_id || !nias_wc_active() || !function_exists('nias_course_user_completed')) {
         return false;
     }
-    return nias_course_user_completed($user_id, $post_id);
+    // Bought, and (time-limited access module) not expired.
+    return nias_course_user_completed($user_id, $post_id) && (bool) apply_filters('nias_course_access_active', true, $user_id, $post_id);
 }
 
 /** Where a visitor gets access: the product page (paid) or the login page (free). */

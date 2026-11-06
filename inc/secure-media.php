@@ -42,8 +42,8 @@ function nias_secure_media_ttl()
 function nias_secure_media_wrappable($url)
 {
     $url = (string) $url;
-    if (!preg_match('#^https?://#i', $url)) {
-        return false;
+    if (!preg_match('#^https?://#i', $url) || strpos($url, 'nias_media=') !== false) {
+        return false; // not http(s), or already a signed link
     }
     $path = strtolower((string) parse_url($url, PHP_URL_PATH));
     return !preg_match('/\.(m3u8|mpd|ts|m4s)$/', $path);
@@ -129,19 +129,27 @@ function nias_secure_media_open($token)
  * @param int    $post_id Course (product / «دوره»).
  * @param string $kind    video|file (file = download).
  */
-function nias_secure_media_url($url, $post_id, $kind = 'file')
+function nias_secure_media_url($url, $post_id, $kind = 'file', $public = false)
 {
     $uid = get_current_user_id();
-    if (!$url || !$uid || !nias_secure_media_enabled() || !nias_secure_media_wrappable($url)) {
+    if (!$url || !nias_secure_media_wrappable($url)) {
         return $url;
     }
+    // Files in the protected folder can only be reached through a signed link:
+    // always wrapped (a public lesson gets a "public" link, valid for anyone).
+    $protected = function_exists('nias_protect_is_url') && nias_protect_is_url($url);
+    if (!$protected && ($public || !$uid || !nias_secure_media_enabled())) {
+        return $url;
+    }
+    $public = $public || !$uid;
     $exp = time() + nias_secure_media_ttl();
     // One token per user/url/kind for the same hour: pages and repeated
     // renders reuse it instead of encrypting again.
     static $memo = array();
-    $mk = $uid . '|' . $post_id . '|' . $kind . '|' . $url;
+    $mk = $uid . '|' . $post_id . '|' . $kind . '|' . ($public ? 1 : 0) . '|' . $url;
     if (!isset($memo[$mk])) {
         $memo[$mk] = add_query_arg('nias_media', nias_secure_media_seal(array(
+            'pub' => $public ? 1 : 0,
             'u'   => (int) $uid,
             'p'   => (int) $post_id,
             'k'   => $kind === 'video' ? 'video' : 'file',
@@ -172,7 +180,7 @@ function nias_secure_media_user_can($uid, $post_id, $kind)
         if (function_exists('nias_has_bought_course') && $u) {
             $ok = (bool) nias_has_bought_course($uid, $u->user_login, $post_id);
         } elseif (function_exists('nias_course_user_completed')) {
-            $ok = (bool) nias_course_user_completed($uid, $post_id);
+            $ok = function_exists('nias_user_has_course_access') ? nias_user_has_course_access($uid, $post_id) : (bool) nias_course_user_completed($uid, $post_id);
         }
     }
     return (bool) apply_filters('nias_secure_media_user_can', $ok, $uid, $post_id, $kind);
@@ -194,16 +202,17 @@ function nias_secure_media_serve()
         nias_secure_media_fail('invalid');
     }
     $uid = get_current_user_id();
-    if (!$uid) {
+    $pub = !empty($p['pub']); // a public lesson's protected file: no login needed
+    if (!$pub && !$uid) {
         nias_secure_media_fail('login');
     }
-    if ((int) $p['u'] !== $uid) {
+    if (!$pub && (int) $p['u'] !== $uid) {
         nias_secure_media_fail('owner');
     }
     if ((int) $p['e'] < time()) {
         nias_secure_media_fail('expired', (int) $p['p']);
     }
-    if (!nias_is_course_post((int) $p['p']) || !nias_secure_media_user_can($uid, (int) $p['p'], $p['k'])) {
+    if (!nias_is_course_post((int) $p['p']) || (!$pub && !nias_secure_media_user_can($uid, (int) $p['p'], $p['k']))) {
         nias_secure_media_fail('access', (int) $p['p']);
     }
     do_action('nias_secure_media_served', $uid, (int) $p['p'], $p['k'], $p['url']);

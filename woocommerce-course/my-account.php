@@ -81,7 +81,7 @@ function nias_course_display_content($product_id) {
     if (is_user_logged_in() && !empty($current_user->ID) && !empty($product_id)) {
         // دسترسی فقط با سفارشِ «تکمیل‌شده» داده می‌شود؛ سفارش‌های پرداخت‌شدهٔ
         // تکمیل‌نشده یا سفارشی که از حالت تکمیل‌شده خارج شود دسترسی نمی‌دهند.
-        $bought_course = nias_course_user_completed($current_user->ID, $product_id);
+        $bought_course = function_exists('nias_user_has_course_access') ? nias_user_has_course_access($current_user->ID, $product_id) : nias_course_user_completed($current_user->ID, $product_id);
     }
 
     $sections = carbon_get_post_meta($product_id, 'course_sections');
@@ -123,7 +123,7 @@ function nias_course_display_content($product_id) {
                     <div class="section_content" style="display: <?php echo ($open_close_default == 'yes') ? 'none' : 'block'; ?>">
                         <?php if (!empty($section['lessons'])) { ?>
                             <ul class="lessons_list">
-                                <?php foreach ($section['lessons'] as $lesson) { $lesson = function_exists('nias_drip_filter_raw_lesson') ? nias_drip_filter_raw_lesson($lesson, isset($product_id) ? $product_id : 0) : $lesson; /* «قطره‌ای» */ ?>
+                                <?php foreach ($section['lessons'] as $lesson) { $lesson = apply_filters('nias_course_raw_lesson', $lesson, isset($product_id) ? (int) $product_id : 0); /* drip, protected files */ ?>
                                     <li class="lesson_item">
                                         <div class="lesson_header toggle_lesson">
                                             <div class="nias-right-head">
@@ -476,6 +476,7 @@ function nias_course_render_cards($course_ids)
                             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="6 4 20 12 6 20 6 4"/></svg>
                             <?php echo esc_html(number_format_i18n($les_count) . ' ' . __('جلسه', 'nias-course-widget')); ?>
                         </span>
+                        <?php do_action('nias_course_card_meta', $cid); ?>
                     </div>
                     <span class="nias-cc-btn">
                         <?php echo esc_html__('ورود به دوره', 'nias-course-widget'); ?>

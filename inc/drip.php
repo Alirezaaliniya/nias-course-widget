@@ -287,6 +287,8 @@ function nias_drip_filter_raw_lesson($lesson, $post_id)
     return $lesson;
 }
 
+add_filter('nias_course_raw_lesson', 'nias_drip_filter_raw_lesson', 10, 2);
+
 /* -------------------------------------------------------------------------
  * Lesson quizzes: no answers to a quiz whose lessons are all still closed
  * ---------------------------------------------------------------------- */
