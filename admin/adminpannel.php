@@ -347,6 +347,7 @@ function nias_settings_topbar($active)
                 <?php if (function_exists('nias_inst_approval_on') && nias_inst_panel_on()) : $nir_n = nias_inst_requests_count(); ?>
                     <a href="<?php echo esc_url(admin_url('admin.php?page=nias-course-approvals')); ?>" class="nias-tab <?php echo $active === 'approvals' ? 'active' : ''; ?>"><?php echo esc_html__('درخواست‌های مدرسین', 'nias-course-widget'); ?><?php if ($nir_n) : ?> <span class="nias-tab-badge" style="background:#b45309;color:#fff"><?php echo esc_html(nias_fa_digits($nir_n)); ?></span><?php endif; ?></a>
                 <?php endif; ?>
+                <a href="<?php echo esc_url(admin_url('admin.php?page=nias-course-sms')); ?>" class="nias-tab <?php echo $active === 'sms' ? 'active' : ''; ?>"><?php echo esc_html__('پیامک', 'nias-course-widget'); ?><?php if (function_exists('nias_sms_ready') && nias_sms_ready()) : ?> <span class="nias-tab-badge"><?php echo esc_html__('فعال', 'nias-course-widget'); ?></span><?php endif; ?></a>
                 <a href="<?php echo esc_url(admin_url('admin.php?page=nias-course-player')); ?>" class="nias-tab <?php echo $active === 'player' ? 'active' : ''; ?>"><?php echo esc_html__('پلیر ویدیو', 'nias-course-widget'); ?></a>
                 <?php if ($meta_on) : ?>
                     <a href="<?php echo esc_url($meta_url); ?>" class="nias-tab <?php echo $active === 'meta' ? 'active' : ''; ?>"><?php echo esc_html__('متا', 'nias-course-widget'); ?> <span class="nias-tab-badge"><?php echo esc_html__('فعال', 'nias-course-widget'); ?></span></a>
@@ -564,7 +565,9 @@ function nias_login_promo()
 {
     return array(
         'badge'    => __('پیشنهاد ویژه', 'nias-course-widget'),
-        'title'    => __('نیاس لاگین؛ بهینه‌ترین افزونه ورود و ثبت‌نام', 'nias-course-widget'),
+        'title'    => __('نیاس لاگین؛ فراتر از ورود و ثبت نام', 'nias-course-widget'),
+        'coupon'   => 'DM4FJ9YDNIASCOURSE',
+        'coupon_label' => __('کد تخفیف ویژهٔ خرید:', 'nias-course-widget'),
         'desc'     => __('<b>ثبت‌نام و ورود با موبایل، ایمیل و حساب گوگل</b>، <b>ارسال پیامک سفارش‌های ووکامرس</b>، <b>پشتیبانی از ارسال لایسنس اسپات پلیر</b> و ده‌ها امکان کاربردی دیگر برای بهتر شدن تجربهٔ کاربری و <b>افزایش فروش</b>؛ سبک، سازگار با ووکامرس و بهینه برای سرعت سایت.', 'nias-course-widget'),
         'features' => array(
             __('ثبت‌نام و ورود با موبایل، ایمیل و حساب گوگل', 'nias-course-widget'),
@@ -619,6 +622,7 @@ function nias_login_dashboard_widget_render()
         .nlp-cta{display:inline-flex;align-items:center;gap:6px;background:#16a34a;color:#fff!important;text-decoration:none!important;font-weight:700;font-size:13.5px;padding:9px 18px;border-radius:10px}
         .nlp-cta:hover{background:#15803d}
         </style>
+        <?php nias_promo_coupon_style(); ?>
         <div class="nlp-top">
             <span class="nlp-ic"><?php echo $p['icon']; // phpcs:ignore -- static SVG ?></span>
             <div><span class="nlp-badge"><?php echo esc_html($p['badge']); ?></span><div class="nlp-t"><?php echo esc_html($p['title']); ?></div></div>
@@ -628,10 +632,62 @@ function nias_login_dashboard_widget_render()
                 <li><?php echo $check; // phpcs:ignore -- static SVG ?><span><?php echo $i < 3 ? '<b>' . esc_html($f) . '</b>' : esc_html($f); ?></span></li>
             <?php endforeach; ?>
         </ul>
+        <?php nias_promo_coupon($p); ?>
         <a class="nlp-cta" href="<?php echo esc_url($p['url']); ?>" target="_blank" rel="noopener"><?php echo esc_html($p['cta']); ?>
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"/></svg></a>
     </div>
     <?php
+}
+
+/** Shared styles + copy script for the promo discount code (printed once). */
+function nias_promo_coupon_style()
+{
+    static $done = false;
+    if ($done) {
+        return;
+    }
+    $done = true;
+    ?>
+    <style>
+    .nias-cpn{display:flex;align-items:center;flex-wrap:wrap;gap:8px;width:100%;box-sizing:border-box;margin:2px 0 12px;padding:9px 11px;border:1.5px dashed #16a34a;border-radius:11px;background:#f0fdf4}
+    .nias-cpn-l{font-size:12px;font-weight:700;color:#15803d}
+    .nias-cpn-c{font:800 13px/1.4 ui-monospace,Consolas,monospace;letter-spacing:.5px;color:#14532d;direction:ltr;user-select:all}
+    .nias-cpn-b{margin-inline-start:auto;border:0;border-radius:8px;background:#16a34a;color:#fff;font:inherit;font-size:12px;font-weight:700;padding:4px 11px;cursor:pointer}
+    .nias-cpn-b:hover{background:#15803d}
+    .nias-ad .nias-cpn{margin:0}
+    </style>
+    <script>
+    document.addEventListener('click', function (e) {
+        var b = e.target.closest && e.target.closest('.nias-cpn-b');
+        if (!b) { return; }
+        e.preventDefault(); e.stopPropagation();
+        var code = b.getAttribute('data-code'), done = function () { var t = b.textContent; b.textContent = b.getAttribute('data-ok'); setTimeout(function () { b.textContent = t; }, 1600); };
+        if (navigator.clipboard && window.isSecureContext) { navigator.clipboard.writeText(code).then(done); return; }
+        var i = document.createElement('textarea'); i.value = code; document.body.appendChild(i); i.select();
+        try { document.execCommand('copy'); done(); } catch (x) {} document.body.removeChild(i);
+    }, true);
+    </script>
+    <?php
+}
+
+/** Discount-code box of a promo card. Inside the sidebar <a> card it is built from spans. */
+function nias_promo_coupon($p, $tag = 'div')
+{
+    if (empty($p['coupon'])) {
+        return;
+    }
+    $btn = $tag === 'span' ? 'span role="button" tabindex="0"' : 'button type="button"';
+    $end = $tag === 'span' ? 'span' : 'button';
+    printf(
+        '<%1$s class="nias-cpn"><span class="nias-cpn-l">%2$s</span><span class="nias-cpn-c">%3$s</span><%4$s class="nias-cpn-b" data-code="%3$s" data-ok="%5$s">%6$s</%7$s></%1$s>',
+        $tag === 'span' ? 'span' : 'div',
+        esc_html(isset($p['coupon_label']) ? $p['coupon_label'] : __('کد تخفیف:', 'nias-course-widget')),
+        esc_attr($p['coupon']),
+        $btn,
+        esc_attr__('کپی شد ✓', 'nias-course-widget'),
+        esc_html__('کپی', 'nias-course-widget'),
+        $end
+    );
 }
 
 function nias_settings_ads_sidebar()
@@ -646,6 +702,7 @@ function nias_settings_ads_sidebar()
         return;
     }
     ?>
+    <?php nias_promo_coupon_style(); ?>
     <aside class="nias-set-aside">
         <div class="nias-ads-title">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M3 11l18-8-8 18-2-7-8-3Z" stroke="#3858e9" stroke-width="1.7" stroke-linejoin="round"/></svg>
@@ -658,6 +715,7 @@ function nias_settings_ads_sidebar()
                 <?php if (!empty($ad['icon'])) : ?><span class="nias-ad-ic"><?php echo $ad['icon']; ?></span><?php endif; ?>
                 <span class="nias-ad-title"><?php echo esc_html(isset($ad['title']) ? $ad['title'] : ''); ?></span>
                 <?php if (!empty($ad['desc'])) : ?><span class="nias-ad-desc"><?php echo wp_kses($ad['desc'], array('b' => array(), 'strong' => array())); ?></span><?php endif; ?>
+                <?php nias_promo_coupon($ad, 'span'); ?>
                 <?php if (!empty($ad['cta'])) : ?>
                     <span class="nias-ad-cta"><?php echo esc_html($ad['cta']); ?>
                         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"/></svg>
@@ -1193,6 +1251,7 @@ function nias_course_settings_assets($hook)
         strpos($hook, 'nias-course-quiz') === false &&
         strpos($hook, 'nias-course-qa') === false &&
         strpos($hook, 'nias-course-approvals') === false &&
+        strpos($hook, 'nias-course-sms') === false &&
         strpos($hook, 'nias-course-meta') === false &&
         strpos($hook, 'nias-course-player') === false
     ) {

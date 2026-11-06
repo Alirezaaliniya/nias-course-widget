@@ -286,6 +286,7 @@ function nias_inst_notify_admin($post_id, $user_id, $kind)
 
 function nias_inst_notify_instructor($user_id, $post_id, $approved, $note, $kind = 'changes')
 {
+    do_action('nias_inst_reviewed', (int) $user_id, (int) $post_id, (bool) $approved, $kind, $note);
     $u = get_userdata($user_id);
     if (!$u || !$u->user_email || !apply_filters('nias_inst_approval_email', true, $post_id, $approved ? 'approved' : 'rejected')) {
         return;

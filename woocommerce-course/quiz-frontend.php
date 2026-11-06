@@ -193,9 +193,11 @@ function nias_quiz_result_meta_key($quiz_id)
 function nias_quiz_store_result($user_id, $quiz_id, $result)
 {
     $attempts   = nias_quiz_user_attempts($user_id, $quiz_id);
-    $attempts[] = nias_quiz_make_attempt($result);
+    $attempt    = nias_quiz_make_attempt($result);
+    $attempts[] = $attempt;
     $record     = nias_quiz_save_user_results($user_id, $quiz_id, $attempts, 1);
     do_action('nias_quiz_result_saved', $user_id, $quiz_id, $record);
+    do_action('nias_quiz_attempt_submitted', $user_id, $quiz_id, $attempt);
     return $record;
 }
 

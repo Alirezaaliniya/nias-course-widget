@@ -287,5 +287,6 @@ add_action('nias_course_progress_updated', function ($user_id, $post_id) {
     if (empty($started[$post_id])) {
         $started[$post_id] = current_time('Y-m-d');
         update_user_meta($user_id, '_nias_course_started', $started);
+        do_action('nias_free_course_started', (int) $user_id, (int) $post_id);
     }
 }, 5, 2);
