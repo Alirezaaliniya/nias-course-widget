@@ -165,6 +165,9 @@ function nias_course_display_content($product_id) {
                                                     } elseif ($preview_video['video_type'] === 'url' && !empty($preview_video['video_url'])) {
                                                         $video_url = $preview_video['video_url'];
                                                     }
+                                                    if (!empty($lesson['lesson_private']) && function_exists('nias_secure_media_url')) {
+                                                        $video_url = nias_secure_media_url($video_url, $product_id, 'video');
+                                                    }
                                                     $preview_embed = ($preview_video['video_type'] === 'embed' && !empty($preview_video['video_embed'])) ? $preview_video['video_embed'] : '';
                                                     if ($video_url || $preview_embed) {
                                                         if (function_exists('nias_request_preview_modal')) { nias_request_preview_modal(); } ?>
@@ -189,6 +192,9 @@ function nias_course_display_content($product_id) {
                                                                 $download_url = $download['file_upload'];
                                                             } elseif ($download['file_type'] === 'url' && !empty($download['file_url'])) {
                                                                 $download_url = $download['file_url'];
+                                                            }
+                                                            if ($download_url && function_exists('nias_secure_media_url') && !empty($product_id)) {
+                                                                $download_url = nias_secure_media_url($download_url, $product_id, 'file');
                                                             }
                                                             if ($download_url) { ?>
                                                                 <a class="nsdownload-button nias-course-icon" download target="_blank" href="<?php echo esc_url($download_url); ?>">

@@ -451,6 +451,17 @@ function nias_modern_course_build_data($product_id)
                 $player_locked = true;
             }
 
+            // Kind and file name come from the real address (before it is wrapped).
+            $video_kind    = $embed_code !== '' ? 'embedcode' : ($video_url ? ($promoted ? $promoted['kind'] : (nias_modern_course_is_audio_file($video_url) ? 'audio' : (nias_modern_course_is_video_file($video_url) ? 'file' : 'embed'))) : '');
+            $download_name = $file_url ? nias_modern_course_file_name($file_url) : '';
+            // «لینک اختصاصی»: a private lesson's own files get per-user links.
+            if ($private && function_exists('nias_secure_media_url')) {
+                if (in_array($video_kind, array('file', 'audio'), true)) {
+                    $video_url = nias_secure_media_url($video_url, $product_id, 'video');
+                }
+                $file_url = nias_secure_media_url($file_url, $product_id, 'file');
+            }
+
             $lessons[] = array(
                 'id'           => $lid,
                 'gate'         => $gate,
@@ -464,11 +475,11 @@ function nias_modern_course_build_data($product_id)
                 // a clear private notice instead of an "empty" message.
                 'lockedDesc'   => ($lock_content && !$text_primary && $raw_has_text),
                 'lockedRes'    => ($lock_attach && $raw_file !== ''),
-                'videoKind'    => $embed_code !== '' ? 'embedcode' : ($video_url ? ($promoted ? $promoted['kind'] : (nias_modern_course_is_audio_file($video_url) ? 'audio' : (nias_modern_course_is_video_file($video_url) ? 'file' : 'embed'))) : ''),
+                'videoKind'    => $video_kind,
                 'videoSrc'     => $video_url,
                 'videoEmbed'   => $embed_code,
                 'downloadUrl'  => $file_url,
-                'downloadName' => $file_url ? nias_modern_course_file_name($file_url) : '',
+                'downloadName' => $download_name,
                 'content'      => $content,
                 'hasContent'   => nias_modern_course_has_content($content),
             );

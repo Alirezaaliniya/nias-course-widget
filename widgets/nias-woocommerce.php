@@ -1208,6 +1208,9 @@ class Nias_course_woocommerce extends \Elementor\Widget_Base
                                                         } elseif ($preview_video['video_type'] === 'url' && !empty($preview_video['video_url'])) {
                                                             $video_url = $preview_video['video_url'];
                                                         }
+                                                        if (!empty($lesson['lesson_private']) && function_exists('nias_secure_media_url') && !empty($product_id)) {
+                                                            $video_url = nias_secure_media_url($video_url, $product_id, 'video');
+                                                        }
                                                         $preview_embed = ($preview_video['video_type'] === 'embed' && !empty($preview_video['video_embed'])) ? $preview_video['video_embed'] : '';
                                                         if ($video_url || $preview_embed) { ?>
                                                             <a class="nias-preview-tag"<?php echo $preview_embed ? '' : ' target="_blank"'; ?> href="<?php echo $video_url ? esc_url($video_url) : '#'; ?>"<?php echo $preview_embed ? ' data-embed="' . esc_attr($preview_embed) . '"' : ''; ?>>
@@ -1231,6 +1234,9 @@ class Nias_course_woocommerce extends \Elementor\Widget_Base
                                                                     $download_url = $download['file_upload'];
                                                                 } elseif ($download['file_type'] === 'url' && !empty($download['file_url'])) {
                                                                     $download_url = $download['file_url'];
+                                                                }
+                                                                if ($download_url && function_exists('nias_secure_media_url') && !empty($product_id)) {
+                                                                    $download_url = nias_secure_media_url($download_url, $product_id, 'file');
                                                                 }
                                                                 if ($download_url) { ?>
                                                                     <a class="nsdownload-button nias-course-icon" target="_blank" download href="<?php echo esc_url($download_url); ?>">

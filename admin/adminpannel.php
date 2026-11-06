@@ -37,6 +37,7 @@ function nias_settings_main_fields()
         'nias_lock_private_preview'   => 'radio',
         'nias_lock_private_content'   => 'radio',
         'nias_lock_private_attachments' => 'radio',
+        'nias_secure_media'           => 'radio',
     );
 }
 
@@ -914,6 +915,13 @@ function nias_course_render_main_settings()
                         __('قفل منابع و پیوست (فایل دانلودی)', 'nias-course-widget'),
                         __('فایل دانلودی و منابع و پیوست‌های درس را برای کاربری که دوره را نخریده مخفی می‌کند.', 'nias-course-widget'),
                         'on'
+                    );
+                    nias_set_toggle_row(
+                        'nias_secure_media',
+                        __('لینک اختصاصی ویدیو و فایل‌ها برای هر کاربر', 'nias-course-widget'),
+                        __('آدرس واقعی ویدیوها و فایل‌های درس‌های خصوصی به مرورگر داده نمی‌شود؛ هر کاربر لینک امضاشدهٔ مخصوص خودش (با اعتبار ۱۲ ساعت) می‌گیرد. اگر شخص دیگری لینک را باز کند، پیام «شما وارد سایت نشده‌اید» یا «این لینک متعلق به شما نیست» می‌بیند. ویدیوهای آپارات/یوتیوب و استریم‌های HLS/DASH شامل این گزینه نمی‌شوند.', 'nias-course-widget'),
+                        'off',
+                        __('امنیتی', 'nias-course-widget')
                     );
                     ?>
                 <?php nias_set_card_close(); ?>
