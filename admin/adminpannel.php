@@ -25,6 +25,7 @@ function nias_settings_main_fields()
         'nias_spotplayer_enabled'     => 'radio',
         'nias_instructors_enabled'    => 'radio',
         'nias_quiz_enabled'           => 'radio',
+        'nias_course_cpt'             => 'radio',
         'nias_meta_enabled'           => 'radio',
         'nias_modern_course'          => 'radio',
         'nias_lock_private_preview'   => 'radio',
@@ -755,6 +756,18 @@ function nias_course_render_main_settings()
                         'off',
                         __('متا', 'nias-course-widget')
                     );
+                    if (function_exists('nias_wc_active') && nias_wc_active()) {
+                        nias_set_toggle_row(
+                            'nias_course_cpt',
+                            __('نوع نوشتهٔ «دوره» (دوره‌های رایگان)', 'nias-course-widget'),
+                            __('منوی «دوره‌ها» اضافه می‌شود تا کنار محصولات ووکامرس، دوره‌های رایگان (بدون فروش) هم بسازید. همهٔ امکانات دوره (جلسات و فصل‌ها، نمای مدرن، مدرسین، آزمون، مدرک، گزارش تماشا) روی آن کار می‌کند. جلسات عمومی برای همه و جلسات «خصوصی» برای کاربران واردشده نمایش داده می‌شوند.', 'nias-course-widget'),
+                            'off',
+                            __('دوره رایگان', 'nias-course-widget')
+                        );
+                    } else {
+                        echo '<div class="nias-row"><div class="nias-row-main"><div class="nias-row-title">' . esc_html__('حالت رایگان (بدون ووکامرس)', 'nias-course-widget') . ' <span class="nias-chip">' . esc_html__('فعال', 'nias-course-widget') . '</span></div>'
+                            . '<div class="nias-row-desc">' . wp_kses_post(sprintf(__('ووکامرس نصب نیست؛ دوره‌ها را از منوی <a href="%s">«دوره‌ها»</a> بسازید. جلسات عمومی برای همه و جلسات «خصوصی» برای کاربران واردشده نمایش داده می‌شوند. برای فروش دوره، ووکامرس را نصب کنید.', 'nias-course-widget'), esc_url(admin_url('edit.php?post_type=' . NIAS_COURSE_CPT)))) . '</div></div></div>';
+                    }
                     ?>
                 <?php nias_set_card_close(); ?>
 
@@ -907,10 +920,12 @@ function nias_course_render_certificate_settings()
     $template_options = function_exists('nias_cert_templates_list') ? nias_cert_templates_list() : array();
 
     $category_options = array();
-    $categories = get_terms(array('taxonomy' => 'product_cat', 'hide_empty' => false));
+    // WooCommerce product categories and/or «دوره» categories (whichever exist).
+    $cat_taxes = array_values(array_filter(array('product_cat', defined('NIAS_COURSE_TAX') ? NIAS_COURSE_TAX : ''), 'taxonomy_exists'));
+    $categories = $cat_taxes ? get_terms(array('taxonomy' => $cat_taxes, 'hide_empty' => false, 'number' => 300)) : array();
     if (!is_wp_error($categories)) {
         foreach ($categories as $category) {
-            $category_options[$category->term_id] = $category->name;
+            $category_options[$category->term_id] = $category->name . (count($cat_taxes) > 1 && $category->taxonomy !== 'product_cat' ? ' ' . __('(دوره)', 'nias-course-widget') : '');
         }
     }
     ?>

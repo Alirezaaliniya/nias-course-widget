@@ -661,7 +661,7 @@ function nias_quiz_grades_shortcode($atts = array())
 
     $blocks = '';
     foreach ($course_ids as $pid) {
-        if (get_post_type($pid) !== 'product') {
+        if (!nias_is_course_post($pid)) {
             continue;
         }
         $rows = nias_quiz_gradebook($uid, $pid, nias_quiz_lesson_refs($pid));

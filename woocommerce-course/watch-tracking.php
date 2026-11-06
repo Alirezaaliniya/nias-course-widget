@@ -119,7 +119,7 @@ function nias_watch_ajax_sync()
     }
     $user_id    = get_current_user_id();
     $product_id = isset($_POST['product_id']) ? (int) $_POST['product_id'] : 0;
-    if (!$user_id || !$product_id || get_post_type($product_id) !== 'product') {
+    if (!$user_id || !$product_id || !nias_is_course_post($product_id)) {
         wp_send_json_error(array('message' => 'bad request'), 400);
     }
     $items = isset($_POST['items']) ? json_decode(wp_unslash($_POST['items']), true) : null; // phpcs:ignore -- validated below
@@ -180,13 +180,13 @@ function nias_watch_watermark_text()
  * Report on the product screen
  * ---------------------------------------------------------------------- */
 
-add_action('add_meta_boxes_product', 'nias_watch_register_metabox');
-function nias_watch_register_metabox($post)
+add_action('add_meta_boxes', 'nias_watch_register_metabox', 10, 2);
+function nias_watch_register_metabox($post_type, $post = null)
 {
-    if (!current_user_can('edit_post', $post->ID)) {
+    if (!$post || !nias_is_course_type($post_type) || !current_user_can('edit_post', $post->ID)) {
         return;
     }
-    add_meta_box('nias_watch_report', __('گزارش تماشای ویدیو', 'nias-course-widget'), 'nias_watch_render_metabox', 'product', 'normal', 'low');
+    add_meta_box('nias_watch_report', __('گزارش تماشای ویدیو', 'nias-course-widget'), 'nias_watch_render_metabox', $post_type, 'normal', 'low');
 }
 
 /** Lessons of a course as id => "chapter › title". */

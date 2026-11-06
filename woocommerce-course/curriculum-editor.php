@@ -207,7 +207,7 @@ function nias_curriculum_register_page()
         '', // hidden (no menu parent)
         __('ویرایش جلسات و فصل‌ها', 'nias-course-widget'),
         __('ویرایش جلسات و فصل‌ها', 'nias-course-widget'),
-        'edit_products',
+        'edit_posts', // per-course check below (edit_post); edit_products only exists with WooCommerce
         'nias-course-curriculum',
         'nias_curriculum_render_page'
     );
@@ -233,7 +233,7 @@ add_action('admin_footer', 'nias_curriculum_inject_button');
 function nias_curriculum_inject_button()
 {
     $screen = function_exists('get_current_screen') ? get_current_screen() : null;
-    if (!$screen || $screen->base !== 'post' || $screen->post_type !== 'product') {
+    if (!$screen || $screen->base !== 'post' || !nias_is_course_type($screen->post_type)) {
         return;
     }
     global $post;
@@ -300,7 +300,7 @@ function nias_curriculum_inject_button()
         var label   = <?php echo wp_json_encode(__('ویرایش جلسات و فصل‌ها', 'nias-course-widget')); ?>;
         var href    = <?php echo wp_json_encode($url); ?>;
         var isNew   = <?php echo $is_new ? 'true' : 'false'; ?>;
-        var saveMsg = <?php echo wp_json_encode(__('برای افزودن فصل و درس، ابتدا محصول را ذخیره کنید.', 'nias-course-widget')); ?>;
+        var saveMsg = <?php echo wp_json_encode(sprintf(__('برای افزودن فصل و درس، ابتدا %s را ذخیره کنید.', 'nias-course-widget'), nias_course_type_label($post->ID))); ?>;
         if ($('.nias-curriculum-btn').length) {
             return;
         }
@@ -338,7 +338,7 @@ function nias_curriculum_inject_button()
 add_filter('post_row_actions', 'nias_curriculum_row_action', 10, 2);
 function nias_curriculum_row_action($actions, $post)
 {
-    if (!$post || $post->post_type !== 'product' || !current_user_can('edit_post', $post->ID)) {
+    if (!$post || !nias_is_course_type($post->post_type) || !current_user_can('edit_post', $post->ID)) {
         return $actions;
     }
     $url = admin_url('admin.php?page=nias-course-curriculum&product=' . intval($post->ID));
@@ -413,14 +413,14 @@ function nias_curriculum_ajax_save()
 
 function nias_curriculum_render_page()
 {
-    if (!current_user_can('edit_products')) {
+    if (!current_user_can('edit_posts')) {
         wp_die(esc_html__('دسترسی لازم را ندارید.', 'nias-course-widget'));
     }
 
     $product_id = isset($_GET['product']) ? intval($_GET['product']) : 0;
     $product    = $product_id ? get_post($product_id) : null;
 
-    if (!$product || $product->post_type !== 'product' || !current_user_can('edit_post', $product_id)) {
+    if (!$product || !nias_is_course_type($product->post_type) || !current_user_can('edit_post', $product_id)) {
         echo '<div class="wrap"><h1>' . esc_html__('ویرایش جلسات و فصل‌ها', 'nias-course-widget') . '</h1>';
         echo '<div class="notice notice-error"><p>' . esc_html__('محصول معتبری انتخاب نشده است.', 'nias-course-widget') . '</p></div></div>';
         return;

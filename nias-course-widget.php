@@ -10,7 +10,7 @@
  * Text Domain: nias-course-widget
  * License:GPL v2 or later
  * License URI: https://www.gnu.org/licenses/gpl-2.0.html 
- * Requires Plugins: elementor, woocommerce
+ * Requires Plugins: elementor
  **/
 
 if (! defined('ABSPATH')) {
@@ -49,6 +49,7 @@ require plugin_dir_path(__FILE__) . 'vendor/autoload.php';
 // Carbon-compatible settings/meta data layer (replaces Carbon Fields).
 require(NIAS_COURSE_INC . '/nias-meta.php');
 require(NIAS_COURSE_INC . '/purchases.php');
+require(NIAS_COURSE_INC . '/course-type.php'); // «دوره» post type + free mode (no WooCommerce)
 
 require(NIAS_WOOCOMMERCE . '/spotplayer-sync.php');
 require(NIAS_COURSE_PANEL . '/adminpannel.php');
@@ -138,6 +139,12 @@ function nias_course_register_widget($widgets_manager)
 
     $widgets_manager->register(new \Nias_Course\Nias_course_widget());
     $widgets_manager->register(new \Nias_Course\Nias_course_woocommerce());
+
+    // «مدرس دوره» (instructors of the current course) — when instructors are on.
+    if (function_exists('nias_instructors_enabled') && nias_instructors_enabled()) {
+        require_once(__DIR__ . '/widgets/nias-instructors.php');
+        $widgets_manager->register(new \Nias_Course\Nias_course_instructors());
+    }
 }
 
 add_action('elementor/widgets/register', 'nias_course_register_widget');

@@ -43,9 +43,9 @@ function nias_picker_can($source)
 {
     switch ($source) {
         case 'quiz':
-            return current_user_can('manage_options') || current_user_can('edit_products');
+            return current_user_can('manage_options') || current_user_can('edit_products') || current_user_can('edit_posts');
         case 'product':
-            return current_user_can('manage_options') || current_user_can('edit_products');
+            return current_user_can('manage_options') || current_user_can('edit_products') || current_user_can('edit_posts');
         case 'user':
             return current_user_can('manage_options') || current_user_can('list_users');
     }
@@ -87,7 +87,7 @@ function nias_picker_post_ids($post_type, $q, $statuses)
     $ids = get_posts($args);
     // "#123" or "123" also finds by id.
     $num = (int) ltrim($q, '#');
-    if ($num > 0 && ctype_digit(ltrim($q, '#')) && get_post_type($num) === $post_type && !in_array($num, $ids, true)) {
+    if ($num > 0 && ctype_digit(ltrim($q, '#')) && in_array(get_post_type($num), (array) $post_type, true) && !in_array($num, $ids, true)) {
         array_unshift($ids, $num);
     }
     return array_map('intval', $ids);
@@ -128,7 +128,8 @@ function nias_picker_quiz_item($id)
 
 function nias_picker_search_product($q)
 {
-    $ids  = nias_picker_post_ids('product', $q, array('publish', 'draft', 'private', 'pending'));
+    // "product" = any course: WooCommerce products and/or «دوره» posts.
+    $ids  = nias_picker_post_ids(nias_course_post_types(), $q, array('publish', 'draft', 'private', 'pending'));
     $more = count($ids) > NIAS_PICK_LIMIT;
     $ids  = array_slice($ids, 0, NIAS_PICK_LIMIT);
     _prime_post_caches($ids, false, false);
@@ -143,10 +144,14 @@ function nias_picker_product_item($id)
 {
     $status = get_post_status($id);
     $labels = array('publish' => '', 'draft' => __('پیش‌نویس', 'nias-course-widget'), 'private' => __('خصوصی', 'nias-course-widget'), 'pending' => __('در انتظار بررسی', 'nias-course-widget'));
+    $sub = isset($labels[$status]) ? $labels[$status] : $status;
+    if (count(nias_course_post_types()) > 1) {
+        $sub = trim(nias_course_type_label($id) . ($sub ? ' · ' . $sub : ''));
+    }
     return array(
         'id'    => (int) $id,
         'label' => get_the_title($id) . ' (#' . (int) $id . ')',
-        'sub'   => isset($labels[$status]) ? $labels[$status] : $status,
+        'sub'   => $sub,
     );
 }
 

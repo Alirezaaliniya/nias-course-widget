@@ -186,7 +186,7 @@ function has_user_purchased_certificate($user_id) {
         $selected_categories = carbon_get_theme_option('certificate_selected_categories') ?: array();
         if (!empty($selected_categories)) {
             $products = get_posts(array(
-                'post_type' => 'product',
+                'post_type' => 'product', // (category mode: WooCommerce categories)
                 'posts_per_page' => -1,
                 'tax_query' => array(
                     array(
@@ -205,12 +205,21 @@ function has_user_purchased_certificate($user_id) {
         return false;
     }
 
+    // Free «دوره» courses the user started count like a purchase.
+    if (function_exists('nias_free_course_enrolments')) {
+        foreach (array_keys(nias_free_course_enrolments($user_id)) as $pid) {
+            if ($display_type === 'all' || in_array($pid, array_map('intval', (array) $allowed_product_ids), true)) {
+                return true;
+            }
+        }
+    }
+
     // Get customer orders
-    $orders = wc_get_orders(array(
+    $orders = function_exists('wc_get_orders') ? wc_get_orders(array(
         'customer_id' => $user_id,
         'status' => 'completed',
         'limit' => -1,
-    ));
+    )) : array();
     
     if (!empty($orders)) {
         foreach ($orders as $order) {

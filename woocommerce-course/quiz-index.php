@@ -107,7 +107,7 @@ add_action('before_delete_post', function ($post_id) {
     $type = get_post_type($post_id);
     if ($type === NIAS_QUIZ_CPT && nias_quiz_index_ready()) {
         $wpdb->delete(nias_quiz_table(), array('quiz_id' => (int) $post_id), array('%d'));
-    } elseif ($type === 'product') {
+    } elseif (nias_is_course_type($type)) {
         nias_quiz_index_course($post_id, array());
     }
 });
@@ -221,7 +221,7 @@ function nias_quiz_index_backfill_step($batch = 200)
     } elseif ($cur['courses'] !== 'done') {
         // 3) quiz → course index, for products that have a curriculum
         $ids = $wpdb->get_col($wpdb->prepare(
-            "SELECT ID FROM {$wpdb->posts} WHERE post_type = 'product' AND ID > %d ORDER BY ID ASC LIMIT %d",
+            "SELECT ID FROM {$wpdb->posts} WHERE post_type IN ('product','" . esc_sql(NIAS_COURSE_CPT) . "') AND ID > %d ORDER BY ID ASC LIMIT %d",
             (int) $cur['courses'], 50
         ));
         foreach ($ids as $id) {

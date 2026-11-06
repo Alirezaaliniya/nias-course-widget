@@ -230,7 +230,8 @@ function nias_modern_course_cert_applies($product_id)
     }
     if ($type === 'category') {
         $cats  = array_map('strval', (array) carbon_get_theme_option('certificate_selected_categories'));
-        $terms = wp_get_post_terms($product_id, 'product_cat', array('fields' => 'ids'));
+        $tax   = (defined('NIAS_COURSE_CPT') && get_post_type($product_id) === NIAS_COURSE_CPT) ? NIAS_COURSE_TAX : 'product_cat';
+        $terms = taxonomy_exists($tax) ? wp_get_post_terms($product_id, $tax, array('fields' => 'ids')) : array();
         if (is_wp_error($terms)) {
             return false;
         }
@@ -258,9 +259,10 @@ function nias_modern_course_build_data($product_id)
 {
     $product_id = intval($product_id);
     $product    = $product_id ? get_post($product_id) : null;
-    if (!$product || $product->post_type !== 'product') {
+    if (!$product || !nias_is_course_type($product->post_type)) {
         return null;
     }
+    $free = function_exists('nias_course_is_free') && nias_course_is_free($product_id);
 
     $sections = carbon_get_post_meta($product_id, 'course_sections');
     $sections = is_array($sections) ? $sections : array();
@@ -502,7 +504,8 @@ function nias_modern_course_build_data($product_id)
         'instructor'   => $instructor,
         'studentName'  => ($user && $user->ID) ? $user->display_name : __('کاربر مهمان', 'nias-course-widget'),
         'purchased'    => $purchased,
-        'buyUrl'       => get_permalink($product_id),
+        'buyUrl'       => function_exists('nias_course_access_url') ? nias_course_access_url($product_id) : get_permalink($product_id),
+        'free'         => $free, // «دوره» without a sale: private lessons only need a login
         'accent'       => '#1e83f0',
         'chapters'     => $chapters,
         'certificate'  => array(
@@ -1508,8 +1511,9 @@ function nias_modern_course_script()
                 lk.innerHTML =
                     '<div class="nmc-cover-ic lock">' + ICON.lockBig + '</div>' +
                     '<div class="nmc-cover-t">این درس خصوصی است</div>' +
-                    '<div class="nmc-cover-m">برای دسترسی به این درس باید دوره را تهیه کنید.</div>' +
-                    '<a class="nmc-cover-btn buy" href="' + esc(this.d.buyUrl) + '">تهیه دوره</a>';
+                    // Free «دوره»: a login is enough; a product needs a purchase.
+                    '<div class="nmc-cover-m">' + (this.d.free ? 'این دوره رایگان است؛ برای دیدن این درس وارد حساب کاربری شوید.' : 'برای دسترسی به این درس باید دوره را تهیه کنید.') + '</div>' +
+                    '<a class="nmc-cover-btn buy" href="' + esc(this.d.buyUrl) + '">' + (this.d.free ? 'ورود / ثبت‌نام' : 'تهیه دوره') + '</a>';
                 stage.appendChild(lk);
             } else {
                 // Nothing published for this lesson yet: a compact, light card
@@ -1554,7 +1558,7 @@ function nias_modern_course_script()
             var q = l.quiz;
             if (!host || !q) return;
             if (!q.model || !window.NiasQuizStudent) {
-                host.appendChild(el('div', { 'class': 'nmc-empty' }, this.d.purchased ? 'آزمون این جلسه در دسترس نیست.' : 'آزمون این جلسه مخصوص خریداران دوره است.'));
+                host.appendChild(el('div', { 'class': 'nmc-empty' }, this.d.purchased ? 'آزمون این جلسه در دسترس نیست.' : (this.d.free ? 'برای شرکت در آزمون این جلسه وارد حساب کاربری شوید.' : 'آزمون این جلسه مخصوص خریداران دوره است.')));
                 return;
             }
             var box = el('div', { 'class': 'nmc-quiz' });
@@ -1742,7 +1746,7 @@ function nias_modern_course_script()
                 if (cur.lockedDesc) {
                     // Description withheld server-side because the lesson is private
                     // and "lock content" is enabled — show a clear private notice.
-                    body = '<div class="nmc-empty">توضیحات این درس خصوصی است؛ برای مشاهده باید دوره را تهیه کنید.</div>';
+                    body = '<div class="nmc-empty">' + (this.d.free ? 'توضیحات این درس خصوصی است؛ برای مشاهده وارد حساب کاربری شوید.' : 'توضیحات این درس خصوصی است؛ برای مشاهده باید دوره را تهیه کنید.') + '</div>';
                 } else {
                     var descHtml = (this.playerType(cur) === 'text') ? '' : (cur.content || '');
                     body = descHtml ? '<div class="nmc-desc">' + descHtml + '</div>'
@@ -1750,7 +1754,7 @@ function nias_modern_course_script()
                 }
             } else if (cur.lockedRes) {
                 // Resources/attachments withheld server-side for a private lesson.
-                body = '<div class="nmc-empty">منابع و پیوست این درس خصوصی است؛ برای دسترسی باید دوره را تهیه کنید.</div>';
+                body = '<div class="nmc-empty">' + (this.d.free ? 'منابع و پیوست این درس خصوصی است؛ برای دسترسی وارد حساب کاربری شوید.' : 'منابع و پیوست این درس خصوصی است؛ برای دسترسی باید دوره را تهیه کنید.') + '</div>';
             } else {
                 if (resources.length) {
                     body = '<div class="nmc-reslist">' + resources.map(function (r) {
@@ -2406,14 +2410,14 @@ function nias_modern_course_resolve_pid($atts)
     $product_id = intval($atts['id']);
     if (!$product_id) {
         $product_id = function_exists('get_the_ID') ? (int) get_the_ID() : 0;
-        if (get_post_type($product_id) !== 'product') {
+        if (!nias_is_course_post($product_id)) {
             $qo = get_queried_object_id();
-            if (get_post_type($qo) === 'product') {
+            if (nias_is_course_post($qo)) {
                 $product_id = (int) $qo;
             }
         }
     }
-    return ($product_id && get_post_type($product_id) === 'product') ? $product_id : 0;
+    return ($product_id && nias_is_course_post($product_id)) ? $product_id : 0;
 }
 
 /** Shared handler: render the requested section part for the resolved product. */
@@ -2545,7 +2549,7 @@ function nias_modern_course_sticky_button()
         return; // already inside the focused view
     }
     $product_id = get_queried_object_id();
-    if (!$product_id || get_post_type($product_id) !== 'product' || !nias_modern_course_has_curriculum($product_id)) {
+    if (!$product_id || !nias_is_course_post($product_id) || !nias_modern_course_has_curriculum($product_id)) {
         return;
     }
     $url = add_query_arg(NIAS_MODERN_QV, '1', get_permalink($product_id));
@@ -2588,7 +2592,7 @@ function nias_modern_course_takeover()
         return;
     }
     $product_id = get_queried_object_id();
-    if (!$product_id || get_post_type($product_id) !== 'product') {
+    if (!$product_id || !nias_is_course_post($product_id)) {
         return;
     }
 

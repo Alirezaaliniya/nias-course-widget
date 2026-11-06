@@ -95,7 +95,7 @@ function nias_cert_ajax_progress_sync()
     }
     $product_id = isset($_POST['product_id']) ? (int) $_POST['product_id'] : 0;
     $pct        = isset($_POST['pct']) ? max(0, min(100, (int) $_POST['pct'])) : 0;
-    if (!$product_id || get_post_type($product_id) !== 'product') {
+    if (!$product_id || !nias_is_course_post($product_id)) {
         wp_send_json_error();
     }
     $user_id = get_current_user_id();
@@ -133,9 +133,11 @@ function nias_cert_evaluate($user_id, $product_id, $ctx)
         : in_array($ctx['order_status'], array('completed', 'processing'), true);
     $checks[] = array(
         'key'   => 'order',
-        'label' => $rules['order_status'] === 'completed'
-            ? __('تکمیل سفارش خرید دوره', 'nias-course-widget')
-            : __('خرید دوره', 'nias-course-widget'),
+        'label' => (function_exists('nias_course_is_free') && nias_course_is_free($product_id))
+            ? __('شروع دوره (رایگان)', 'nias-course-widget')
+            : ($rules['order_status'] === 'completed'
+                ? __('تکمیل سفارش خرید دوره', 'nias-course-widget')
+                : __('خرید دوره', 'nias-course-widget')),
         'ok'    => $status_ok,
         'hint'  => $status_ok ? '' : __('سفارش شما هنوز تکمیل نشده است.', 'nias-course-widget'),
     );
@@ -252,13 +254,13 @@ function nias_cert_name_form_html($user_id)
  * Product meta box
  * ---------------------------------------------------------------------- */
 
-add_action('add_meta_boxes_product', 'nias_cert_add_product_metabox');
-function nias_cert_add_product_metabox()
+add_action('add_meta_boxes', 'nias_cert_add_product_metabox');
+function nias_cert_add_product_metabox($post_type = '')
 {
-    if (!nias_cert_feature_on()) {
+    if (!nias_cert_feature_on() || !nias_is_course_type($post_type)) {
         return;
     }
-    add_meta_box('nias_cert_product', __('مدرک دوره (نیاس)', 'nias-course-widget'), 'nias_cert_render_product_metabox', 'product', 'side', 'default');
+    add_meta_box('nias_cert_product', __('مدرک دوره (نیاس)', 'nias-course-widget'), 'nias_cert_render_product_metabox', $post_type, 'side', 'default');
 }
 
 function nias_cert_render_product_metabox($post)

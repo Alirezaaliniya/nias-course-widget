@@ -47,7 +47,8 @@ function nias_certificate_product_eligible($product_id)
     }
     if ($type === 'category') {
         $cats  = array_map('strval', (array) carbon_get_theme_option('certificate_selected_categories'));
-        $terms = wp_get_post_terms($product_id, 'product_cat', array('fields' => 'ids'));
+        $tax   = get_post_type($product_id) === (defined('NIAS_COURSE_TAX') ? NIAS_COURSE_CPT : '') ? NIAS_COURSE_TAX : 'product_cat';
+        $terms = taxonomy_exists($tax) ? wp_get_post_terms($product_id, $tax, array('fields' => 'ids')) : array();
         if (is_wp_error($terms)) {
             return false;
         }
@@ -799,14 +800,17 @@ function nias_cert_user_courses($user_id, $fresh = false)
     }
 
     $bought = array();
-    try {
-        $orders = wc_get_orders(array(
-            'customer_id' => $user_id,
-            'status'      => array('completed', 'processing'),
-            'limit'       => -1,
-        ));
-    } catch (Exception $e) {
-        return array();
+    $orders = array();
+    if (function_exists('wc_get_orders')) {
+        try {
+            $orders = wc_get_orders(array(
+                'customer_id' => $user_id,
+                'status'      => array('completed', 'processing'),
+                'limit'       => -1,
+            ));
+        } catch (Exception $e) {
+            $orders = array();
+        }
     }
 
     foreach ((array) $orders as $order) {
@@ -841,6 +845,15 @@ function nias_cert_user_courses($user_id, $fresh = false)
                     'order_status' => $status,
                     'order_date'   => $date,
                 );
+            }
+        }
+    }
+
+    // Free «دوره» courses: starting one counts as enrolment (no order).
+    if (function_exists('nias_free_course_enrolments')) {
+        foreach (nias_free_course_enrolments($user_id) as $pid => $since) {
+            if (!isset($bought[$pid]) && nias_certificate_product_eligible($pid)) {
+                $bought[$pid] = array('name' => get_the_title($pid), 'order_id' => 0, 'order_status' => 'completed', 'order_date' => $since);
             }
         }
     }

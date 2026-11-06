@@ -118,7 +118,7 @@ function nias_instructor_dashboard_product_ids($user_id, $is_admin_scope)
 
     // Admin scope: every product assigned to any instructor.
     $ids = get_posts(array(
-        'post_type'      => 'product',
+        'post_type'      => nias_course_post_types(),
         'posts_per_page' => -1,
         'post_status'    => array('publish', 'draft', 'pending', 'private', 'future'),
         'fields'         => 'ids',
