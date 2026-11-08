@@ -237,6 +237,16 @@ function nias_inst_panel_nav($user_id, $active)
         $n = nias_qa_unanswered_count(nias_qa_staff_scope($user_id));
         $tabs['qa'] = array(__('پرسش و پاسخ', 'nias-course-widget') . ($n ? ' <b>' . esc_html(nias_fa_digits($n)) . '</b>' : ''), nias_inst_panel_url('qa'));
     }
+    if (function_exists('nias_rev_enabled') && nias_rev_enabled()) {
+        $tabs['earnings'] = array(__('درآمد', 'nias-course-widget'), nias_inst_panel_url('earnings'));
+    }
+    if (function_exists('nias_stats_enabled') && nias_stats_enabled()) {
+        $tabs['stats'] = array(__('گزارش‌ها', 'nias-course-widget'), nias_inst_panel_url('stats'));
+    }
+    if (function_exists('nias_assign_enabled') && nias_assign_enabled()) {
+        $an = nias_assign_pending_count(nias_assign_scope($user_id));
+        $tabs['assign'] = array(__('تکالیف', 'nias-course-widget') . ($an ? ' <b>' . esc_html(nias_fa_digits($an)) . '</b>' : ''), nias_inst_panel_url('assign'));
+    }
     $h = '<nav class="nip-nav" dir="rtl">';
     foreach ($tabs as $k => $t) {
         $h .= '<a class="' . ($k === $active ? 'on' : '') . '" href="' . esc_url($t[1]) . '">' . wp_kses($t[0], array('b' => array())) . '</a>';
@@ -411,6 +421,15 @@ function nias_inst_panel_dispatch($user_id)
     }
     if ($route === 'quizzes') {
         return nias_inst_panel_nav($user_id, 'quizzes') . nias_inst_panel_quizzes_view($user_id);
+    }
+    if ($route === 'earnings' && function_exists('nias_rev_panel_html') && nias_rev_enabled()) {
+        return nias_inst_panel_nav($user_id, 'earnings') . '<div class="nip-wrap">' . nias_rev_panel_html($user_id) . '</div>';
+    }
+    if ($route === 'stats' && function_exists('nias_stats_html') && nias_stats_enabled()) {
+        return nias_inst_panel_nav($user_id, 'stats') . '<div class="nip-wrap">' . nias_stats_html($user_id, nias_inst_panel_url('stats')) . '</div>';
+    }
+    if ($route === 'assign' && function_exists('nias_assign_review_html') && nias_assign_enabled()) {
+        return nias_inst_panel_nav($user_id, 'assign') . '<div class="nip-wrap">' . nias_assign_review_html() . '</div>';
     }
     if ($route === 'drip' && function_exists('nias_drip_tool_html')) {
         $pid = isset($_GET['course']) ? (int) $_GET['course'] : 0;

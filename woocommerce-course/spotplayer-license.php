@@ -32,10 +32,188 @@ function nias_spot_opt($key, $default = '')
 {
     $value = get_option('_nias_spot_' . $key, null);
     if ($value === null || $value === false || $value === '') {
-        return $default;
+        // Compatible with the original «اسپات پلیر» plugin: use its settings
+        // (API key, license code, domain …) until ours are saved.
+        $legacy = nias_spot_legacy_opt($key, $value === null);
+        return $legacy !== null ? $legacy : $default;
     }
     return $value;
 }
+
+/**
+ * A setting of the original SpotPlayer plugin (option "spotplayer").
+ * Text settings are used whenever ours are empty; on/off flags only while
+ * ours were never saved.
+ */
+function nias_spot_legacy_opt($key, $never_saved)
+{
+    static $legacy = null;
+    if ($legacy === null) {
+        $legacy = get_option('spotplayer');
+        $legacy = is_array($legacy) ? $legacy : array();
+    }
+    if (in_array($key, array('api', 'code', 'domain', 'color'), true)) {
+        return isset($legacy[$key]) && $legacy[$key] !== '' ? (string) $legacy[$key] : null;
+    }
+    if ($never_saved && in_array($key, array('test', 'download', 'wccrs', 'wcspc', 'completed'), true) && isset($legacy[$key])) {
+        return !empty($legacy[$key]) && $legacy[$key] !== 'off' ? 'on' : 'off';
+    }
+    if ($never_saved && $key === 'time' && !empty($legacy['time'])) {
+        return (int) $legacy['time'];
+    }
+    return null;
+}
+
+/* -------------------------------------------------------------------------
+ * Licenses issued by the original «اسپات پلیر» plugin
+ *
+ * That plugin stores the license on the order as _spotplayer_data (EDD:
+ * _spot_data) and the course ids on the product as _spotplayer_course (EDD:
+ * _spot_course). Every read here falls back to those keys, so licenses issued
+ * before keep showing in «لایسنس‌های من» and are never issued a second time.
+ * nias_spot_migrate_legacy() copies them to our keys (the originals stay).
+ * ---------------------------------------------------------------------- */
+
+/** License data of a WooCommerce order (ours, else the original plugin's). */
+function nias_spot_order_meta($ord)
+{
+    if (!$ord) {
+        return array();
+    }
+    $d = $ord->get_meta('_nias_spot_data');
+    if (empty($d) || !is_array($d)) {
+        $d = $ord->get_meta('_spotplayer_data');
+    }
+    return is_array($d) ? $d : array();
+}
+
+/** SpotPlayer course ids of a product (ours, else the original plugin's). */
+function nias_spot_product_course($p)
+{
+    if (!$p) {
+        return '';
+    }
+    $c = $p->get_meta('_nias_spot_course');
+    if ($c === '' || $c === null || $c === false) {
+        $c = $p->get_meta('_spotplayer_course');
+    }
+    return is_string($c) ? $c : '';
+}
+
+/** EDD: license data of a payment / course ids of a download. */
+function nias_spot_edd_payment_meta($pay)
+{
+    $d = $pay ? $pay->get_meta('_nias_spot_data') : array();
+    if (empty($d) && $pay) {
+        $d = $pay->get_meta('_spot_data');
+    }
+    return is_array($d) ? $d : array();
+}
+function nias_spot_edd_download_course($dl_id)
+{
+    $c = get_post_meta($dl_id, '_nias_spot_course', true);
+    if (empty($c)) {
+        $c = get_post_meta($dl_id, '_spot_course', true);
+    }
+    return is_array($c) ? $c : array();
+}
+
+/** How much data the original plugin left (for the settings page). */
+function nias_spot_legacy_counts()
+{
+    global $wpdb;
+    $out = array('orders' => 0, 'orders_done' => 0, 'products' => 0, 'products_done' => 0, 'settings' => (bool) get_option('spotplayer'));
+    if (function_exists('wc_get_orders')) {
+        $hpos = class_exists('\Automattic\WooCommerce\Utilities\OrderUtil') && \Automattic\WooCommerce\Utilities\OrderUtil::custom_orders_table_usage_is_enabled();
+        $t    = $hpos ? $wpdb->prefix . 'wc_orders_meta' : $wpdb->postmeta;
+        $col  = $hpos ? 'order_id' : 'post_id';
+        $out['orders']      = (int) $wpdb->get_var("SELECT COUNT(DISTINCT $col) FROM $t WHERE meta_key = '_spotplayer_data'");
+        $out['orders_done'] = (int) $wpdb->get_var("SELECT COUNT(DISTINCT a.$col) FROM $t a JOIN $t b ON b.$col = a.$col AND b.meta_key = '_nias_spot_data' WHERE a.meta_key = '_spotplayer_data'");
+    }
+    $out['products']      = (int) $wpdb->get_var("SELECT COUNT(*) FROM {$wpdb->postmeta} WHERE meta_key IN ('_spotplayer_course','_spot_course') AND meta_value <> ''");
+    $out['products_done'] = (int) $wpdb->get_var("SELECT COUNT(DISTINCT a.post_id) FROM {$wpdb->postmeta} a JOIN {$wpdb->postmeta} b ON b.post_id = a.post_id AND b.meta_key = '_nias_spot_course' AND b.meta_value <> '' WHERE a.meta_key IN ('_spotplayer_course','_spot_course') AND a.meta_value <> ''");
+    return $out;
+}
+
+/**
+ * Copy one batch of the original plugin's data to our keys.
+ *
+ * @return array {orders, products, settings, more}
+ */
+function nias_spot_migrate_legacy($batch = 50, $only = null)
+{
+    global $wpdb;
+    $done = array('orders' => 0, 'products' => 0, 'settings' => 0, 'more' => false);
+    // Settings: only those we do not have yet.
+    $legacy = get_option('spotplayer');
+    if (is_array($legacy)) {
+        foreach (array('api', 'code', 'domain', 'color') as $k) {
+            if (!empty($legacy[$k]) && (string) get_option('_nias_spot_' . $k, '') === '') {
+                update_option('_nias_spot_' . $k, (string) $legacy[$k]);
+                $done['settings']++;
+            }
+        }
+        foreach (array('test', 'download', 'wccrs') as $k) {
+            if (isset($legacy[$k]) && get_option('_nias_spot_' . $k, null) === null) {
+                update_option('_nias_spot_' . $k, !empty($legacy[$k]) && $legacy[$k] !== 'off' ? 'on' : 'off');
+                $done['settings']++;
+            }
+        }
+    }
+    // Products / downloads.
+    $rows = $wpdb->get_results("SELECT a.post_id, a.meta_key, a.meta_value FROM {$wpdb->postmeta} a LEFT JOIN {$wpdb->postmeta} b ON b.post_id = a.post_id AND b.meta_key = '_nias_spot_course' WHERE a.meta_key IN ('_spotplayer_course','_spot_course') AND a.meta_value <> '' AND (b.meta_id IS NULL OR b.meta_value = '')" . ($only ? ' AND a.post_id IN (' . implode(',', array_map('intval', (array) $only)) . ')' : '') . " LIMIT " . (int) $batch);
+    foreach ($rows as $r) {
+        update_post_meta((int) $r->post_id, '_nias_spot_course', maybe_unserialize($r->meta_value));
+        $done['products']++;
+    }
+    // Orders (WooCommerce, HPOS or not).
+    if (function_exists('wc_get_orders')) {
+        $orders = wc_get_orders(array('limit' => (int) $batch, 'meta_key' => '_spotplayer_data', 'meta_compare' => 'EXISTS', 'type' => 'shop_order', 'status' => array_keys(wc_get_order_statuses()), 'return' => 'objects'));
+        foreach ($orders as $ord) {
+            if ($only && !in_array((int) $ord->get_id(), array_map('intval', (array) $only), true)) {
+                continue; // limited run (only these ids)
+            }
+            if (!empty($ord->get_meta('_nias_spot_data'))) {
+                continue;
+            }
+            $d = $ord->get_meta('_spotplayer_data');
+            if (is_array($d) && $d) {
+                $ord->update_meta_data('_nias_spot_data', $d);
+                $ord->save_meta_data();
+                $done['orders']++;
+            }
+        }
+    }
+    // EDD payments.
+    $pays = $wpdb->get_col("SELECT a.post_id FROM {$wpdb->postmeta} a LEFT JOIN {$wpdb->postmeta} b ON b.post_id = a.post_id AND b.meta_key = '_nias_spot_data' WHERE a.meta_key = '_spot_data' AND b.meta_id IS NULL LIMIT " . (int) $batch);
+    foreach ($pays as $pid) {
+        update_post_meta((int) $pid, '_nias_spot_data', get_post_meta((int) $pid, '_spot_data', true));
+        $done['orders']++;
+    }
+    $c = nias_spot_legacy_counts();
+    $done['more'] = ($c['orders'] > $c['orders_done'] && $done['orders'] > 0) || ($c['products'] > $c['products_done'] && $done['products'] > 0);
+    return $done;
+}
+
+add_action('wp_ajax_nias_spot_migrate', function () {
+    if (!current_user_can('manage_options') || !check_ajax_referer('nias_spot_migrate', 'nonce', false)) {
+        wp_send_json_error(array('message' => __('دسترسی ندارید.', 'nias-course-widget')), 403);
+    }
+    $r = nias_spot_migrate_legacy(50);
+    $r['counts'] = nias_spot_legacy_counts();
+    wp_send_json_success($r);
+});
+
+/** Both plugins active = two licenses per order. Warn. */
+add_action('admin_notices', function () {
+    if (!current_user_can('manage_options') || !function_exists('nias_spot_enabled') || !nias_spot_enabled() || !function_exists('spot_url_handler')) {
+        return;
+    }
+    echo '<div class="notice notice-warning"><p>' . wp_kses_post(sprintf(
+        __('<b>دوره ساز نیاس:</b> افزونهٔ اصلی «اسپات پلیر» هم فعال است. وقتی «لایسنس اسپات پلیر» دوره ساز نیاس روشن است، با فعال بودن هر دو ممکن است برای یک سفارش دو لایسنس ساخته شود. لایسنس‌ها و تنظیمات افزونهٔ اصلی خودکار خوانده می‌شوند؛ پس از <a href="%s">سازگارسازی</a>، افزونهٔ اصلی را غیرفعال کنید.', 'nias-course-widget'),
+        esc_url(admin_url('admin.php?page=nias-spotplayer-license#nias-spot-legacy'))
+    )) . '</p></div>';
+});
 
 /** Detect the active shop platform: 1 = WooCommerce, 2 = EDD, 0 = none. */
 function nias_spot_woo_or_edd()
@@ -384,6 +562,51 @@ function nias_spot_save_settings()
     }
 }
 
+/** «سازگاری با افزونهٔ اصلی اسپات پلیر» card. */
+function nias_spot_legacy_card()
+{
+    $c = nias_spot_legacy_counts();
+    if (!$c['orders'] && !$c['products'] && !$c['settings']) {
+        return;
+    }
+    $left  = max(0, $c['orders'] - $c['orders_done']) + max(0, $c['products'] - $c['products_done']);
+    $nonce = wp_create_nonce('nias_spot_migrate');
+    $fa    = function ($n) { return function_exists('nias_fa_digits') ? nias_fa_digits($n) : $n; };
+    nias_set_card_open('<svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M4 12a8 8 0 0 1 14-5.3M20 12a8 8 0 0 1-14 5.3M18 3v4h-4M6 21v-4h4" stroke="#3858e9" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>', __('سازگاری با لایسنس‌های قبلی (افزونهٔ اصلی اسپات پلیر)', 'nias-course-widget'));
+    ?>
+    <div class="nias-card-pad nias-stack" id="nias-spot-legacy" data-nonce="<?php echo esc_attr($nonce); ?>" data-ajax="<?php echo esc_url(admin_url('admin-ajax.php')); ?>">
+        <div class="nias-row-desc" style="line-height:2">
+            <?php echo esc_html(sprintf(__('اطلاعات افزونهٔ اصلی اسپات پلیر روی این سایت پیدا شد: %1$s سفارش با لایسنس صادرشده و %2$s محصول با شناسهٔ دوره%3$s. این‌ها همین حالا هم خودکار خوانده می‌شوند (لایسنس‌های قبلی در «لایسنس‌های من» نمایش داده می‌شوند و برای آن سفارش‌ها لایسنس دوباره ساخته نمی‌شود). با دکمهٔ زیر یک نسخه از آن‌ها به ساختار دوره ساز نیاس منتقل می‌شود تا پس از غیرفعال یا حذف افزونهٔ اصلی هم باقی بمانند؛ داده‌های افزونهٔ اصلی دست نمی‌خورند.', 'nias-course-widget'), $fa($c['orders']), $fa($c['products']), $c['settings'] ? __(' و تنظیمات آن (کلید API، کد ساخت لایسنس و …)', 'nias-course-widget') : '')); ?>
+        </div>
+        <div data-spl-status style="font-weight:700;color:<?php echo $left ? '#b45309' : '#137a3a'; ?>">
+            <?php echo esc_html($left ? sprintf(__('منتقل‌نشده: %1$s سفارش و %2$s محصول', 'nias-course-widget'), $fa(max(0, $c['orders'] - $c['orders_done'])), $fa(max(0, $c['products'] - $c['products_done']))) : __('همهٔ لایسنس‌ها و محصولات قبلی سازگار شده‌اند.', 'nias-course-widget')); ?>
+        </div>
+        <div><button type="button" class="nias-btn-primary" data-spl-go style="border:0"><?php echo esc_html__('سازگارسازی لایسنس‌های قبلی', 'nias-course-widget'); ?></button></div>
+    </div>
+    <script>
+    (function () {
+        var box = document.getElementById('nias-spot-legacy'); if (!box) return;
+        var btn = box.querySelector('[data-spl-go]'), st = box.querySelector('[data-spl-status]'), tot = { o: 0, p: 0, s: 0 };
+        var fa = function (n) { return String(n).replace(/\d/g, function (d) { return '۰۱۲۳۴۵۶۷۸۹'[d]; }); };
+        function run() {
+            var b = new URLSearchParams(); b.append('action', 'nias_spot_migrate'); b.append('nonce', box.getAttribute('data-nonce'));
+            fetch(box.getAttribute('data-ajax'), { method: 'POST', credentials: 'same-origin', body: b }).then(function (r) { return r.json(); }).then(function (r) {
+                if (!r || !r.success) { st.textContent = (r && r.data && r.data.message) || 'خطا'; btn.disabled = false; return; }
+                tot.o += r.data.orders; tot.p += r.data.products; tot.s += r.data.settings;
+                if (r.data.more) { st.textContent = 'در حال انتقال… ' + fa(tot.o) + ' سفارش'; run(); return; }
+                var c = r.data.counts;
+                st.style.color = '#137a3a';
+                st.textContent = 'انجام شد: ' + fa(tot.o) + ' سفارش، ' + fa(tot.p) + ' محصول' + (tot.s ? ' و ' + fa(tot.s) + ' تنظیم' : '') + ' منتقل شد. سازگار: ' + fa(c.orders_done) + ' از ' + fa(c.orders) + ' سفارش، ' + fa(c.products_done) + ' از ' + fa(c.products) + ' محصول.';
+                btn.disabled = false;
+            }).catch(function () { st.textContent = 'خطای ارتباط؛ دوباره بزنید.'; btn.disabled = false; });
+        }
+        btn.addEventListener('click', function () { btn.disabled = true; st.textContent = 'در حال انتقال…'; run(); });
+    })();
+    </script>
+    <?php
+    nias_set_card_close();
+}
+
 function nias_spot_render_license_settings()
 {
     if (!current_user_can('manage_options')) {
@@ -419,6 +642,7 @@ function nias_spot_render_license_settings()
                 </div>
             <?php endif; ?>
 
+            <?php nias_spot_legacy_card(); ?>
             <form method="post">
                 <?php wp_nonce_field('nias_spot_settings', 'nias_spot_nonce'); ?>
 
@@ -1061,7 +1285,7 @@ function nias_spot_woo_order_license_extras(WC_Order $ord)
     $default_expires = nias_spot_sanitize_expires(nias_spot_opt('expires'));
 
     foreach ($ord->get_items() as $i) {
-        if (!($i instanceof WC_Order_Item_Product) || !(($p = $i->get_product()) instanceof WC_Product) || !($c = $p->get_meta('_nias_spot_course'))) {
+        if (!($i instanceof WC_Order_Item_Product) || !(($p = $i->get_product()) instanceof WC_Product) || !($c = nias_spot_product_course($p))) {
             continue;
         }
         $devices = max($devices, (int) nias_spot_product_extra($p, '_nias_spot_devices'));
@@ -1110,7 +1334,7 @@ function nias_spot_woo_admin_variation_panel($i, $data)
     <div id="nias-spotplayer-product"><?php woocommerce_wp_textarea_input(array(
         'id'            => "nias_spot_course$i",
         'name'          => "nias_spot_course[$i]",
-        'value'         => $data['_nias_spot_course'][0] ?? '',
+        'value'         => $data['_nias_spot_course'][0] ?? ($data['_spotplayer_course'][0] ?? ''),
         'label'         => 'شناسه‌های دوره اسپات پلیر',
         'wrapper_class' => 'form-row form-row-full',
         'class'         => 'ltr',
@@ -1238,6 +1462,7 @@ function nias_spot_woo_admin_order_save($oid)
 
     if (!empty($_POST['nias-spot-remove'])) {
         $ord->delete_meta_data('_nias_spot_data');
+        $ord->delete_meta_data('_spotplayer_data'); // the original plugin's copy too
         $ord->save_meta_data();
         $ord->add_order_note('اطلاعات لایسنس اسپات پلیر حذف شد.');
         return;
@@ -1325,7 +1550,7 @@ function nias_spot_edd_admin_dl($dl_id)
     ?>
     <div id="nias-spot-course">
         <label for="nias_spot_course"><?php echo esc_html__('شناسه دوره‌های اسپات پلیر', 'nias-course-widget'); ?></label>
-        <textarea id="nias_spot_course" name="nias_spot_course"><?php echo esc_textarea(implode(',', get_post_meta($dl_id, '_nias_spot_course', true) ?: array())); ?></textarea>
+        <textarea id="nias_spot_course" name="nias_spot_course"><?php echo esc_textarea(implode(',', nias_spot_edd_download_course($dl_id))); ?></textarea>
         <div><?php echo esc_html__('شناسه یک یا چند دوره که با , از هم جدا شده‌اند.', 'nias-course-widget'); ?></div>
     </div>
     <?php
@@ -1461,7 +1686,7 @@ function nias_spot_woo_shop_order(WC_Order $ord)
         foreach ($ord->get_items() as $item) {
             if (($item instanceof WC_Order_Item_Product) &&
                 (($product = $item->get_product()) instanceof WC_Product) &&
-                !($product->is_downloadable() || $product->get_meta('_nias_spot_course'))) {
+                !($product->is_downloadable() || nias_spot_product_course($product))) {
                 return;
             }
         }
@@ -1491,7 +1716,7 @@ function nias_spot_woo_shortcode()
     ob_start();
 
     if (isset($ord)) {
-        $spot_data = $ord->get_meta('_nias_spot_data');
+        $spot_data = nias_spot_order_meta($ord);
         $product   = wc_get_product($_GET['spp']);
         nias_spot_shop_success($spot_data, $product ? $product->get_name() : '', $_GET['spc'] ?? null);
     } else {
@@ -1499,11 +1724,11 @@ function nias_spot_woo_shortcode()
         <div id="nias-sp_courses">
             <?php
             foreach (wc_get_orders(array('customer' => $uid)) as $ord) {
-                $spot_data = $ord->get_meta('_nias_spot_data');
+                $spot_data = nias_spot_order_meta($ord);
                 if ($spot_data && is_array($spot_data) && isset($spot_data['_id'])) {
                     foreach (nias_spot_woo_order_items($ord, true) as $p) {
                         ?>
-                        <a href="<?php echo esc_url("?spo={$ord->get_id()}&spp={$p->get_id()}&spc={$p->get_meta('_nias_spot_course')}"); ?>">
+                        <a href="<?php echo esc_url("?spo={$ord->get_id()}&spp={$p->get_id()}&spc=" . rawurlencode(nias_spot_product_course($p)) . ""); ?>">
                             <?php echo $p->get_image(); ?>
                             <h2><?php echo esc_html($p->get_name()); ?></h2>
                         </a>
@@ -1533,10 +1758,17 @@ function nias_spot_woo_shop_my_menu($links)
 function nias_spot_woo_shop_my_licenses_init()
 {
     add_rewrite_endpoint('nias-licenses', EP_PAGES);
-    // Flush rewrite rules only once after enabling, not on every load.
-    if (get_option('nias_spot_flush_rewrite') !== 'done') {
-        flush_rewrite_rules();
-        update_option('nias_spot_flush_rewrite', 'done');
+    if (!function_exists('spot_url_handler')) {
+        add_rewrite_endpoint('licenses', EP_PAGES); // old links of the original plugin
+    }
+    // Flush once, and again whenever the rule went missing (e.g. after
+    // another plugin flushed while this module was off).
+    $rules = get_option('rewrite_rules');
+    if (get_option('nias_spot_flush_rewrite') !== 'done2' || (is_array($rules) && strpos(implode(' ', array_keys($rules)), 'nias-licenses') === false)) {
+        add_action('wp_loaded', function () {
+            flush_rewrite_rules(false);
+            update_option('nias_spot_flush_rewrite', 'done2');
+        });
     }
 }
 
@@ -1572,12 +1804,12 @@ function nias_spot_edd_shortcode()
 
     ob_start();
     if ($o) {
-        nias_spot_shop_success(edd_get_payment($o)->get_meta('_nias_spot_data'), get_the_title($o), $_GET['spc'] ?? null);
+        nias_spot_shop_success(nias_spot_edd_payment_meta(edd_get_payment($o)), get_the_title($o), $_GET['spc'] ?? null);
     } else {
         ?>
         <div id="nias-sp_courses">
             <?php foreach (edd_get_payments(array('user' => $uid, 'output' => 'payments')) as $pay) :
-                if (!empty($pay->get_meta('_nias_spot_data')['_id'])) :
+                if (!empty(nias_spot_edd_payment_meta($pay)['_id'])) :
                     foreach (nias_spot_edd_payment_items($pay, true) as $d) : ?>
                         <a href="<?php echo esc_url("?spo=$pay->ID&spp={$d['id']}&spc={$d['course']}"); ?>">
                             <?php echo get_the_post_thumbnail($d['id']); ?>
@@ -1943,7 +2175,7 @@ function nias_spot_woo_order_items($ord, $products = false)
     $r = array();
     if ($ord) {
         foreach ($ord->get_items() as $i) {
-            if (($i instanceof WC_Order_Item_Product) && (($p = $i->get_product()) instanceof WC_Product) && ($c = $p->get_meta('_nias_spot_course'))) {
+            if (($i instanceof WC_Order_Item_Product) && (($p = $i->get_product()) instanceof WC_Product) && ($c = nias_spot_product_course($p))) {
                 $products ? array_push($r, $p) : ($r = array_merge($r, explode(',', $c)));
             }
         }
@@ -1988,7 +2220,7 @@ function nias_spot_woo_order_license_request(WC_Order $ord, $admin = false)
 
 function nias_spot_woo_license_data(WC_Order $ord) // $order name preserved for eval code
 {
-    $data = $ord->get_meta('_nias_spot_data') ?: array();
+    $data = nias_spot_order_meta($ord); // ours, else the original plugin's (never a second license)
     if (in_array($ord->get_status(), array('auto-draft', 'draft'), true)) {
         return $data;
     }
@@ -2013,7 +2245,7 @@ function nias_spot_edd_payment_items($pay, $downloads = false)
     $r = array();
     if ($pay) {
         foreach (edd_get_payment_meta_cart_details($pay->ID) as $i) {
-            $c = get_post_meta($i['id'], '_nias_spot_course', true);
+            $c = nias_spot_edd_download_course($i['id']);
             if (!$downloads) {
                 $r = array_merge($r, $c ?: array());
             } elseif ($i['course'] = join(',', $c ?: array())) {
@@ -2056,7 +2288,7 @@ function nias_spot_edd_payment_license_request(EDD_Payment $pay, $admin = false)
 
 function nias_spot_edd_license_data(EDD_Payment $pay)
 {
-    if ($data = $pay->get_meta('_nias_spot_data') ?: array()) {
+    if ($data = nias_spot_edd_payment_meta($pay)) {
         return $data;
     }
     return nias_spot_edd_license_data_eval($pay);
@@ -2128,6 +2360,27 @@ function nias_spot_register_hooks()
         add_filter('woocommerce_account_menu_items', 'nias_spot_woo_shop_my_menu', 50);
         add_action('init', 'nias_spot_woo_shop_my_licenses_init');
         add_action('woocommerce_account_nias-licenses_endpoint', 'nias_spot_woo_shop_my_licenses_content');
+        // WooCommerce only routes account endpoints it knows about.
+        add_filter('woocommerce_get_query_vars', function ($vars) {
+            if (nias_spot_opt('wccrs') === 'on') {
+                $vars['nias-licenses'] = 'nias-licenses';
+            }
+            return $vars;
+        });
+        add_filter('woocommerce_endpoint_nias-licenses_title', function () {
+            return __('لایسنس‌های من', 'nias-course-widget');
+        });
+        // Old links of the original plugin (/my-account/licenses/) → ours.
+        add_action('template_redirect', function () {
+            if (function_exists('spot_url_handler') || !function_exists('is_account_page') || !is_account_page()) {
+                return;
+            }
+            $uri = isset($_SERVER['REQUEST_URI']) ? (string) wp_unslash($_SERVER['REQUEST_URI']) : '';
+            if (preg_match('#/licenses/?(\?.*)?$#', $uri) && strpos($uri, 'nias-licenses') === false) {
+                wp_safe_redirect(wc_get_account_endpoint_url('nias-licenses'));
+                exit;
+            }
+        }, 5);
     } elseif ($platform === 2) {
         // EDD.
         add_action('edd_price_field', 'nias_spot_edd_admin_dl', 10, 1);

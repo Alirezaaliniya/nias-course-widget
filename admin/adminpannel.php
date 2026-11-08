@@ -348,6 +348,18 @@ function nias_settings_topbar($active)
                 <?php if (function_exists('nias_inst_approval_on') && nias_inst_panel_on()) : $nir_n = nias_inst_requests_count(); ?>
                     <a href="<?php echo esc_url(admin_url('admin.php?page=nias-course-approvals')); ?>" class="nias-tab <?php echo $active === 'approvals' ? 'active' : ''; ?>"><?php echo esc_html__('درخواست‌های مدرسین', 'nias-course-widget'); ?><?php if ($nir_n) : ?> <span class="nias-tab-badge" style="background:#b45309;color:#fff"><?php echo esc_html(nias_fa_digits($nir_n)); ?></span><?php endif; ?></a>
                 <?php endif; ?>
+                <?php if (function_exists('nias_rev_enabled') && nias_rev_enabled()) : ?>
+                    <a href="<?php echo esc_url(admin_url('admin.php?page=nias-course-revenue')); ?>" class="nias-tab <?php echo $active === 'revenue' ? 'active' : ''; ?>"><?php echo esc_html__('درآمد مدرسین', 'nias-course-widget'); ?></a>
+                <?php endif; ?>
+                <?php if (function_exists('nias_transfer_enabled') && nias_transfer_enabled()) : ?>
+                    <a href="<?php echo esc_url(admin_url('admin.php?page=nias-course-transfer')); ?>" class="nias-tab <?php echo $active === 'transfer' ? 'active' : ''; ?>"><?php echo esc_html__('انتقال دوره', 'nias-course-widget'); ?></a>
+                <?php endif; ?>
+                <?php if (function_exists('nias_stats_enabled') && nias_stats_enabled()) : ?>
+                    <a href="<?php echo esc_url(admin_url('admin.php?page=nias-course-stats')); ?>" class="nias-tab <?php echo $active === 'stats' ? 'active' : ''; ?>"><?php echo esc_html__('گزارش‌ها', 'nias-course-widget'); ?></a>
+                <?php endif; ?>
+                <?php if (function_exists('nias_assign_enabled') && nias_assign_enabled()) : $nas_n = nias_assign_pending_count(null); ?>
+                    <a href="<?php echo esc_url(admin_url('admin.php?page=nias-course-assignments')); ?>" class="nias-tab <?php echo $active === 'assign' ? 'active' : ''; ?>"><?php echo esc_html__('تکالیف', 'nias-course-widget'); ?><?php if ($nas_n) : ?> <span class="nias-tab-badge"><?php echo esc_html(nias_fa_digits($nas_n)); ?></span><?php endif; ?></a>
+                <?php endif; ?>
                 <a href="<?php echo esc_url(admin_url('admin.php?page=nias-course-modules')); ?>" class="nias-tab <?php echo $active === 'modules' ? 'active' : ''; ?>"><?php echo esc_html__('ماژول‌ها', 'nias-course-widget'); ?><?php if (function_exists('nias_drip_enabled') && nias_drip_enabled()) : ?> <span class="nias-tab-badge"><?php echo esc_html__('فعال', 'nias-course-widget'); ?></span><?php endif; ?></a>
                 <a href="<?php echo esc_url(admin_url('admin.php?page=nias-course-sms')); ?>" class="nias-tab <?php echo $active === 'sms' ? 'active' : ''; ?>"><?php echo esc_html__('پیامک', 'nias-course-widget'); ?><?php if (function_exists('nias_sms_ready') && nias_sms_ready()) : ?> <span class="nias-tab-badge"><?php echo esc_html__('فعال', 'nias-course-widget'); ?></span><?php endif; ?></a>
                 <a href="<?php echo esc_url(admin_url('admin.php?page=nias-course-player')); ?>" class="nias-tab <?php echo $active === 'player' ? 'active' : ''; ?>"><?php echo esc_html__('پلیر ویدیو', 'nias-course-widget'); ?></a>
@@ -1262,6 +1274,10 @@ function nias_course_settings_assets($hook)
         strpos($hook, 'nias-course-approvals') === false &&
         strpos($hook, 'nias-course-sms') === false &&
         strpos($hook, 'nias-course-modules') === false &&
+        strpos($hook, 'nias-course-assignments') === false &&
+        strpos($hook, 'nias-course-stats') === false &&
+        strpos($hook, 'nias-course-transfer') === false &&
+        strpos($hook, 'nias-course-revenue') === false &&
         strpos($hook, 'nias-course-meta') === false &&
         strpos($hook, 'nias-course-player') === false
     ) {

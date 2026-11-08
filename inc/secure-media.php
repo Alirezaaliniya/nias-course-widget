@@ -215,6 +215,15 @@ function nias_secure_media_serve()
     if (!nias_is_course_post((int) $p['p']) || (!$pub && !nias_secure_media_user_can($uid, (int) $p['p'], $p['k']))) {
         nias_secure_media_fail('access', (int) $p['p']);
     }
+    // «جلوگیری از دانلود»: a lesson video plays inside the page only. Opening
+    // its link straight in a browser tab (to save it) is refused; the
+    // player's own requests (Sec-Fetch-Dest: video/audio/empty) pass.
+    if ($p['k'] === 'video' && function_exists('carbon_get_theme_option') && carbon_get_theme_option('nias_player_no_download') === 'on') {
+        $dest = isset($_SERVER['HTTP_SEC_FETCH_DEST']) ? sanitize_key(wp_unslash($_SERVER['HTTP_SEC_FETCH_DEST'])) : '';
+        if (in_array($dest, array('document', 'iframe', 'embed', 'object'), true)) {
+            nias_secure_media_fail('nodownload', (int) $p['p']);
+        }
+    }
     do_action('nias_secure_media_served', $uid, (int) $p['p'], $p['k'], $p['url']);
 
     $path = nias_secure_media_local_path($p['url']);
@@ -241,6 +250,7 @@ function nias_secure_media_fail($why, $post_id = 0)
         'expired' => array(__('اعتبار این لینک تمام شده است', 'nias-course-widget'), __('صفحهٔ دوره را دوباره باز کنید تا لینک تازه ساخته شود.', 'nias-course-widget')),
         'access'  => array(__('به این دوره دسترسی ندارید', 'nias-course-widget'), __('این فایل فقط برای دانشجویان این دوره است.', 'nias-course-widget')),
         'invalid' => array(__('لینک نامعتبر است', 'nias-course-widget'), __('این لینک کامل نیست یا تغییر کرده است.', 'nias-course-widget')),
+        'nodownload' => array(__('دانلود این ویدیو مجاز نیست', 'nias-course-widget'), __('ویدیوهای این دوره فقط داخل صفحهٔ دوره پخش می‌شوند.', 'nias-course-widget')),
     );
     $m = isset($msgs[$why]) ? $msgs[$why] : $msgs['invalid'];
     do_action('nias_secure_media_denied', $why, get_current_user_id(), (int) $post_id);

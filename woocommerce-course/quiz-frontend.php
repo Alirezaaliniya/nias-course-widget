@@ -454,7 +454,8 @@ function nias_quiz_append_to_modern_course($output, $tag, $attr, $m)
     if (!$pid) {
         return $output;
     }
-    return $output . nias_quiz_render_for_course($pid);
+    // Modules add their own blocks under the course (e.g. reviews).
+    return $output . nias_quiz_render_for_course($pid) . apply_filters('nias_modern_course_extra', '', $pid);
 }
 
 /* -------------------------------------------------------------------------
@@ -668,7 +669,13 @@ function nias_quiz_student_script()
             var quiz=this.quiz;
             var qs=quiz.questions.slice();
             // Builder preview (no server draw): pick the bank's questions here.
-            if (+quiz.drawCount>0 && !quiz.drawToken && qs.length>+quiz.drawCount){
+            var groups={}; String(quiz.drawGroups||'').replace(/[۰-۹]/g,function(d){return d.charCodeAt(0)-1776;}).split(/[,،\n]+/).forEach(function(p){ var x=p.split(':'); if(x.length===2&&x[0].trim()&&+x[1]>0){ groups[x[0].trim()]=+x[1]; } });
+            if (!quiz.drawToken && Object.keys(groups).length){
+                // Builder preview: per-group draw.
+                var keepG=qs.filter(function(x){return x.always;});
+                Object.keys(groups).forEach(function(g){ keepG=keepG.concat(shuffle(qs.filter(function(x){return !x.always&&(x.group||'').trim()===g;})).slice(0,groups[g])); });
+                qs=qs.filter(function(x){ return keepG.indexOf(x)>=0; });
+            } else if (+quiz.drawCount>0 && !quiz.drawToken && qs.length>+quiz.drawCount){
                 var fixed=qs.filter(function(x){return x.always;}), rest=shuffle(qs.filter(function(x){return !x.always;}));
                 var keep=fixed.concat(rest.slice(0,Math.max(0,+quiz.drawCount-fixed.length)));
                 qs=qs.filter(function(x){ return keep.indexOf(x)>=0; });

@@ -221,6 +221,21 @@ function nias_course_sanitize_sections($raw)
                     ? nias_drip_clean(isset($lesson['lesson_drip']) && $lesson['lesson_drip'] === 'yes', $lesson['lesson_drip_day'] ?? 1, $lesson['lesson_drip_time'] ?? '')
                     : array('on' => false, 'day' => 1, 'time' => '');
                 $last = count($sec['lessons']) - 1;
+                // «کلاس زنده» (live session).
+                $live = isset($lesson['lesson_live']) && $lesson['lesson_live'] === 'yes';
+                $sec['lessons'][$last]['lesson_live']       = $live ? 'yes' : '';
+                $sec['lessons'][$last]['lesson_live_url']   = $live ? esc_url_raw((string) ($lesson['lesson_live_url'] ?? '')) : '';
+                $sec['lessons'][$last]['lesson_live_start'] = $live && preg_match('/^\d{4}-\d{2}-\d{2}[T ]\d{2}:\d{2}$/', (string) ($lesson['lesson_live_start'] ?? '')) ? str_replace(' ', 'T', $lesson['lesson_live_start']) : '';
+                $sec['lessons'][$last]['lesson_live_dur']   = $live && ($lesson['lesson_live_dur'] ?? '') !== '' ? (string) max(10, min(600, (int) $lesson['lesson_live_dur'])) : '';
+                // «تکلیف» (assignment).
+                $sec['lessons'][$last]['lesson_assign']       = (isset($lesson['lesson_assign']) && $lesson['lesson_assign'] === 'yes') ? 'yes' : '';
+                $sec['lessons'][$last]['lesson_assign_text']  = $sec['lessons'][$last]['lesson_assign'] ? mb_substr(sanitize_textarea_field($lesson['lesson_assign_text'] ?? ''), 0, 3000) : '';
+                $sec['lessons'][$last]['lesson_assign_types'] = $sec['lessons'][$last]['lesson_assign'] ? preg_replace('/[^a-z0-9,]/', '', strtolower((string) ($lesson['lesson_assign_types'] ?? ''))) : '';
+                $sec['lessons'][$last]['lesson_assign_max']   = $sec['lessons'][$last]['lesson_assign'] && ($lesson['lesson_assign_max'] ?? '') !== '' ? (string) max(1, (int) $lesson['lesson_assign_max']) : '';
+                $sec['lessons'][$last]['lesson_assign_pass']  = $sec['lessons'][$last]['lesson_assign'] && ($lesson['lesson_assign_pass'] ?? '') !== '' ? (string) max(0, min(100, (int) $lesson['lesson_assign_pass'])) : '';
+                // Other qualities of the lesson video ("label|url" lines).
+                $sec['lessons'][$last]['lesson_qualities']    = function_exists('nias_lesson_qualities_join') ? nias_lesson_qualities_join(nias_lesson_qualities_parse($lesson['lesson_qualities'] ?? '')) : '';
+                $sec['lessons'][$last]['lesson_quality_main'] = mb_substr(sanitize_text_field($lesson['lesson_quality_main'] ?? ''), 0, 24);
                 $sec['lessons'][$last]['lesson_drip']      = $drip['on'] ? 'yes' : '';
                 $sec['lessons'][$last]['lesson_drip_day']  = $drip['on'] ? (string) $drip['day'] : '';
                 $sec['lessons'][$last]['lesson_drip_time'] = $drip['on'] ? $drip['time'] : '';

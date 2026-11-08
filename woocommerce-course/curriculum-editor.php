@@ -82,6 +82,53 @@ function nias_curriculum_media_to_group($media, $type)
  * @param array $sections
  * @return array
  */
+/**
+ * Other qualities of a lesson video, stored as lines "label|url".
+ *
+ * @return array [{label, url}]
+ */
+function nias_lesson_qualities_parse($raw)
+{
+    $out = array();
+    foreach (preg_split('/\r\n|\r|\n/', (string) $raw) as $line) {
+        $p = explode('|', $line, 2);
+        if (count($p) === 2 && trim($p[1]) !== '') {
+            $out[] = array('label' => trim($p[0]), 'url' => trim($p[1]));
+        }
+    }
+    return $out;
+}
+
+/** [{label, url}] → "label|url" lines (cleaned). */
+function nias_lesson_qualities_join($list)
+{
+    $lines = array();
+    foreach ((array) $list as $q) {
+        if (!is_array($q)) {
+            continue;
+        }
+        $url   = isset($q['url']) ? esc_url_raw(trim((string) $q['url'])) : '';
+        $label = isset($q['label']) ? str_replace('|', ' ', mb_substr(sanitize_text_field($q['label']), 0, 24)) : '';
+        if ($url !== '') {
+            $lines[] = $label . '|' . $url;
+        }
+    }
+    return implode("\n", array_slice($lines, 0, 8));
+}
+
+/** Height from a label like "720p" / "۷۲۰" (0 = unknown). */
+function nias_lesson_quality_height($label)
+{
+    $l = strtr((string) $label, array('۰' => '0', '۱' => '1', '۲' => '2', '۳' => '3', '۴' => '4', '۵' => '5', '۶' => '6', '۷' => '7', '۸' => '8', '۹' => '9'));
+    if (preg_match('/(\d{3,4})/', $l, $m)) {
+        return (int) $m[1];
+    }
+    if (stripos($l, '4k') !== false) {
+        return 2160;
+    }
+    return 0;
+}
+
 function nias_curriculum_sections_to_js($sections)
 {
     $out = array();
@@ -104,6 +151,17 @@ function nias_curriculum_sections_to_js($sections)
                     'quiz'    => isset($lesson['lesson_quiz']) ? (int) $lesson['lesson_quiz'] : 0,
                     'gate'    => isset($lesson['lesson_gate']) ? (string) $lesson['lesson_gate'] : '',
                     'gateMin' => isset($lesson['lesson_gate_min']) ? (string) $lesson['lesson_gate_min'] : '',
+                    'qualities'   => nias_lesson_qualities_parse(isset($lesson['lesson_qualities']) ? $lesson['lesson_qualities'] : ''),
+                    'live'        => !empty($lesson['lesson_live']),
+                    'liveUrl'     => isset($lesson['lesson_live_url']) ? (string) $lesson['lesson_live_url'] : '',
+                    'liveStart'   => isset($lesson['lesson_live_start']) ? (string) $lesson['lesson_live_start'] : '',
+                    'liveDur'     => isset($lesson['lesson_live_dur']) ? (string) $lesson['lesson_live_dur'] : '',
+                    'assign'      => !empty($lesson['lesson_assign']),
+                    'assignText'  => isset($lesson['lesson_assign_text']) ? (string) $lesson['lesson_assign_text'] : '',
+                    'assignTypes' => isset($lesson['lesson_assign_types']) ? (string) $lesson['lesson_assign_types'] : '',
+                    'assignMax'   => isset($lesson['lesson_assign_max']) ? (string) $lesson['lesson_assign_max'] : '',
+                    'assignPass'  => isset($lesson['lesson_assign_pass']) ? (string) $lesson['lesson_assign_pass'] : '',
+                    'qualityMain' => isset($lesson['lesson_quality_main']) ? (string) $lesson['lesson_quality_main'] : '',
                     'drip'     => !empty($lesson['lesson_drip']),
                     'dripDay'  => isset($lesson['lesson_drip_day']) && $lesson['lesson_drip_day'] !== '' ? (string) $lesson['lesson_drip_day'] : '',
                     'dripTime' => isset($lesson['lesson_drip_time']) ? (string) $lesson['lesson_drip_time'] : '',
@@ -157,6 +215,17 @@ function nias_curriculum_js_to_input($chapters)
                     'lesson_quiz'          => isset($lesson['quiz']) ? $lesson['quiz'] : '',
                     'lesson_gate'          => isset($lesson['gate']) ? $lesson['gate'] : '',
                     'lesson_gate_min'      => isset($lesson['gateMin']) ? $lesson['gateMin'] : '',
+                    'lesson_qualities'     => nias_lesson_qualities_join(isset($lesson['qualities']) ? $lesson['qualities'] : array()),
+                    'lesson_live'          => !empty($lesson['live']) && $lesson['live'] !== 'false' ? 'yes' : '',
+                    'lesson_live_url'      => isset($lesson['liveUrl']) ? $lesson['liveUrl'] : '',
+                    'lesson_live_start'    => isset($lesson['liveStart']) ? $lesson['liveStart'] : '',
+                    'lesson_live_dur'      => isset($lesson['liveDur']) ? $lesson['liveDur'] : '',
+                    'lesson_assign'        => !empty($lesson['assign']) && $lesson['assign'] !== 'false' ? 'yes' : '',
+                    'lesson_assign_text'   => isset($lesson['assignText']) ? $lesson['assignText'] : '',
+                    'lesson_assign_types'  => isset($lesson['assignTypes']) ? $lesson['assignTypes'] : '',
+                    'lesson_assign_max'    => isset($lesson['assignMax']) ? $lesson['assignMax'] : '',
+                    'lesson_assign_pass'   => isset($lesson['assignPass']) ? $lesson['assignPass'] : '',
+                    'lesson_quality_main'  => isset($lesson['qualityMain']) ? $lesson['qualityMain'] : '',
                     'lesson_drip'          => !empty($lesson['drip']) && $lesson['drip'] !== 'false' ? 'yes' : '',
                     'lesson_drip_day'      => isset($lesson['dripDay']) ? $lesson['dripDay'] : '',
                     'lesson_drip_time'     => isset($lesson['dripTime']) ? $lesson['dripTime'] : '',
@@ -496,6 +565,9 @@ function nias_curriculum_render_editor($product_id, $ctx)
         'quizBuilderUrl' => $ctx['quizUrl'] ? $ctx['quizUrl'] : admin_url('admin.php?page=nias-course-quiz'),
         // «بستن دسترسی مستقیم به فایل‌ها»: lesson video/file uploads go to the protected folder.
         'protect'        => function_exists('nias_protect_enabled') && nias_protect_enabled(),
+        // «تکلیف» module.
+        'assignOn'       => function_exists('nias_assign_enabled') && nias_assign_enabled(),
+        'liveOn'         => function_exists('nias_live_enabled') && nias_live_enabled(),
         // «محتوای قطره‌ای» module.
         'drip'           => array(
             'enabled' => function_exists('nias_drip_enabled') && nias_drip_enabled(),
@@ -504,7 +576,7 @@ function nias_curriculum_render_editor($product_id, $ctx)
         'spot'           => array(
             'enabled'      => $spot_enabled,
             'downloadUrl'  => get_post_meta($product_id, '_spotplayer_download_url', true),
-            'licenseCourse'=> $spot_enabled ? get_post_meta($product_id, '_nias_spot_course', true) : '',
+            'licenseCourse'=> $spot_enabled ? (get_post_meta($product_id, '_nias_spot_course', true) ?: get_post_meta($product_id, '_spotplayer_course', true)) : '',
             'devices'      => $spot_enabled ? get_post_meta($product_id, '_nias_spot_devices', true) : '',
             'offline'      => $spot_enabled ? get_post_meta($product_id, '_nias_spot_offline', true) : '',
             'expires'      => $spot_enabled ? nias_spot_expires_label(get_post_meta($product_id, '_nias_spot_expires', true)) : '',
@@ -960,6 +1032,10 @@ function nias_curriculum_styles()
 
     .nc-quizbox{display:flex;flex-direction:column;gap:12px;padding:14px;border:1px solid #e6ecf5;background:#f9fbfe;border-radius:13px}
     .nc-drip-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+    .nc-qrow{display:grid;grid-template-columns:88px minmax(0,1fr) auto auto;gap:6px;align-items:center}
+    .nc-qbtn{height:38px;border:1px solid #dbe3ef;background:#fff;border-radius:9px;padding:0 10px;font:inherit;font-weight:700;cursor:pointer;color:#334155}
+    .nc-qbtn.del{color:#c0392b;font-size:17px;padding:0 12px}
+    .nc-qadd{align-self:flex-start;border:1px dashed #b9c7e6;background:#f5f8ff;color:#3858e9;border-radius:9px;padding:7px 12px;font:inherit;font-weight:700;cursor:pointer}
     .nc-dripbox .nc-private{margin:0}
     .nc-drip-badge{background:#fff4e5!important;color:#b45309!important}
     .nc-quizbox-t{font-size:13.5px;font-weight:800;color:#1f2733}
@@ -1135,7 +1211,7 @@ function nias_curriculum_script()
                         return {
                             id: uid('l'), title: l.title || '', label: l.label || '',
                             icon: mkMedia(l.icon), video: mkMedia(l.video), file: mkMedia(l.file),
-                            private: !!l.private, duration: l.duration || '', content: l.content || '', quiz: parseInt(l.quiz, 10) || 0, gate: l.gate || '', gateMin: l.gateMin || '', drip: !!l.drip, dripDay: l.dripDay || '', dripTime: l.dripTime || ''
+                            private: !!l.private, duration: l.duration || '', content: l.content || '', quiz: parseInt(l.quiz, 10) || 0, gate: l.gate || '', gateMin: l.gateMin || '', qualities: (l.qualities || []).map(function (q) { return { label: q.label || '', url: q.url || '' }; }), qualityMain: l.qualityMain || '', drip: !!l.drip, dripDay: l.dripDay || '', dripTime: l.dripTime || '', assign: !!l.assign, assignText: l.assignText || '', assignTypes: l.assignTypes || '', assignMax: l.assignMax || '', assignPass: l.assignPass || '', live: !!l.live, liveUrl: l.liveUrl || '', liveStart: l.liveStart || '', liveDur: l.liveDur || ''
                         };
                     })
                 };
@@ -1374,6 +1450,60 @@ function nias_curriculum_script()
                  '<div class="nc-quizbox-s">تا دانشجو به این نمره نرسد، محتوای جلسه اصلاً برایش ارسال نمی‌شود.</div></div>';
             return h + '</div>';
         }
+        /* ---- other qualities of the lesson video (player quality menu) ---- */
+        function qualitiesHtml(ls) {
+            var v = ls.video || {};
+            if (v.type === 'embed' || !(v.upload || v.url)) return '';
+            var rows = (ls.qualities || []).map(function (q, i) {
+                return '<div class="nc-qrow"><input type="text" class="nc-input" data-q-label="' + i + '" value="' + esc(q.label || '') + '" placeholder="720p">' +
+                    '<input type="text" class="nc-input" dir="ltr" data-q-url="' + i + '" value="' + esc(q.url || '') + '" placeholder="https://…/lesson-720.mp4">' +
+                    '<button type="button" class="nc-qbtn" data-q-pick="' + i + '">انتخاب</button><button type="button" class="nc-qbtn del" data-q-del="' + i + '" aria-label="حذف">×</button></div>';
+            }).join('');
+            return '<div class="nc-quizbox nc-qualbox"><div class="nc-quizbox-t">کیفیت‌های دیگر این ویدیو</div>' +
+                '<div class="nc-quizbox-s">اگر همین ویدیو را با کیفیت‌های دیگر (مثلاً 720p و 480p) هم دارید، این‌جا اضافه کنید تا دانشجو از منوی تنظیمات پلیر کیفیت را عوض کند (با اینترنت ضعیف، کیفیت پایین‌تر روان‌تر پخش می‌شود). برای ویدیوهای HLS/DASH لازم نیست.</div>' +
+                '<div><div class="nc-label">برچسب کیفیت اصلی</div><input type="text" class="nc-input" data-field="lessonQualityMain" value="' + esc(ls.qualityMain || '') + '" placeholder="مثلاً 1080p"></div>' +
+                rows + '<button type="button" class="nc-qadd" data-q-add>+ افزودن کیفیت</button></div>';
+        }
+        function pickQualityMedia(i) {
+            var ls = selLesson(); if (!ls || !ls.qualities || !ls.qualities[i]) return;
+            var prot = !!DATA.protect;
+            var setP = function (on) { try { if (window.wp && wp.Uploader && wp.Uploader.defaults) { var d = wp.Uploader.defaults.multipart_params = wp.Uploader.defaults.multipart_params || {}; if (on) d.nias_protected = 1; else delete d.nias_protected; } } catch (e) {} };
+            setP(prot);
+            var fr = wp.media({ title: 'انتخاب ویدیو با کیفیت دیگر', multiple: false, library: { type: 'video' } });
+            fr.on('close', function () { setP(false); });
+            fr.on('select', function () { var att = fr.state().get('selection').first().toJSON(); ls.qualities[i].url = att.url; if (!ls.qualities[i].label && att.height) ls.qualities[i].label = att.height + 'p'; markDirty(); renderEditor(); });
+            fr.open();
+        }
+
+        /* ---- «کلاس زنده»: a live session (link shown only around the start) ---- */
+        function liveBoxHtml(ls) {
+            if (!DATA.liveOn) return '';
+            var h = '<div class="nc-quizbox nc-dripbox">';
+            h += '<div class="nc-private' + (ls.live ? ' on' : '') + '" data-live-toggle><div class="nc-private-l"><span class="nc-lock">' + IC.video + '</span><div><div class="nc-private-t">کلاس زنده (آنلاین)</div><div class="nc-private-s">لینک کلاس فقط از ۱۰ دقیقه قبل تا پایان کلاس به دانشجو نشان داده می‌شود</div></div></div><span class="nc-switch"><span class="nc-knob"></span></span></div>';
+            if (ls.live) {
+                h += '<div><div class="nc-label">لینک کلاس</div><input type="text" dir="ltr" class="nc-input" data-field="lessonLiveUrl" value="' + esc(ls.liveUrl || '') + '" placeholder="https://www.skyroom.online/ch/…"></div>' +
+                    '<div class="nc-drip-grid"><div><div class="nc-label">زمان شروع</div><input type="datetime-local" class="nc-input" data-field="lessonLiveStart" value="' + esc(ls.liveStart || '') + '"></div>' +
+                    '<div><div class="nc-label">مدت (دقیقه)</div><input type="number" min="10" max="600" class="nc-input" data-field="lessonLiveDur" value="' + esc(ls.liveDur || '') + '" placeholder="90"></div></div>' +
+                    '<div class="nc-quizbox-s">به وقت سایت. یک ساعت قبل پیامک یادآوری می‌رود (رویداد «یادآوری کلاس زنده»). بعد از کلاس، ویدیوی ضبط‌شده را در «ویدیوی پیش‌نمایش» همین جلسه بگذارید تا جای کارت کلاس پخش شود.</div>';
+            }
+            return h + '</div>';
+        }
+
+        /* ---- «تکلیف»: the student sends a file for this lesson ---- */
+        function assignBoxHtml(ls) {
+            if (!DATA.assignOn) return '';
+            var h = '<div class="nc-quizbox nc-dripbox">';
+            h += '<div class="nc-private' + (ls.assign ? ' on' : '') + '" data-assign-toggle><div class="nc-private-l"><span class="nc-lock">' + IC.file + '</span><div><div class="nc-private-t">تکلیف</div><div class="nc-private-s">دانشجو برای این جلسه فایل (پروژه، تمرین) می‌فرستد و مدرس نمره می‌دهد</div></div></div><span class="nc-switch"><span class="nc-knob"></span></span></div>';
+            if (ls.assign) {
+                h += '<div><div class="nc-label">شرح تکلیف</div><textarea class="nc-input" rows="3" data-field="lessonAssignText" placeholder="چه چیزی باید ارسال شود؟">' + esc(ls.assignText || '') + '</textarea></div>' +
+                    '<div class="nc-drip-grid"><div><div class="nc-label">پسوندهای مجاز</div><input type="text" dir="ltr" class="nc-input" data-field="lessonAssignTypes" value="' + esc(ls.assignTypes || '') + '" placeholder="pdf,zip,jpg"></div>' +
+                    '<div><div class="nc-label">حداکثر حجم (مگابایت)</div><input type="number" min="1" class="nc-input" data-field="lessonAssignMax" value="' + esc(ls.assignMax || '') + '" placeholder="20"></div></div>' +
+                    '<div><div class="nc-label">نمرهٔ قبولی (از ۱۰۰)</div><input type="number" min="0" max="100" class="nc-input" data-field="lessonAssignPass" value="' + esc(ls.assignPass || '') + '" placeholder="خالی = هر نمره‌ای قبول است"></div>' +
+                    '<div class="nc-quizbox-s">فایل‌ها در پوشهٔ محافظت‌شده ذخیره می‌شوند و فقط دانشجو، مدرس دوره و مدیر به آن‌ها دسترسی دارند. تصحیح از «تکالیف» در پیشخوان یا پنل مدرس.</div>';
+            }
+            return h + '</div>';
+        }
+
         /* ---- «قطره‌ای»: opens on day N after enrolment, at HH:MM ---- */
         function dripBoxHtml(ls) {
             var D = DATA.drip || {};
@@ -1426,10 +1556,13 @@ function nias_curriculum_script()
             h += '<div><div class="nc-label">مدت زمان درس</div><input type="text" class="nc-input" data-field="lessonDuration" value="' + esc(ls.duration || '') + '" placeholder="مثلاً: ۱۲:۳۵ یا ۱۵ دقیقه"></div>';
             h += '<div><div class="nc-label">آیکون درس</div>' + mediaHtml('lesson', 'icon', ls.icon, IC.img, 'یک تصویر انتخاب کنید یا لینک بدهید', 'انتخاب') + '</div>';
             h += '<div><div class="nc-label">ویدیوی پیش‌نمایش</div>' + mediaHtml('lesson', 'video', ls.video, IC.video, 'لینک، فایل یا کد امبد ویدیو را اضافه کنید', 'افزودن', true) + '</div>';
+            h += qualitiesHtml(ls);
             h += '<div><div class="nc-label">فایل خصوصی درس</div>' + mediaHtml('lesson', 'file', ls.file, IC.file, 'PDF، تمرین یا فایل پیوست', 'افزودن') + '</div>';
             h += '<div class="nc-private' + (ls.private ? ' on' : '') + '" data-private-toggle><div class="nc-private-l"><span class="nc-lock">' + IC.lock + '</span><div><div class="nc-private-t">درس خصوصی است؟</div><div class="nc-private-s">فقط برای کاربران خریدار نمایش داده می‌شود</div></div></div><span class="nc-switch"><span class="nc-knob"></span></span></div>';
             h += quizBoxHtml(ls);
             h += dripBoxHtml(ls);
+            h += assignBoxHtml(ls);
+            h += liveBoxHtml(ls);
             fieldsEl.innerHTML = h;
             attachQuizPickers(ls);
             contentEl.style.display = '';
@@ -1476,7 +1609,7 @@ function nias_curriculum_script()
                 id: uid('c'), title: src.title + (I18N.copySuffix || ' (کپی)'), subtitle: src.subtitle,
                 icon: cloneMedia(src.icon), expanded: true,
                 lessons: src.lessons.map(function (l) {
-                    return { id: uid('l'), title: l.title, label: l.label, icon: cloneMedia(l.icon), video: cloneMedia(l.video), file: cloneMedia(l.file), private: l.private, duration: l.duration || '', content: l.content, quiz: l.quiz || 0, gate: l.gate || '', gateMin: l.gateMin || '', drip: !!l.drip, dripDay: l.dripDay || '', dripTime: l.dripTime || '' };
+                    return { id: uid('l'), title: l.title, label: l.label, icon: cloneMedia(l.icon), video: cloneMedia(l.video), file: cloneMedia(l.file), private: l.private, duration: l.duration || '', content: l.content, quiz: l.quiz || 0, gate: l.gate || '', gateMin: l.gateMin || '', qualities: (l.qualities || []).map(function (q) { return { label: q.label || '', url: q.url || '' }; }), qualityMain: l.qualityMain || '', drip: !!l.drip, dripDay: l.dripDay || '', dripTime: l.dripTime || '', assign: !!l.assign, assignText: l.assignText || '', assignTypes: l.assignTypes || '', assignMax: l.assignMax || '', assignPass: l.assignPass || '', live: !!l.live, liveUrl: l.liveUrl || '', liveStart: l.liveStart || '', liveDur: l.liveDur || '' };
                 })
             };
             state.chapters.splice(idx + 1, 0, copy);
@@ -1488,7 +1621,7 @@ function nias_curriculum_script()
             var idx = -1; for (var i = 0; i < ch.lessons.length; i++) if (ch.lessons[i].id === lid) { idx = i; break; }
             if (idx < 0) return;
             var src = ch.lessons[idx];
-            var copy = { id: uid('l'), title: src.title + (I18N.copySuffix || ' (کپی)'), label: src.label, icon: cloneMedia(src.icon), video: cloneMedia(src.video), file: cloneMedia(src.file), private: src.private, duration: src.duration || '', content: src.content, quiz: src.quiz || 0, gate: src.gate || '', gateMin: src.gateMin || '', drip: !!src.drip, dripDay: src.dripDay || '', dripTime: src.dripTime || '' };
+            var copy = { id: uid('l'), title: src.title + (I18N.copySuffix || ' (کپی)'), label: src.label, icon: cloneMedia(src.icon), video: cloneMedia(src.video), file: cloneMedia(src.file), private: src.private, duration: src.duration || '', content: src.content, quiz: src.quiz || 0, gate: src.gate || '', gateMin: src.gateMin || '', qualities: (src.qualities || []).map(function (q) { return { label: q.label, url: q.url }; }), qualityMain: src.qualityMain || '', drip: !!src.drip, dripDay: src.dripDay || '', dripTime: src.dripTime || '', assign: !!src.assign, assignText: src.assignText || '', assignTypes: src.assignTypes || '', assignMax: src.assignMax || '', assignPass: src.assignPass || '', live: !!src.live, liveUrl: src.liveUrl || '', liveStart: src.liveStart || '', liveDur: src.liveDur || '' };
             ch.lessons.splice(idx + 1, 0, copy);
             state.selected = { type: 'lesson', chapterId: cid, lessonId: copy.id };
             markDirty(); renderAll();
@@ -1602,7 +1735,7 @@ function nias_curriculum_script()
                 return {
                     title: c.title, subtitle: c.subtitle, icon: c.icon,
                     lessons: c.lessons.map(function (l) {
-                        return { title: l.title, label: l.label, icon: l.icon, video: l.video, file: l.file, private: l.private, duration: l.duration || '', content: l.content, quiz: l.quiz || 0, gate: l.gate || '', gateMin: l.gateMin || '', drip: !!l.drip, dripDay: l.dripDay || '', dripTime: l.dripTime || '' };
+                        return { title: l.title, label: l.label, icon: l.icon, video: l.video, file: l.file, private: l.private, duration: l.duration || '', content: l.content, quiz: l.quiz || 0, gate: l.gate || '', gateMin: l.gateMin || '', qualities: (l.qualities || []).map(function (q) { return { label: q.label || '', url: q.url || '' }; }), qualityMain: l.qualityMain || '', drip: !!l.drip, dripDay: l.dripDay || '', dripTime: l.dripTime || '', assign: !!l.assign, assignText: l.assignText || '', assignTypes: l.assignTypes || '', assignMax: l.assignMax || '', assignPass: l.assignPass || '', live: !!l.live, liveUrl: l.liveUrl || '', liveStart: l.liveStart || '', liveDur: l.liveDur || '' };
                     })
                 };
             });
@@ -1760,6 +1893,11 @@ function nias_curriculum_script()
                 if (tgt) { tgt[key] = mkMedia(); markDirty(); renderEditor(); }
                 return;
             }
+            if ((m = t.closest('[data-q-add]'))) { var lq = selLesson(); if (lq) { lq.qualities = lq.qualities || []; if (lq.qualities.length < 8) lq.qualities.push({ label: '', url: '' }); markDirty(); renderEditor(); } return; }
+            if ((m = t.closest('[data-q-del]'))) { var lq2 = selLesson(); if (lq2 && lq2.qualities) { lq2.qualities.splice(parseInt(m.getAttribute('data-q-del'), 10), 1); markDirty(); renderEditor(); } return; }
+            if ((m = t.closest('[data-q-pick]'))) { pickQualityMedia(parseInt(m.getAttribute('data-q-pick'), 10)); return; }
+            if (t.closest('[data-live-toggle]')) { var lsl = selLesson(); if (lsl) { lsl.live = !lsl.live; markDirty(); renderEditor(); } return; }
+            if (t.closest('[data-assign-toggle]')) { var lsa = selLesson(); if (lsa) { lsa.assign = !lsa.assign; markDirty(); renderEditor(); } return; }
             if (t.closest('[data-drip-toggle]')) { var lsd = selLesson(); if (lsd) { lsd.drip = !lsd.drip; if (lsd.drip && !lsd.dripDay) lsd.dripDay = '1'; markDirty(); renderEditor(); renderList(); } return; }
             if (t.closest('[data-private-toggle]')) { var ls = selLesson(); if (ls) { ls.private = !ls.private; markDirty(); renderEditor(); renderList(); } return; }
             if (t.closest('[data-save]')) { saveAll(); return; }
@@ -1778,6 +1916,11 @@ function nias_curriculum_script()
         editorEl.addEventListener('input', function (e) {
             var t = e.target;
             if (t.id === EDITOR_ID) { markDirty(); return; } // typing in the editor "Text" tab
+            if (t.hasAttribute('data-q-label') || t.hasAttribute('data-q-url')) {
+                var lq3 = selLesson(), qi = parseInt(t.getAttribute(t.hasAttribute('data-q-label') ? 'data-q-label' : 'data-q-url'), 10);
+                if (lq3 && lq3.qualities && lq3.qualities[qi]) { lq3.qualities[qi][t.hasAttribute('data-q-label') ? 'label' : 'url'] = t.value; markDirty(); }
+                return;
+            }
             var field = t.getAttribute('data-field');
             if (field) {
                 var val = t.value;
@@ -1799,6 +1942,14 @@ function nias_curriculum_script()
                         renderList();
                     }
                 }
+                else if (field === 'lessonLiveUrl') { var lv1 = selLesson(); if (lv1) lv1.liveUrl = val; }
+                else if (field === 'lessonLiveStart') { var lv2 = selLesson(); if (lv2) lv2.liveStart = val; }
+                else if (field === 'lessonLiveDur') { var lv3 = selLesson(); if (lv3) lv3.liveDur = val; }
+                else if (field === 'lessonAssignText') { var la1 = selLesson(); if (la1) la1.assignText = val; }
+                else if (field === 'lessonAssignTypes') { var la2 = selLesson(); if (la2) la2.assignTypes = val; }
+                else if (field === 'lessonAssignMax') { var la3 = selLesson(); if (la3) la3.assignMax = val; }
+                else if (field === 'lessonAssignPass') { var la4 = selLesson(); if (la4) la4.assignPass = val; }
+                else if (field === 'lessonQualityMain') { var lqm = selLesson(); if (lqm) lqm.qualityMain = val; }
                 else if (field === 'lessonDripDay' || field === 'lessonDripTime') {
                     var lsd2 = selLesson();
                     if (lsd2) {

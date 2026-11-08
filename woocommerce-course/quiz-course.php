@@ -90,7 +90,7 @@ function nias_quiz_public_model($quiz, $user_id)
     if ($ids !== null) {
         $out['drawToken'] = nias_quiz_draw_token((int) $quiz['id'], $ids);
     }
-    unset($out['drawCount']);
+    unset($out['drawCount'], $out['drawGroups']);
     return $out;
 }
 
@@ -106,9 +106,60 @@ function nias_quiz_public_model($quiz, $user_id)
  *   - Grading uses only the drawn questions; the score is out of them.
  * ---------------------------------------------------------------------- */
 
+/** "آسان:5, سخت:2" → ['آسان' => 5, 'سخت' => 2]. */
+function nias_quiz_groups_parse($raw)
+{
+    $raw = strtr((string) $raw, array('۰' => '0', '۱' => '1', '۲' => '2', '۳' => '3', '۴' => '4', '۵' => '5', '۶' => '6', '۷' => '7', '۸' => '8', '۹' => '9', '،' => ','));
+    $out = array();
+    foreach (preg_split('/[,\n]+/u', $raw) as $part) {
+        $p = explode(':', $part, 2);
+        if (count($p) === 2 && trim($p[0]) !== '' && (int) $p[1] > 0) {
+            $out[mb_substr(sanitize_text_field(trim($p[0])), 0, 40)] = min(500, (int) $p[1]);
+        }
+    }
+    return array_slice($out, 0, 20, true);
+}
+function nias_quiz_groups_join($groups)
+{
+    $parts = array();
+    foreach ((array) $groups as $g => $n) {
+        $parts[] = $g . ':' . (int) $n;
+    }
+    return implode(', ', $parts);
+}
+
+/** Per-group plan of a quiz: [group => count] limited to what exists (empty = no group draw). */
+function nias_quiz_group_plan($quiz)
+{
+    $want = nias_quiz_groups_parse(isset($quiz['drawGroups']) ? $quiz['drawGroups'] : '');
+    if (!$want) {
+        return array();
+    }
+    $have = array();
+    foreach ((array) $quiz['questions'] as $q) {
+        if (empty($q['always'])) {
+            $g = isset($q['group']) ? trim((string) $q['group']) : '';
+            $have[$g] = (isset($have[$g]) ? $have[$g] : 0) + 1;
+        }
+    }
+    $plan = array();
+    foreach ($want as $g => $n) {
+        if (!empty($have[$g])) {
+            $plan[$g] = min($n, $have[$g]);
+        }
+    }
+    return $plan;
+}
+
 /** Questions per student (0 = all of them). */
 function nias_quiz_draw_size($quiz)
 {
+    $plan = nias_quiz_group_plan($quiz);
+    if ($plan) {
+        $fixed = count(array_filter((array) $quiz['questions'], function ($q) { return !empty($q['always']); }));
+        $size  = $fixed + array_sum($plan);
+        return $size < count((array) $quiz['questions']) ? $size : 0;
+    }
     $n   = isset($quiz['drawCount']) ? (int) $quiz['drawCount'] : 0;
     $all = count((array) (isset($quiz['questions']) ? $quiz['questions'] : array()));
     if ($n <= 0 || $n >= $all) {
@@ -130,9 +181,9 @@ function nias_quiz_bank_sig($quiz)
 {
     $ids = array();
     foreach ((array) $quiz['questions'] as $q) {
-        $ids[] = $q['id'] . (!empty($q['always']) ? '!' : '');
+        $ids[] = $q['id'] . (!empty($q['always']) ? '!' : '') . (isset($q['group']) ? '@' . $q['group'] : '');
     }
-    return substr(md5(implode(',', $ids) . '|' . (int) $quiz['drawCount']), 0, 12);
+    return substr(md5(implode(',', $ids) . '|' . (int) $quiz['drawCount'] . '|' . (isset($quiz['drawGroups']) ? $quiz['drawGroups'] : '')), 0, 12);
 }
 
 /** A fresh random draw (ids, in the bank's order). */
@@ -149,13 +200,33 @@ function nias_quiz_new_draw($quiz)
         }
     }
     // Fisher–Yates with a CSPRNG.
-    for ($i = count($others) - 1; $i > 0; $i--) {
-        $j = random_int(0, $i);
-        $t = $others[$i];
-        $others[$i] = $others[$j];
-        $others[$j] = $t;
+    $shuffle = function ($a) {
+        for ($i = count($a) - 1; $i > 0; $i--) {
+            $j = random_int(0, $i);
+            $t = $a[$i];
+            $a[$i] = $a[$j];
+            $a[$j] = $t;
+        }
+        return $a;
+    };
+    $plan = nias_quiz_group_plan($quiz);
+    if ($plan) {
+        // From each group, its count (questions marked «همیشه» come on top).
+        $by = array();
+        foreach ((array) $quiz['questions'] as $q) {
+            if (empty($q['always'])) {
+                $by[isset($q['group']) ? trim((string) $q['group']) : ''][] = $q['id'];
+            }
+        }
+        $chosen = $fixed;
+        foreach ($plan as $g => $cnt) {
+            $chosen = array_merge($chosen, array_slice($shuffle($by[$g]), 0, $cnt));
+        }
+        $pick = array_flip($chosen);
+    } else {
+        $others = $shuffle($others);
+        $pick   = array_flip(array_merge($fixed, array_slice($others, 0, max(0, $n - count($fixed)))));
     }
-    $pick = array_flip(array_merge($fixed, array_slice($others, 0, max(0, $n - count($fixed)))));
     $ids  = array();
     foreach ((array) $quiz['questions'] as $q) {
         if (isset($pick[$q['id']])) {

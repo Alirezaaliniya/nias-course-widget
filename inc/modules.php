@@ -15,6 +15,26 @@ function nias_modules_fields()
     return array(
         'nias_drip_enabled' => 'radio',
         'nias_drip_email'   => 'radio',
+        'nias_assign_enabled'   => 'radio',
+        'nias_stats_enabled'    => 'radio',
+        'nias_notes_enabled'        => 'radio',
+        'nias_paths_enabled'        => 'radio',
+        'nias_transfer_enabled'     => 'radio',
+        'nias_live_enabled'         => 'radio',
+        'nias_gm_enabled'           => 'radio',
+        'nias_gm_board'             => 'radio',
+        'nias_gm_names'             => 'radio',
+        'nias_rev_enabled'          => 'radio',
+        'nias_rev_rate'             => 'text',
+        'nias_rev_hold'             => 'number',
+        'nias_rev_min'              => 'number',
+        'nias_reviews_enabled'      => 'radio',
+        'nias_reviews_min_progress' => 'number',
+        'nias_reviews_moderate'     => 'radio',
+        'nias_inactive_enabled' => 'radio',
+        'nias_inactive_days'    => 'text',
+        'nias_inactive_hours'   => 'text',
+        'nias_inactive_email'   => 'radio',
         'nias_access_enabled'      => 'radio',
         'nias_access_default_days' => 'number',
         'nias_access_remind'       => 'text',
@@ -39,16 +59,6 @@ add_action('admin_menu', function () {
 function nias_modules_upcoming()
 {
     return array(
-        __('یادآوری به دانشجوی غیرفعال', 'nias-course-widget'),
-        __('تکلیف با بارگذاری فایل', 'nias-course-widget'),
-        __('یادداشت و نشانک زمان‌دار', 'nias-course-widget'),
-        __('امتیاز و نظر خریداران', 'nias-course-widget'),
-        __('گزارش تحلیلی', 'nias-course-widget'),
-        __('سهم درآمد مدرس', 'nias-course-widget'),
-        __('پیش‌نیاز و مسیر یادگیری', 'nias-course-widget'),
-        __('کپی و انتقال دوره', 'nias-course-widget'),
-        __('کلاس آنلاین', 'nias-course-widget'),
-        __('امتیاز و نشان', 'nias-course-widget'),
     );
 }
 
@@ -92,6 +102,80 @@ function nias_modules_page()
                         'data-nias-show-when="nias_drip_enabled=on"'
                     );
                     ?>
+                <?php nias_set_card_close(); ?>
+
+                <?php nias_set_card_open('<svg width="20" height="20" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="9" r="6" stroke="#3858e9" stroke-width="1.8"/><path d="m8.5 14-1.5 7 5-3 5 3-1.5-7" stroke="#3858e9" stroke-width="1.8" stroke-linejoin="round"/></svg>', __('امتیاز و نشان', 'nias-course-widget')); ?>
+                    <?php nias_set_toggle_row('nias_gm_enabled', __('فعال‌سازی امتیاز و نشان', 'nias-course-widget'), __('دانشجو برای تکمیل جلسه (+۱۰)، قبولی در آزمون (+۲۰)، قبولی تکلیف (+۳۰)، تمام کردن دوره (+۵۰)، نظر (+۵) و پرسش (+۲) امتیاز و نشان می‌گیرد (هر کار یک بار). زیر صفحهٔ دوره امتیاز، رتبه، نشان‌ها و جدول برترین‌های همان دوره نمایش داده می‌شود و هنگام گرفتن نشان جدید پیغام می‌آید. شورت‌کد [nias_my_badges] برای حساب کاربری. امتیازها از روز فعال‌سازی حساب می‌شوند.', 'nias-course-widget'), 'off', __('جدید', 'nias-course-widget')); ?>
+                    <div data-nias-show-when="nias_gm_enabled=on">
+                        <?php nias_set_toggle_row('nias_gm_board', __('جدول برترین‌ها', 'nias-course-widget'), __('۱۰ نفر اول هر دوره زیر صفحهٔ دوره.', 'nias-course-widget'), 'on'); ?>
+                        <div class="nias-row"><div class="nias-field"><label class="nias-flabel"><?php echo esc_html__('نام دانشجوها در جدول', 'nias-course-widget'); ?></label><?php nias_set_segmented('nias_gm_names', array('short' => __('نام کوچک + حرف اول فامیلی', 'nias-course-widget'), 'full' => __('نام کامل', 'nias-course-widget'), 'hidden' => __('مخفی', 'nias-course-widget')), 'short'); ?></div></div>
+                    </div>
+                <?php nias_set_card_close(); ?>
+
+                <?php nias_set_card_open('<svg width="20" height="20" viewBox="0 0 24 24" fill="none"><rect x="2" y="5" width="15" height="14" rx="2" stroke="#3858e9" stroke-width="1.8"/><path d="m17 10 5-3v10l-5-3" stroke="#3858e9" stroke-width="1.8" stroke-linejoin="round"/></svg>', __('کلاس آنلاین', 'nias-course-widget')); ?>
+                    <?php nias_set_toggle_row('nias_live_enabled', __('فعال‌سازی کلاس آنلاین', 'nias-course-widget'), __('در ویرایشگر جلسه گزینهٔ «کلاس زنده» اضافه می‌شود: لینک کلاس (اسکای‌روم، BigBlueButton، گوگل‌میت و …)، زمان شروع و مدت. دانشجو تا قبل از کلاس شمارش معکوس و «افزودن به تقویم» می‌بیند؛ لینک ورود فقط از ۱۰ دقیقه قبل تا پایان کلاس و فقط به کسانی که به جلسه دسترسی دارند داده می‌شود. یک ساعت قبل پیامک یادآوری می‌رود. ویدیوی ضبط‌شده را بعداً در همان جلسه بگذارید تا جای کارت کلاس پخش شود.', 'nias-course-widget'), 'off', __('جدید', 'nias-course-widget')); ?>
+                <?php nias_set_card_close(); ?>
+
+                <?php nias_set_card_open('<svg width="20" height="20" viewBox="0 0 24 24" fill="none"><rect x="2" y="6" width="20" height="13" rx="2" stroke="#3858e9" stroke-width="1.8"/><path d="M2 10h20M6 15h4" stroke="#3858e9" stroke-width="1.8" stroke-linecap="round"/></svg>', __('سهم درآمد مدرس', 'nias-course-widget')); ?>
+                    <?php
+                    $wc_ok2 = function_exists('nias_wc_active') && nias_wc_active();
+                    nias_set_toggle_row('nias_rev_enabled', __('فعال‌سازی سهم درآمد مدرس', 'nias-course-widget'), $wc_ok2 ? __('با تکمیل هر سفارش، سهم مدرس (یا مدرسینِ) دوره در حسابش ثبت می‌شود و پس از دورهٔ امن قابل برداشت است؛ بازپرداخت یا لغو سفارش سهم را برمی‌گرداند. مدرس در پنل «درآمد» موجودی، فروش‌ها و درخواست تسویه را می‌بیند و مدیر در تب «درآمد مدرسین» درخواست‌ها را پرداخت یا رد می‌کند. درصد برای هر مدرس (صفحهٔ ویرایش کاربر) و هر دوره (صفحهٔ محصول) قابل تغییر است. فروش‌های قبل از فعال‌سازی حساب نمی‌شوند.', 'nias-course-widget') : __('این ماژول به ووکامرس نیاز دارد.', 'nias-course-widget'), 'off', __('جدید', 'nias-course-widget'));
+                    ?>
+                    <div data-nias-show-when="nias_rev_enabled=on"><div class="nias-row" style="display:flex;flex-wrap:wrap;gap:18px">
+                        <?php nias_set_number_field('nias_rev_rate', __('سهم پیش‌فرض مدرس (٪)', 'nias-course-widget'), __('از مبلغ فروش هر دوره (بعد از تخفیف).', 'nias-course-widget'), 70, 100); ?>
+                        <?php nias_set_number_field('nias_rev_hold', __('دورهٔ امن (روز)', 'nias-course-widget'), __('سهم پس از این مدت قابل برداشت می‌شود.', 'nias-course-widget'), 7, 90); ?>
+                        <?php nias_set_number_field('nias_rev_min', __('حداقل مبلغ تسویه', 'nias-course-widget'), __('به واحد پول فروشگاه.', 'nias-course-widget'), 500000); ?>
+                    </div></div>
+                <?php nias_set_card_close(); ?>
+
+                <?php nias_set_card_open('<svg width="20" height="20" viewBox="0 0 24 24" fill="none"><rect x="8" y="8" width="12" height="12" rx="2" stroke="#3858e9" stroke-width="1.8"/><path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2" stroke="#3858e9" stroke-width="1.8"/></svg>', __('کپی و انتقال دوره', 'nias-course-widget')); ?>
+                    <?php nias_set_toggle_row('nias_transfer_enabled', __('فعال‌سازی کپی و انتقال', 'nias-course-widget'), __('در فهرست دوره‌ها زیر نام هر دوره «کپی دوره» و «خروجی دوره» اضافه می‌شود. کپی: یک پیش‌نویس با همان محتوا، جلسات، تنظیمات و نسخهٔ جداگانه از آزمون‌ها (نتایج دو دوره قاطی نمی‌شود). خروجی: فایل JSON که در صفحهٔ «انتقال دوره» همین سایت یا سایت دیگر وارد می‌شود.', 'nias-course-widget'), 'off', __('جدید', 'nias-course-widget')); ?>
+                <?php nias_set_card_close(); ?>
+
+                <?php nias_set_card_open('<svg width="20" height="20" viewBox="0 0 24 24" fill="none"><circle cx="5" cy="6" r="2.5" stroke="#3858e9" stroke-width="1.8"/><circle cx="19" cy="18" r="2.5" stroke="#3858e9" stroke-width="1.8"/><path d="M7.5 6H15a3 3 0 0 1 0 6H9a3 3 0 0 0 0 6h7.5" stroke="#3858e9" stroke-width="1.8" stroke-linecap="round"/></svg>', __('پیش‌نیاز و مسیر یادگیری', 'nias-course-widget')); ?>
+                    <?php nias_set_toggle_row('nias_paths_enabled', __('فعال‌سازی پیش‌نیاز و مسیر یادگیری', 'nias-course-widget'), __('در صفحهٔ ویرایش هر دوره جعبهٔ «پیش‌نیاز دوره» اضافه می‌شود: دوره‌هایی که باید اول تمام شوند (پیشرفت ۱۰۰٪ یا گرفتن مدرک) و این‌که قبل از آن خرید آزاد است و فقط جلسات قفل‌اند یا خرید هم ممکن نیست. منوی «مسیرهای یادگیری» هم اضافه می‌شود: چند دوره به ترتیب با پیشرفت کلی، قابل نمایش با شورت‌کد [nias_path id=""] و در صفحهٔ خود مسیر؛ گزینهٔ «ترتیبی» هر دوره را به دورهٔ قبلی وابسته می‌کند. مدیران و مدرسِ دوره هیچ‌وقت محدود نمی‌شوند.', 'nias-course-widget'), 'off', __('جدید', 'nias-course-widget')); ?>
+                <?php nias_set_card_close(); ?>
+
+                <?php nias_set_card_open('<svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M4 4h16v12H8l-4 4V4Z" stroke="#3858e9" stroke-width="1.8" stroke-linejoin="round"/><path d="M8 9h8M8 12h5" stroke="#3858e9" stroke-width="1.8" stroke-linecap="round"/></svg>', __('یادداشت و نشانک زمان‌دار', 'nias-course-widget')); ?>
+                    <?php nias_set_toggle_row('nias_notes_enabled', __('فعال‌سازی یادداشت‌ها', 'nias-course-widget'), __('در جلسه‌های ویدیویی تب «یادداشت‌ها» اضافه می‌شود: دانشجو در هر لحظه یادداشت می‌گذارد و با کلیک روی زمان یادداشت به همان لحظه برمی‌گردد. همهٔ یادداشت‌ها در «حساب کاربری › یادداشت‌های من» (یا شورت‌کد [nias_my_notes]) با جستجو، لینک به همان لحظه و دریافت فایل متنی دیده می‌شوند. یادداشت‌ها خصوصی‌اند.', 'nias-course-widget'), 'off', __('جدید', 'nias-course-widget')); ?>
+                <?php nias_set_card_close(); ?>
+
+                <?php nias_set_card_open('<svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M12 3l2.8 5.7 6.2.9-4.5 4.4 1 6.2L12 17.3 6.5 20.2l1-6.2L3 9.6l6.2-.9z" stroke="#3858e9" stroke-width="1.8" stroke-linejoin="round"/></svg>', __('امتیاز و نظر خریداران', 'nias-course-widget')); ?>
+                    <?php nias_set_toggle_row('nias_reviews_enabled', __('فعال‌سازی امتیاز و نظر', 'nias-course-widget'), __('زیر صفحهٔ دوره بخش «نظر دانشجویان» با میانگین امتیاز، توزیع ستاره‌ها و نظرها اضافه می‌شود. فقط دانشجوی خود دوره (بعد از درصد مشخصی پیشرفت) می‌تواند ۱ تا ۵ ستاره و نظر بدهد و هر نفر یک نظر دارد که می‌تواند ویرایش کند. مدرس و مدیر زیر هر نظر پاسخ می‌دهند. امتیاز روی کارت «دوره‌های من» و (برای محصول) در امتیاز و اسکیمای ووکامرس هم نمایش داده می‌شود.', 'nias-course-widget'), 'off', __('جدید', 'nias-course-widget')); ?>
+                    <div data-nias-show-when="nias_reviews_enabled=on">
+                        <div class="nias-row"><?php nias_set_number_field('nias_reviews_min_progress', __('حداقل پیشرفت برای ثبت نظر (٪)', 'nias-course-widget'), __('تا دانشجو این مقدار از دوره را ندیده باشد، نمی‌تواند امتیاز بدهد.', 'nias-course-widget'), 30, 100); ?></div>
+                        <?php nias_set_toggle_row('nias_reviews_moderate', __('تأیید نظرها پیش از نمایش', 'nias-course-widget'), __('نظر جدید تا تأیید در «دیدگاه‌ها»ی وردپرس نمایش داده نمی‌شود.', 'nias-course-widget'), 'off'); ?>
+                    </div>
+                <?php nias_set_card_close(); ?>
+
+                <?php nias_set_card_open('<svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2" stroke="#3858e9" stroke-width="1.8" stroke-linecap="round"/></svg>', __('گزارش تحلیلی', 'nias-course-widget')); ?>
+                    <?php nias_set_toggle_row('nias_stats_enabled', __('فعال‌سازی گزارش‌ها', 'nias-course-widget'), __('برای هر دوره: تعداد دانشجو، نرخ شروع و تکمیل، میانگین پیشرفت، نمودار ریزش جلسه‌به‌جلسه (بر اساس درصد واقعی تماشای ویدیو)، وضعیت آزمون‌ها و تکالیف، دانشجوهای عقب‌افتاده و فروش ۱۲ ماه. مدیر همهٔ دوره‌ها را در تب «گزارش‌ها» و مدرس دوره‌های خودش را در پنل مدرس می‌بیند. هر گزارش ۶ ساعت نگه داشته می‌شود تا سرور سنگین نشود.', 'nias-course-widget'), 'off', __('جدید', 'nias-course-widget')); ?>
+                <?php nias_set_card_close(); ?>
+
+                <?php nias_set_card_open('<svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8l-5-5Z" stroke="#3858e9" stroke-width="1.8" stroke-linejoin="round"/><path d="M14 3v5h5M9 14l2 2 4-4" stroke="#3858e9" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>', __('تکلیف با بارگذاری فایل', 'nias-course-widget')); ?>
+                    <?php nias_set_toggle_row('nias_assign_enabled', __('فعال‌سازی تکلیف', 'nias-course-widget'), __('در ویرایشگر جلسه (پیشخوان و پنل مدرس) گزینهٔ «تکلیف» اضافه می‌شود: شرح، پسوندهای مجاز، حداکثر حجم و نمرهٔ قبولی. دانشجو از تب «تکلیف» جلسه فایل می‌فرستد (در پوشهٔ محافظت‌شده) و مدرس از «تکالیف» نمره و بازخورد می‌دهد یا ارسال دوباره می‌خواهد. دانشجو با ایمیل و پیامک و مدرس با پیامک باخبر می‌شود.', 'nias-course-widget'), 'off', __('جدید', 'nias-course-widget')); ?>
+                <?php nias_set_card_close(); ?>
+
+                <?php nias_set_card_open('<svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M6 8a6 6 0 1 1 12 0c0 7 3 9 3 9H3s3-2 3-9Z" stroke="#3858e9" stroke-width="1.8" stroke-linejoin="round"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0" stroke="#3858e9" stroke-width="1.8" stroke-linecap="round"/></svg>', __('یادآوری به دانشجوی غیرفعال', 'nias-course-widget')); ?>
+                    <?php
+                    $in_on = function_exists('nias_inactive_enabled') && nias_inactive_enabled();
+                    nias_set_toggle_row(
+                        'nias_inactive_enabled',
+                        __('فعال‌سازی یادآوری ادامهٔ دوره', 'nias-course-widget'),
+                        __('اگر دانشجو چند روز به دوره سر نزند (نه دوره را باز کند، نه ویدیو ببیند، نه آزمون بدهد)، پیام «از جلسهٔ X ادامه بده» با لینک دوره برایش می‌رود؛ دانشجویی که دوره را خریده ولی شروع نکرده هم یادآوری می‌گیرد. با هر فعالیت دوباره از صفر حساب می‌شود. برای دوره‌های تمام‌شده، دسترسی منقضی، مدیران و مدرسین ارسال نمی‌شود و هر ایمیل لینک لغو دارد. دانشجوهای فعلی از روز فعال‌سازی حساب می‌شوند (موج پیام راه نمی‌افتد).', 'nias-course-widget') . ($in_on ? ' <b>' . esc_html(sprintf(__('ارسال‌شده در ۳۰ روز گذشته: %s', 'nias-course-widget'), nias_fa_digits(nias_inactive_sent_count(30)))) . '</b>' : ''),
+                        'off',
+                        __('جدید', 'nias-course-widget')
+                    );
+                    ?>
+                    <div data-nias-show-when="nias_inactive_enabled=on">
+                        <div class="nias-row" style="display:flex;flex-wrap:wrap;gap:18px;align-items:flex-start">
+                            <div class="nias-field" style="max-width:300px"><label class="nias-flabel"><?php echo esc_html__('بعد از چند روز بی‌فعالیتی', 'nias-course-widget'); ?></label><div class="nias-fdesc"><?php echo esc_html__('مرحله‌ها با کاما؛ مثلاً 3,7,14 یعنی یک بار بعد از ۳ روز، یک بار بعد از ۷ و یک بار بعد از ۱۴ روز.', 'nias-course-widget'); ?></div>
+                                <input type="text" class="nias-input" dir="ltr" name="nias_inactive_days" value="<?php echo esc_attr((string) carbon_get_theme_option('nias_inactive_days') !== '' ? carbon_get_theme_option('nias_inactive_days') : '3,7,14'); ?>"></div>
+                            <div class="nias-field" style="max-width:240px"><label class="nias-flabel"><?php echo esc_html__('ساعت مجاز ارسال', 'nias-course-widget'); ?></label><div class="nias-fdesc"><?php echo esc_html__('مثلاً 9-21؛ بیرون از این ساعت پیامی نمی‌رود.', 'nias-course-widget'); ?></div>
+                                <input type="text" class="nias-input" dir="ltr" name="nias_inactive_hours" value="<?php echo esc_attr((string) carbon_get_theme_option('nias_inactive_hours') !== '' ? carbon_get_theme_option('nias_inactive_hours') : '9-21'); ?>"></div>
+                        </div>
+                        <?php nias_set_toggle_row('nias_inactive_email', __('ارسال با ایمیل', 'nias-course-widget'), sprintf(__('ایمیل با دکمهٔ «ادامهٔ دوره» و لینک لغو. پیامک همین یادآوری در صفحهٔ <a href="%s">پیامک</a> (رویداد «یادآوری ادامهٔ دوره») تنظیم می‌شود.', 'nias-course-widget'), esc_url(admin_url('admin.php?page=nias-course-sms'))), 'on'); ?>
+                    </div>
                 <?php nias_set_card_close(); ?>
 
                 <?php nias_set_card_open('<svg width="20" height="20" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="13" r="8" stroke="#3858e9" stroke-width="1.8"/><path d="M12 9v4l3 2M9 2h6" stroke="#3858e9" stroke-width="1.8" stroke-linecap="round"/></svg>', __('دسترسی زمان‌دار و تمدید', 'nias-course-widget')); ?>
@@ -184,6 +268,7 @@ function nias_modules_page()
                 <?php nias_set_card_close(); ?>
             <?php endif; ?>
 
+            <?php if (nias_modules_upcoming()) : ?>
             <?php nias_set_card_open('<svg width="20" height="20" viewBox="0 0 24 24" fill="none"><rect x="3" y="3" width="7" height="7" rx="2" stroke="#94a3b8" stroke-width="1.8"/><rect x="14" y="3" width="7" height="7" rx="2" stroke="#94a3b8" stroke-width="1.8"/><rect x="3" y="14" width="7" height="7" rx="2" stroke="#94a3b8" stroke-width="1.8"/><rect x="14" y="14" width="7" height="7" rx="2" stroke="#94a3b8" stroke-width="1.8"/></svg>', __('ماژول‌های بعدی', 'nias-course-widget')); ?>
                 <div class="nias-row"><div class="nias-row-main">
                     <div style="display:flex;flex-wrap:wrap;gap:8px">
@@ -193,6 +278,7 @@ function nias_modules_page()
                     </div>
                 </div></div>
             <?php nias_set_card_close(); ?>
+            <?php endif; ?>
         </div></div>
     </div>
     <?php

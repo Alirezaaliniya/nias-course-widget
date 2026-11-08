@@ -92,6 +92,30 @@ function nias_sms_events()
             'tokens' => array('name', 'course', 'link'),
             'text' => __('{name} عزیز، دسترسی شما به دورهٔ «{course}» به پایان رسید. برای تمدید: {link}', 'nias-course-widget'),
         ),
+        's_inactive' => array(
+            'to' => 'student', 'label' => __('یادآوری ادامهٔ دوره (دانشجوی غیرفعال)', 'nias-course-widget'),
+            'desc' => __('وقتی دانشجو چند روز به دوره سر نزده است (ماژول «یادآوری به دانشجوی غیرفعال»).', 'nias-course-widget'),
+            'tokens' => array('name', 'course', 'days', 'lesson', 'link'),
+            'text' => __('{name} عزیز، {days} روز است به دورهٔ «{course}» سر نزده‌اید. از «{lesson}» ادامه دهید: {link}', 'nias-course-widget'),
+        ),
+        's_assign_graded' => array(
+            'to' => 'student', 'label' => __('نتیجهٔ تکلیف', 'nias-course-widget'),
+            'desc' => __('وقتی مدرس تکلیف ارسالی دانشجو را بررسی می‌کند (ماژول «تکلیف»).', 'nias-course-widget'),
+            'tokens' => array('name', 'course', 'lesson', 'status', 'score', 'link'),
+            'text' => __('{name} عزیز، تکلیف «{lesson}» بررسی شد: {status} {score}. {link}', 'nias-course-widget'),
+        ),
+        't_assign_new' => array(
+            'to' => 'teacher', 'label' => __('تکلیف جدید', 'nias-course-widget'),
+            'desc' => __('وقتی دانشجو برای یکی از جلسات دوره تکلیف می‌فرستد.', 'nias-course-widget'),
+            'tokens' => array('name', 'student', 'course', 'lesson', 'link'),
+            'text' => __('{name} عزیز، {student} برای «{lesson}» از دورهٔ «{course}» تکلیف فرستاد. {link}', 'nias-course-widget'),
+        ),
+        's_live_reminder' => array(
+            'to' => 'student', 'label' => __('یادآوری کلاس زنده', 'nias-course-widget'),
+            'desc' => __('حدود یک ساعت قبل از شروع کلاس آنلاین (ماژول «کلاس آنلاین»).', 'nias-course-widget'),
+            'tokens' => array('name', 'course', 'lesson', 'date', 'link'),
+            'text' => __('{name} عزیز، کلاس «{lesson}» از دورهٔ «{course}» ساعت {date} شروع می‌شود. ورود: {link}', 'nias-course-widget'),
+        ),
         't_new_student' => array(
             'to' => 'teacher', 'label' => __('دانشجوی جدید', 'nias-course-widget'),
             'desc' => __('وقتی کسی در یکی از دوره‌های مدرس ثبت‌نام می‌کند.', 'nias-course-widget'),
@@ -258,7 +282,7 @@ function nias_sms_panel_link($view = '')
 {
     $page = function_exists('nias_instructor_dashboard_page_id') ? nias_instructor_dashboard_page_id() : 0;
     $url  = $page ? get_permalink($page) : home_url('/');
-    $map  = array('qa' => array('nias_qa' => 1), 'results' => array('nias_qr' => 1));
+    $map  = array('qa' => array('nias_qa' => 1), 'results' => array('nias_qr' => 1), 'assign' => array('nias_panel' => 'assign'));
     return isset($map[$view]) ? add_query_arg($map[$view], $url) : $url;
 }
 
@@ -356,6 +380,25 @@ add_action('nias_certificate_issued', function ($row) {
     $link = function_exists('nias_cert_verify_url') ? nias_cert_verify_url($row['code'], (int) $row['user_id']) : home_url('/');
     nias_sms_queue('s_certificate', (int) $row['user_id'], array('course' => get_the_title((int) $row['product_id']), 'code' => (string) $row['code'], 'link' => $link));
 }, 20);
+
+// Live class reminder.
+add_action('nias_live_reminder', function ($user_id, $post_id, $title, $start) {
+    nias_sms_queue('s_live_reminder', (int) $user_id, array('course' => get_the_title((int) $post_id), 'lesson' => $title, 'date' => nias_fa_digits(wp_date('H:i', $start)), 'link' => nias_sms_course_link((int) $post_id)));
+}, 20, 4);
+
+// Assignments.
+add_action('nias_assign_submitted', function ($row) {
+    $u = get_userdata((int) $row['user_id']);
+    nias_sms_to_instructors('t_assign_new', (int) $row['post_id'], array('student' => $u ? $u->display_name : '', 'course' => get_the_title((int) $row['post_id']), 'lesson' => $row['lesson_title'], 'link' => nias_sms_panel_link('assign')), (int) $row['user_id']);
+}, 20);
+add_action('nias_assign_graded', function ($row) {
+    nias_sms_queue('s_assign_graded', (int) $row['user_id'], array('course' => get_the_title((int) $row['post_id']), 'lesson' => $row['lesson_title'], 'status' => nias_assign_status_label($row['status']), 'score' => (int) $row['score'] >= 0 ? nias_fa_digits($row['score']) : '', 'link' => nias_sms_course_link((int) $row['post_id'])));
+}, 20);
+
+// Inactive student: "continue the course".
+add_action('nias_inactive_reminder', function ($user_id, $post_id, $days, $lesson, $link) {
+    nias_sms_queue('s_inactive', (int) $user_id, array('course' => get_the_title((int) $post_id), 'days' => nias_fa_digits($days), 'lesson' => $lesson ? $lesson['title'] : __('جلسهٔ بعدی', 'nias-course-widget'), 'link' => $link));
+}, 20, 5);
 
 // Time-limited access: reminders before the end, and on the end day.
 add_action('nias_access_expiring_notice', function ($user_id, $post_id, $until, $days) {

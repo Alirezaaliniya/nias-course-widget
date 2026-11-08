@@ -79,6 +79,7 @@ function nias_quiz_default_settings()
         'maxAttempts' => 0,
         // Question bank: each student gets this many random questions (0 = all).
         'drawCount'   => 0,
+        'drawGroups'  => '',
         'shuffleQ'    => false,
         'shuffleOpt'  => false,
         'showExp'     => true,
@@ -112,6 +113,8 @@ function nias_quiz_sanitize_question($q)
         'explanation' => isset($q['explanation']) ? sanitize_textarea_field($q['explanation']) : '',
         // Question bank: always part of every student's draw.
         'always'      => !empty($q['always']),
+        // Question bank: group of the question (e.g. «آسان») for per-group draws.
+        'group'       => isset($q['group']) ? mb_substr(str_replace(array(':', ',', '،'), ' ', sanitize_text_field($q['group'])), 0, 40) : '',
     );
 
     if ($type === 'choice' || $type === 'multi' || $type === 'tf') {
@@ -188,6 +191,8 @@ function nias_quiz_sanitize_model($model)
         'passScore'  => isset($model['passScore']) ? max(0, min(100, (int) $model['passScore'])) : $def['passScore'],
         'maxAttempts' => isset($model['maxAttempts']) ? max(0, min(99, (int) $model['maxAttempts'])) : 0,
         'drawCount'   => isset($model['drawCount']) ? max(0, min(1000, (int) $model['drawCount'])) : 0,
+        // "آسان:5, سخت:2" — how many questions from each group (overrides drawCount).
+        'drawGroups'  => isset($model['drawGroups']) && function_exists('nias_quiz_groups_join') ? nias_quiz_groups_join(nias_quiz_groups_parse($model['drawGroups'])) : '',
         'shuffleQ'    => !empty($model['shuffleQ']),
         'shuffleOpt'  => !empty($model['shuffleOpt']),
         'showExp'     => !empty($model['showExp']),
@@ -956,6 +961,7 @@ function nias_quiz_builder_script()
                     '<label class="nqz-field"><span class="nqz-flabel">حد نصاب قبولی (٪)</span><input class="nqz-in" type="number" data-input="passScore" value="'+esc(ed.passScore)+'"></label>'+
                     '<label class="nqz-field"><span class="nqz-flabel">حداکثر دفعات شرکت</span><input class="nqz-in" type="number" min="0" data-input="maxAttempts" value="'+esc(ed.maxAttempts||0)+'"><span class="nqz-hint">۰ یعنی نامحدود. بهترین نمرهٔ دانشجو ثبت می‌شود.</span></label>'+
                     '<label class="nqz-field"><span class="nqz-flabel">بانک سوال: تعداد سوال برای هر دانشجو</span><input class="nqz-in" type="number" min="0" data-input="drawCount" value="'+esc(ed.drawCount||0)+'"><span class="nqz-hint" data-draw-hint>'+drawHint(ed)+'</span></label>'+
+                    '<label class="nqz-field"><span class="nqz-flabel">یا قرعه به تفکیک دسته</span><input class="nqz-in" data-input="drawGroups" value="'+esc(ed.drawGroups||'')+'" placeholder="مثلاً: آسان:5، متوسط:3، سخت:2"><span class="nqz-hint" data-group-hint>'+groupHint(ed)+'</span></label>'+
                     '<div style="display:flex;flex-direction:column;gap:10px">'+toggle('برزدن ترتیب سوال‌ها','shuffleQ')+toggle('برزدن ترتیب گزینه‌ها','shuffleOpt')+toggle('نمایش پاسخ صحیح در پایان','showAnswers')+toggle('نمایش توضیح پاسخ‌ها','showExp')+'</div>'+
                     '<label class="nqz-field"><span class="nqz-flabel">اتصال به دوره</span>'+
                         '<div class="nqz-coursepick" data-coursepick></div>'+
@@ -969,6 +975,13 @@ function nias_quiz_builder_script()
         }
 
         // Question bank hint ("۱۰ سوال تصادفی از ۳۰ سوال").
+        // Groups found in the questions, e.g. «آسان (۱۲)، سخت (۸)».
+        function groupHint(ed){
+            var c={}; (ed.questions||[]).forEach(function(q){ var g=(q.group||'').trim(); if(g){ c[g]=(c[g]||0)+1; } });
+            var keys=Object.keys(c);
+            var found = keys.length ? 'دسته‌های این آزمون: '+keys.map(function(k){ return k+' ('+fa(c[k])+')'; }).join('، ') : 'برای هر سوال، در ویرایش سوال «دسته» بنویسید (مثلاً آسان، متوسط، سخت).';
+            return found+' اگر پر شود، از هر دسته همان تعداد سوال تصادفی می‌آید و «تعداد سوال برای هر دانشجو» نادیده گرفته می‌شود.';
+        }
         function drawHint(ed){
             var all=(ed.questions||[]).length, n=+ed.drawCount||0, fixed=(ed.questions||[]).filter(function(q){return q.always;}).length;
             if (!n || n>=all) return '۰ یعنی همهٔ سوال‌ها. اگر مثلاً ۳۰ سوال بنویسید و این‌جا ۱۰ بگذارید، به هر دانشجو (و در هر بار شرکت) ۱۰ سوال تصادفی از همین ۳۰ سوال می‌رسد.';
@@ -985,7 +998,8 @@ function nias_quiz_builder_script()
             var html = '<div class="nqz-mpad">'+
                 '<div class="nqz-mhead"><div class="nqz-mhead-l"><span class="nqz-mnum">'+fa(idx+1)+'</span>'+
                     '<span class="nqz-mtype">'+typeLabel(q.type)+'</span></div>'+
-                    '<div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">'+((+ed.drawCount>0&&+ed.drawCount<ed.questions.length)?'<button class="nqz-toggle nqz-always" data-act="qalways" title="در قرعهٔ همهٔ دانشجوها باشد"><span class="lbl">همیشه در آزمون</span><span class="nqz-track '+(q.always?'on':'')+'"><span class="nqz-knob"></span></span></button>':'')+
+                    '<div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">'+((((+ed.drawCount>0&&+ed.drawCount<ed.questions.length))||(ed.drawGroups||'').trim())?'<button class="nqz-toggle nqz-always" data-act="qalways" title="در قرعهٔ همهٔ دانشجوها باشد"><span class="lbl">همیشه در آزمون</span><span class="nqz-track '+(q.always?'on':'')+'"><span class="nqz-knob"></span></span></button>':'')+
+                    '<label class="nqz-points">دسته<input class="nqz-in" style="width:96px" data-input="q.group" value="'+esc(q.group||'')+'" placeholder="مثلاً آسان"></label>'+
                     '<label class="nqz-points">بارم<input class="nqz-in" type="number" data-input="q.points" value="'+esc(q.points)+'"></label></div></div>'+
                 '<div class="nqz-block"><span class="nqz-flabel">صورت سوال</span><textarea class="nqz-in" rows="2" data-input="q.text" placeholder="متن سوال را بنویسید…">'+esc(q.text)+'</textarea></div>'+
                 '<div class="nqz-block"><span class="nqz-flabel">پیوست تصویر / ویدیو (اختیاری)</span><input class="nqz-in" data-input="q.media" value="'+esc(q.media)+'" placeholder="آدرس URL تصویر یا ویدیو"></div>';
@@ -1090,12 +1104,14 @@ function nias_quiz_builder_script()
             if (key==='timeValue'){ if(ed){ ed.timeValue=parseInt(val,10)||0; touch(); } return; }
             if (key==='passScore'){ if(ed){ ed.passScore=parseInt(val,10)||0; touch(); } return; }
             if (key==='maxAttempts'){ if(ed){ ed.maxAttempts=Math.max(0,parseInt(val,10)||0); touch(); } return; }
+            if (key==='drawGroups'){ if(ed){ ed.drawGroups=val; touch(); } return; }
             if (key==='drawCount'){ if(ed){ ed.drawCount=Math.max(0,parseInt(val,10)||0); touch(); var dh=ROOT.querySelector('[data-draw-hint]'); if(dh) dh.textContent=drawHint(ed); updateTotals(); } return; }
             if (key==='courseId'){ if(ed){ ed.courseId=parseInt(val,10)||0; touch(); } return; }
             var q = selQuestion();
             if (!q) return;
             if (key==='q.points'){ q.points=parseFloat(val)||0; touch(); updateTotals(); }
             else if (key==='q.text'){ q.text=val; touch(); }
+            else if (key==='q.group'){ q.group=val; touch(); }
             else if (key==='q.media'){ q.media=val; touch(); }
             else if (key==='q.answerText'){ q.answerText=val; touch(); }
             else if (key==='q.explanation'){ q.explanation=val; touch(); }

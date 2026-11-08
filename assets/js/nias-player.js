@@ -3,6 +3,7 @@
  *
  *   var p = NiasPlayer.create(container, {
  *       src:        'https://…/lesson.mp4' | '…/master.m3u8' | '…/manifest.mpd',
+ *       sources:    [{ label:'1080p', height:1080, src }, { label:'720p', … }], // other qualities of a file (optional)
  *       poster:     '',
  *       startAt:    0,            // resume position (seconds)
  *       watch:      { n, m },     // previously watched map (see Tracker)
@@ -414,6 +415,8 @@
         '.npl-ring b{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:18px}',
         '.npl-err{position:absolute;inset:0;display:none;flex-direction:column;align-items:center;justify-content:center;gap:12px;padding:24px;text-align:center;background:linear-gradient(135deg,#1a262d,#0e1518);z-index:7;direction:rtl}',
         '.npl.is-error .npl-err{display:flex}',
+        '.npl-shield{position:absolute;inset:0;z-index:40;display:none;align-items:center;justify-content:center;background:#000;color:#fff;font-size:14px;cursor:pointer;text-align:center;padding:16px}',
+        '.npl.is-shielded .npl-shield{display:flex}',
         '.npl-err .ic{width:46px;height:46px;color:#fbbf24}',
         '.npl-err .t{font-size:16px;font-weight:700}',
         '.npl-err .m{font-size:13px;opacity:.75;max-width:420px;line-height:1.9}',
@@ -506,7 +509,13 @@
         v.setAttribute('playsinline', '');
         v.setAttribute('webkit-playsinline', '');
         v.setAttribute('preload', /^(none|metadata|auto)$/.test(c.preload) ? c.preload : 'metadata');
-        v.setAttribute('controlsList', 'nodownload');
+        v.setAttribute('controlsList', 'nodownload noremoteplayback');
+        if (c.noDownload) {
+            // «جلوگیری از دانلود»: no save/drag/long-press menu on the video.
+            v.setAttribute('disableRemotePlayback', '');
+            v.setAttribute('draggable', 'false');
+            v.style.webkitTouchCallout = 'none';
+        }
         var poster = this.o.poster || c.poster;
         if (poster) { v.poster = poster; }
         var p = this.prefs;
@@ -583,11 +592,57 @@
 
     /* ---- loading ---- */
 
+    /**
+     * Several files of the same video (1080p / 720p / 480p): which one to
+     * start with — the viewer's last choice, else the HLS start setting.
+     */
+    Player.prototype.pickSource = function () {
+        var s = this.o.sources, c = this.cfg;
+        if (!s || s.length < 2 || !c.controls.quality) { return -1; }
+        var want = +this.prefs.qh || 0, best = -1;
+        if (want) {
+            s.forEach(function (x, i) { if ((+x.height || 0) === want) { best = i; } });
+            if (best > -1) { return best; }
+        }
+        var start = (c.hls && c.hls.start) || 'auto';
+        if (start === 'auto') { return 0; }
+        var order = s.map(function (x, i) { return i; }).sort(function (a, b) { return (+s[a].height || 0) - (+s[b].height || 0); });
+        return start === 'low' ? order[0] : order[order.length - 1];
+    };
+    /** Engine over several files: switching keeps the time, speed and play state. */
+    Player.prototype.sourcesEngine = function (idx) {
+        var self = this, v = this.v, s = this.o.sources;
+        return {
+            kind: 'sources', _cur: idx,
+            levels: s.map(function (x) { return { height: +x.height || 0, bitrate: 0, label: x.label || '' }; }),
+            level: function (i) {
+                if (i < 0 || i === this._cur || !s[i]) { return; }
+                var t = v.currentTime, was = !v.paused, rate = v.playbackRate;
+                this._cur = i;
+                self.r.classList.add('is-waiting');
+                var back = function () {
+                    v.removeEventListener('loadedmetadata', back);
+                    try { v.currentTime = t; } catch (e) { /* not seekable yet */ }
+                    v.playbackRate = rate;
+                    if (was) { var p = v.play(); if (p && p.catch) { p.catch(function () {}); } }
+                };
+                v.addEventListener('loadedmetadata', back);
+                v.src = s[i].src;
+                v.load();
+                if (self.cfg.remember) { writePrefs({ qh: +s[i].height || 0 }); self.prefs.qh = +s[i].height || 0; }
+            },
+            current: function () { return this._cur; },
+            destroy: function () {}
+        };
+    };
+
     Player.prototype.load = function () {
         var self = this, v = this.v, c = this.cfg;
         this.r.classList.add('is-waiting');
-        attachEngine(v, this.o.src, c.hls).then(function (eng) {
+        var si = this.pickSource();
+        attachEngine(v, si > -1 ? this.o.sources[si].src : this.o.src, c.hls).then(function (eng) {
             if (self.destroyed) { eng.destroy(); return; }
+            if (si > -1 && eng.kind === 'native') { eng = self.sourcesEngine(si); }
             self.engine = eng;
             var rate = (c.remember && c.speeds.indexOf(self.prefs.rate) > -1) ? self.prefs.rate : +c.defaultSpeed;
             if (c.speeds.indexOf(rate) < 0) { rate = 1; }
@@ -601,13 +656,45 @@
         });
     };
 
+    /**
+     * «جلوگیری از دانلود»: make capture harder. A screenshot key or a capture
+     * tool (which takes the focus away) blanks the picture and pauses; Ctrl+S
+     * is blocked. Screen capture cannot be fully prevented by a web page.
+     */
+    Player.prototype.guardCapture = function () {
+        var self = this, v = this.v, r = this.r;
+        var L = function (t, e, f, o) { self.listen(t, e, f, o); };
+        var shield = el('div', 'npl-shield');
+        shield.innerHTML = '<span>' + 'برای ادامه، روی ویدیو کلیک کنید' + '</span>';
+        r.appendChild(shield);
+        var hide = function (pause) {
+            r.classList.add('is-shielded');
+            if (pause && !v.paused) { self._shieldPaused = true; v.pause(); }
+        };
+        var show = function () { r.classList.remove('is-shielded'); };
+        L(shield, 'click', function (e) { e.stopPropagation(); show(); if (self._shieldPaused) { self._shieldPaused = false; self.play(); } });
+        L(window, 'blur', function () { if (!v.paused || r.classList.contains('is-playing')) { hide(true); } });
+        L(document, 'visibilitychange', function () { if (document.hidden) { hide(true); } });
+        L(document, 'keydown', function (e) {
+            var k = (e.key || '').toLowerCase();
+            if (k === 'printscreen' || (e.metaKey && e.shiftKey && (k === '3' || k === '4' || k === '5' || k === 's'))) { hide(true); }
+            if ((e.ctrlKey || e.metaKey) && (k === 's' || k === 'u')) { e.preventDefault(); }
+        }, true);
+        L(document, 'keyup', function (e) {
+            if ((e.key || '').toLowerCase() === 'printscreen') {
+                hide(true);
+                try { if (navigator.clipboard && navigator.clipboard.writeText) { navigator.clipboard.writeText('').catch(function () { /* page not focused */ }); } } catch (x) { /* not allowed */ }
+            }
+        }, true);
+    };
+
     Player.prototype.fail = function (code) {
         var e = ERRORS[code] || ERRORS.network;
         this.r.classList.remove('is-waiting', 'is-playing');
         this.r.classList.add('is-error');
         this.ui.err.querySelector('.t').textContent = e[0];
         this.ui.err.querySelector('.m').textContent = e[1];
-        var dl = this.o.downloadUrl || ((code === 'format' || code === 'decode') ? this.o.src : '');
+        var dl = this.cfg.noDownload ? '' : (this.o.downloadUrl || ((code === 'format' || code === 'decode') ? this.o.src : ''));
         if (dl && !this.ui.err.querySelector('a')) {
             var a = el('a');
             a.href = dl;
@@ -660,6 +747,7 @@
         });
         L(v, 'npl-fatal', function () { self.fail('network'); });
         if (c.blockContext) { L(r, 'contextmenu', function (e) { e.preventDefault(); }); }
+        if (c.noDownload) { this.guardCapture(); }
 
         // Buttons.
         L(r, 'click', function (e) {
@@ -1052,6 +1140,7 @@
     Player.prototype.qualityLabel = function (i) {
         if (i < 0) { return 'خودکار'; }
         var l = this.engine.levels[i];
+        if (l.label) { return fa(l.label); }
         return l.height ? fa(l.height) + 'p' : fa(Math.round(l.bitrate / 1000)) + ' kbps';
     };
     Player.prototype.toggleMenu = function () {
@@ -1093,7 +1182,8 @@
         } else if (page === 'quality') {
             if (c.controls.speed) { head('کیفیت'); }
             var curL = eng.current();
-            item('خودکار', '', function () { eng.level(-1); self.closeMenu(); self.toast('کیفیت: خودکار'); }, curL < 0);
+            // Separate files have no "auto": the viewer picks one.
+            if (eng.kind !== 'sources') { item('خودکار', '', function () { eng.level(-1); self.closeMenu(); self.toast('کیفیت: خودکار'); }, curL < 0); }
             eng.levels.map(function (l, i) { return { i: i, h: l.height, b: l.bitrate }; })
                 .sort(function (a, b) { return (b.h - a.h) || (b.b - a.b); })
                 .forEach(function (l) {

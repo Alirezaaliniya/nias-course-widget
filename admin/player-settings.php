@@ -68,6 +68,7 @@ function nias_player_fields()
         'nias_player_wm_size'         => array('number', 13),
         'nias_player_wm_interval'     => array('number', 9),
         'nias_player_block_context'   => array('radio', 'on'),
+        'nias_player_no_download'     => array('radio', 'off'),
         // Streaming
         'nias_player_hls_start'       => array('radio', 'auto'),
         'nias_player_hls_cap'         => array('radio', 'on'),
@@ -186,7 +187,8 @@ function nias_player_config()
         'completePct'   => (int) $num('nias_video_complete_pct', 10, 100),
         'seekLock'      => in_array($o('nias_player_seek_lock'), array('off', 'first', 'always'), true) ? $o('nias_player_seek_lock') : 'off',
         'pauseHidden'   => $on('nias_player_pause_hidden'),
-        'blockContext'  => $on('nias_player_block_context'),
+        'blockContext'  => $on('nias_player_block_context') || $on('nias_player_no_download'),
+        'noDownload'    => $on('nias_player_no_download'),
         'watermark'     => array(
             'text'     => $on('nias_video_watermark') ? nias_player_watermark_text() : '',
             'mode'     => $o('nias_player_wm_mode') === 'corner' ? 'corner' : 'move',
@@ -227,7 +229,35 @@ function nias_player_script_tags()
     }
     $done = true;
     nias_player_print_config();
-    echo '<script src="' . esc_url(plugin_dir_url(NIAS_COURSE . 'nias-course-widget.php') . 'assets/js/nias-player.js?v=' . NIAS_COURSE_VERSION) . '"></script>' . "\n";
+    echo '<script src="' . esc_url(plugin_dir_url(NIAS_COURSE . 'nias-course-widget.php') . 'assets/js/nias-player.js?v=' . NIAS_COURSE_VERSION . '.' . (int) @filemtime(NIAS_COURSE . 'assets/js/nias-player.js')) . '"></script>' . "\n";
+    nias_player_print_nodownload_guard();
+}
+
+/**
+ * «جلوگیری از دانلود» on the whole course page: no right-click menu, drag or
+ * long-press on videos/audios and inside the course view, no Ctrl+S / Ctrl+U.
+ */
+function nias_player_print_nodownload_guard()
+{
+    static $done = false;
+    if ($done || !function_exists('carbon_get_theme_option') || carbon_get_theme_option('nias_player_no_download') !== 'on') {
+        return;
+    }
+    $done = true;
+    ?>
+    <style>.nmc video,.nmc audio,.npl video,.nias-ap audio,.nias-vp-wrap video{-webkit-touch-callout:none;-webkit-user-drag:none;user-select:none}</style>
+    <script>
+    (function () {
+        var inCourse = function (t) { return t && t.closest && t.closest('video,audio,.nmc,.npl,.nias-ap,.nias-vp-wrap'); };
+        document.addEventListener('contextmenu', function (e) { if (inCourse(e.target)) { e.preventDefault(); } }, true);
+        document.addEventListener('dragstart', function (e) { if (e.target && /^(VIDEO|AUDIO)$/.test(e.target.tagName)) { e.preventDefault(); } }, true);
+        document.addEventListener('keydown', function (e) {
+            var k = (e.key || '').toLowerCase();
+            if ((e.ctrlKey || e.metaKey) && (k === 's' || k === 'u')) { e.preventDefault(); }
+        }, true);
+    })();
+    </script>
+    <?php
 }
 
 /* -------------------------------------------------------------------------
@@ -292,7 +322,8 @@ function nias_player_render_page()
     }
 
     // A real video from the media library for the preview, when there is one.
-    $sample = get_posts(array('post_type' => 'attachment', 'post_mime_type' => 'video', 'posts_per_page' => 1, 'post_status' => 'inherit'));
+    // (Not one from the protected course folder: those open only through signed links.)
+    $sample = get_posts(array('post_type' => 'attachment', 'post_mime_type' => 'video', 'posts_per_page' => 1, 'post_status' => 'inherit', 'meta_query' => array(array('key' => '_wp_attached_file', 'value' => 'nias-protected/', 'compare' => 'NOT LIKE'))));
     $sample_url = $sample ? wp_get_attachment_url($sample[0]->ID) : '';
     $speeds = array('0.5' => '۰٫۵×', '0.75' => '۰٫۷۵×', '1' => __('عادی', 'nias-course-widget'), '1.25' => '۱٫۲۵×', '1.5' => '۱٫۵×', '1.75' => '۱٫۷۵×', '2' => '۲×');
     $on_off_row = function ($name, $title, $desc) {
@@ -369,7 +400,7 @@ function nias_player_render_page()
                     $on_off_row('nias_player_ctrl_volume', __('کنترل صدا', 'nias-course-widget'), '');
                     $on_off_row('nias_player_ctrl_time', __('نمایش زمان', 'nias-course-widget'), __('با کلیک روی زمان، بین «سپری‌شده» و «باقی‌مانده» جابه‌جا می‌شود.', 'nias-course-widget'));
                     $on_off_row('nias_player_ctrl_speed', __('انتخاب سرعت پخش', 'nias-course-widget'), '');
-                    $on_off_row('nias_player_ctrl_quality', __('انتخاب کیفیت', 'nias-course-widget'), __('برای ویدیوهای HLS و DASH با چند کیفیت.', 'nias-course-widget'));
+                    $on_off_row('nias_player_ctrl_quality', __('انتخاب کیفیت', 'nias-course-widget'), __('دانشجو از منوی تنظیمات پلیر کیفیت ویدیو را عوض می‌کند: برای ویدیوهای HLS و DASH با چند کیفیت، و برای فایل‌های MP4 وقتی در ویرایشگر جلسه «کیفیت‌های دیگر» (مثلاً 720p و 480p) اضافه شده باشد. انتخاب هر کاربر به خاطر سپرده می‌شود.', 'nias-course-widget'));
                     $on_off_row('nias_player_ctrl_seen', __('نشان و نوار «دیده‌شده»', 'nias-course-widget'), __('دانشجو می‌بیند چند درصد و کدام بخش‌های ویدیو را دیده است.', 'nias-course-widget'));
                     $on_off_row('nias_player_ctrl_pip', __('تصویر در تصویر (PiP)', 'nias-course-widget'), '');
                     $on_off_row('nias_player_ctrl_fullscreen', __('تمام‌صفحه', 'nias-course-widget'), '');
@@ -422,6 +453,7 @@ function nias_player_render_page()
                             <?php $num('nias_player_wm_interval', __('جابه‌جایی هر', 'nias-course-widget'), '', 3, 60, __('ثانیه', 'nias-course-widget')); ?>
                         </div></div>
                     </div>
+                    <?php $on_off_row('nias_player_no_download', __('جلوگیری از دانلود', 'nias-course-widget'), __('دکمه‌های دانلود ویدیو حذف می‌شوند، کلیک راست و «ذخیرهٔ ویدیو» در صفحهٔ دوره و پلیر بسته می‌شود، Ctrl+S غیرفعال می‌شود و لینک ویدیو اگر مستقیم در مرورگر باز شود پخش/ذخیره نمی‌شود. با زدن PrintScreen یا ابزار برش صفحه (Win+Shift+S) و رفتن به برنامهٔ دیگر، تصویر ویدیو سیاه و پخش متوقف می‌شود. توجه: هیچ سایتی نمی‌تواند اسکرین‌شات یا فیلم‌برداری از صفحه را صددرصد ببندد؛ واترمارک نام کاربر (همین صفحه) بازدارندهٔ اصلی است.', 'nias-course-widget')); ?>
                     <?php $on_off_row('nias_player_block_context', __('غیرفعال کردن کلیک راست روی ویدیو', 'nias-course-widget'), __('گزینه‌های «ذخیرهٔ ویدیو» مرورگر پنهان می‌شوند. دکمهٔ دانلود پلیر همیشه پنهان است.', 'nias-course-widget')); ?>
                 <?php nias_set_card_close(); ?>
 
@@ -475,7 +507,7 @@ function nias_player_render_page()
     <script>
     window.NIAS_PLAYER_CONFIG = <?php echo wp_json_encode(nias_player_config()); ?>;
     </script>
-    <script src="<?php echo esc_url(plugin_dir_url(NIAS_COURSE . 'nias-course-widget.php') . 'assets/js/nias-player.js?v=' . NIAS_COURSE_VERSION); ?>"></script>
+    <script src="<?php echo esc_url(plugin_dir_url(NIAS_COURSE . 'nias-course-widget.php') . 'assets/js/nias-player.js?v=' . NIAS_COURSE_VERSION . '.' . (int) @filemtime(NIAS_COURSE . 'assets/js/nias-player.js')); ?>"></script>
     <script>
     (function () {
         var form = document.getElementById('npl-form'), stage = document.getElementById('npl-stage'), sample = document.getElementById('npl-sample');
@@ -529,7 +561,8 @@ function nias_player_render_page()
                 completePct: num('nias_video_complete_pct', 90),
                 seekLock: val('nias_player_seek_lock') || 'off',
                 pauseHidden: on('nias_player_pause_hidden'),
-                blockContext: on('nias_player_block_context'),
+                blockContext: on('nias_player_block_context') || on('nias_player_no_download'),
+                noDownload: on('nias_player_no_download'),
                 watermark: { text: on('nias_video_watermark') ? wmText : '', mode: val('nias_player_wm_mode') || 'move', opacity: num('nias_player_wm_opacity', 35) / 100, size: num('nias_player_wm_size', 13), interval: num('nias_player_wm_interval', 9) },
                 hls: { start: val('nias_player_hls_start') || 'auto', cap: on('nias_player_hls_cap'), buffer: num('nias_player_buffer', 30) }
             };

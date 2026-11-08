@@ -91,6 +91,16 @@ require(NIAS_COURSE_INC . '/protect.php'); // بستن دسترسی مستقیم
 require(NIAS_COURSE_INC . '/drip.php'); // محتوای قطره‌ای (optional module)
 require(NIAS_COURSE_INC . '/devices.php'); // محدودیت دستگاه و ورود همزمان (optional module)
 require(NIAS_COURSE_INC . '/access.php'); // دسترسی زمان‌دار و تمدید (optional module)
+require(NIAS_COURSE_INC . '/inactive.php'); // یادآوری به دانشجوی غیرفعال (optional module)
+require(NIAS_COURSE_INC . '/assignments.php'); // تکلیف با بارگذاری فایل (optional module)
+require(NIAS_COURSE_INC . '/analytics.php'); // گزارش تحلیلی (optional module)
+require(NIAS_COURSE_INC . '/reviews.php'); // امتیاز و نظر خریداران (optional module)
+require(NIAS_COURSE_INC . '/notes.php'); // یادداشت و نشانک زمان‌دار (optional module)
+require(NIAS_COURSE_INC . '/paths.php'); // پیش‌نیاز و مسیر یادگیری (optional module)
+require(NIAS_COURSE_INC . '/transfer.php'); // کپی و انتقال دوره (optional module)
+require(NIAS_COURSE_INC . '/revenue.php'); // سهم درآمد مدرس (optional module)
+require(NIAS_COURSE_INC . '/live.php'); // کلاس آنلاین (optional module)
+require(NIAS_COURSE_INC . '/gamify.php'); // امتیاز و نشان (optional module)
 require(NIAS_COURSE_INC . '/modules.php'); // صفحهٔ «ماژول‌ها»
 require(NIAS_WOOCOMMERCE . '/my-account.php');
 require(NIAS_COURSE_INC . '/shortcodes.php');
