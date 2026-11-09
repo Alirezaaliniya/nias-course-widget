@@ -400,7 +400,13 @@ function nias_modern_account_enabled()
  */
 function nias_course_get_purchased_course_ids($user_id)
 {
-    return nias_course_completed_product_ids($user_id);
+    // Bought products (WooCommerce) + free «دوره» posts the user started, so
+    // "my courses" works without WooCommerce too.
+    $ids = nias_course_completed_product_ids($user_id);
+    if (function_exists('nias_free_course_enrolments')) {
+        $ids = array_merge($ids, array_keys(nias_free_course_enrolments($user_id)));
+    }
+    return array_values(array_unique(array_map('intval', $ids)));
 }
 
 /** URL of a course's display page (the focused modern course view). */
@@ -425,7 +431,7 @@ function nias_course_render_cards($course_ids)
     $cards = array();
     foreach ($course_ids as $cid) {
         $course = get_post($cid);
-        if (!$course || $course->post_type !== 'product') {
+        if (!$course || !(function_exists('nias_is_course_post') ? nias_is_course_post($cid) : $course->post_type === 'product')) {
             continue;
         }
         $sections = carbon_get_post_meta($cid, 'course_sections');
@@ -436,7 +442,10 @@ function nias_course_render_cards($course_ids)
     }
 
     if (empty($cards)) {
-        return '<p class="nias-cc-empty">' . esc_html__('شما هنوز هیچ دوره‌ای خریداری نکرده‌اید.', 'nias-course-widget') . '</p>';
+        $none = (function_exists('nias_wc_active') && !nias_wc_active())
+            ? __('شما هنوز در هیچ دوره ای ثبت نام نکرده اید', 'nias-course-widget')
+            : __('شما هنوز هیچ دوره‌ای خریداری نکرده‌اید.', 'nias-course-widget');
+        return '<p class="nias-cc-empty">' . esc_html($none) . '</p>';
     }
 
     ob_start();
