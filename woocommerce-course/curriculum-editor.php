@@ -559,6 +559,7 @@ function nias_curriculum_render_editor($product_id, $ctx)
         'productTitle'   => $product->post_title,
         'ajaxUrl'        => admin_url('admin-ajax.php'),
         'nonce'          => wp_create_nonce('nias_curriculum_save_' . $product_id),
+        'spotNonce'      => wp_create_nonce('nias_spotplayer_sync_' . $product_id),
         'productEditUrl' => $ctx['back'] ? $ctx['back'] : get_edit_post_link($product_id, 'raw'),
         // Quizzes that can be placed in a lesson / required to open one.
         'quizLabels'     => nias_curriculum_quiz_labels($sections),
@@ -2093,6 +2094,7 @@ function nias_curriculum_script()
                     body.append('action', 'nias_spotplayer_sync');
                     body.append('post_id', DATA.productId);
                     body.append('url', url);
+                    body.append('nonce', DATA.spotNonce || '');
                     fetch(DATA.ajaxUrl, { method: 'POST', credentials: 'same-origin', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body: body.toString() })
                         .then(function (r) { return r.json(); })
                         .then(function (res) {

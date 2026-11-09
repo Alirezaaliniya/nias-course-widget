@@ -75,8 +75,18 @@ function nias_assign_cfg($lesson)
     }
     $types = strtolower((string) (isset($lesson['assignTypes']) ? $lesson['assignTypes'] : ''));
     $types = array_values(array_filter(array_map('trim', preg_split('/[\s,،]+/u', $types !== '' ? $types : 'pdf,zip,rar,jpg,jpeg,png,docx'))));
-    $blocked = array('php', 'phtml', 'phar', 'php3', 'php4', 'php5', 'php7', 'phps', 'js', 'html', 'htm', 'svg', 'exe', 'sh', 'bat', 'cgi', 'pl', 'py', 'htaccess');
-    $types = array_values(array_diff($types, $blocked));
+    // Allow-list: only document / media / archive types, whatever the lesson
+    // asks for (a block-list always misses some executable extension).
+    $safe  = (array) apply_filters('nias_assign_safe_types', array(
+        'pdf', 'zip', 'rar', '7z', 'jpg', 'jpeg', 'png', 'gif', 'webp', 'bmp', 'tif', 'tiff', 'heic',
+        'doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx', 'odt', 'ods', 'odp', 'rtf', 'txt', 'csv', 'srt',
+        'mp3', 'wav', 'm4a', 'ogg', 'mp4', 'mov', 'avi', 'mkv', 'webm',
+        'psd', 'ai', 'aep', 'prproj', 'dwg', 'dxf', 'skp', 'blend', 'fbx', 'obj',
+    ));
+    $types = array_values(array_intersect(array_unique($types), array_map('strtolower', $safe)));
+    if (!$types) {
+        $types = array('pdf', 'zip', 'rar', 'jpg', 'jpeg', 'png', 'docx');
+    }
     $max   = (int) (isset($lesson['assignMax']) ? $lesson['assignMax'] : 0);
     $limit = (int) floor(wp_max_upload_size() / MB_IN_BYTES);
     return array(

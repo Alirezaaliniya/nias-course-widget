@@ -7,17 +7,20 @@ function nias_spotplayer_sync_handler() {
     // Increase PHP execution time limit
     set_time_limit(300); // 5 minutes
     
-    // Check nonce and permissions
-    if (!current_user_can('edit_products')) {
-        wp_send_json_error('Permission denied');
-    }
-
     // Get the post ID and URL from the AJAX request
     $post_id = isset($_POST['post_id']) ? intval($_POST['post_id']) : 0;
-    $url = isset($_POST['url']) ? esc_url_raw($_POST['url']) : '';
+    $url = isset($_POST['url']) ? esc_url_raw(wp_unslash($_POST['url'])) : '';
 
-    if (!$post_id || !$url) {
-        wp_send_json_error('Invalid parameters');
+    // Nonce + the right to edit THIS course (the sync replaces its lessons).
+    if (!$post_id || !check_ajax_referer('nias_spotplayer_sync_' . $post_id, 'nonce', false)
+        || !(current_user_can('edit_post', $post_id) || (function_exists('nias_can_edit_course') && nias_can_edit_course(get_current_user_id(), $post_id)))) {
+        wp_send_json_error(array('message' => 'دسترسی ندارید'), 403);
+    }
+
+    // Only SpotPlayer pages over HTTPS (no requests to other / internal hosts).
+    $host = strtolower((string) wp_parse_url($url, PHP_URL_HOST));
+    if (!$url || wp_parse_url($url, PHP_URL_SCHEME) !== 'https' || !preg_match('/(^|\.)spotplayer\.ir$/', $host)) {
+        wp_send_json_error(array('message' => 'فقط لینک صفحهٔ دوره در spotplayer.ir پذیرفته می شود'));
     }
 
     try {
@@ -26,7 +29,8 @@ function nias_spotplayer_sync_handler() {
         // Configure wp_remote_get arguments with increased timeout
         $args = array(
             'timeout' => 60, // Increase timeout to 60 seconds
-            'sslverify' => false,
+            'sslverify' => true,
+            'redirection' => 3,
             'user-agent' => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/116.0.0.0 Safari/537.36',
             'headers' => array(
                 'Accept' => 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
@@ -37,7 +41,7 @@ function nias_spotplayer_sync_handler() {
         );
 
         // First try with the original URL
-        $response = wp_remote_get($url, $args);
+        $response = wp_safe_remote_get($url, $args); // blocks internal hosts, also after redirects
         
         if (is_wp_error($response)) {
             $error_message = $response->get_error_message();

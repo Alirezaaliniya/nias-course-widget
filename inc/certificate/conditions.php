@@ -95,10 +95,10 @@ function nias_cert_ajax_progress_sync()
     }
     $product_id = isset($_POST['product_id']) ? (int) $_POST['product_id'] : 0;
     $pct        = isset($_POST['pct']) ? max(0, min(100, (int) $_POST['pct'])) : 0;
-    if (!$product_id || !nias_is_course_post($product_id)) {
-        wp_send_json_error();
-    }
     $user_id = get_current_user_id();
+    if (!$product_id || !nias_is_course_post($product_id) || !function_exists('nias_progress_user_allowed') || !nias_progress_user_allowed($user_id, $product_id)) {
+        wp_send_json_error(null, 403);
+    }
     $all     = get_user_meta($user_id, '_nias_course_progress', true);
     $all     = is_array($all) ? $all : array();
     // Progress only moves forward.

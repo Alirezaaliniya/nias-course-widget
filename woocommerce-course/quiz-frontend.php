@@ -255,6 +255,38 @@ function nias_quiz_course_gate_passed($user_id, $product_id)
 
 add_action('wp_ajax_nias_quiz_submit', 'nias_quiz_ajax_submit');
 add_action('wp_ajax_nopriv_nias_quiz_submit', 'nias_quiz_ajax_submit');
+/**
+ * May this user take (send) the quiz? A quiz that belongs to no course stays
+ * open to everyone; otherwise one of its courses must be open to the user
+ * (bought / enrolled, free, or editable by them), or the quiz must sit in a
+ * preview (non-private) lesson.
+ */
+function nias_quiz_user_can_take($quiz_id, $user_id)
+{
+    $quiz_id = (int) $quiz_id;
+    $user_id = (int) $user_id;
+    $courses = function_exists('nias_quiz_course_ids') ? nias_quiz_course_ids($quiz_id) : array();
+    $ok      = !$courses || ($user_id && user_can($user_id, 'manage_options'));
+    foreach ($ok ? array() : $courses as $pid) {
+        if ((function_exists('nias_course_is_free') && nias_course_is_free($pid))
+            || ($user_id && function_exists('nias_user_has_course_access') && nias_user_has_course_access($user_id, $pid))
+            || ($user_id && function_exists('nias_can_edit_course') && nias_can_edit_course($user_id, $pid))) {
+            $ok = true;
+            break;
+        }
+        foreach ((array) (function_exists('carbon_get_post_meta') ? carbon_get_post_meta($pid, 'course_sections') : array()) as $s) {
+            foreach ((array) (isset($s['lessons']) ? $s['lessons'] : array()) as $l) {
+                $private = isset($l['lesson_private']) ? $l['lesson_private'] : false;
+                if ((int) (isset($l['lesson_quiz']) ? $l['lesson_quiz'] : 0) === $quiz_id && (!$private || $private === 'no')) {
+                    $ok = true;
+                    break 3;
+                }
+            }
+        }
+    }
+    return (bool) apply_filters('nias_quiz_user_can_take', $ok, $quiz_id, $user_id);
+}
+
 function nias_quiz_ajax_submit()
 {
     if (!check_ajax_referer('nias_quiz_take', 'nonce', false)) {
@@ -266,9 +298,16 @@ function nias_quiz_ajax_submit()
         wp_send_json_error(array('message' => __('آزمون یافت نشد.', 'nias-course-widget')));
     }
 
+    $uid = get_current_user_id();
+
+    // The grading reveals the right answers: only people who may open the
+    // quiz (its course bought, a free course, or a preview lesson) send it.
+    if (!nias_quiz_user_can_take($quiz_id, $uid)) {
+        wp_send_json_error(array('message' => __('برای شرکت در این آزمون باید در دوره ثبت نام کنید', 'nias-course-widget'), 'code' => 'no_access'), 403);
+    }
+
     $answers = isset($_POST['answers']) ? json_decode(wp_unslash($_POST['answers']), true) : array();
     $answers = is_array($answers) ? $answers : array();
-    $uid     = get_current_user_id();
 
     // Modules may close a quiz for now (e.g. its drip lesson has not opened).
     $blocked = (string) apply_filters('nias_quiz_submit_blocked', '', $quiz_id, $uid);

@@ -112,6 +112,31 @@ function nias_watch_merge($old, $n, $bin, $t, $d)
  * ---------------------------------------------------------------------- */
 
 add_action('wp_ajax_nias_watch_sync', 'nias_watch_ajax_sync');
+/**
+ * May this user record progress on the course? Same rule as the course view
+ * (it only sends progress for buyers): bought / enrolled, or staff of the
+ * course. Without it anyone could mark a course they never bought as
+ * finished (prerequisites, points, …).
+ */
+function nias_progress_user_allowed($user_id, $post_id)
+{
+    $user_id = (int) $user_id;
+    $post_id = (int) $post_id;
+    if (!$user_id || !$post_id) {
+        return false;
+    }
+    if (user_can($user_id, 'manage_options')
+        || (function_exists('nias_can_edit_course') && nias_can_edit_course($user_id, $post_id))
+        || (function_exists('nias_user_has_course_access') && nias_user_has_course_access($user_id, $post_id))) {
+        return true;
+    }
+    if (!function_exists('nias_has_bought_course') && defined('NIAS_FUNCTIONS') && file_exists(NIAS_FUNCTIONS)) {
+        include_once NIAS_FUNCTIONS;
+    }
+    $u = get_userdata($user_id);
+    return $u && function_exists('nias_has_bought_course') && (bool) nias_has_bought_course($user_id, $u->user_login, $post_id);
+}
+
 function nias_watch_ajax_sync()
 {
     if (!check_ajax_referer('nias_course_progress', 'nonce', false)) {
@@ -121,6 +146,9 @@ function nias_watch_ajax_sync()
     $product_id = isset($_POST['product_id']) ? (int) $_POST['product_id'] : 0;
     if (!$user_id || !$product_id || !nias_is_course_post($product_id)) {
         wp_send_json_error(array('message' => 'bad request'), 400);
+    }
+    if (!nias_progress_user_allowed($user_id, $product_id)) {
+        wp_send_json_error(array('message' => 'no access'), 403);
     }
     $items = isset($_POST['items']) ? json_decode(wp_unslash($_POST['items']), true) : null; // phpcs:ignore -- validated below
     if (!is_array($items)) {

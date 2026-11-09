@@ -379,7 +379,7 @@ function nias_spot_request($url, $data = null)
     $args = array(
         'method'    => ($data !== null) ? 'POST' : 'GET',
         'timeout'   => 60,
-        'sslverify' => false,
+        'sslverify' => true, // the API key / license cookie travel in these requests
         'headers'   => array(
             'Content-Type' => 'application/json',
             '$Level'       => '-1',
@@ -1905,7 +1905,7 @@ function nias_spot_fetch_js_array($url, $var, $cache_key, $ttl)
 
     $response = wp_remote_get($url, array(
         'timeout'   => 15,
-        'sslverify' => false,
+        'sslverify' => true, // the API key / license cookie travel in these requests
         'headers'   => array('X-WpSpot' => 'nias-' . (defined('NIAS_COURSE_VERSION') ? NIAS_COURSE_VERSION : '1')),
     ));
 
@@ -2123,7 +2123,7 @@ function nias_spot_shop_x()
     if ($cookie && (microtime(true) * 1000) > hexdec(substr($cookie, 24, 12))) {
         $response = wp_remote_head('https://app.spotplayer.ir/', array(
             'headers'   => array('cookie' => 'X=' . $cookie),
-            'sslverify' => false,
+            'sslverify' => true, // the API key / license cookie travel in these requests
         ));
         if (!is_wp_error($response)) {
             $cookies = wp_remote_retrieve_cookies($response);
