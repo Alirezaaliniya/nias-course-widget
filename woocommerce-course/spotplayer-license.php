@@ -197,7 +197,7 @@ function nias_spot_migrate_legacy($batch = 50, $only = null)
 
 add_action('wp_ajax_nias_spot_migrate', function () {
     if (!current_user_can('manage_options') || !check_ajax_referer('nias_spot_migrate', 'nonce', false)) {
-        wp_send_json_error(array('message' => __('دسترسی ندارید.', 'nias-course-widget')), 403);
+        wp_send_json_error(array('message' => __('You do not have access.', 'nias-course-widget')), 403);
     }
     $r = nias_spot_migrate_legacy(50);
     $r['counts'] = nias_spot_legacy_counts();
@@ -210,7 +210,7 @@ add_action('admin_notices', function () {
         return;
     }
     echo '<div class="notice notice-warning"><p>' . wp_kses_post(sprintf(
-        __('<b>دوره ساز نیاس:</b> افزونهٔ اصلی «اسپات پلیر» هم فعال است. وقتی «لایسنس اسپات پلیر» دوره ساز نیاس روشن است، با فعال بودن هر دو ممکن است برای یک سفارش دو لایسنس ساخته شود. لایسنس‌ها و تنظیمات افزونهٔ اصلی خودکار خوانده می‌شوند؛ پس از <a href="%s">سازگارسازی</a>، افزونهٔ اصلی را غیرفعال کنید.', 'nias-course-widget'),
+        __('<b>Nias Course Builder:</b> the original "SpotPlayer" plugin is also active. When Nias Course Builder\'s "SpotPlayer License" is on, having both active may create two licenses for one order. The original plugin\'s licenses and settings are read automatically; after <a href="%s">migration</a>, deactivate the original plugin.', 'nias-course-widget'),
         esc_url(admin_url('admin.php?page=nias-spotplayer-license#nias-spot-legacy'))
     )) . '</p></div>';
 });
@@ -572,16 +572,16 @@ function nias_spot_legacy_card()
     $left  = max(0, $c['orders'] - $c['orders_done']) + max(0, $c['products'] - $c['products_done']);
     $nonce = wp_create_nonce('nias_spot_migrate');
     $fa    = function ($n) { return function_exists('nias_fa_digits') ? nias_fa_digits($n) : $n; };
-    nias_set_card_open('<svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M4 12a8 8 0 0 1 14-5.3M20 12a8 8 0 0 1-14 5.3M18 3v4h-4M6 21v-4h4" stroke="#3858e9" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>', __('سازگاری با لایسنس‌های قبلی (افزونهٔ اصلی اسپات پلیر)', 'nias-course-widget'));
+    nias_set_card_open('<svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M4 12a8 8 0 0 1 14-5.3M20 12a8 8 0 0 1-14 5.3M18 3v4h-4M6 21v-4h4" stroke="#3858e9" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>', __('Compatibility with previous licenses (original SpotPlayer plugin)', 'nias-course-widget'));
     ?>
     <div class="nias-card-pad nias-stack" id="nias-spot-legacy" data-nonce="<?php echo esc_attr($nonce); ?>" data-ajax="<?php echo esc_url(admin_url('admin-ajax.php')); ?>">
         <div class="nias-row-desc" style="line-height:2">
-            <?php echo esc_html(sprintf(__('اطلاعات افزونهٔ اصلی اسپات پلیر روی این سایت پیدا شد: %1$s سفارش با لایسنس صادرشده و %2$s محصول با شناسهٔ دوره%3$s. این‌ها همین حالا هم خودکار خوانده می‌شوند (لایسنس‌های قبلی در «لایسنس‌های من» نمایش داده می‌شوند و برای آن سفارش‌ها لایسنس دوباره ساخته نمی‌شود). با دکمهٔ زیر یک نسخه از آن‌ها به ساختار دوره ساز نیاس منتقل می‌شود تا پس از غیرفعال یا حذف افزونهٔ اصلی هم باقی بمانند؛ داده‌های افزونهٔ اصلی دست نمی‌خورند.', 'nias-course-widget'), $fa($c['orders']), $fa($c['products']), $c['settings'] ? __(' و تنظیمات آن (کلید API، کد ساخت لایسنس و …)', 'nias-course-widget') : '')); ?>
+            <?php echo esc_html(sprintf(__('Data from the original SpotPlayer plugin was found on this site: %1$s orders with issued licenses and %2$s products with course IDs%3$s. These are already read automatically (previous licenses appear in "My licenses" and no new license is created for those orders). The button below copies them into the Nias Course Builder structure so they remain after the original plugin is deactivated or deleted; the original plugin\'s data is not touched.', 'nias-course-widget'), $fa($c['orders']), $fa($c['products']), $c['settings'] ? __(' and its settings (API key, license creation code, …)', 'nias-course-widget') : '')); ?>
         </div>
         <div data-spl-status style="font-weight:700;color:<?php echo $left ? '#b45309' : '#137a3a'; ?>">
-            <?php echo esc_html($left ? sprintf(__('منتقل‌نشده: %1$s سفارش و %2$s محصول', 'nias-course-widget'), $fa(max(0, $c['orders'] - $c['orders_done'])), $fa(max(0, $c['products'] - $c['products_done']))) : __('همهٔ لایسنس‌ها و محصولات قبلی سازگار شده‌اند.', 'nias-course-widget')); ?>
+            <?php echo esc_html($left ? sprintf(__('Not migrated: %1$s orders and %2$s products', 'nias-course-widget'), $fa(max(0, $c['orders'] - $c['orders_done'])), $fa(max(0, $c['products'] - $c['products_done']))) : __('All previous licenses and products have been migrated.', 'nias-course-widget')); ?>
         </div>
-        <div><button type="button" class="nias-btn-primary" data-spl-go style="border:0"><?php echo esc_html__('سازگارسازی لایسنس‌های قبلی', 'nias-course-widget'); ?></button></div>
+        <div><button type="button" class="nias-btn-primary" data-spl-go style="border:0"><?php echo esc_html__('Migrate previous licenses', 'nias-course-widget'); ?></button></div>
     </div>
     <script>
     (function () {
@@ -636,8 +636,8 @@ function nias_spot_render_license_settings()
                         <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M12 9v4m0 4h.01M10.3 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.7 3.86a2 2 0 0 0-3.42 0Z" stroke="#ef4444" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
                     </div>
                     <div class="nias-alert-body">
-                        <div class="nias-alert-title"><?php echo esc_html__('هیچ‌کدام از ووکامرس یا EDD فعال نیستند', 'nias-course-widget'); ?></div>
-                        <div class="nias-alert-desc"><?php echo esc_html__('برای استفاده از لایسنس اسپات پلیر باید افزونه ووکامرس (یا EDD) فعال باشد.', 'nias-course-widget'); ?></div>
+                        <div class="nias-alert-title"><?php echo esc_html__('Neither WooCommerce nor EDD is active', 'nias-course-widget'); ?></div>
+                        <div class="nias-alert-desc"><?php echo esc_html__('To use the SpotPlayer license, the WooCommerce (or EDD) plugin must be active.', 'nias-course-widget'); ?></div>
                     </div>
                 </div>
             <?php endif; ?>
@@ -647,41 +647,41 @@ function nias_spot_render_license_settings()
                 <?php wp_nonce_field('nias_spot_settings', 'nias_spot_nonce'); ?>
 
                 <!-- Connection card -->
-                <?php nias_set_card_open('<svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M10 13a5 5 0 0 0 7.07 0l3-3a5 5 0 0 0-7.07-7.07L11.5 4.5M14 11a5 5 0 0 0-7.07 0l-3 3a5 5 0 0 0 7.07 7.07L12.5 19.5" stroke="#3858e9" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>', __('اتصال به اسپات پلیر', 'nias-course-widget')); ?>
+                <?php nias_set_card_open('<svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M10 13a5 5 0 0 0 7.07 0l3-3a5 5 0 0 0-7.07-7.07L11.5 4.5M14 11a5 5 0 0 0-7.07 0l-3 3a5 5 0 0 0 7.07 7.07L12.5 19.5" stroke="#3858e9" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>', __('Connect to SpotPlayer', 'nias-course-widget')); ?>
                     <div class="nias-card-pad nias-stack">
                         <?php if ($is_admin) : ?>
                             <div class="nias-field">
-                                <label class="nias-flabel"><?php echo esc_html__('کلید API', 'nias-course-widget'); ?></label>
+                                <label class="nias-flabel"><?php echo esc_html__('API key', 'nias-course-widget'); ?></label>
                                 <input type="text" class="nias-input nias-sp-ltr" name="nias_spot_api" value="<?php echo esc_attr(nias_spot_opt('api')); ?>" pattern="^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$">
-                                <div class="nias-fhint"><?php echo esc_html__('کلید API در داشبورد اسپات پلیر در دسترس است. توجه: تغییر کلمه عبور اسپات پلیر باعث تغییر کلید API می‌شود.', 'nias-course-widget'); ?></div>
+                                <div class="nias-fhint"><?php echo esc_html__('The API key is available in the SpotPlayer dashboard. Note: changing your SpotPlayer password changes the API key.', 'nias-course-widget'); ?></div>
                             </div>
                         <?php else : ?>
                             <input type="hidden" name="nias_spot_api" value="<?php echo esc_attr(nias_spot_opt('api')); ?>">
                         <?php endif; ?>
 
                         <div class="nias-field">
-                            <label class="nias-flabel"><?php echo esc_html__('دامنه ریبرندینگ', 'nias-course-widget'); ?></label>
+                            <label class="nias-flabel"><?php echo esc_html__('Rebranding domain', 'nias-course-widget'); ?></label>
                             <input type="text" class="nias-input nias-sp-ltr" name="nias_spot_domain" value="<?php echo esc_attr(nias_spot_opt('domain')); ?>" pattern="^app[0-9]?(\.[a-z0-9\-]+){2,}$" placeholder="app.example.com">
-                            <div class="nias-fhint"><?php echo esc_html__('تنها در صورتی که سرویس ریبرندینگ را فعال کرده‌اید، دامنه را به صورت app.example.com وارد نمایید.', 'nias-course-widget'); ?></div>
+                            <div class="nias-fhint"><?php echo esc_html__('Only if you have enabled the rebranding service, enter the domain as app.example.com.', 'nias-course-widget'); ?></div>
                         </div>
 
                         <div class="nias-field" style="max-width:200px">
-                            <label class="nias-flabel"><?php echo esc_html__('رنگ اصلی', 'nias-course-widget'); ?></label>
+                            <label class="nias-flabel"><?php echo esc_html__('Main color', 'nias-course-widget'); ?></label>
                             <input type="color" class="nias-sp-color" name="nias_spot_color" value="<?php echo esc_attr(nias_spot_opt('color', '#6611DD')); ?>">
                         </div>
                     </div>
                 <?php nias_set_card_close(); ?>
 
                 <!-- License code card -->
-                <?php nias_set_card_open('<svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="m8 16-4-4 4-4m8 0 4 4-4 4M14 4l-4 16" stroke="#3858e9" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>', __('کد ساخت لایسنس', 'nias-course-widget')); ?>
+                <?php nias_set_card_open('<svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="m8 16-4-4 4-4m8 0 4 4-4 4M14 4l-4 16" stroke="#3858e9" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>', __('License creation code', 'nias-course-widget')); ?>
                     <div class="nias-card-pad nias-stack">
                         <div class="nias-field">
                             <textarea class="nias-input nias-sp-code" name="nias_spot_code" rows="6" dir="ltr"><?php echo esc_textarea(nias_spot_license_code()); ?></textarea>
-                            <div class="nias-fhint"><?php echo esc_html__('کدی که برای ساخت لایسنس استفاده می‌شود. برای بازگردانی مقدار پیش‌فرض این فیلد را خالی بگذارید و ذخیره کنید.', 'nias-course-widget'); ?></div>
+                            <div class="nias-fhint"><?php echo esc_html__('The code used to create the license. To restore the default, leave this field empty and save.', 'nias-course-widget'); ?></div>
                         </div>
 
                         <div class="nias-sp-preview">
-                            <div class="nias-sp-preview-head"><?php echo esc_html__('خروجی کد برای آخرین سفارش ثبت‌شده:', 'nias-course-widget'); ?></div>
+                            <div class="nias-sp-preview-head"><?php echo esc_html__('Code output for the latest order:', 'nias-course-widget'); ?></div>
                             <div class="nias-sp-preview-body" dir="ltr">
                                 <?php nias_spot_render_last_order_preview(); ?>
                             </div>
@@ -692,129 +692,129 @@ function nias_spot_render_license_settings()
                 <?php nias_set_card_close(); ?>
 
                 <!-- License build settings -->
-                <?php nias_set_card_open('<svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z" stroke="#3858e9" stroke-width="1.8"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-2.81 1.17V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 7 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 2.6 14H2.5a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4 8.6l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 6.6V6.5a2 2 0 1 1 4 0v.09A1.65 1.65 0 0 0 15 8a1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 21 13h.5a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1Z" stroke="#3858e9" stroke-width="1.4"/></svg>', __('تنظیمات ساخت لایسنس', 'nias-course-widget')); ?>
+                <?php nias_set_card_open('<svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z" stroke="#3858e9" stroke-width="1.8"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-2.81 1.17V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 7 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 2.6 14H2.5a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4 8.6l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 6.6V6.5a2 2 0 1 1 4 0v.09A1.65 1.65 0 0 0 15 8a1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 21 13h.5a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1Z" stroke="#3858e9" stroke-width="1.4"/></svg>', __('License creation settings', 'nias-course-widget')); ?>
                     <?php
                     nias_set_toggle_row(
                         'nias_spot_test',
-                        __('حالت تستی ایجاد لایسنس', 'nias-course-widget'),
-                        __('با فعال بودن این گزینه پس از خریدها لایسنس تستی ساخته می‌شود و هر لایسنس تستی جدید جایگزین قبلی می‌شود. <b style="color:#b91c1c">حتماً پس از تست این گزینه را غیرفعال کنید.</b>', 'nias-course-widget'),
+                        __('Test license mode', 'nias-course-widget'),
+                        __('With this option on, test licenses are created after purchases and each new test license replaces the previous one. <b style="color:#b91c1c">Be sure to turn this option off after testing.</b>', 'nias-course-widget'),
                         'off',
-                        __('تست', 'nias-course-widget')
+                        __('Test', 'nias-course-widget')
                     );
                     nias_set_toggle_row(
                         'nias_spot_time',
-                        __('عدم ایجاد لایسنس برای سفارش‌های قدیمی', 'nias-course-widget'),
-                        __('با فعال کردن، برای سفارش‌هایی که پیش از فعال‌سازی این گزینه ثبت شده‌اند لایسنس ایجاد نمی‌شود.', 'nias-course-widget'),
+                        __('Do not create licenses for old orders', 'nias-course-widget'),
+                        __('When enabled, no license is created for orders placed before this option was enabled.', 'nias-course-widget'),
                         'off'
                     );
                     nias_set_toggle_row(
                         'nias_spot_completed',
-                        __('ایجاد لایسنس پس از تکمیل دستی سفارش', 'nias-course-widget'),
-                        __('با فعال کردن، سفارش پس از پرداخت در حالت «در حال انجام» می‌ماند و تا تایید نشدن لایسنس ساخته نمی‌شود؛ مناسب برای بررسی نام و واترمارک پیش از ساخت لایسنس.', 'nias-course-widget'),
+                        __('Create the license after manually completing the order', 'nias-course-widget'),
+                        __('When enabled, the order stays "Processing" after payment and no license is created until it is approved; useful to check the name and watermark before creating the license.', 'nias-course-widget'),
                         'off'
                     );
                     ?>
                 <?php nias_set_card_close(); ?>
 
                 <!-- Watermark style -->
-                <?php nias_set_card_open('<svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M12 2 4 7v10l8 5 8-5V7l-8-5Z" stroke="#3858e9" stroke-width="1.8" stroke-linejoin="round"/><path d="M12 22V12M4 7l8 5 8-5" stroke="#3858e9" stroke-width="1.8" stroke-linejoin="round"/></svg>', __('استایل واترمارک', 'nias-course-widget')); ?>
+                <?php nias_set_card_open('<svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M12 2 4 7v10l8 5 8-5V7l-8-5Z" stroke="#3858e9" stroke-width="1.8" stroke-linejoin="round"/><path d="M12 22V12M4 7l8 5 8-5" stroke="#3858e9" stroke-width="1.8" stroke-linejoin="round"/></svg>', __('Watermark style', 'nias-course-widget')); ?>
                     <div class="nias-card-pad nias-stack">
-                        <div class="nias-fdesc"><?php echo esc_html__('استایل متن‌های واترمارک لایسنس‌هایی که از این پس ساخته می‌شوند. فیلدهای خالی با پیش‌فرض پنل اسپات پلیر ساخته می‌شوند.', 'nias-course-widget'); ?></div>
+                        <div class="nias-fdesc"><?php echo esc_html__('Style of the watermark texts of licenses created from now on. Empty fields use the SpotPlayer panel defaults.', 'nias-course-widget'); ?></div>
                         <div class="nias-sp-wmgrid">
                             <div class="nias-field">
-                                <label class="nias-flabel"><?php echo esc_html__('اندازه متن', 'nias-course-widget'); ?></label>
+                                <label class="nias-flabel"><?php echo esc_html__('Font size', 'nias-course-widget'); ?></label>
                                 <input type="number" class="nias-input nias-sp-ltr" name="nias_spot_wm_size" min="1" max="500" value="<?php echo esc_attr(nias_spot_opt('wm_size')); ?>" placeholder="50">
                             </div>
                             <div class="nias-field">
-                                <label class="nias-flabel"><?php echo esc_html__('شفافیت (٪)', 'nias-course-widget'); ?></label>
+                                <label class="nias-flabel"><?php echo esc_html__('Opacity (%)', 'nias-course-widget'); ?></label>
                                 <input type="number" class="nias-input nias-sp-ltr" name="nias_spot_wm_opacity" min="1" max="100" value="<?php echo esc_attr(nias_spot_opt('wm_opacity')); ?>" placeholder="50">
                             </div>
                             <div class="nias-field">
-                                <label class="nias-flabel"><?php echo esc_html__('تکرار متن', 'nias-course-widget'); ?></label>
+                                <label class="nias-flabel"><?php echo esc_html__('Text repetition', 'nias-course-widget'); ?></label>
                                 <input type="number" class="nias-input nias-sp-ltr" name="nias_spot_wm_repeat" min="1" max="99" value="<?php echo esc_attr(nias_spot_opt('wm_repeat')); ?>" placeholder="10">
                             </div>
                             <div class="nias-field">
-                                <label class="nias-flabel"><?php echo esc_html__('حاشیه', 'nias-course-widget'); ?></label>
+                                <label class="nias-flabel"><?php echo esc_html__('Margin', 'nias-course-widget'); ?></label>
                                 <input type="number" class="nias-input nias-sp-ltr" name="nias_spot_wm_margin" min="1" max="500" value="<?php echo esc_attr(nias_spot_opt('wm_margin')); ?>" placeholder="40">
                             </div>
                             <div class="nias-field">
-                                <label class="nias-flabel"><?php echo esc_html__('موقعیت', 'nias-course-widget'); ?></label>
+                                <label class="nias-flabel"><?php echo esc_html__('Position', 'nias-course-widget'); ?></label>
                                 <input type="number" class="nias-input nias-sp-ltr" name="nias_spot_wm_position" min="1" max="511" value="<?php echo esc_attr(nias_spot_opt('wm_position')); ?>" placeholder="511">
                             </div>
                             <div class="nias-field">
-                                <label class="nias-flabel"><?php echo esc_html__('جابه‌جایی (ثانیه)', 'nias-course-widget'); ?></label>
+                                <label class="nias-flabel"><?php echo esc_html__('Movement (seconds)', 'nias-course-widget'); ?></label>
                                 <input type="number" class="nias-input nias-sp-ltr" name="nias_spot_wm_reposition" min="1" max="3600" value="<?php echo esc_attr(nias_spot_opt('wm_reposition')); ?>" placeholder="15">
                             </div>
                         </div>
-                        <div class="nias-fhint"><?php echo esc_html__('موقعیت یک عدد بیتی طبق راهنمای API اسپات پلیر است؛ 511 یعنی نمایش در همه نقاط صفحه. رنگ واترمارک سفید است و فقط شفافیت آن تنظیم می‌شود.', 'nias-course-widget'); ?></div>
+                        <div class="nias-fhint"><?php echo esc_html__('The position is a bit number per the SpotPlayer API guide; 511 means showing at all points of the screen. The watermark color is white and only its opacity is set.', 'nias-course-widget'); ?></div>
                     </div>
                 <?php nias_set_card_close(); ?>
 
                 <!-- License configuration (data.confs) — creation-time only -->
-                <?php nias_set_card_open('<svg width="20" height="20" viewBox="0 0 24 24" fill="none"><rect x="4" y="4" width="16" height="16" rx="3" stroke="#3858e9" stroke-width="1.8"/><path d="m8 12 3 3 5-6" stroke="#3858e9" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>', __('پیکربندی لایسنس', 'nias-course-widget')); ?>
+                <?php nias_set_card_open('<svg width="20" height="20" viewBox="0 0 24 24" fill="none"><rect x="4" y="4" width="16" height="16" rx="3" stroke="#3858e9" stroke-width="1.8"/><path d="m8 12 3 3 5-6" stroke="#3858e9" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>', __('License configuration', 'nias-course-widget')); ?>
                     <div class="nias-card-pad">
-                        <div class="nias-fdesc"><b style="color:#b91c1c"><?php echo esc_html__('توجه: پنل اسپات پلیر این گزینه‌ها را فقط هنگام ساخت لایسنس می‌پذیرد و پس از آن قابل تغییر نیستند. تغییر این تنظیمات فقط روی لایسنس‌هایی که از این پس ساخته می‌شوند اثر دارد.', 'nias-course-widget'); ?></b></div>
+                        <div class="nias-fdesc"><b style="color:#b91c1c"><?php echo esc_html__('Note: the SpotPlayer panel accepts these options only when the license is created and they cannot be changed afterwards. Changing these settings only affects licenses created from now on.', 'nias-course-widget'); ?></b></div>
                     </div>
                     <?php
                     nias_set_toggle_row(
                         'nias_spot_conf_disabled',
-                        __('لایسنس غیرفعال', 'nias-course-widget'),
-                        __('لایسنس ساخته می‌شود ولی غیرفعال است و کاربر نمی‌تواند از آن استفاده کند.', 'nias-course-widget'),
+                        __('Disabled license', 'nias-course-widget'),
+                        __('The license is created but disabled and the user cannot use it.', 'nias-course-widget'),
                         'off'
                     );
                     nias_set_toggle_row(
                         'nias_spot_conf_hidden',
-                        __('نمایش مطالب غیرفعال', 'nias-course-widget'),
-                        __('محتوایی که لایسنس به آن دسترسی ندارد در فهرست پلیر نمایش داده نمی‌شود.', 'nias-course-widget'),
+                        __('Show disabled content', 'nias-course-widget'),
+                        __('Content the license has no access to is not shown in the player\'s list.', 'nias-course-widget'),
                         'off'
                     );
                     nias_set_toggle_row(
                         'nias_spot_conf_record',
-                        __('نمایش برنامه هنگام ضبط', 'nias-course-widget'),
-                        __('اجازه می‌دهد تصویر پلیر هنگام ضبط صفحه دیده شود. در حالت پیش‌فرض پلیر جلوی ضبط صفحه را می‌گیرد. (روی لینوکس و نسخه وب بی‌اثر است.)', 'nias-course-widget'),
+                        __('Show the app while recording', 'nias-course-widget'),
+                        __('Lets the player\'s image be visible while the screen is recorded. By default the player blocks screen recording. (No effect on Linux and the web version.)', 'nias-course-widget'),
                         'off'
                     );
                     nias_set_toggle_row(
                         'nias_spot_conf_vm',
-                        __('اجرا در ماشین مجازی', 'nias-course-widget'),
-                        __('اجازه اجرای پلیر داخل ماشین مجازی را می‌دهد.', 'nias-course-widget'),
+                        __('Run in a virtual machine', 'nias-course-widget'),
+                        __('Allows the player to run inside a virtual machine.', 'nias-course-widget'),
                         'off'
                     );
                     nias_set_toggle_row(
                         'nias_spot_conf_noproc',
-                        __('عدم بررسی پردازش‌ها', 'nias-course-widget'),
-                        __('پلیر پردازش‌های در حال اجرای سیستم را بررسی نمی‌کند.', 'nias-course-widget'),
+                        __('Do not check processes', 'nias-course-widget'),
+                        __('The player does not check the system\'s running processes.', 'nias-course-widget'),
                         'off'
                     );
                     nias_set_toggle_row(
                         'nias_spot_awm',
-                        __('واترمارک صوتی', 'nias-course-widget'),
-                        __('شماره موبایل خریدار به صورت واترمارک صوتی روی محتوا درج می‌شود. از اولین متن واترمارک که یک شماره معتبر باشد استفاده می‌شود.', 'nias-course-widget'),
+                        __('Audio watermark', 'nias-course-widget'),
+                        __('The buyer\'s mobile number is embedded in the content as an audio watermark. The first watermark text that is a valid number is used.', 'nias-course-widget'),
                         'off'
                     );
                     ?>
                     <div class="nias-card-pad nias-stack">
                         <div class="nias-field" style="max-width:260px">
-                            <label class="nias-flabel"><?php echo esc_html__('مدت دسترسی پیش‌فرض', 'nias-course-widget'); ?></label>
+                            <label class="nias-flabel"><?php echo esc_html__('Default access period', 'nias-course-widget'); ?></label>
                             <input type="text" class="nias-input nias-sp-ltr" name="nias_spot_expires" value="<?php echo esc_attr(nias_spot_opt('expires')); ?>" placeholder="0">
-                            <div class="nias-fhint"><?php echo esc_html__('برای دوره‌هایی که مدت دسترسی جداگانه ندارند. خالی یا 0 = بدون انقضا، عدد = تعداد روز از زمان فعال‌سازی، تاریخ میلادی به شکل YYYY-MM-DD = انقضای مطلق، و -1 = دسترسی غیرفعال.', 'nias-course-widget'); ?></div>
+                            <div class="nias-fhint"><?php echo esc_html__('For courses without a separate access period. Empty or 0 = no expiry, number = days from activation, Gregorian date as YYYY-MM-DD = absolute expiry, and -1 = access disabled.', 'nias-course-widget'); ?></div>
                         </div>
                     </div>
                 <?php nias_set_card_close(); ?>
 
                 <!-- Display settings -->
-                <?php nias_set_card_open('<svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7Z" stroke="#3858e9" stroke-width="1.8"/><circle cx="12" cy="12" r="3" stroke="#3858e9" stroke-width="1.8"/></svg>', __('تنظیمات نمایش', 'nias-course-widget')); ?>
+                <?php nias_set_card_open('<svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7Z" stroke="#3858e9" stroke-width="1.8"/><circle cx="12" cy="12" r="3" stroke="#3858e9" stroke-width="1.8"/></svg>', __('Display settings', 'nias-course-widget')); ?>
                     <?php
                     nias_set_toggle_row(
                         'nias_spot_web',
-                        __('نمایش بخش «مشاهده در پلیر وب»', 'nias-course-widget'),
-                        __('در صورتی که نسخه وب برای لایسنس فعال باشد، پلیر تحت وب در سایت شما نمایش داده می‌شود. با خاموش بودن، این بخش به کاربر نمایش داده نمی‌شود.', 'nias-course-widget'),
+                        __('Show the "Watch in the web player" section', 'nias-course-widget'),
+                        __('If the web version is enabled for the license, the web player is shown on your site. When off, this section is not shown to the user.', 'nias-course-widget'),
                         'off'
                     );
                     nias_set_toggle_row(
                         'nias_spot_webonly',
-                        __('فقط نمایش نسخه وب', 'nias-course-widget'),
-                        __('فقط نسخه وب نمایش داده شده و نسخه‌های نیتیو و لیست دانلود نمایش داده نمی‌شوند.', 'nias-course-widget'),
+                        __('Show the web version only', 'nias-course-widget'),
+                        __('Only the web version is shown; the native versions and the download list are not shown.', 'nias-course-widget'),
                         'off',
                         '',
                         'data-nias-show-when="nias_spot_web=on"'
@@ -823,22 +823,22 @@ function nias_spot_render_license_settings()
                     // with no way to reach it again.
                     nias_set_toggle_row(
                         'nias_spot_download',
-                        __('نمایش بخش «دانلود ویدیوها»', 'nias-course-widget'),
-                        __('چون برنامه فایل‌ها را خودکار دانلود و نمایش می‌دهد، فعال کردن این گزینه پیشنهاد نمی‌شود و پشتیبانی کاربران در این حالت به عهده ناشر است. در حالت «فقط نمایش نسخه وب» این بخش نمایش داده نمی‌شود.', 'nias-course-widget'),
+                        __('Show the "Download videos" section', 'nias-course-widget'),
+                        __('Since the app downloads and shows the files automatically, enabling this option is not recommended, and user support in this mode is the publisher\'s responsibility. In "Show the web version only" mode this section is not shown.', 'nias-course-widget'),
                         'off'
                     );
                     if ($platform === 1) {
                         nias_set_toggle_row(
                             'nias_spot_wccrs',
-                            __('نمایش «لایسنس‌های من» در منوی کاربری ووکامرس', 'nias-course-widget'),
-                            __('گزینه‌ای در منوی حساب کاربری که به صفحه شورت‌کد دوره‌ها لینک می‌شود.', 'nias-course-widget'),
+                            __('Show "My licenses" in the WooCommerce account menu', 'nias-course-widget'),
+                            __('An item in the account menu linking to the courses shortcode page.', 'nias-course-widget'),
                             'off'
                         );
                     }
                     if (class_exists('Studiare_Core')) {
                         nias_set_toggle_row(
                             'nias_spot_wcspc',
-                            __('حذف لینک دوره‌های خریداری‌شده قالب استادیار از منوی کاربری', 'nias-course-widget'),
+                            __('Remove the Ostadyar theme\'s purchased courses link from the account menu', 'nias-course-widget'),
                             '',
                             'off'
                         );
@@ -850,18 +850,18 @@ function nias_spot_render_license_settings()
                 <div class="nias-shortcodes">
                     <div class="nias-sc-head">
                         <svg width="19" height="19" viewBox="0 0 24 24" fill="none"><path d="m8 16-4-4 4-4m8 0 4 4-4 4M14 4l-4 16" stroke="#c98a16" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
-                        <span><?php echo esc_html__('شورت‌کد', 'nias-course-widget'); ?></span>
+                        <span><?php echo esc_html__('Shortcode', 'nias-course-widget'); ?></span>
                     </div>
-                    <div class="nias-sc-sub"><?php echo esc_html__('این شورت‌کد کل دوره‌های لایسنس‌دار کاربر را با امکان مشاهده آنلاین و دریافت لایسنس نمایش می‌دهد.', 'nias-course-widget'); ?></div>
+                    <div class="nias-sc-sub"><?php echo esc_html__('This shortcode shows all of the user\'s licensed courses with online viewing and license download.', 'nias-course-widget'); ?></div>
                     <div class="nias-sc-list">
-                        <div class="nias-sc-item"><code dir="ltr">[nias_spotplayer_courses]</code><span><?php echo esc_html__('نمایش دوره‌های کاربر', 'nias-course-widget'); ?></span></div>
+                        <div class="nias-sc-item"><code dir="ltr">[nias_spotplayer_courses]</code><span><?php echo esc_html__('Show the user\'s courses', 'nias-course-widget'); ?></span></div>
                     </div>
                 </div>
 
                 <?php nias_set_save_button('nias_save_spot_settings'); ?>
             </form>
 
-            <div class="nias-foot"><?php echo wp_kses_post(__('قدرت گرفته از <span style="color:#3858e9;font-weight:600">اسپات پلیر</span> — یکپارچه با دوره ساز نیاس.', 'nias-course-widget')); ?></div>
+            <div class="nias-foot"><?php echo wp_kses_post(__('Powered by <span style="color:#3858e9;font-weight:600">SpotPlayer</span> — integrated with Nias Course Builder.', 'nias-course-widget')); ?></div>
         </div>
         <?php nias_settings_ads_sidebar(); ?>
         </div>
@@ -885,7 +885,7 @@ function nias_spot_render_last_order_preview()
         }
 
         if (!$j) {
-            echo '<div class="nias-sp-preview-warn">' . esc_html__('هیچ سفارش فعالی وجود ندارد. برای تست یک سفارش ایجاد کنید.', 'nias-course-widget') . '</div>';
+            echo '<div class="nias-sp-preview-warn">' . esc_html__('There are no active orders. Create an order to test.', 'nias-course-widget') . '</div>';
             return;
         }
 
@@ -893,17 +893,17 @@ function nias_spot_render_last_order_preview()
 
         if (empty($j['name']) || empty($j['watermark']['texts'][0]['text'])) {
             $id  = $platform === 1 ? wc_get_orders(array('limit' => 1))[0]->get_id() : edd_get_payments(array('number' => 1))[0]->ID;
-            $dbg = '<div class="nias-sp-preview-warn" dir="rtl"><a target="_blank" href="' . esc_url(parse_url(get_home_url(), PHP_URL_PATH) . '/niasspdeb?id=' . $id) . '">' . esc_html__('اطلاعات دیباگ', 'nias-course-widget') . '</a></div>';
+            $dbg = '<div class="nias-sp-preview-warn" dir="rtl"><a target="_blank" href="' . esc_url(parse_url(get_home_url(), PHP_URL_PATH) . '/niasspdeb?id=' . $id) . '">' . esc_html__('Debug information', 'nias-course-widget') . '</a></div>';
             if (empty($j['name'])) {
-                echo '<div class="nias-sp-preview-warn" dir="rtl">' . esc_html__('مقدار نام خالی است. از فیلد دیگری برای تعیین نام استفاده کنید.', 'nias-course-widget') . '</div>' . $dbg;
+                echo '<div class="nias-sp-preview-warn" dir="rtl">' . esc_html__('The name value is empty. Use another field for the name.', 'nias-course-widget') . '</div>' . $dbg;
             }
             if (empty($j['watermark']['texts'][0]['text'])) {
-                echo '<div class="nias-sp-preview-warn" dir="rtl">' . esc_html__('مقدار اولین واترمارک خالی است. از فیلد دیگری استفاده کنید.', 'nias-course-widget') . '</div>' . $dbg;
+                echo '<div class="nias-sp-preview-warn" dir="rtl">' . esc_html__('The first watermark value is empty. Use another field.', 'nias-course-widget') . '</div>' . $dbg;
             }
         }
     } catch (Error $e) {
         echo '<div class="nias-sp-preview-warn">' . esc_html($e->getMessage()) . '</div>';
-        echo '<div class="nias-sp-preview-warn" dir="rtl">' . esc_html__('سینتکس کد وارد شده را بررسی و اصلاح کرده و تنظیمات را ذخیره نمایید.', 'nias-course-widget') . '</div>';
+        echo '<div class="nias-sp-preview-warn" dir="rtl">' . esc_html__('Check and fix the syntax of the entered code and save the settings.', 'nias-course-widget') . '</div>';
     }
 }
 
@@ -913,7 +913,7 @@ function nias_spot_render_code_help($platform)
     ?>
     <div class="nias-sp-help">
         <?php if ($platform === 1) : ?>
-            <div><?php echo esc_html__('متغیر $order ووکامرس شامل اطلاعات سفارش است (متدهای پیش‌فرض و get_meta برای متادیتا).', 'nias-course-widget'); ?></div>
+            <div><?php echo esc_html__('The WooCommerce $order variable contains the order data (default methods and get_meta for metadata).', 'nias-course-widget'); ?></div>
             <ul dir="ltr">
                 <li><b>$order</b> — <a target="_blank" href="https://woocommerce.github.io/code-reference/classes/WC-Order.html"><small>WC_Order</small></a></li>
                 <li>$order-&gt;get_formatted_billing_full_name()</li>
@@ -930,7 +930,7 @@ function nias_spot_render_code_help($platform)
             </ul>
         <?php endif; ?>
         <?php if ($platform) : ?>
-            <div><?php echo esc_html__('متغیر $user وردپرس شامل اطلاعات خریدار است (متد get و فیلدهای پیش‌فرض).', 'nias-course-widget'); ?></div>
+            <div><?php echo esc_html__('The WordPress $user variable contains the buyer\'s data (the get method and default fields).', 'nias-course-widget'); ?></div>
             <ul dir="ltr">
                 <li><b>$user</b> — <a target="_blank" href="https://developer.wordpress.org/reference/classes/wp_user/"><small>WP_User</small></a></li>
                 <li>$user-&gt;user_login</li>
@@ -939,7 +939,7 @@ function nias_spot_render_code_help($platform)
                 <li>$user-&gt;user_email</li>
                 <li>$user-&gt;get('digits_phone')</li>
             </ul>
-            <div><b style="color:#b91c1c"><?php echo esc_html__('برای ردگیری واترمارک‌ها حتماً از سیستم تایید شماره (مثلاً دیجیتس) هنگام ثبت‌نام استفاده کنید.', 'nias-course-widget'); ?></b></div>
+            <div><b style="color:#b91c1c"><?php echo esc_html__('To trace watermarks, be sure to use a phone verification system (e.g. Digits) at sign-up.', 'nias-course-widget'); ?></b></div>
         <?php endif; ?>
     </div>
     <?php
@@ -967,35 +967,35 @@ function nias_spot_admin_order_box_ui($data)
             </span>
             <span class="nias-spbox-status-txt">
                 <?php echo $has_license
-                    ? esc_html__('لایسنس این سفارش ایجاد شده است.', 'nias-course-widget')
-                    : esc_html__('هنوز لایسنسی برای این سفارش ایجاد نشده است.', 'nias-course-widget'); ?>
+                    ? esc_html__('The license for this order has been created.', 'nias-course-widget')
+                    : esc_html__('No license has been created for this order yet.', 'nias-course-widget'); ?>
             </span>
             <?php if ($has_license) : ?>
                 <a class="nias-spbox-status-link" target="_blank" href="<?php echo esc_url('https://panel.spotplayer.ir/license/edit/' . $data['_id']); ?>">
-                    <?php echo esc_html__('مشاهده در پنل اسپات پلیر', 'nias-course-widget'); ?>
+                    <?php echo esc_html__('View in the SpotPlayer panel', 'nias-course-widget'); ?>
                 </a>
             <?php endif; ?>
         </div>
 
         <div class="nias-spbox-grid">
             <div class="nias-spbox-field">
-                <label class="nias-spbox-label"><?php echo esc_html__('شناسه لایسنس', 'nias-course-widget'); ?></label>
+                <label class="nias-spbox-label"><?php echo esc_html__('License ID', 'nias-course-widget'); ?></label>
                 <div class="nias-spbox-idrow">
-                    <input type="text" class="nias-spbox-input nias-spbox-ltr" name="nias-spot-id" value="<?php echo esc_attr($data['_id'] ?? ''); ?>" placeholder="<?php echo esc_attr__('شناسه ۲۴ کاراکتری', 'nias-course-widget'); ?>" <?php echo $disable; ?>/>
+                    <input type="text" class="nias-spbox-input nias-spbox-ltr" name="nias-spot-id" value="<?php echo esc_attr($data['_id'] ?? ''); ?>" placeholder="<?php echo esc_attr__('24-character ID', 'nias-course-widget'); ?>" <?php echo $disable; ?>/>
                     <?php if (!$disable) : ?>
-                        <button type="submit" class="nias-spbox-btn nias-spbox-btn-soft" name="nias-spot-retrieve" value="1"><?php echo esc_html__('دریافت با شناسه', 'nias-course-widget'); ?></button>
+                        <button type="submit" class="nias-spbox-btn nias-spbox-btn-soft" name="nias-spot-retrieve" value="1"><?php echo esc_html__('Fetch by ID', 'nias-course-widget'); ?></button>
                     <?php endif; ?>
                 </div>
                 <?php if (!$disable) : ?>
-                    <div class="nias-spbox-hint"><?php echo esc_html__('اگر لایسنس قبلاً در پنل اسپات پلیر ساخته شده، شناسه آن را وارد و دریافت کنید.', 'nias-course-widget'); ?></div>
+                    <div class="nias-spbox-hint"><?php echo esc_html__('If the license was already created in the SpotPlayer panel, enter its ID and fetch it.', 'nias-course-widget'); ?></div>
                 <?php endif; ?>
             </div>
 
             <div class="nias-spbox-field">
-                <label class="nias-spbox-label"><?php echo esc_html__('نام', 'nias-course-widget'); ?></label>
+                <label class="nias-spbox-label"><?php echo esc_html__('First name', 'nias-course-widget'); ?></label>
                 <input type="text" class="nias-spbox-input" name="nias-spot-name" value="<?php echo esc_attr($data['name'] ?? ''); ?>"/>
                 <?php if ($has_license) : ?>
-                    <div class="nias-spbox-hint"><?php echo esc_html__('با «ذخیره تغییرات در پنل» نام لایسنس بروزرسانی می‌شود.', 'nias-course-widget'); ?></div>
+                    <div class="nias-spbox-hint"><?php echo esc_html__('"Save changes in the panel" updates the license name.', 'nias-course-widget'); ?></div>
                 <?php endif; ?>
             </div>
         </div>
@@ -1003,7 +1003,7 @@ function nias_spot_admin_order_box_ui($data)
         <div class="nias-spbox-grid nias-spbox-grid-3">
             <?php for ($i = 0; $i < 3; $i++) : ?>
                 <div class="nias-spbox-field">
-                    <label class="nias-spbox-label"><?php echo esc_html(sprintf(__('واترمارک %d', 'nias-course-widget'), $i + 1)); ?></label>
+                    <label class="nias-spbox-label"><?php echo esc_html(sprintf(__('Watermark %d', 'nias-course-widget'), $i + 1)); ?></label>
                     <input type="text" class="nias-spbox-input nias-spbox-ltr" name="nias-spot-text[<?php echo $i; ?>]" value="<?php echo esc_attr($texts[$i]['text'] ?? ''); ?>" <?php echo $disable; ?>/>
                 </div>
             <?php endfor; ?>
@@ -1013,10 +1013,10 @@ function nias_spot_admin_order_box_ui($data)
 
             <?php if (!empty($data['key'])) : ?>
                 <div class="nias-spbox-field nias-spbox-keywrap">
-                    <label class="nias-spbox-label"><?php echo esc_html__('کلید لایسنس', 'nias-course-widget'); ?></label>
+                    <label class="nias-spbox-label"><?php echo esc_html__('License key', 'nias-course-widget'); ?></label>
                     <div class="nias-spbox-idrow">
                         <textarea class="nias-spbox-input nias-spbox-ltr nias-spbox-key" readonly rows="2"><?php echo esc_textarea($data['key']); ?></textarea>
-                        <button type="button" class="nias-spbox-btn nias-spbox-btn-soft" onclick="niasSpBoxCopy(this)"><?php echo esc_html__('کپی کلید', 'nias-course-widget'); ?></button>
+                        <button type="button" class="nias-spbox-btn nias-spbox-btn-soft" onclick="niasSpBoxCopy(this)"><?php echo esc_html__('Copy key', 'nias-course-widget'); ?></button>
                     </div>
                 </div>
                 <script type="application/javascript">
@@ -1029,29 +1029,29 @@ function nias_spot_admin_order_box_ui($data)
             <?php endif; ?>
 
             <div class="nias-spbox-manage">
-                <div class="nias-spbox-manage-title"><?php echo esc_html__('مدیریت لایسنس در پنل', 'nias-course-widget'); ?></div>
+                <div class="nias-spbox-manage-title"><?php echo esc_html__('Manage the license in the panel', 'nias-course-widget'); ?></div>
                 <div class="nias-spbox-grid">
                     <div class="nias-spbox-field">
-                        <label class="nias-spbox-label"><?php echo esc_html__('حداکثر دستگاه‌ها', 'nias-course-widget'); ?></label>
-                        <input type="number" class="nias-spbox-input nias-spbox-ltr" name="nias-spot-devices" min="1" max="99" value="<?php echo esc_attr(nias_spot_device_slot($data['device'] ?? array(), 'p0')); ?>" placeholder="<?php echo esc_attr__('بدون تغییر', 'nias-course-widget'); ?>"/>
-                        <div class="nias-spbox-hint"><?php echo esc_html__('تعداد کل دستگاه‌هایی که خریدار می‌تواند استفاده کند. این مقدار بر سقف هر پلتفرم ارجحیت دارد.', 'nias-course-widget'); ?></div>
+                        <label class="nias-spbox-label"><?php echo esc_html__('Maximum devices', 'nias-course-widget'); ?></label>
+                        <input type="number" class="nias-spbox-input nias-spbox-ltr" name="nias-spot-devices" min="1" max="99" value="<?php echo esc_attr(nias_spot_device_slot($data['device'] ?? array(), 'p0')); ?>" placeholder="<?php echo esc_attr__('No change', 'nias-course-widget'); ?>"/>
+                        <div class="nias-spbox-hint"><?php echo esc_html__('Total number of devices the buyer can use. This value takes precedence over each platform\'s limit.', 'nias-course-widget'); ?></div>
                     </div>
                     <div class="nias-spbox-field">
-                        <label class="nias-spbox-label"><?php echo esc_html__('سقف دستگاه به تفکیک پلتفرم', 'nias-course-widget'); ?></label>
+                        <label class="nias-spbox-label"><?php echo esc_html__('Device limit per platform', 'nias-course-widget'); ?></label>
                         <div class="nias-spbox-platgrid">
                             <?php foreach (nias_spot_platforms() as $pkey => $plabel) : ?>
                                 <div class="nias-spbox-plat">
                                     <span><?php echo esc_html($plabel); ?></span>
                                     <input type="number" class="nias-spbox-input nias-spbox-ltr" name="nias-spot-dev[<?php echo esc_attr($pkey); ?>]" min="0" max="9"
                                            value="<?php echo esc_attr(nias_spot_device_slot($data['device'] ?? array(), $pkey)); ?>"
-                                           placeholder="<?php echo esc_attr__('خودکار', 'nias-course-widget'); ?>"/>
+                                           placeholder="<?php echo esc_attr__('Automatic', 'nias-course-widget'); ?>"/>
                                 </div>
                             <?php endforeach; ?>
                         </div>
-                        <div class="nias-spbox-hint"><?php echo esc_html__('حداکثر ۹ برای هر پلتفرم. خالی = پیروی از سقف کل، و ۰ = آن پلتفرم غیرفعال شود.', 'nias-course-widget'); ?></div>
+                        <div class="nias-spbox-hint"><?php echo esc_html__('At most 9 per platform. Empty = follow the total limit, and 0 = that platform is disabled.', 'nias-course-widget'); ?></div>
                     </div>
                     <div class="nias-spbox-field">
-                        <label class="nias-spbox-label"><?php echo esc_html__('بازه جلسات قابل دسترس', 'nias-course-widget'); ?></label>
+                        <label class="nias-spbox-label"><?php echo esc_html__('Accessible lesson range', 'nias-course-widget'); ?></label>
                         <textarea class="nias-spbox-input nias-spbox-ltr" name="nias-spot-limit" rows="2" placeholder="courseId:1,4-6,10-"><?php
                         if (!empty($data['data']['limit']) && is_array($data['data']['limit'])) {
                             $lines = array();
@@ -1061,10 +1061,10 @@ function nias_spot_admin_order_box_ui($data)
                             echo esc_textarea(implode("\n", $lines));
                         }
                         ?></textarea>
-                        <div class="nias-spbox-hint"><?php echo esc_html__('هر خط: «شناسه دوره:بازه» — یا فقط بازه برای همه دوره‌های سفارش. خالی = بدون تغییر.', 'nias-course-widget'); ?></div>
+                        <div class="nias-spbox-hint"><?php echo esc_html__('Each line: "course ID:range" — or just a range for all courses of the order. Empty = no change.', 'nias-course-widget'); ?></div>
                     </div>
                     <div class="nias-spbox-field">
-                        <label class="nias-spbox-label"><?php echo esc_html__('مدت دسترسی دوره‌ها', 'nias-course-widget'); ?></label>
+                        <label class="nias-spbox-label"><?php echo esc_html__('Courses access period', 'nias-course-widget'); ?></label>
                         <textarea class="nias-spbox-input nias-spbox-ltr" name="nias-spot-expires" rows="2" placeholder="courseId:30"><?php
                         if (!empty($data['data']['expires']) && is_array($data['data']['expires'])) {
                             $lines = array();
@@ -1074,7 +1074,7 @@ function nias_spot_admin_order_box_ui($data)
                             echo esc_textarea(implode("\n", $lines));
                         }
                         ?></textarea>
-                        <div class="nias-spbox-hint"><?php echo esc_html__('هر خط: «شناسه دوره:مقدار» — یا فقط مقدار برای همه دوره‌های سفارش. مقدار: 0 = بدون انقضا، عدد = روز از فعال‌سازی، YYYY-MM-DD = تاریخ انقضا، -1 = قطع دسترسی. خالی = بدون تغییر.', 'nias-course-widget'); ?></div>
+                        <div class="nias-spbox-hint"><?php echo esc_html__('Each line: "course ID:value" — or just a value for all courses of the order. Value: 0 = no expiry, number = days from activation, YYYY-MM-DD = expiry date, -1 = cut access. Empty = no change.', 'nias-course-widget'); ?></div>
                     </div>
                 </div>
             </div>
@@ -1085,19 +1085,19 @@ function nias_spot_admin_order_box_ui($data)
             <?php if ($has_license) : ?>
                 <button class="nias-spbox-btn nias-spbox-btn-primary" type="submit" name="nias-spot-update" value="1">
                     <svg width="15" height="15" viewBox="0 0 24 24" fill="none"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M17 21v-8H7v8M7 3v5h8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-                    <?php echo esc_html__('ذخیره تغییرات در پنل', 'nias-course-widget'); ?>
+                    <?php echo esc_html__('Save changes in the panel', 'nias-course-widget'); ?>
                 </button>
                 <button class="nias-spbox-btn nias-spbox-btn-soft" type="submit" name="nias-spot-refresh" value="1">
                     <svg width="15" height="15" viewBox="0 0 24 24" fill="none"><path d="M21 12a9 9 0 1 1-2.64-6.36M21 3v6h-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-                    <?php echo esc_html__('بروزرسانی از پنل', 'nias-course-widget'); ?>
+                    <?php echo esc_html__('Update from the panel', 'nias-course-widget'); ?>
                 </button>
-                <button class="nias-spbox-btn nias-spbox-btn-danger" type="submit" name="nias-spot-remove" value="1"><?php echo esc_html__('حذف اطلاعات لایسنس از وردپرس', 'nias-course-widget'); ?></button>
+                <button class="nias-spbox-btn nias-spbox-btn-danger" type="submit" name="nias-spot-remove" value="1"><?php echo esc_html__('Delete license data from WordPress', 'nias-course-widget'); ?></button>
             <?php else : ?>
                 <button class="nias-spbox-btn nias-spbox-btn-primary" type="submit" name="nias-spot-create" value="1">
                     <svg width="15" height="15" viewBox="0 0 24 24" fill="none"><path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg>
-                    <?php echo esc_html__('ایجاد لایسنس', 'nias-course-widget'); ?>
+                    <?php echo esc_html__('Create license', 'nias-course-widget'); ?>
                 </button>
-                <button class="nias-spbox-btn nias-spbox-btn-danger" type="submit" name="nias-spot-remove" value="1"><?php echo esc_html__('ریست اطلاعات', 'nias-course-widget'); ?></button>
+                <button class="nias-spbox-btn nias-spbox-btn-danger" type="submit" name="nias-spot-remove" value="1"><?php echo esc_html__('Reset data', 'nias-course-widget'); ?></button>
             <?php endif; ?>
         </div>
 
@@ -1549,9 +1549,9 @@ function nias_spot_edd_admin_dl($dl_id)
 {
     ?>
     <div id="nias-spot-course">
-        <label for="nias_spot_course"><?php echo esc_html__('شناسه دوره‌های اسپات پلیر', 'nias-course-widget'); ?></label>
+        <label for="nias_spot_course"><?php echo esc_html__('SpotPlayer course IDs', 'nias-course-widget'); ?></label>
         <textarea id="nias_spot_course" name="nias_spot_course"><?php echo esc_textarea(implode(',', nias_spot_edd_download_course($dl_id))); ?></textarea>
-        <div><?php echo esc_html__('شناسه یک یا چند دوره که با , از هم جدا شده‌اند.', 'nias-course-widget'); ?></div>
+        <div><?php echo esc_html__('IDs of one or more courses separated by , .', 'nias-course-widget'); ?></div>
     </div>
     <?php
 }
@@ -1567,7 +1567,7 @@ function nias_spot_edd_admin_payment_box($pid)
 {
     ?>
     <div id="nias-sp-order" class="postbox">
-        <h3 class="hndle"><span><?php echo esc_html__('اطلاعات اسپات پلیر', 'nias-course-widget'); ?></span></h3>
+        <h3 class="hndle"><span><?php echo esc_html__('SpotPlayer information', 'nias-course-widget'); ?></span></h3>
         <div class="inside edd-clearfix"><?php nias_spot_admin_order_box_ui(nias_spot_edd_license_data(edd_get_payment($pid))); ?></div>
     </div>
     <?php
@@ -1945,9 +1945,9 @@ function nias_spot_render_players($domain, $license_id)
 
     if (!$players) {
         nias_spot_render_remote_fail(
-            __('فهرست نسخه‌های پلیر در دسترس نیست.', 'nias-course-widget'),
+            __('The list of player versions is not available.', 'nias-course-widget'),
             'https://' . $domain . '/player/',
-            __('دانلود پلیر از سایت اسپات پلیر', 'nias-course-widget')
+            __('Download the player from the SpotPlayer site', 'nias-course-widget')
         );
         return;
     }
@@ -1963,7 +1963,7 @@ function nias_spot_render_players($domain, $license_id)
                 <img alt="<?php echo esc_attr($name); ?>" src="<?php echo esc_url('https://' . $domain . $p['image']); ?>">
             <?php endif; ?>
             <b><?php echo esc_html($name); ?></b>
-            <u><?php echo esc_html($file ? ($p['version'] ?? '') : __('به زودی', 'nias-course-widget')); ?></u>
+            <u><?php echo esc_html($file ? ($p['version'] ?? '') : __('Coming soon', 'nias-course-widget')); ?></u>
         </a>
         <?php
     }
@@ -1981,9 +1981,9 @@ function nias_spot_render_download_list($burl, $icon_url)
 
     if (!$courses) {
         nias_spot_render_remote_fail(
-            __('فهرست فایل‌های دوره در دسترس نیست. پلیر فایل‌ها را به صورت خودکار دانلود می‌کند.', 'nias-course-widget'),
+            __('The course file list is not available. The player downloads the files automatically.', 'nias-course-widget'),
             $burl,
-            __('باز کردن فهرست در اسپات پلیر', 'nias-course-widget')
+            __('Open the list in SpotPlayer', 'nias-course-widget')
         );
         return;
     }
@@ -2013,7 +2013,7 @@ function nias_spot_shop_failed($err)
     ?>
     <div id="nias-sp_fail">
         <p><?php echo esc_html($err); ?></p>
-        <button onclick="window.location.reload();"><?php echo esc_html__('تلاش مجدد', 'nias-course-widget'); ?></button>
+        <button onclick="window.location.reload();"><?php echo esc_html__('Try again', 'nias-course-widget'); ?></button>
     </div>
     <?php
 }
@@ -2047,12 +2047,12 @@ function nias_spot_shop_success($data, $product = '', $course = null)
     </script>
     <div id="nias-sp">
         <?php if ($product) : ?><h1><?php echo esc_html($product); ?></h1><?php endif; ?>
-        <div id="nias-sp-warn"><?php echo esc_html__('مطالب این دوره دارای واترمارک‌های پیدا و پنهان هستند و هرگونه کپی‌برداری و نشر آن قابل پیگیری بوده و موجب پیگرد قانونی خواهد شد.', 'nias-course-widget'); ?></div>
+        <div id="nias-sp-warn"><?php echo esc_html__('This course\'s content carries visible and hidden watermarks; any copying or sharing of it can be traced and will lead to legal action.', 'nias-course-widget'); ?></div>
 
         <?php if ($show_web) : ?>
             <div id="nias-sp-web">
-                <h2><?php echo esc_html__('مشاهده در پلیر وب', 'nias-course-widget'); ?></h2>
-                <p><?php echo esc_html__('پس از فعال کردن لایسنس در این مرورگر، فقط در همین دستگاه و مرورگر می‌توانید دوره را مشاهده کنید و یک دستگاه از ظرفیت لایسنس کم خواهد شد.', 'nias-course-widget'); ?></p>
+                <h2><?php echo esc_html__('Watch in the web player', 'nias-course-widget'); ?></h2>
+                <p><?php echo esc_html__('After activating the license in this browser, you can only watch the course on this device and browser, and one device is deducted from the license capacity.', 'nias-course-widget'); ?></p>
                 <div id="spotplayer"></div>
                 <script src="https://<?php echo esc_attr($domain); ?>/assets/js/app-api.js"></script>
                 <script type="application/javascript">
@@ -2066,27 +2066,27 @@ function nias_spot_shop_success($data, $product = '', $course = null)
 
         <?php if (!$web_only) : ?>
             <div id="nias-sp-app">
-                <h2><?php echo esc_html__('مشاهده در اپلیکیشن', 'nias-course-widget'); ?></h2>
-                <p><?php echo esc_html__('ابتدا پلیر را با توجه به سیستم‌عامل خود دانلود و نصب کنید. سپس در صفحه ثبت دوره جدید کلید لایسنس را وارد، مکان ذخیره‌سازی را انتخاب و فرم را تایید کنید.', 'nias-course-widget'); ?></p>
+                <h2><?php echo esc_html__('Watch in the app', 'nias-course-widget'); ?></h2>
+                <p><?php echo esc_html__('First download and install the player for your operating system. Then on the add new course page enter the license key, choose the storage location and confirm the form.', 'nias-course-widget'); ?></p>
 
                 <div id="nias-sp_players">
-                    <h3><?php echo esc_html__('دانلود و نصب پلیر', 'nias-course-widget'); ?></h3>
+                    <h3><?php echo esc_html__('Download and install the player', 'nias-course-widget'); ?></h3>
                     <div>
                         <?php nias_spot_render_players($domain, $data['_id']); ?>
                     </div>
                 </div>
 
                 <div id="nias-sp_license">
-                    <h3><?php echo esc_html__('کپی و وارد نمودن کلید در پلیر', 'nias-course-widget'); ?></h3>
+                    <h3><?php echo esc_html__('Copy the key and enter it in the player', 'nias-course-widget'); ?></h3>
                     <textarea readonly><?php echo esc_textarea($data['key']); ?></textarea>
-                    <button class="nias-sp_color_back" onclick="niasSpotCopy('<?php echo esc_js($data['key']); ?>', 'کلید لایسنس')"><?php echo esc_html__('کپی کلید', 'nias-course-widget'); ?></button>
+                    <button class="nias-sp_color_back" onclick="niasSpotCopy('<?php echo esc_js($data['key']); ?>', 'کلید لایسنس')"><?php echo esc_html__('Copy key', 'nias-course-widget'); ?></button>
                 </div>
 
                 <?php if (nias_spot_opt('download') === 'on') :
                     $burl = 'https://' . $domain . '/' . $data['_id'] . '/' . md5(hex2bin(substr($data['key'], 24, 64))) . '/'; ?>
                     <div id="nias-sp_videos">
-                        <h3><?php echo esc_html__('دانلود ویدیوها', 'nias-course-widget'); ?></h3>
-                        <p><?php echo esc_html__('اگرچه پلیر فایل‌های دوره را خودکار دانلود و نمایش می‌دهد، می‌توانید فایل‌ها را از لینک‌های زیر به‌صورت مجزا دانلود کنید.', 'nias-course-widget'); ?></p>
+                        <h3><?php echo esc_html__('Download videos', 'nias-course-widget'); ?></h3>
+                        <p><?php echo esc_html__('Although the player downloads and shows the course files automatically, you can download the files separately from the links below.', 'nias-course-widget'); ?></p>
                         <ul>
                             <?php nias_spot_render_download_list($burl, $icon_url); ?>
                         </ul>
@@ -2368,7 +2368,7 @@ function nias_spot_register_hooks()
             return $vars;
         });
         add_filter('woocommerce_endpoint_nias-licenses_title', function () {
-            return __('لایسنس‌های من', 'nias-course-widget');
+            return __('My licenses', 'nias-course-widget');
         });
         // Old links of the original plugin (/my-account/licenses/) → ours.
         add_action('template_redirect', function () {

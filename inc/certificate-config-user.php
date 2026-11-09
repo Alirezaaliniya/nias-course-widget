@@ -107,11 +107,11 @@ function display_certificate_code_field($user) {
     // not be able to type in a code that would then verify as genuine.
     $can_edit = current_user_can('edit_users');
     ?>
-    <h3><?php _e('اطلاعات مدرک', 'nias-course-widget'); ?></h3>
+    <h3><?php _e('Certificate information', 'nias-course-widget'); ?></h3>
 
     <table class="form-table">
         <tr>
-            <th><label for="usercertificate_code"><?php _e('کد گواهی', 'nias-course-widget'); ?></label></th>
+            <th><label for="usercertificate_code"><?php _e('Certificate ID', 'nias-course-widget'); ?></label></th>
             <td>
                 <?php if (!$can_edit) : ?>
                     <code dir="ltr"><?php echo $certificate_code ? esc_html($certificate_code) : '—'; ?></code>
@@ -120,13 +120,13 @@ function display_certificate_code_field($user) {
                 <input type="text" name="usercertificate_code" id="usercertificate_code"
                     value="<?php echo esc_attr($certificate_code); ?>" class="regular-text" />
                 <?php if (empty($certificate_code)) : ?>
-                    <p class="description"><?php _e('هنوز کد گواهی اختصاص داده نشده است.', 'nias-course-widget'); ?></p>
+                    <p class="description"><?php _e('No certificate code has been assigned yet.', 'nias-course-widget'); ?></p>
                     <button type="button" class="button" id="generate_certificate" 
                         onclick="document.getElementById('usercertificate_code').value='<?php echo esc_attr(generate_certificate_code($user->ID, 0)); ?>';">
-                        <?php _e('تولید کد', 'nias-course-widget'); ?>
+                        <?php _e('Generate code', 'nias-course-widget'); ?>
                     </button>
                 <?php else : ?>
-                    <p class="description"><?php _e('این کد به طور خودکار هنگام خرید محصول گواهی توسط کاربر ایجاد شد.', 'nias-course-widget'); ?></p>
+                    <p class="description"><?php _e('This code was created automatically when the user bought the certificate product.', 'nias-course-widget'); ?></p>
                 <?php endif; ?>
             </td>
         </tr>
@@ -262,7 +262,7 @@ function show_certificate_column_content($value, $column_name, $user_id) {
             (int) $user_id
         ));
         if ($count) {
-            return '<a href="' . esc_url(admin_url('admin.php?page=nias-course-cert-issued&user_id=' . (int) $user_id)) . '">' . esc_html(sprintf(_n('%s مدرک', '%s مدرک', $count, 'nias-course-widget'), number_format_i18n($count))) . '</a>';
+            return '<a href="' . esc_url(admin_url('admin.php?page=nias-course-cert-issued&user_id=' . (int) $user_id)) . '">' . esc_html(sprintf(_n('%s certificate', '%s certificate', $count, 'nias-course-widget'), number_format_i18n($count))) . '</a>';
         }
         $certificate_code = get_user_meta($user_id, 'usercertificate_code', true);
         return $certificate_code ? esc_html($certificate_code) : '—';
@@ -305,7 +305,7 @@ function generate_certificate_verification_button($user_id) {
     $button_html = sprintf(
         '<a href="%s" class="certificate-verification-button button" target="_blank">%s</a>',
         esc_url($verification_link),
-        __('دریافت مدرک', 'nias-course-widget')
+        __('Get certificate', 'nias-course-widget')
     );
     
     return $button_html;
@@ -341,7 +341,7 @@ function userbutton_certificate_shortcode($atts) {
     $button_html = sprintf(
         '<a href="%s" class="certificate-verification-button button" target="_blank" style="padding: 20px;">%s</a>',
         esc_url($verification_link),
-        __('دریافت مدرک  دارای qrcode', 'nias-course-widget')
+        __('Get certificate  with QR code', 'nias-course-widget')
     );
     
     return $button_html;

@@ -179,7 +179,7 @@ function nias_qa_when($mysql)
     }
     $diff = current_time('timestamp') - $ts;
     if ($diff < DAY_IN_SECONDS * 7) {
-        return sprintf(__('%s پیش', 'nias-course-widget'), human_time_diff($ts, current_time('timestamp')));
+        return sprintf(__('%s ago', 'nias-course-widget'), human_time_diff($ts, current_time('timestamp')));
     }
     return function_exists('nias_quiz_date_label') ? nias_quiz_date_label(substr($mysql, 0, 10)) : substr($mysql, 0, 10);
 }
@@ -193,7 +193,7 @@ function nias_qa_item($r, $viewer, $staff_ids = null)
         'id'          => (int) $r['id'],
         'lesson'      => $r['lesson'],
         'lessonTitle' => $r['lesson_title'],
-        'name'        => $u ? $u->display_name : __('کاربر', 'nias-course-widget'),
+        'name'        => $u ? $u->display_name : __('User', 'nias-course-widget'),
         'avatar'      => get_option('show_avatars') ? $avatar : '',
         'staff'       => (bool) $r['is_staff'],
         'mine'        => $viewer && (int) $r['user_id'] === (int) $viewer,
@@ -274,11 +274,11 @@ function nias_qa_ask($user_id, $post_id, $lesson, $content)
 {
     global $wpdb;
     if (!nias_qa_can_ask($user_id, $post_id)) {
-        return new WP_Error('nias_qa', __('اجازهٔ ثبت پرسش در این دوره را ندارید.', 'nias-course-widget'));
+        return new WP_Error('nias_qa', __('You are not allowed to ask questions in this course.', 'nias-course-widget'));
     }
     $content = nias_qa_clean($content);
     if (function_exists('mb_strlen') ? mb_strlen($content) < 5 : strlen($content) < 5) {
-        return new WP_Error('nias_qa', __('متن پرسش خیلی کوتاه است.', 'nias-course-widget'));
+        return new WP_Error('nias_qa', __('The question text is too short.', 'nias-course-widget'));
     }
     $scope = nias_qa_scope();
     $lessons = function_exists('nias_watch_lessons') ? nias_watch_lessons($post_id) : array();
@@ -289,14 +289,14 @@ function nias_qa_ask($user_id, $post_id, $lesson, $content)
     if ($scope === 'general') {
         $lesson = '';
     } elseif ($scope === 'lessons' && $lesson === '') {
-        return new WP_Error('nias_qa', __('پرسش را زیر یک جلسه ثبت کنید.', 'nias-course-widget'));
+        return new WP_Error('nias_qa', __('Post the question under a lesson.', 'nias-course-widget'));
     }
     $staff = nias_qa_is_staff($user_id, $post_id);
     // Flood guard: 10 questions per hour per user.
     if (!$staff) {
         $recent = (int) $wpdb->get_var($wpdb->prepare('SELECT COUNT(*) FROM ' . nias_qa_table() . ' WHERE user_id = %d AND created > %s', $user_id, gmdate('Y-m-d H:i:s', current_time('timestamp') - HOUR_IN_SECONDS)));
         if ($recent >= (int) apply_filters('nias_qa_hourly_limit', 10)) {
-            return new WP_Error('nias_qa', __('تعداد پرسش‌های شما در یک ساعت گذشته زیاد است؛ کمی بعد دوباره تلاش کنید.', 'nias-course-widget'));
+            return new WP_Error('nias_qa', __('You have asked too many questions in the last hour; try again a bit later.', 'nias-course-widget'));
         }
     }
     $now = current_time('mysql');
@@ -317,15 +317,15 @@ function nias_qa_reply($user_id, $question_id, $content)
     global $wpdb;
     $q = nias_qa_get($question_id);
     if (!$q || (int) $q['parent_id'] !== 0) {
-        return new WP_Error('nias_qa', __('پرسش پیدا نشد.', 'nias-course-widget'));
+        return new WP_Error('nias_qa', __('Question not found.', 'nias-course-widget'));
     }
     $staff = nias_qa_is_staff($user_id, $q['post_id']);
     if (!$staff && (int) $q['user_id'] !== (int) $user_id) {
-        return new WP_Error('nias_qa', __('فقط مدرس دوره یا پرسشگر می‌تواند پاسخ بدهد.', 'nias-course-widget'));
+        return new WP_Error('nias_qa', __('Only the course instructor or the person who asked can reply.', 'nias-course-widget'));
     }
     $content = nias_qa_clean($content);
     if ($content === '') {
-        return new WP_Error('nias_qa', __('متن پاسخ خالی است.', 'nias-course-widget'));
+        return new WP_Error('nias_qa', __('The reply text is empty.', 'nias-course-widget'));
     }
     $now = current_time('mysql');
     $wpdb->insert(nias_qa_table(), array(
@@ -407,17 +407,17 @@ function nias_qa_ajax()
 {
     $pid = isset($_POST['post_id']) ? (int) $_POST['post_id'] : 0;
     if (!nias_qa_enabled() || !$pid || !nias_is_course_post($pid) || !check_ajax_referer('nias_qa_' . $pid, 'nonce', false)) {
-        wp_send_json_error(array('message' => __('درخواست نامعتبر است.', 'nias-course-widget')), 403);
+        wp_send_json_error(array('message' => __('Invalid request.', 'nias-course-widget')), 403);
     }
     $uid = get_current_user_id();
     $op  = isset($_POST['op']) ? sanitize_key(wp_unslash($_POST['op'])) : 'list';
     if (!nias_qa_can_view($uid, $pid)) {
-        wp_send_json_error(array('message' => __('پرسش و پاسخ این دوره برای شرکت‌کنندگان دوره است.', 'nias-course-widget')));
+        wp_send_json_error(array('message' => __('This course\'s Q&A is for course participants.', 'nias-course-widget')));
     }
     $text = isset($_POST['content']) ? wp_unslash($_POST['content']) : '';
     $id   = isset($_POST['id']) ? (int) $_POST['id'] : 0;
     if ($op !== 'list' && !$uid) {
-        wp_send_json_error(array('message' => __('ابتدا وارد حساب کاربری شوید.', 'nias-course-widget')));
+        wp_send_json_error(array('message' => __('Log in to your account first.', 'nias-course-widget')));
     }
     if ($op === 'ask') {
         $r = nias_qa_ask($uid, $pid, isset($_POST['lesson']) ? sanitize_text_field(wp_unslash($_POST['lesson'])) : '', $text);
@@ -429,7 +429,7 @@ function nias_qa_ajax()
     if ($op === 'reply') {
         $q = nias_qa_get($id);
         if (!$q || (int) $q['post_id'] !== $pid) {
-            wp_send_json_error(array('message' => __('پرسش پیدا نشد.', 'nias-course-widget')));
+            wp_send_json_error(array('message' => __('Question not found.', 'nias-course-widget')));
         }
         $r = nias_qa_reply($uid, $id, $text);
         if (is_wp_error($r)) {
@@ -440,7 +440,7 @@ function nias_qa_ajax()
     if (in_array($op, array('delete', 'resolve', 'unresolve', 'approve', 'hide'), true)) {
         $r = nias_qa_get($id);
         $ok = $r && (int) $r['post_id'] === $pid && ($op === 'delete' ? nias_qa_delete($uid, $id) : nias_qa_set_state($uid, $id, $op));
-        $ok ? wp_send_json_success(array('counts' => nias_qa_counts($pid))) : wp_send_json_error(array('message' => __('این کار برای شما مجاز نیست.', 'nias-course-widget')));
+        $ok ? wp_send_json_success(array('counts' => nias_qa_counts($pid))) : wp_send_json_error(array('message' => __('You are not allowed to do this.', 'nias-course-widget')));
     }
     $scope = isset($_POST['scope']) ? sanitize_key(wp_unslash($_POST['scope'])) : 'course';
     wp_send_json_success(nias_qa_list($pid, array(
@@ -504,10 +504,10 @@ add_action('nias_qa_question', function ($q) {
     }
     $asker = get_userdata((int) $q['user_id']);
     $course = get_the_title((int) $q['post_id']);
-    wp_mail($to, sprintf(__('پرسش جدید در دورهٔ «%s»', 'nias-course-widget'), $course),
-        sprintf(__("%1\$s در دورهٔ «%2\$s»%3\$s پرسیده است:\n\n%4\$s\n\n%5\$sپاسخ دادن: %6\$s", 'nias-course-widget'),
+    wp_mail($to, sprintf(__('New question in the course "%s"', 'nias-course-widget'), $course),
+        sprintf(__("%1\$s asked in the course \"%2\$s\"%3\$s:\n\n%4\$s\n\n%5\$sReply: %6\$s", 'nias-course-widget'),
             $asker ? $asker->display_name : '—', $course, $q['lesson_title'] !== '' ? ' (' . $q['lesson_title'] . ')' : '', $q['content'],
-            $q['status'] === 'pending' ? __("این پرسش منتظر تأیید است.\n", 'nias-course-widget') : '', admin_url('admin.php?page=nias-course-qa')));
+            $q['status'] === 'pending' ? __("This question is awaiting approval.\n", 'nias-course-widget') : '', admin_url('admin.php?page=nias-course-qa')));
 });
 
 add_action('nias_qa_reply', function ($reply, $q, $staff) {
@@ -519,8 +519,8 @@ add_action('nias_qa_reply', function ($reply, $q, $staff) {
         return;
     }
     $course = get_the_title((int) $q['post_id']);
-    wp_mail($asker->user_email, sprintf(__('پاسخ پرسش شما در دورهٔ «%s»', 'nias-course-widget'), $course),
-        sprintf(__("%1\$s عزیز،\n\nمدرس به پرسش شما پاسخ داد:\n\n«%2\$s»\n\n%3\$s\n\nمشاهده در دوره: %4\$s\n\n%5\$s", 'nias-course-widget'),
+    wp_mail($asker->user_email, sprintf(__('Reply to your question in the course "%s"', 'nias-course-widget'), $course),
+        sprintf(__("Dear %1\$s,\n\nThe instructor replied to your question:\n\n\"%2\$s\"\n\n%3\$s\n\nView in the course: %4\$s\n\n%5\$s", 'nias-course-widget'),
             $asker->display_name, $q['content'], $reply['content'], nias_qa_course_link($q), get_bloginfo('name')));
 }, 10, 3);
 
@@ -544,7 +544,7 @@ add_action('admin_menu', function () {
         return;
     }
     $n = nias_qa_unanswered_count(null);
-    add_submenu_page('nias-course-settings', __('پرسش و پاسخ', 'nias-course-widget'), __('پرسش و پاسخ', 'nias-course-widget') . ($n ? ' <span class="awaiting-mod">' . nias_fa_digits($n) . '</span>' : ''), 'manage_options', 'nias-course-qa', function () {
+    add_submenu_page('nias-course-settings', __('Q&A', 'nias-course-widget'), __('Q&A', 'nias-course-widget') . ($n ? ' <span class="awaiting-mod">' . nias_fa_digits($n) . '</span>' : ''), 'manage_options', 'nias-course-qa', function () {
         echo '<div class="nias-settings-app" dir="rtl">';
         if (function_exists('nias_settings_topbar')) {
             nias_settings_topbar('qa');
@@ -561,7 +561,7 @@ add_action('admin_post_nias_qa_manage', function () {
     $op  = isset($_POST['op']) ? sanitize_key(wp_unslash($_POST['op'])) : '';
     $uid = get_current_user_id();
     if (!$uid || !wp_verify_nonce(isset($_POST['_wpnonce']) ? sanitize_text_field(wp_unslash($_POST['_wpnonce'])) : '', 'nias_qa_manage_' . $id)) {
-        wp_die(esc_html__('درخواست منقضی شده است.', 'nias-course-widget'), '', array('response' => 403, 'back_link' => true));
+        wp_die(esc_html__('The request has expired.', 'nias-course-widget'), '', array('response' => 403, 'back_link' => true));
     }
     $r = nias_qa_get($id);
     $ok = false;
@@ -609,9 +609,9 @@ function nias_qa_manage_render($base, $scope)
         return (int) $wpdb->get_var("SELECT COUNT(*) FROM {$t} {$where}{$extra}");
     };
     $tabs = array(
-        'open'    => array(__('بی‌پاسخ', 'nias-course-widget'), " AND staff_replied = 0 AND resolved = 0 AND status IN ('approved','pending')"),
-        'pending' => array(__('منتظر تأیید', 'nias-course-widget'), " AND status = 'pending'"),
-        'all'     => array(__('همه', 'nias-course-widget'), ''),
+        'open'    => array(__('Unanswered', 'nias-course-widget'), " AND staff_replied = 0 AND resolved = 0 AND status IN ('approved','pending')"),
+        'pending' => array(__('Pending approval', 'nias-course-widget'), " AND status = 'pending'"),
+        'all'     => array(__('All', 'nias-course-widget'), ''),
     );
     if (!isset($tabs[$tab])) {
         $tab = 'open';
@@ -631,9 +631,9 @@ function nias_qa_manage_render($base, $scope)
     $notice = isset($_GET['qa_notice']) ? sanitize_key(wp_unslash($_GET['qa_notice'])) : '';
     $here = remove_query_arg('qa_notice', add_query_arg(array('qt' => $tab, 'qc' => $cid ?: null, 'qs' => $s !== '' ? $s : null, 'qp' => $page > 1 ? $page : null), $base));
 
-    $h = nias_qa_manage_css() . '<div class="nqa" dir="rtl"><div class="nqa-head"><h2>' . esc_html__('پرسش و پاسخ دوره‌ها', 'nias-course-widget') . '</h2></div>';
+    $h = nias_qa_manage_css() . '<div class="nqa" dir="rtl"><div class="nqa-head"><h2>' . esc_html__('Course Q&A', 'nias-course-widget') . '</h2></div>';
     if ($notice) {
-        $h .= '<div class="nqa-notice' . ($notice === 'error' ? ' err' : '') . '">' . esc_html($notice === 'error' ? __('انجام نشد.', 'nias-course-widget') : ($notice === 'reply' ? __('پاسخ ثبت شد.', 'nias-course-widget') : __('انجام شد.', 'nias-course-widget'))) . '</div>';
+        $h .= '<div class="nqa-notice' . ($notice === 'error' ? ' err' : '') . '">' . esc_html($notice === 'error' ? __('Failed.', 'nias-course-widget') : ($notice === 'reply' ? __('Reply saved.', 'nias-course-widget') : __('Done.', 'nias-course-widget'))) . '</div>';
     }
     $h .= '<div class="nqa-tabs">';
     foreach ($tabs as $k => $tb) {
@@ -648,10 +648,10 @@ function nias_qa_manage_render($base, $scope)
     $h .= '<input type="hidden" name="qt" value="' . esc_attr($tab) . '">';
     $cval = $cid && function_exists('nias_picker_product_item') ? array(nias_picker_product_item($cid)) : array();
     $h .= '<div class="nqa-cpick" data-nqa-course="' . esc_attr(wp_json_encode($cval)) . '"></div><input type="hidden" name="qc" value="' . esc_attr($cid ?: '') . '">';
-    $h .= '<input type="search" name="qs" value="' . esc_attr($s) . '" placeholder="' . esc_attr__('جستجو در متن پرسش‌ها…', 'nias-course-widget') . '"><button class="nqa-btn">' . esc_html__('فیلتر', 'nias-course-widget') . '</button></form></div>';
+    $h .= '<input type="search" name="qs" value="' . esc_attr($s) . '" placeholder="' . esc_attr__('Search question text…', 'nias-course-widget') . '"><button class="nqa-btn">' . esc_html__('Filter', 'nias-course-widget') . '</button></form></div>';
 
     if (!$rows) {
-        $h .= '<div class="nqa-empty">' . esc_html($tab === 'open' ? __('پرسش بی‌پاسخی وجود ندارد. 🎉', 'nias-course-widget') : __('موردی پیدا نشد.', 'nias-course-widget')) . '</div>';
+        $h .= '<div class="nqa-empty">' . esc_html($tab === 'open' ? __('No unanswered questions. 🎉', 'nias-course-widget') : __('Nothing found.', 'nias-course-widget')) . '</div>';
     }
     $post = admin_url('admin-post.php');
     $btn = function ($id, $op, $label, $cls = '', $confirm = '') use ($post, $here) {
@@ -662,31 +662,31 @@ function nias_qa_manage_render($base, $scope)
     foreach ((array) $rows as $q) {
         $u = get_userdata((int) $q['user_id']);
         $h .= '<article class="nqa-q" id="qa-' . (int) $q['id'] . '"><div class="nqa-meta"><b>' . esc_html($u ? $u->display_name : '—') . '</b>'
-            . '<span>' . esc_html(get_the_title((int) $q['post_id']) . ($q['lesson_title'] !== '' ? ' › ' . $q['lesson_title'] : ' › ' . __('کل دوره', 'nias-course-widget'))) . '</span>'
+            . '<span>' . esc_html(get_the_title((int) $q['post_id']) . ($q['lesson_title'] !== '' ? ' › ' . $q['lesson_title'] : ' › ' . __('Whole course', 'nias-course-widget'))) . '</span>'
             . '<span>' . esc_html(nias_qa_when($q['created'])) . '</span>'
-            . ($q['status'] === 'pending' ? '<span class="nqa-chip wait">' . esc_html__('منتظر تأیید', 'nias-course-widget') . '</span>' : '')
-            . ($q['resolved'] ? '<span class="nqa-chip ok">' . esc_html__('حل‌شده', 'nias-course-widget') . '</span>' : '')
-            . (!$q['staff_replied'] ? '<span class="nqa-chip no">' . esc_html__('بی‌پاسخ', 'nias-course-widget') . '</span>' : '') . '</div>'
+            . ($q['status'] === 'pending' ? '<span class="nqa-chip wait">' . esc_html__('Pending approval', 'nias-course-widget') . '</span>' : '')
+            . ($q['resolved'] ? '<span class="nqa-chip ok">' . esc_html__('Resolved', 'nias-course-widget') . '</span>' : '')
+            . (!$q['staff_replied'] ? '<span class="nqa-chip no">' . esc_html__('Unanswered', 'nias-course-widget') . '</span>' : '') . '</div>'
             . '<div class="nqa-text">' . nl2br(esc_html($q['content'])) . '</div>';
         foreach (isset($answers[(int) $q['id']]) ? $answers[(int) $q['id']] : array() as $a) {
             $au = get_userdata((int) $a['user_id']);
-            $h .= '<div class="nqa-a' . ($a['is_staff'] ? ' staff' : '') . '"><div class="nqa-meta"><b>' . esc_html($au ? $au->display_name : '—') . '</b>' . ($a['is_staff'] ? '<span class="nqa-chip ok">' . esc_html__('مدرس', 'nias-course-widget') . '</span>' : '') . '<span>' . esc_html(nias_qa_when($a['created'])) . '</span></div>'
-                . '<div class="nqa-text">' . nl2br(esc_html($a['content'])) . '</div>' . $btn((int) $a['id'], 'delete', __('حذف پاسخ', 'nias-course-widget'), 'ghost', __('این پاسخ حذف شود؟', 'nias-course-widget')) . '</div>';
+            $h .= '<div class="nqa-a' . ($a['is_staff'] ? ' staff' : '') . '"><div class="nqa-meta"><b>' . esc_html($au ? $au->display_name : '—') . '</b>' . ($a['is_staff'] ? '<span class="nqa-chip ok">' . esc_html__('Instructor', 'nias-course-widget') . '</span>' : '') . '<span>' . esc_html(nias_qa_when($a['created'])) . '</span></div>'
+                . '<div class="nqa-text">' . nl2br(esc_html($a['content'])) . '</div>' . $btn((int) $a['id'], 'delete', __('Delete reply', 'nias-course-widget'), 'ghost', __('Delete this reply?', 'nias-course-widget')) . '</div>';
         }
         $h .= '<form class="nqa-reply" method="post" action="' . esc_url($post) . '">' . wp_nonce_field('nias_qa_manage_' . (int) $q['id'], '_wpnonce', false, false)
             . '<input type="hidden" name="action" value="nias_qa_manage"><input type="hidden" name="id" value="' . (int) $q['id'] . '"><input type="hidden" name="op" value="reply"><input type="hidden" name="back" value="' . esc_attr($here) . '">'
-            . '<textarea name="content" rows="2" required placeholder="' . esc_attr__('پاسخ شما…', 'nias-course-widget') . '"></textarea><button class="nqa-btn pri">' . esc_html($q['status'] === 'pending' ? __('پاسخ و انتشار', 'nias-course-widget') : __('ارسال پاسخ', 'nias-course-widget')) . '</button></form>';
+            . '<textarea name="content" rows="2" required placeholder="' . esc_attr__('Your reply…', 'nias-course-widget') . '"></textarea><button class="nqa-btn pri">' . esc_html($q['status'] === 'pending' ? __('Reply and publish', 'nias-course-widget') : __('Send reply', 'nias-course-widget')) . '</button></form>';
         $h .= '<div class="nqa-actions">'
-            . ($q['status'] === 'pending' ? $btn((int) $q['id'], 'approve', __('تأیید و انتشار', 'nias-course-widget'), 'pri') : $btn((int) $q['id'], 'hide', __('پنهان کردن', 'nias-course-widget'), 'ghost'))
-            . $btn((int) $q['id'], $q['resolved'] ? 'unresolve' : 'resolve', $q['resolved'] ? __('باز کردن دوباره', 'nias-course-widget') : __('علامت حل‌شده', 'nias-course-widget'), 'ghost')
-            . $btn((int) $q['id'], 'delete', __('حذف پرسش', 'nias-course-widget'), 'danger', __('این پرسش و همهٔ پاسخ‌هایش حذف شود؟', 'nias-course-widget'))
-            . '<a class="nqa-btn ghost" href="' . esc_url(nias_qa_course_link($q)) . '" target="_blank" rel="noopener">' . esc_html__('مشاهده در دوره', 'nias-course-widget') . '</a></div></article>';
+            . ($q['status'] === 'pending' ? $btn((int) $q['id'], 'approve', __('Approve and publish', 'nias-course-widget'), 'pri') : $btn((int) $q['id'], 'hide', __('Hide question', 'nias-course-widget'), 'ghost'))
+            . $btn((int) $q['id'], $q['resolved'] ? 'unresolve' : 'resolve', $q['resolved'] ? __('Reopen', 'nias-course-widget') : __('Mark as resolved', 'nias-course-widget'), 'ghost')
+            . $btn((int) $q['id'], 'delete', __('Delete question', 'nias-course-widget'), 'danger', __('Delete this question and all its replies?', 'nias-course-widget'))
+            . '<a class="nqa-btn ghost" href="' . esc_url(nias_qa_course_link($q)) . '" target="_blank" rel="noopener">' . esc_html__('View in the course', 'nias-course-widget') . '</a></div></article>';
     }
     $pages = (int) ceil($total / $per);
     if ($pages > 1) {
-        $h .= '<nav class="nqa-pager">' . ($page > 1 ? '<a class="nqa-btn" href="' . esc_url(add_query_arg('qp', $page - 1, $here)) . '">‹ ' . esc_html__('قبلی', 'nias-course-widget') . '</a>' : '<span class="nqa-btn off">‹ ' . esc_html__('قبلی', 'nias-course-widget') . '</span>')
-            . '<span>' . esc_html(sprintf(__('صفحهٔ %1$s از %2$s', 'nias-course-widget'), nias_fa_digits($page), nias_fa_digits($pages))) . '</span>'
-            . ($page < $pages ? '<a class="nqa-btn" href="' . esc_url(add_query_arg('qp', $page + 1, $here)) . '">' . esc_html__('بعدی', 'nias-course-widget') . ' ›</a>' : '<span class="nqa-btn off">' . esc_html__('بعدی', 'nias-course-widget') . ' ›</span>') . '</nav>';
+        $h .= '<nav class="nqa-pager">' . ($page > 1 ? '<a class="nqa-btn" href="' . esc_url(add_query_arg('qp', $page - 1, $here)) . '">‹ ' . esc_html__('Previous', 'nias-course-widget') . '</a>' : '<span class="nqa-btn off">‹ ' . esc_html__('Previous', 'nias-course-widget') . '</span>')
+            . '<span>' . esc_html(sprintf(__('Page %1$s of %2$s', 'nias-course-widget'), nias_fa_digits($page), nias_fa_digits($pages))) . '</span>'
+            . ($page < $pages ? '<a class="nqa-btn" href="' . esc_url(add_query_arg('qp', $page + 1, $here)) . '">' . esc_html__('Next', 'nias-course-widget') . ' ›</a>' : '<span class="nqa-btn off">' . esc_html__('Next', 'nias-course-widget') . ' ›</span>') . '</nav>';
     }
     if (function_exists('nias_picker_enqueue')) {
         ob_start();
@@ -749,16 +749,16 @@ function nias_qa_dashboard_card($user_id)
     }
     $n = nias_qa_unanswered_count($scope);
     $url = add_query_arg('nias_qa', 1, get_permalink());
-    return '<section class="nias-idash-card" dir="rtl" style="padding:16px 18px"><div style="display:flex;align-items:center;gap:8px;margin-bottom:6px"><h3 style="margin:0;font-size:15px;font-weight:800;flex:1">' . esc_html__('پرسش و پاسخ', 'nias-course-widget') . '</h3>'
+    return '<section class="nias-idash-card" dir="rtl" style="padding:16px 18px"><div style="display:flex;align-items:center;gap:8px;margin-bottom:6px"><h3 style="margin:0;font-size:15px;font-weight:800;flex:1">' . esc_html__('Q&A', 'nias-course-widget') . '</h3>'
         . '<span style="background:' . ($n ? '#fff1e6;color:#c26a1a' : '#eef1f4;color:#6b777d') . ';font-weight:800;font-size:12px;padding:2px 9px;border-radius:99px">' . esc_html(nias_fa_digits($n)) . '</span></div>'
-        . '<p style="margin:0 0 10px;font-size:13px;color:#6b777d">' . esc_html($n ? sprintf(__('%s پرسش منتظر پاسخ شماست.', 'nias-course-widget'), nias_fa_digits($n)) : __('پرسش بی‌پاسخی ندارید.', 'nias-course-widget')) . '</p>'
-        . '<a href="' . esc_url($url) . '" style="display:inline-flex;height:34px;align-items:center;padding:0 13px;border-radius:10px;background:#1e83f0;color:#fff;font-weight:700;font-size:13px;text-decoration:none">' . esc_html__('پاسخ به پرسش‌ها', 'nias-course-widget') . '</a></section>';
+        . '<p style="margin:0 0 10px;font-size:13px;color:#6b777d">' . esc_html($n ? sprintf(__('%s questions are waiting for your reply.', 'nias-course-widget'), nias_fa_digits($n)) : __('You have no unanswered questions.', 'nias-course-widget')) . '</p>'
+        . '<a href="' . esc_url($url) . '" style="display:inline-flex;height:34px;align-items:center;padding:0 13px;border-radius:10px;background:#1e83f0;color:#fff;font-weight:700;font-size:13px;text-decoration:none">' . esc_html__('Answer questions', 'nias-course-widget') . '</a></section>';
 }
 
 function nias_qa_dashboard_view($user_id)
 {
     $back = remove_query_arg(array('nias_qa', 'qt', 'qc', 'qs', 'qp', 'qa_notice'));
-    return '<div style="max-width:1100px;margin:0 auto;padding:10px 0" dir="rtl"><a style="display:inline-block;margin-bottom:10px;color:#1e83f0;font-weight:700;text-decoration:none" href="' . esc_url($back) . '">→ ' . esc_html__('بازگشت به پیشخوان مدرس', 'nias-course-widget') . '</a>'
+    return '<div style="max-width:1100px;margin:0 auto;padding:10px 0" dir="rtl"><a style="display:inline-block;margin-bottom:10px;color:#1e83f0;font-weight:700;text-decoration:none" href="' . esc_url($back) . '">→ ' . esc_html__('Back to the instructor dashboard', 'nias-course-widget') . '</a>'
         . nias_qa_manage_render(add_query_arg('nias_qa', 1, remove_query_arg(array('qt', 'qc', 'qs', 'qp', 'qa_notice'))), nias_qa_staff_scope($user_id)) . '</div>';
 }
 

@@ -245,12 +245,12 @@ function nias_secure_media_serve()
 function nias_secure_media_fail($why, $post_id = 0)
 {
     $msgs = array(
-        'login'   => array(__('شما وارد سایت نشده‌اید', 'nias-course-widget'), __('این لینک اختصاصی است. برای مشاهدهٔ فایل ابتدا با حساب خودتان وارد سایت شوید.', 'nias-course-widget')),
-        'owner'   => array(__('این لینک متعلق به شما نیست', 'nias-course-widget'), __('لینک‌های فایل‌های دوره برای هر کاربر جداگانه ساخته می‌شوند و فقط برای صاحب همان حساب کار می‌کنند. فایل را از صفحهٔ دوره در حساب خودتان باز کنید.', 'nias-course-widget')),
-        'expired' => array(__('اعتبار این لینک تمام شده است', 'nias-course-widget'), __('صفحهٔ دوره را دوباره باز کنید تا لینک تازه ساخته شود.', 'nias-course-widget')),
-        'access'  => array(__('به این دوره دسترسی ندارید', 'nias-course-widget'), __('این فایل فقط برای دانشجویان این دوره است.', 'nias-course-widget')),
-        'invalid' => array(__('لینک نامعتبر است', 'nias-course-widget'), __('این لینک کامل نیست یا تغییر کرده است.', 'nias-course-widget')),
-        'nodownload' => array(__('دانلود این ویدیو مجاز نیست', 'nias-course-widget'), __('ویدیوهای این دوره فقط داخل صفحهٔ دوره پخش می‌شوند.', 'nias-course-widget')),
+        'login'   => array(__('You are not logged in', 'nias-course-widget'), __('This is a personal link. Log in with your own account first to view the file.', 'nias-course-widget')),
+        'owner'   => array(__('This link does not belong to you', 'nias-course-widget'), __('Course file links are created separately for each user and only work for the owner of that account. Open the file from the course page in your own account.', 'nias-course-widget')),
+        'expired' => array(__('This link has expired', 'nias-course-widget'), __('Open the course page again to create a fresh link.', 'nias-course-widget')),
+        'access'  => array(__('You do not have access to this course', 'nias-course-widget'), __('This file is only for students of this course.', 'nias-course-widget')),
+        'invalid' => array(__('Invalid link', 'nias-course-widget'), __('This link is incomplete or has been changed.', 'nias-course-widget')),
+        'nodownload' => array(__('Downloading this video is not allowed', 'nias-course-widget'), __('This course\'s videos only play inside the course page.', 'nias-course-widget')),
     );
     $m = isset($msgs[$why]) ? $msgs[$why] : $msgs['invalid'];
     do_action('nias_secure_media_denied', $why, get_current_user_id(), (int) $post_id);
@@ -268,11 +268,11 @@ function nias_secure_media_fail($why, $post_id = 0)
     $here = (is_ssl() ? 'https://' : 'http://') . (isset($_SERVER['HTTP_HOST']) ? sanitize_text_field(wp_unslash($_SERVER['HTTP_HOST'])) : '') . (isset($_SERVER['REQUEST_URI']) ? esc_url_raw(wp_unslash($_SERVER['REQUEST_URI'])) : '/');
     $link = '';
     if ($why === 'login') {
-        $link = '<p><a class="button" href="' . esc_url(wp_login_url($here)) . '">' . esc_html__('ورود به سایت', 'nias-course-widget') . '</a></p>';
+        $link = '<p><a class="button" href="' . esc_url(wp_login_url($here)) . '">' . esc_html__('Log in to the site', 'nias-course-widget') . '</a></p>';
     } elseif ($post_id && get_post_status($post_id) === 'publish') {
-        $link = '<p><a class="button" href="' . esc_url(get_permalink($post_id)) . '">' . esc_html__('رفتن به صفحهٔ دوره', 'nias-course-widget') . '</a></p>';
+        $link = '<p><a class="button" href="' . esc_url(get_permalink($post_id)) . '">' . esc_html__('Go to the course page', 'nias-course-widget') . '</a></p>';
     } else {
-        $link = '<p><a class="button" href="' . esc_url(home_url('/')) . '">' . esc_html__('صفحهٔ اصلی سایت', 'nias-course-widget') . '</a></p>';
+        $link = '<p><a class="button" href="' . esc_url(home_url('/')) . '">' . esc_html__('Site home page', 'nias-course-widget') . '</a></p>';
     }
     wp_die(
         '<h1>' . esc_html($m[0]) . '</h1><p>' . esc_html($m[1]) . '</p>' . $link,

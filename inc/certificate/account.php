@@ -31,7 +31,7 @@ function nias_cert_account_slug()
 function nias_cert_account_title()
 {
     $title = trim((string) nias_cert_setting('certificate_account_title', ''));
-    return $title !== '' ? $title : __('مدارک من', 'nias-course-widget');
+    return $title !== '' ? $title : __('My certificates', 'nias-course-widget');
 }
 
 add_action('init', 'nias_cert_account_register_endpoint', 20);

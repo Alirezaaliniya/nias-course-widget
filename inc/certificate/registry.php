@@ -515,9 +515,9 @@ function nias_cert_set_status($id, $status, $note = null)
 function nias_cert_status_label($status)
 {
     $map = array(
-        'valid'   => __('معتبر', 'nias-course-widget'),
-        'pending' => __('در انتظار تأیید', 'nias-course-widget'),
-        'revoked' => __('باطل‌شده', 'nias-course-widget'),
+        'valid'   => __('Valid', 'nias-course-widget'),
+        'pending' => __('Awaiting approval', 'nias-course-widget'),
+        'revoked' => __('Revoked', 'nias-course-widget'),
     );
     return isset($map[$status]) ? $map[$status] : $status;
 }

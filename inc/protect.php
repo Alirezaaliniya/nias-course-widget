@@ -298,18 +298,18 @@ function nias_protect_move($url, $row)
     $from = wp_normalize_path(trailingslashit($up['basedir']) . $row['rel']);
     $to   = nias_protect_base()['dir'] . '/' . $row['rel'];
     if (!is_file($from)) {
-        return new WP_Error('missing', __('فایل پیدا نشد.', 'nias-course-widget'));
+        return new WP_Error('missing', __('File not found.', 'nias-course-widget'));
     }
     if (file_exists($to)) {
         $info = pathinfo($to);
         $to   = $info['dirname'] . '/' . wp_unique_filename($info['dirname'], $info['basename']);
     }
     if (!wp_mkdir_p(dirname($to))) {
-        return new WP_Error('mkdir', __('ساخت پوشه ممکن نشد.', 'nias-course-widget'));
+        return new WP_Error('mkdir', __('The folder could not be created.', 'nias-course-widget'));
     }
     if (!@rename($from, $to)) {
         if (!@copy($from, $to) || !@unlink($from)) {
-            return new WP_Error('move', __('جابه‌جایی فایل ممکن نشد (دسترسی نوشتن را بررسی کنید).', 'nias-course-widget'));
+            return new WP_Error('move', __('The file could not be moved (check write permissions).', 'nias-course-widget'));
         }
     }
     $new_rel = NIAS_PROTECT_DIR . '/' . ltrim(substr($to, strlen(nias_protect_base()['dir'])), '/');
@@ -336,7 +336,7 @@ function nias_protect_move($url, $row)
 
 add_action('wp_ajax_nias_protect_scan', function () {
     if (!current_user_can('manage_options') || !check_ajax_referer('nias_protect_tool', 'nonce', false)) {
-        wp_send_json_error(array('message' => __('دسترسی ندارید.', 'nias-course-widget')), 403);
+        wp_send_json_error(array('message' => __('You do not have access.', 'nias-course-widget')), 403);
     }
     $found = nias_protect_scan();
     set_transient('nias_protect_queue', $found, HOUR_IN_SECONDS);
@@ -350,10 +350,10 @@ add_action('wp_ajax_nias_protect_scan', function () {
 
 add_action('wp_ajax_nias_protect_move', function () {
     if (!current_user_can('manage_options') || !check_ajax_referer('nias_protect_tool', 'nonce', false)) {
-        wp_send_json_error(array('message' => __('دسترسی ندارید.', 'nias-course-widget')), 403);
+        wp_send_json_error(array('message' => __('You do not have access.', 'nias-course-widget')), 403);
     }
     if (!nias_protect_enabled()) {
-        wp_send_json_error(array('message' => __('ابتدا ماژول را فعال و ذخیره کنید.', 'nias-course-widget')));
+        wp_send_json_error(array('message' => __('First enable the module and save.', 'nias-course-widget')));
     }
     nias_protect_ensure_folder();
     $queue = get_transient('nias_protect_queue');
@@ -387,16 +387,16 @@ function nias_protect_settings_html()
         $nginx = stripos($st['server'], 'nginx') !== false;
         echo '<div class="npr-st ' . esc_attr($cls) . '"><b>';
         if ($st['state'] === 'closed') {
-            echo esc_html__('پوشهٔ فایل‌های دوره بسته است: درخواست مستقیم رد می‌شود', 'nias-course-widget') . ' (HTTP ' . (int) $st['code'] . ').';
+            echo esc_html__('The course files folder is closed: direct requests are refused', 'nias-course-widget') . ' (HTTP ' . (int) $st['code'] . ').';
         } elseif ($st['state'] === 'open') {
-            echo esc_html__('هشدار: پوشهٔ محافظت‌شده هنوز با آدرس مستقیم باز می‌شود!', 'nias-course-widget');
+            echo esc_html__('Warning: the protected folder still opens by direct address!', 'nias-course-widget');
         } else {
-            echo esc_html__('وضعیت پوشه قابل بررسی نبود', 'nias-course-widget') . ($st['msg'] ? ' (' . esc_html($st['msg']) . ')' : '');
+            echo esc_html__('The folder status could not be checked', 'nias-course-widget') . ($st['msg'] ? ' (' . esc_html($st['msg']) . ')' : '');
         }
-        echo '</b> <a href="' . esc_url(add_query_arg('nias_protect_check', '1')) . '">' . esc_html__('بررسی دوباره', 'nias-course-widget') . '</a>';
-        echo '<div class="npr-path">' . esc_html__('پوشه:', 'nias-course-widget') . ' <code dir="ltr">' . esc_html(nias_protect_base()['dir']) . '</code>' . ($st['server'] ? ' · ' . esc_html__('وب‌سرور:', 'nias-course-widget') . ' <code dir="ltr">' . esc_html($st['server']) . '</code>' : '') . '</div>';
+        echo '</b> <a href="' . esc_url(add_query_arg('nias_protect_check', '1')) . '">' . esc_html__('Check again', 'nias-course-widget') . '</a>';
+        echo '<div class="npr-path">' . esc_html__('Folder:', 'nias-course-widget') . ' <code dir="ltr">' . esc_html(nias_protect_base()['dir']) . '</code>' . ($st['server'] ? ' · ' . esc_html__('Web server:', 'nias-course-widget') . ' <code dir="ltr">' . esc_html($st['server']) . '</code>' : '') . '</div>';
         if ($st['state'] !== 'closed' || $nginx) {
-            echo '<div class="npr-nginx">' . esc_html__('روی Nginx فایل .htaccess خوانده نمی‌شود؛ این قانون را در تنظیمات سایت (server block) قرار دهید و Nginx را reload کنید:', 'nias-course-widget') . '<pre dir="ltr">' . esc_html(nias_protect_nginx_rules()) . '</pre></div>';
+            echo '<div class="npr-nginx">' . esc_html__('Nginx does not read .htaccess; put this rule in the site configuration (server block) and reload Nginx:', 'nias-course-widget') . '<pre dir="ltr">' . esc_html(nias_protect_nginx_rules()) . '</pre></div>';
         }
         echo '</div>';
     }
@@ -428,8 +428,8 @@ function nias_protect_tool_html()
     ob_start();
     ?>
     <div class="npr-tool" data-npr data-nonce="<?php echo esc_attr($nonce); ?>" data-ajax="<?php echo esc_url(admin_url('admin-ajax.php')); ?>">
-        <div class="nias-row-desc"><?php echo esc_html__('ویدیوها و فایل‌هایی که قبلاً در جلسات دوره‌ها بارگذاری شده‌اند (روی همین سایت) به پوشهٔ محافظت‌شده منتقل می‌شوند؛ آدرس جلسات و رکورد کتابخانهٔ رسانه خودکار به‌روز می‌شود. اگر همین فایل‌ها جای دیگری از سایت (نوشته‌ها، برگه‌ها) هم استفاده شده‌اند، آن‌جا دیگر مستقیم باز نمی‌شوند. پیش از انتقال از سایت پشتیبان بگیرید.', 'nias-course-widget'); ?></div>
-        <div class="npr-btns"><button type="button" data-npr-scan><?php echo esc_html__('بررسی فایل‌های دوره‌ها', 'nias-course-widget'); ?></button><button type="button" class="pri" data-npr-move disabled><?php echo esc_html__('شروع انتقال', 'nias-course-widget'); ?></button></div>
+        <div class="nias-row-desc"><?php echo esc_html__('Videos and files already uploaded in course lessons (on this site) are moved to the protected folder; lesson addresses and media library records are updated automatically. If these same files are also used elsewhere on the site (posts, pages), they will no longer open directly there. Back up the site before moving.', 'nias-course-widget'); ?></div>
+        <div class="npr-btns"><button type="button" data-npr-scan><?php echo esc_html__('Check course files', 'nias-course-widget'); ?></button><button type="button" class="pri" data-npr-move disabled><?php echo esc_html__('Start moving', 'nias-course-widget'); ?></button></div>
         <div class="npr-bar" hidden><i></i></div>
         <div class="npr-out" data-npr-out></div>
     </div>

@@ -20,7 +20,7 @@ add_action('init', 'nias_cert_register_tpl_cpt');
 function nias_cert_register_tpl_cpt()
 {
     register_post_type(NIAS_CERT_TPL_CPT, array(
-        'label'           => __('قالب‌های مدرک', 'nias-course-widget'),
+        'label'           => __('Certificate templates', 'nias-course-widget'),
         'public'          => false,
         'show_ui'         => false,
         'show_in_rest'    => false,
@@ -189,11 +189,11 @@ function nias_cert_create_template($title, $design)
 function nias_cert_preset_labels()
 {
     return array(
-        'classic' => __('کلاسیک (از تصاویر و متن‌های فعلی شما)', 'nias-course-widget'),
-        'modern'  => __('مدرن با نوار رنگی', 'nias-course-widget'),
-        'minimal' => __('مینیمال', 'nias-course-widget'),
-        'formal'  => __('رسمی با QR و بارکد', 'nias-course-widget'),
-        'blank'   => __('صفحهٔ خالی', 'nias-course-widget'),
+        'classic' => __('Classic (from your current images and texts)', 'nias-course-widget'),
+        'modern'  => __('Modern with a color band', 'nias-course-widget'),
+        'minimal' => __('Minimal', 'nias-course-widget'),
+        'formal'  => __('Formal with QR and barcode', 'nias-course-widget'),
+        'blank'   => __('Blank page', 'nias-course-widget'),
     );
 }
 
@@ -331,8 +331,8 @@ function nias_cert_register_designer_page()
     }
     add_submenu_page(
         'nias-course-settings',
-        __('طراح مدرک', 'nias-course-widget'),
-        __('طراح مدرک', 'nias-course-widget'),
+        __('Certificate designer', 'nias-course-widget'),
+        __('Certificate designer', 'nias-course-widget'),
         'manage_options',
         'nias-course-cert-designer',
         'nias_cert_render_designer_page'
@@ -382,7 +382,7 @@ function nias_cert_render_designer_page()
     ?>
     <div class="nias-settings-app" dir="rtl">
         <?php nias_settings_topbar('designer'); ?>
-        <div id="nias-cert-designer" class="ncd-app"><div class="ncd-boot"><?php echo esc_html__('در حال بارگذاری طراح مدرک…', 'nias-course-widget'); ?></div></div>
+        <div id="nias-cert-designer" class="ncd-app"><div class="ncd-boot"><?php echo esc_html__('Loading the certificate designer…', 'nias-course-widget'); ?></div></div>
     </div>
     <script>window.NIAS_CERT_DESIGNER = <?php echo wp_json_encode($boot); ?>;</script>
     <?php
@@ -395,10 +395,10 @@ function nias_cert_render_designer_page()
 function nias_cert_designer_guard()
 {
     if (!current_user_can('manage_options')) {
-        wp_send_json_error(array('message' => __('دسترسی لازم را ندارید.', 'nias-course-widget')));
+        wp_send_json_error(array('message' => __('You do not have the required permission.', 'nias-course-widget')));
     }
     if (!check_ajax_referer('nias_cert_designer', 'nonce', false)) {
-        wp_send_json_error(array('message' => __('درخواست نامعتبر است؛ صفحه را دوباره بارگذاری کنید.', 'nias-course-widget')));
+        wp_send_json_error(array('message' => __('Invalid request; reload the page.', 'nias-course-widget')));
     }
 }
 
@@ -408,7 +408,7 @@ function nias_cert_designer_request_id()
     $id   = isset($_POST['id']) ? (int) $_POST['id'] : 0;
     $post = $id ? get_post($id) : null;
     if (!$post || $post->post_type !== NIAS_CERT_TPL_CPT) {
-        wp_send_json_error(array('message' => __('قالب یافت نشد.', 'nias-course-widget')));
+        wp_send_json_error(array('message' => __('Template not found.', 'nias-course-widget')));
     }
     return $id;
 }
@@ -424,20 +424,20 @@ function nias_cert_ajax_tpl_create()
     }
     $title = isset($_POST['title']) ? sanitize_text_field(wp_unslash($_POST['title'])) : '';
     if ($title === '') {
-        $title = __('قالب مدرک', 'nias-course-widget') . ' ' . (count(nias_cert_templates_list()) + 1);
+        $title = __('Certificate template', 'nias-course-widget') . ' ' . (count(nias_cert_templates_list()) + 1);
     }
     // Import: a design exported from this or another site (sanitized like any save).
     $design = nias_cert_preset($preset);
     if (!empty($_POST['design'])) {
         $imported = json_decode(wp_unslash($_POST['design']), true);
         if (!is_array($imported) || !isset($imported['elements'])) {
-            wp_send_json_error(array('message' => __('فایل قالب نامعتبر است.', 'nias-course-widget')));
+            wp_send_json_error(array('message' => __('Invalid template file.', 'nias-course-widget')));
         }
         $design = $imported;
     }
     $id = nias_cert_create_template($title, $design);
     if (!$id) {
-        wp_send_json_error(array('message' => __('ساخت قالب ناموفق بود.', 'nias-course-widget')));
+        wp_send_json_error(array('message' => __('Creating the template failed.', 'nias-course-widget')));
     }
     // The first template becomes the default automatically.
     if (!(int) nias_cert_setting('certificate_default_template', 0)) {
@@ -456,7 +456,7 @@ function nias_cert_ajax_tpl_save()
     $id     = nias_cert_designer_request_id();
     $design = isset($_POST['design']) ? json_decode(wp_unslash($_POST['design']), true) : null;
     if (!is_array($design)) {
-        wp_send_json_error(array('message' => __('دادهٔ قالب نامعتبر است.', 'nias-course-widget')));
+        wp_send_json_error(array('message' => __('Invalid template data.', 'nias-course-widget')));
     }
     if (isset($_POST['title'])) {
         $title = sanitize_text_field(wp_unslash($_POST['title']));
@@ -465,7 +465,7 @@ function nias_cert_ajax_tpl_save()
         }
     }
     nias_cert_store_design($id, $design);
-    wp_send_json_success(array('message' => __('قالب ذخیره شد.', 'nias-course-widget'), 'template' => nias_cert_template_payload($id)));
+    wp_send_json_success(array('message' => __('Template saved.', 'nias-course-widget'), 'template' => nias_cert_template_payload($id)));
 }
 
 add_action('wp_ajax_nias_cert_tpl_delete', 'nias_cert_ajax_tpl_delete');
@@ -485,9 +485,9 @@ function nias_cert_ajax_tpl_duplicate()
 {
     nias_cert_designer_guard();
     $id  = nias_cert_designer_request_id();
-    $new = nias_cert_create_template(get_the_title($id) . __(' (کپی)', 'nias-course-widget'), nias_cert_get_design($id));
+    $new = nias_cert_create_template(get_the_title($id) . __(' (copy)', 'nias-course-widget'), nias_cert_get_design($id));
     if (!$new) {
-        wp_send_json_error(array('message' => __('تکثیر ناموفق بود.', 'nias-course-widget')));
+        wp_send_json_error(array('message' => __('Duplicating failed.', 'nias-course-widget')));
     }
     wp_send_json_success(array('template' => nias_cert_template_payload($new)));
 }
@@ -518,7 +518,7 @@ add_action('admin_post_nias_cert_preview', 'nias_cert_handle_preview');
 function nias_cert_handle_preview()
 {
     if (!current_user_can('manage_options')) {
-        wp_die(esc_html__('دسترسی لازم را ندارید.', 'nias-course-widget'));
+        wp_die(esc_html__('You do not have the required permission.', 'nias-course-widget'));
     }
     check_admin_referer('nias_cert_preview');
 
@@ -541,7 +541,7 @@ function nias_cert_handle_preview()
             nias_cert_output_pdf($data, 0, 'I'); // classic layout
         }
     } catch (\Throwable $e) {
-        wp_die(esc_html__('خطا در ساخت پیش‌نمایش: ', 'nias-course-widget') . esc_html($e->getMessage()));
+        wp_die(esc_html__('Error building the preview: ', 'nias-course-widget') . esc_html($e->getMessage()));
     }
     exit;
 }

@@ -95,7 +95,7 @@ function nias_course_duplicate($post_id)
 {
     $post = get_post($post_id);
     if (!$post || !nias_is_course_post($post_id)) {
-        return new WP_Error('nias_dup', __('دوره پیدا نشد.', 'nias-course-widget'));
+        return new WP_Error('nias_dup', __('Course not found.', 'nias-course-widget'));
     }
     $sections = (array) carbon_get_post_meta($post_id, 'course_sections');
     if ($post->post_type === 'product' && class_exists('WC_Admin_Duplicate_Product') && function_exists('wc_get_product')) {
@@ -119,9 +119,9 @@ function nias_course_duplicate($post_id)
         }
     }
     if (!$new || is_wp_error($new)) {
-        return new WP_Error('nias_dup', __('ساخت کپی ممکن نشد.', 'nias-course-widget'));
+        return new WP_Error('nias_dup', __('The copy could not be created.', 'nias-course-widget'));
     }
-    wp_update_post(array('ID' => $new, 'post_title' => sprintf(__('%s (کپی)', 'nias-course-widget'), $post->post_title), 'post_status' => 'draft'));
+    wp_update_post(array('ID' => $new, 'post_title' => sprintf(__('%s (copy)', 'nias-course-widget'), $post->post_title), 'post_status' => 'draft'));
     foreach (nias_transfer_drop_keys() as $k) {
         delete_post_meta($new, $k);
     }
@@ -130,7 +130,7 @@ function nias_course_duplicate($post_id)
     foreach (nias_transfer_quiz_ids($sections) as $qid) {
         $q = function_exists('nias_quiz_get') ? nias_quiz_get($qid) : null;
         if ($q) {
-            $q['title'] = sprintf(__('%s (کپی)', 'nias-course-widget'), $q['title']);
+            $q['title'] = sprintf(__('%s (copy)', 'nias-course-widget'), $q['title']);
             $map[$qid]  = nias_transfer_make_quiz($q);
         }
     }
@@ -187,7 +187,7 @@ function nias_course_export($post_id)
 function nias_course_import($data)
 {
     if (!is_array($data) || ($data['format'] ?? '') !== 'nias-course-export' || empty($data['title']) || !isset($data['sections']) || !is_array($data['sections'])) {
-        return new WP_Error('nias_import', __('این فایل خروجی دوره ساز نیاس نیست.', 'nias-course-widget'));
+        return new WP_Error('nias_import', __('This file is not a Nias Course Builder export.', 'nias-course-widget'));
     }
     $type = (($data['type'] ?? '') === 'product' && function_exists('nias_wc_active') && nias_wc_active()) ? 'product' : (defined('NIAS_COURSE_CPT') && function_exists('nias_course_cpt_enabled') && nias_course_cpt_enabled() ? NIAS_COURSE_CPT : 'product');
     if ($type === 'product' && class_exists('WC_Product_Simple')) {
@@ -205,7 +205,7 @@ function nias_course_import($data)
         $new = (int) wp_insert_post(array('post_type' => $type, 'post_status' => 'draft', 'post_title' => sanitize_text_field($data['title']), 'post_content' => wp_kses_post($data['content'] ?? ''), 'post_excerpt' => wp_kses_post($data['excerpt'] ?? '')));
     }
     if (!$new) {
-        return new WP_Error('nias_import', __('ساخت دوره ممکن نشد.', 'nias-course-widget'));
+        return new WP_Error('nias_import', __('The course could not be created.', 'nias-course-widget'));
     }
     $map = array();
     foreach ((array) ($data['quizzes'] ?? array()) as $old => $model) {
@@ -230,8 +230,8 @@ function nias_course_import($data)
 function nias_transfer_row_actions($actions, $post)
 {
     if (nias_transfer_enabled() && nias_is_course_post($post->ID) && current_user_can('edit_post', $post->ID)) {
-        $actions['nias_dup'] = '<a href="' . esc_url(wp_nonce_url(admin_url('admin-post.php?action=nias_course_dup&post=' . (int) $post->ID), 'nias_course_dup_' . $post->ID)) . '">' . esc_html__('کپی دوره', 'nias-course-widget') . '</a>';
-        $actions['nias_exp'] = '<a href="' . esc_url(wp_nonce_url(admin_url('admin-post.php?action=nias_course_export&post=' . (int) $post->ID), 'nias_course_export_' . $post->ID)) . '">' . esc_html__('خروجی دوره', 'nias-course-widget') . '</a>';
+        $actions['nias_dup'] = '<a href="' . esc_url(wp_nonce_url(admin_url('admin-post.php?action=nias_course_dup&post=' . (int) $post->ID), 'nias_course_dup_' . $post->ID)) . '">' . esc_html__('Copy course', 'nias-course-widget') . '</a>';
+        $actions['nias_exp'] = '<a href="' . esc_url(wp_nonce_url(admin_url('admin-post.php?action=nias_course_export&post=' . (int) $post->ID), 'nias_course_export_' . $post->ID)) . '">' . esc_html__('Export course', 'nias-course-widget') . '</a>';
     }
     return $actions;
 }
@@ -241,7 +241,7 @@ add_filter('page_row_actions', 'nias_transfer_row_actions', 20, 2);
 add_action('admin_post_nias_course_dup', function () {
     $pid = isset($_GET['post']) ? (int) $_GET['post'] : 0;
     if (!nias_transfer_enabled() || !$pid || !current_user_can('edit_post', $pid) || !check_admin_referer('nias_course_dup_' . $pid)) {
-        wp_die(esc_html__('دسترسی ندارید.', 'nias-course-widget'), 403);
+        wp_die(esc_html__('You do not have access.', 'nias-course-widget'), 403);
     }
     $new = nias_course_duplicate($pid);
     if (is_wp_error($new)) {
@@ -254,7 +254,7 @@ add_action('admin_post_nias_course_dup', function () {
 add_action('admin_post_nias_course_export', function () {
     $pid = isset($_GET['post']) ? (int) $_GET['post'] : 0;
     if (!nias_transfer_enabled() || !$pid || !current_user_can('edit_post', $pid) || !check_admin_referer('nias_course_export_' . $pid)) {
-        wp_die(esc_html__('دسترسی ندارید.', 'nias-course-widget'), 403);
+        wp_die(esc_html__('You do not have access.', 'nias-course-widget'), 403);
     }
     $json = wp_json_encode(nias_course_export($pid), JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT);
     nocache_headers();
@@ -266,7 +266,7 @@ add_action('admin_post_nias_course_export', function () {
 
 add_action('admin_notices', function () {
     if (isset($_GET['nias_dup_done'])) {
-        echo '<div class="notice notice-success is-dismissible"><p>' . esc_html__('کپی دوره ساخته شد (پیش‌نویس). آزمون‌های جلسات هم جداگانه کپی شدند تا نتایج دو دوره قاطی نشود.', 'nias-course-widget') . '</p></div>';
+        echo '<div class="notice notice-success is-dismissible"><p>' . esc_html__('The course copy was created (draft). Lesson quizzes were also copied separately so the two courses\' results do not mix.', 'nias-course-widget') . '</p></div>';
     }
 });
 
@@ -274,7 +274,7 @@ add_action('admin_menu', function () {
     if (!nias_transfer_enabled()) {
         return;
     }
-    add_submenu_page('nias-course-settings', __('انتقال دوره', 'nias-course-widget'), __('انتقال دوره', 'nias-course-widget'), 'manage_options', 'nias-course-transfer', 'nias_transfer_page');
+    add_submenu_page('nias-course-settings', __('Course transfer', 'nias-course-widget'), __('Course transfer', 'nias-course-widget'), 'manage_options', 'nias-course-transfer', 'nias_transfer_page');
 }, 42);
 
 function nias_transfer_page()
@@ -288,7 +288,7 @@ function nias_transfer_page()
         $res = nias_course_import(json_decode((string) $raw, true));
         $msg = is_wp_error($res)
             ? '<div class="notice notice-error inline"><p>' . esc_html($res->get_error_message()) . '</p></div>'
-            : '<div class="notice notice-success inline"><p>' . esc_html__('دوره به‌صورت پیش‌نویس ساخته شد.', 'nias-course-widget') . ' <a href="' . esc_url(get_edit_post_link($res)) . '">' . esc_html__('ویرایش دوره', 'nias-course-widget') . '</a></p></div>';
+            : '<div class="notice notice-success inline"><p>' . esc_html__('The course was created as a draft.', 'nias-course-widget') . ' <a href="' . esc_url(get_edit_post_link($res)) . '">' . esc_html__('Edit course', 'nias-course-widget') . '</a></p></div>';
     }
     if (function_exists('nias_picker_enqueue')) {
         nias_picker_enqueue();
@@ -296,12 +296,12 @@ function nias_transfer_page()
     echo '<div class="nias-settings-app" dir="rtl">';
     nias_settings_topbar('transfer');
     echo '<div class="nias-set-shell"><div class="nias-set-main">' . $msg; // phpcs:ignore -- escaped above
-    nias_set_card_open('<svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M12 3v12m0 0-4-4m4 4 4-4M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2" stroke="#3858e9" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>', __('خروجی گرفتن از یک دوره', 'nias-course-widget'));
+    nias_set_card_open('<svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M12 3v12m0 0-4-4m4 4 4-4M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2" stroke="#3858e9" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>', __('Export a course', 'nias-course-widget'));
     ?>
     <div class="nias-card-pad nias-stack">
-        <div class="nias-row-desc"><?php echo esc_html__('فایل JSON شامل متن دوره، فصل‌ها و جلسات (با همهٔ تنظیمات مثل قطره‌ای، تکلیف و کیفیت‌ها)، آزمون‌های جلسات و تنظیمات دوره. «کپی دوره» و «خروجی دوره» در فهرست دوره‌ها (زیر نام هر دوره) هم هست. آدرس ویدیوها و فایل‌ها همان آدرس قبلی می‌ماند.', 'nias-course-widget'); ?></div>
+        <div class="nias-row-desc"><?php echo esc_html__('A JSON file with the course text, chapters and lessons (with all settings such as drip, assignment and qualities), lesson quizzes and course settings. "Copy course" and "Export course" are also in the courses list (under each course name). Video and file addresses stay the same.', 'nias-course-widget'); ?></div>
         <div data-nias-exp-pick style="max-width:480px"></div>
-        <div><a class="nias-btn-primary" data-nias-exp-go href="#" style="text-decoration:none;display:inline-flex"><?php echo esc_html__('دریافت فایل خروجی', 'nias-course-widget'); ?></a></div>
+        <div><a class="nias-btn-primary" data-nias-exp-go href="#" style="text-decoration:none;display:inline-flex"><?php echo esc_html__('Download export file', 'nias-course-widget'); ?></a></div>
     </div>
     <script>
     document.addEventListener('DOMContentLoaded', function () {
@@ -317,13 +317,13 @@ function nias_transfer_page()
     </script>
     <?php
     nias_set_card_close();
-    nias_set_card_open('<svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M12 15V3m0 0L8 7m4-4 4 4M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2" stroke="#3858e9" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>', __('ورود دوره از فایل', 'nias-course-widget'));
+    nias_set_card_open('<svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M12 15V3m0 0L8 7m4-4 4 4M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2" stroke="#3858e9" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>', __('Import a course from a file', 'nias-course-widget'));
     ?>
     <form method="post" enctype="multipart/form-data" class="nias-card-pad nias-stack">
         <?php wp_nonce_field('nias_course_import', 'nias_import_nonce'); ?>
-        <div class="nias-row-desc"><?php echo esc_html__('فایل JSON خروجی دوره ساز نیاس (از همین سایت یا سایت دیگر). دوره به‌صورت پیش‌نویس و آزمون‌هایش به‌صورت آزمون‌های جدید ساخته می‌شوند.', 'nias-course-widget'); ?></div>
+        <div class="nias-row-desc"><?php echo esc_html__('A Nias Course Builder export JSON file (from this site or another site). The course is created as a draft and its quizzes as new quizzes.', 'nias-course-widget'); ?></div>
         <input type="file" name="nias_file" accept=".json,application/json" required>
-        <div><button type="submit" name="nias_import" value="1" class="nias-btn-primary" style="border:0"><?php echo esc_html__('ورود دوره', 'nias-course-widget'); ?></button></div>
+        <div><button type="submit" name="nias_import" value="1" class="nias-btn-primary" style="border:0"><?php echo esc_html__('Import course', 'nias-course-widget'); ?></button></div>
     </form>
     <?php
     nias_set_card_close();

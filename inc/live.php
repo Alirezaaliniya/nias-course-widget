@@ -78,7 +78,7 @@ add_action('init', function () {
     $esc = function ($s) { return str_replace(array('\\', ';', ',', "\n"), array('\\\\', '\;', '\,', '\n'), $s); };
     $url = function_exists('nias_course_modern_view_url') ? nias_course_modern_view_url($pid) : get_permalink($pid);
     $ics = "BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//Nias Course//Live//FA\r\nBEGIN:VEVENT\r\nUID:nias-live-{$pid}-{$lid}@" . wp_parse_url(home_url(), PHP_URL_HOST) . "\r\nDTSTAMP:" . $fmt(time()) . "\r\nDTSTART:" . $fmt($cfg['start']) . "\r\nDTEND:" . $fmt($cfg['end'])
-        . "\r\nSUMMARY:" . $esc($l['title'] . ' — ' . get_the_title($pid)) . "\r\nDESCRIPTION:" . $esc(__('کلاس آنلاین؛ لینک ورود ۱۰ دقیقه قبل از شروع در صفحهٔ دوره:', 'nias-course-widget') . ' ' . $url) . "\r\nURL:" . $url
+        . "\r\nSUMMARY:" . $esc($l['title'] . ' — ' . get_the_title($pid)) . "\r\nDESCRIPTION:" . $esc(__('Online class; the join link appears on the course page 10 minutes before the start:', 'nias-course-widget') . ' ' . $url) . "\r\nURL:" . $url
         . "\r\nBEGIN:VALARM\r\nTRIGGER:-PT15M\r\nACTION:DISPLAY\r\nDESCRIPTION:" . $esc($l['title']) . "\r\nEND:VALARM\r\nEND:VEVENT\r\nEND:VCALENDAR\r\n";
     nocache_headers();
     header('Content-Type: text/calendar; charset=utf-8');

@@ -224,7 +224,7 @@ function nias_drip_when_label($ts)
     $days = array('یکشنبه', 'دوشنبه', 'سه‌شنبه', 'چهارشنبه', 'پنجشنبه', 'جمعه', 'شنبه');
     $ymd  = wp_date('Y-m-d', $ts);
     $date = function_exists('nias_cert_jalali') ? nias_cert_jalali($ymd, 'long') : $ymd;
-    $out  = $days[(int) wp_date('w', $ts)] . ' ' . $date . '، ' . __('ساعت', 'nias-course-widget') . ' ' . wp_date('H:i', $ts);
+    $out  = $days[(int) wp_date('w', $ts)] . ' ' . $date . '، ' . __('at', 'nias-course-widget') . ' ' . wp_date('H:i', $ts);
     return function_exists('nias_fa_digits') ? nias_fa_digits($out) : $out;
 }
 
@@ -240,7 +240,7 @@ function nias_drip_short_label($ts)
 /** "روز ۴، ساعت ۰۷:۰۵" (relative, for people who did not enrol yet). */
 function nias_drip_rel_label($cfg)
 {
-    $out = sprintf(__('روز %s پس از ثبت‌نام', 'nias-course-widget'), $cfg['day']) . ($cfg['time'] !== '' ? '، ' . __('ساعت', 'nias-course-widget') . ' ' . $cfg['time'] : '');
+    $out = sprintf(__('Day %s after enrolment', 'nias-course-widget'), $cfg['day']) . ($cfg['time'] !== '' ? '، ' . __('at', 'nias-course-widget') . ' ' . $cfg['time'] : '');
     return function_exists('nias_fa_digits') ? nias_fa_digits($out) : $out;
 }
 
@@ -282,8 +282,8 @@ function nias_drip_filter_raw_lesson($lesson, $post_id)
     }
     $lesson['lesson_preview_video'] = array();
     $lesson['lesson_download']      = array();
-    $lesson['lesson_content']       = '<p class="nias-drip-note">' . esc_html($st['at'] ? sprintf(__('این جلسه %s باز می‌شود.', 'nias-course-widget'), $st['label']) : sprintf(__('این جلسه طبق برنامهٔ دوره (%s) باز می‌شود.', 'nias-course-widget'), $st['label'])) . '</p>';
-    $lesson['lesson_label']         = $st['at'] ? sprintf(__('باز می‌شود: %s', 'nias-course-widget'), $st['label']) : $st['label'];
+    $lesson['lesson_content']       = '<p class="nias-drip-note">' . esc_html($st['at'] ? sprintf(__('This lesson opens %s.', 'nias-course-widget'), $st['label']) : sprintf(__('This lesson opens according to the course schedule (%s).', 'nias-course-widget'), $st['label'])) . '</p>';
+    $lesson['lesson_label']         = $st['at'] ? sprintf(__('Opens: %s', 'nias-course-widget'), $st['label']) : $st['label'];
     return $lesson;
 }
 
@@ -317,8 +317,8 @@ function nias_drip_quiz_blocked($blocked, $quiz_id, $user_id)
     }
     if ($closed) {
         return $closed['at']
-            ? sprintf(__('این آزمون %s باز می‌شود.', 'nias-course-widget'), $closed['label'])
-            : __('این آزمون پس از ثبت‌نام در دوره، طبق برنامهٔ دوره باز می‌شود.', 'nias-course-widget');
+            ? sprintf(__('This quiz opens %s.', 'nias-course-widget'), $closed['label'])
+            : __('This quiz opens according to the course schedule after you enrol in the course.', 'nias-course-widget');
     }
     return $blocked;
 }
@@ -432,16 +432,16 @@ function nias_drip_mail($user_id, $post_id, $titles)
     }
     $course = get_the_title($post_id);
     $link   = function_exists('nias_course_modern_view_url') ? nias_course_modern_view_url($post_id) : get_permalink($post_id);
-    $subj   = sprintf(__('جلسهٔ جدید دورهٔ «%s» باز شد', 'nias-course-widget'), $course);
+    $subj   = sprintf(__('A new lesson of the course "%s" is open', 'nias-course-widget'), $course);
     $items  = '';
     foreach ($titles as $t) {
         $items .= '<li>' . esc_html($t) . '</li>';
     }
     $body = '<div dir="rtl" style="font-family:Tahoma,Arial,sans-serif;font-size:14px;line-height:2;color:#1f2a30">'
-        . '<p>' . esc_html(sprintf(__('%s عزیز،', 'nias-course-widget'), $u->display_name)) . '</p>'
-        . '<p>' . esc_html(sprintf(_n('این جلسه از دورهٔ «%s» برای شما باز شد:', 'این جلسه‌ها از دورهٔ «%s» برای شما باز شدند:', count($titles), 'nias-course-widget'), $course)) . '</p>'
+        . '<p>' . esc_html(sprintf(__('Dear %s,', 'nias-course-widget'), $u->display_name)) . '</p>'
+        . '<p>' . esc_html(sprintf(_n('This lesson of the course "%s" is now open for you:', 'These lessons of the course "%s" are now open for you:', count($titles), 'nias-course-widget'), $course)) . '</p>'
         . '<ul>' . $items . '</ul>'
-        . '<p><a href="' . esc_url($link) . '" style="display:inline-block;background:#1e83f0;color:#fff;text-decoration:none;padding:8px 18px;border-radius:9px">' . esc_html__('ادامهٔ دوره', 'nias-course-widget') . '</a></p></div>';
+        . '<p><a href="' . esc_url($link) . '" style="display:inline-block;background:#1e83f0;color:#fff;text-decoration:none;padding:8px 18px;border-radius:9px">' . esc_html__('Continue the course', 'nias-course-widget') . '</a></p></div>';
     wp_mail($u->user_email, $subj, $body, array('Content-Type: text/html; charset=UTF-8'));
 }
 
@@ -525,9 +525,9 @@ function nias_drip_tool_html($post_id = 0)
     $nonce = wp_create_nonce('nias_drip_tool');
     $h  = '<div class="ndt" data-ndt data-nonce="' . esc_attr($nonce) . '" data-ajax="' . esc_url(admin_url('admin-ajax.php')) . '" data-course="' . (int) $post_id . '">';
     if (!$post_id) {
-        $h .= '<div class="ndt-f"><label>' . esc_html__('دوره', 'nias-course-widget') . '</label><div data-ndt-course></div></div>';
+        $h .= '<div class="ndt-f"><label>' . esc_html__('Course', 'nias-course-widget') . '</label><div data-ndt-course></div></div>';
     }
-    $h .= '<div class="ndt-f"><label>' . esc_html__('دانشجو', 'nias-course-widget') . '</label><input type="search" class="ndt-in" data-ndt-q placeholder="' . esc_attr__('نام، نام کاربری، ایمیل یا موبایل دانشجوی ثبت‌نام‌شده…', 'nias-course-widget') . '"' . ($post_id ? '' : ' disabled') . '><div class="ndt-res" data-ndt-res></div></div>';
+    $h .= '<div class="ndt-f"><label>' . esc_html__('Student', 'nias-course-widget') . '</label><input type="search" class="ndt-in" data-ndt-q placeholder="' . esc_attr__('Name, username, email or mobile of an enrolled student…', 'nias-course-widget') . '"' . ($post_id ? '' : ' disabled') . '><div class="ndt-res" data-ndt-res></div></div>';
     $h .= '<div class="ndt-card" data-ndt-card hidden></div></div>';
     return $h . nias_drip_tool_assets();
 }
@@ -635,7 +635,7 @@ function nias_drip_tool_request()
 {
     $pid = isset($_POST['course']) ? (int) $_POST['course'] : 0;
     if (!check_ajax_referer('nias_drip_tool', 'nonce', false) || !nias_drip_can_manage($pid)) {
-        wp_send_json_error(array('message' => __('دسترسی ندارید.', 'nias-course-widget')), 403);
+        wp_send_json_error(array('message' => __('You do not have access.', 'nias-course-widget')), 403);
     }
     return $pid;
 }
@@ -673,7 +673,7 @@ add_action('wp_ajax_nias_drip_student', function () {
     $en  = $uid ? (int) get_user_meta($uid, nias_drip_key('enroll', $pid), true) : 0;
     $u   = $uid ? get_userdata($uid) : null;
     if (!$u || !$en) {
-        wp_send_json_error(array('message' => __('این کاربر در این دوره ثبت‌نام نکرده است.', 'nias-course-widget')));
+        wp_send_json_error(array('message' => __('This user is not enrolled in this course.', 'nias-course-widget')));
     }
     $unlocked = get_user_meta($uid, nias_drip_key('dripopen', $pid), true) === '1';
     $rows = array();
@@ -687,7 +687,7 @@ add_action('wp_ajax_nias_drip_student', function () {
         $open += $is ? 1 : 0;
         $rows[] = array(
             'title' => $l['title'],
-            'rule'  => nias_fa_digits(sprintf(__('روز %s', 'nias-course-widget'), $l['cfg']['day']) . ($l['cfg']['time'] !== '' ? ' · ' . $l['cfg']['time'] : '')),
+            'rule'  => nias_fa_digits(sprintf(__('Day %s', 'nias-course-widget'), $l['cfg']['day']) . ($l['cfg']['time'] !== '' ? ' · ' . $l['cfg']['time'] : '')),
             'when'  => nias_drip_when_label($at),
             'open'  => $is,
         );
@@ -708,7 +708,7 @@ add_action('wp_ajax_nias_drip_student_set', function () {
     $op  = isset($_POST['op']) ? sanitize_key(wp_unslash($_POST['op'])) : '';
     $en  = $uid ? (int) get_user_meta($uid, nias_drip_key('enroll', $pid), true) : 0;
     if (!$en) {
-        wp_send_json_error(array('message' => __('این کاربر در این دوره ثبت‌نام نکرده است.', 'nias-course-widget')));
+        wp_send_json_error(array('message' => __('This user is not enrolled in this course.', 'nias-course-widget')));
     }
     if ($op === 'unlock') {
         update_user_meta($uid, nias_drip_key('dripopen', $pid), '1');
@@ -723,7 +723,7 @@ add_action('wp_ajax_nias_drip_student_set', function () {
         update_user_meta($uid, nias_drip_key('enroll', $pid), time());
         update_user_meta($uid, nias_drip_key('driplast', $pid), time());
     } else {
-        wp_send_json_error(array('message' => __('عملیات نامعتبر است.', 'nias-course-widget')));
+        wp_send_json_error(array('message' => __('Invalid operation.', 'nias-course-widget')));
     }
     nias_drip_recompute_next($uid);
     do_action('nias_drip_student_changed', $uid, $pid, $op, get_current_user_id());

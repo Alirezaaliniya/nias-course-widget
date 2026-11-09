@@ -199,13 +199,13 @@ function nias_rev_request_payout($user_id)
     $min  = max(0, (float) nias_rev_opt('min', 500000));
     $bank = trim((string) get_user_meta($user_id, '_nias_rev_bank', true));
     if ($wpdb->get_var($wpdb->prepare("SELECT id FROM {$p} WHERE user_id = %d AND status = 'requested'", $user_id))) {
-        return new WP_Error('open', __('یک درخواست تسویهٔ باز دارید؛ تا بررسی آن صبر کنید.', 'nias-course-widget'));
+        return new WP_Error('open', __('You have an open payout request; wait until it is reviewed.', 'nias-course-widget'));
     }
     if ($bank === '') {
-        return new WP_Error('bank', __('ابتدا شمارهٔ شبا یا کارت خود را وارد کنید.', 'nias-course-widget'));
+        return new WP_Error('bank', __('First enter your IBAN (Sheba) or card number.', 'nias-course-widget'));
     }
     if ($bal['available'] <= 0 || $bal['available'] < $min) {
-        return new WP_Error('min', sprintf(__('حداقل مبلغ تسویه %s است.', 'nias-course-widget'), nias_rev_money($min)));
+        return new WP_Error('min', sprintf(__('The minimum payout amount is %s.', 'nias-course-widget'), nias_rev_money($min)));
     }
     $wpdb->insert($p, array('user_id' => $user_id, 'amount' => $bal['available'], 'status' => 'requested', 'bank' => mb_substr($bank, 0, 190), 'created' => current_time('mysql')));
     $pid = (int) $wpdb->insert_id;
@@ -244,18 +244,18 @@ function nias_rev_panel_html($user_id)
     if (isset($_POST['nias_rev_nonce']) && wp_verify_nonce(sanitize_text_field(wp_unslash($_POST['nias_rev_nonce'])), 'nias_rev_' . $user_id)) {
         if (isset($_POST['nias_rev_bank'])) {
             update_user_meta($user_id, '_nias_rev_bank', mb_substr(sanitize_text_field(wp_unslash($_POST['nias_rev_bank'])), 0, 190));
-            $msg = '<div class="nip-info">' . esc_html__('اطلاعات حساب ذخیره شد.', 'nias-course-widget') . '</div>';
+            $msg = '<div class="nip-info">' . esc_html__('Account details saved.', 'nias-course-widget') . '</div>';
         }
         if (isset($_POST['nias_rev_request'])) {
             $r   = nias_rev_request_payout($user_id);
-            $msg = is_wp_error($r) ? '<div class="nip-info wait">' . esc_html($r->get_error_message()) . '</div>' : '<div class="nip-info">' . esc_html__('درخواست تسویه ثبت شد.', 'nias-course-widget') . '</div>';
+            $msg = is_wp_error($r) ? '<div class="nip-info wait">' . esc_html($r->get_error_message()) . '</div>' : '<div class="nip-info">' . esc_html__('Payout request submitted.', 'nias-course-widget') . '</div>';
         }
     }
     $b    = nias_rev_balance($user_id);
     $rows = $wpdb->get_results($wpdb->prepare("SELECT * FROM {$t} WHERE user_id = %d AND status <> 'reversed' ORDER BY id DESC LIMIT 30", $user_id), ARRAY_A);
     $pays = $wpdb->get_results($wpdb->prepare("SELECT * FROM {$p} WHERE user_id = %d ORDER BY id DESC LIMIT 10", $user_id), ARRAY_A);
-    $st   = array('pending' => __('در دورهٔ امن', 'nias-course-widget'), 'requested' => __('در درخواست تسویه', 'nias-course-widget'), 'paid' => __('پرداخت‌شده', 'nias-course-widget'));
-    $pst  = array('requested' => __('در انتظار بررسی', 'nias-course-widget'), 'paid' => __('پرداخت شد', 'nias-course-widget'), 'rejected' => __('رد شد', 'nias-course-widget'));
+    $st   = array('pending' => __('In holding period', 'nias-course-widget'), 'requested' => __('In a payout request', 'nias-course-widget'), 'paid' => __('Paid', 'nias-course-widget'));
+    $pst  = array('requested' => __('Pending review', 'nias-course-widget'), 'paid' => __('Paid out', 'nias-course-widget'), 'rejected' => __('Rejected', 'nias-course-widget'));
     ob_start();
     ?>
     <div class="nrev" dir="rtl">
@@ -278,30 +278,30 @@ function nias_rev_panel_html($user_id)
     </style>
     <?php echo $msg; // phpcs:ignore -- escaped above ?>
     <div class="nrev-k">
-        <div class="ok"><span><?php echo esc_html__('قابل برداشت', 'nias-course-widget'); ?></span><b><?php echo esc_html(nias_rev_money($b['available'])); ?></b></div>
-        <div><span><?php echo esc_html(sprintf(__('در دورهٔ امن (%s روز پس از فروش)', 'nias-course-widget'), nias_fa_digits(nias_rev_opt('hold', 7)))); ?></span><b><?php echo esc_html(nias_rev_money($b['hold'])); ?></b></div>
-        <div><span><?php echo esc_html__('در درخواست تسویه', 'nias-course-widget'); ?></span><b><?php echo esc_html(nias_rev_money($b['requested'])); ?></b></div>
-        <div><span><?php echo esc_html__('پرداخت‌شده تا امروز', 'nias-course-widget'); ?></span><b><?php echo esc_html(nias_rev_money($b['paid'])); ?></b></div>
+        <div class="ok"><span><?php echo esc_html__('Withdrawable', 'nias-course-widget'); ?></span><b><?php echo esc_html(nias_rev_money($b['available'])); ?></b></div>
+        <div><span><?php echo esc_html(sprintf(__('In holding period (%s days after the sale)', 'nias-course-widget'), nias_fa_digits(nias_rev_opt('hold', 7)))); ?></span><b><?php echo esc_html(nias_rev_money($b['hold'])); ?></b></div>
+        <div><span><?php echo esc_html__('In a payout request', 'nias-course-widget'); ?></span><b><?php echo esc_html(nias_rev_money($b['requested'])); ?></b></div>
+        <div><span><?php echo esc_html__('Paid to date', 'nias-course-widget'); ?></span><b><?php echo esc_html(nias_rev_money($b['paid'])); ?></b></div>
     </div>
-    <div class="nrev-c"><h3><?php echo esc_html__('تسویه', 'nias-course-widget'); ?></h3>
+    <div class="nrev-c"><h3><?php echo esc_html__('Payout', 'nias-course-widget'); ?></h3>
         <form method="post"><?php wp_nonce_field('nias_rev_' . $user_id, 'nias_rev_nonce'); ?>
             <input type="text" name="nias_rev_bank" value="<?php echo esc_attr(get_user_meta($user_id, '_nias_rev_bank', true)); ?>" placeholder="IR… یا شمارهٔ کارت (و نام صاحب حساب)">
-            <button type="submit" style="background:#fff;color:#1f2733;border:1px solid #dbe3ef"><?php echo esc_html__('ذخیرهٔ حساب', 'nias-course-widget'); ?></button>
+            <button type="submit" style="background:#fff;color:#1f2733;border:1px solid #dbe3ef"><?php echo esc_html__('Save account', 'nias-course-widget'); ?></button>
         </form>
-        <form method="post" style="margin-top:10px"><?php wp_nonce_field('nias_rev_' . $user_id, 'nias_rev_nonce'); ?><?php $can_pay = $b['available'] > 0 && $b['available'] >= (float) nias_rev_opt('min', 500000); ?><button type="submit" name="nias_rev_request" value="1" <?php disabled(!$can_pay); ?> style="<?php echo $can_pay ? '' : 'opacity:.5;cursor:not-allowed'; ?>"><?php echo esc_html($can_pay ? sprintf(__('درخواست تسویهٔ %s', 'nias-course-widget'), nias_rev_money($b['available'])) : __('موجودی قابل برداشت کافی نیست', 'nias-course-widget')); ?></button></form>
-        <div class="nrev-hint"><?php echo esc_html(sprintf(__('حداقل مبلغ تسویه: %s. سهم هر فروش پس از دورهٔ امن قابل برداشت می‌شود؛ اگر سفارشی بازپرداخت یا لغو شود، سهم آن کم می‌شود.', 'nias-course-widget'), nias_rev_money(nias_rev_opt('min', 500000)))); ?></div>
+        <form method="post" style="margin-top:10px"><?php wp_nonce_field('nias_rev_' . $user_id, 'nias_rev_nonce'); ?><?php $can_pay = $b['available'] > 0 && $b['available'] >= (float) nias_rev_opt('min', 500000); ?><button type="submit" name="nias_rev_request" value="1" <?php disabled(!$can_pay); ?> style="<?php echo $can_pay ? '' : 'opacity:.5;cursor:not-allowed'; ?>"><?php echo esc_html($can_pay ? sprintf(__('Request a payout of %s', 'nias-course-widget'), nias_rev_money($b['available'])) : __('Not enough withdrawable balance', 'nias-course-widget')); ?></button></form>
+        <div class="nrev-hint"><?php echo esc_html(sprintf(__('Minimum payout amount: %s. Each sale\'s share becomes withdrawable after the holding period; if an order is refunded or cancelled, its share is deducted.', 'nias-course-widget'), nias_rev_money(nias_rev_opt('min', 500000)))); ?></div>
         <?php if ($pays) : ?>
-        <table class="nrev-t" style="margin-top:12px"><thead><tr><th><?php echo esc_html__('درخواست', 'nias-course-widget'); ?></th><th><?php echo esc_html__('مبلغ', 'nias-course-widget'); ?></th><th><?php echo esc_html__('وضعیت', 'nias-course-widget'); ?></th><th><?php echo esc_html__('توضیح', 'nias-course-widget'); ?></th></tr></thead><tbody>
+        <table class="nrev-t" style="margin-top:12px"><thead><tr><th><?php echo esc_html__('Request', 'nias-course-widget'); ?></th><th><?php echo esc_html__('Amount', 'nias-course-widget'); ?></th><th><?php echo esc_html__('Status', 'nias-course-widget'); ?></th><th><?php echo esc_html__('Note', 'nias-course-widget'); ?></th></tr></thead><tbody>
             <?php foreach ($pays as $r) : ?><tr><td><?php echo esc_html(nias_rev_date($r['created'])); ?></td><td><?php echo esc_html(nias_rev_money($r['amount'])); ?></td><td><?php echo esc_html($pst[$r['status']] ?? $r['status']); ?></td><td><?php echo esc_html($r['note']); ?></td></tr><?php endforeach; ?>
         </tbody></table>
         <?php endif; ?>
     </div>
-    <div class="nrev-c"><h3><?php echo esc_html__('فروش‌ها و سهم شما', 'nias-course-widget'); ?></h3>
+    <div class="nrev-c"><h3><?php echo esc_html__('Sales and your share', 'nias-course-widget'); ?></h3>
         <?php if ($rows) : ?>
-        <table class="nrev-t"><thead><tr><th><?php echo esc_html__('تاریخ', 'nias-course-widget'); ?></th><th><?php echo esc_html__('دوره', 'nias-course-widget'); ?></th><th><?php echo esc_html__('مبلغ فروش', 'nias-course-widget'); ?></th><th><?php echo esc_html__('سهم', 'nias-course-widget'); ?></th><th><?php echo esc_html__('وضعیت', 'nias-course-widget'); ?></th></tr></thead><tbody>
-            <?php foreach ($rows as $r) : ?><tr><td><?php echo esc_html(nias_rev_date($r['created'])); ?></td><td><?php echo esc_html(get_the_title((int) $r['course_id'])); ?></td><td><?php echo esc_html(nias_rev_money($r['gross'])); ?></td><td><?php echo esc_html(nias_rev_money($r['amount']) . ' (' . nias_fa_digits(rtrim(rtrim($r['rate'], '0'), '.')) . '٪)'); ?></td><td><?php echo esc_html(($r['status'] === 'pending' && $r['available_at'] <= current_time('mysql')) ? __('قابل برداشت', 'nias-course-widget') : ($st[$r['status']] ?? $r['status'])); ?></td></tr><?php endforeach; ?>
+        <table class="nrev-t"><thead><tr><th><?php echo esc_html__('Date', 'nias-course-widget'); ?></th><th><?php echo esc_html__('Course', 'nias-course-widget'); ?></th><th><?php echo esc_html__('Sale amount', 'nias-course-widget'); ?></th><th><?php echo esc_html__('Share', 'nias-course-widget'); ?></th><th><?php echo esc_html__('Status', 'nias-course-widget'); ?></th></tr></thead><tbody>
+            <?php foreach ($rows as $r) : ?><tr><td><?php echo esc_html(nias_rev_date($r['created'])); ?></td><td><?php echo esc_html(get_the_title((int) $r['course_id'])); ?></td><td><?php echo esc_html(nias_rev_money($r['gross'])); ?></td><td><?php echo esc_html(nias_rev_money($r['amount']) . ' (' . nias_fa_digits(rtrim(rtrim($r['rate'], '0'), '.')) . '٪)'); ?></td><td><?php echo esc_html(($r['status'] === 'pending' && $r['available_at'] <= current_time('mysql')) ? __('Withdrawable', 'nias-course-widget') : ($st[$r['status']] ?? $r['status'])); ?></td></tr><?php endforeach; ?>
         </tbody></table>
-        <?php else : ?><div class="nrev-hint"><?php echo esc_html__('هنوز فروشی ثبت نشده است.', 'nias-course-widget'); ?></div><?php endif; ?>
+        <?php else : ?><div class="nrev-hint"><?php echo esc_html__('No sales recorded yet.', 'nias-course-widget'); ?></div><?php endif; ?>
     </div>
     </div>
     <?php
@@ -319,7 +319,7 @@ add_action('admin_menu', function () {
     global $wpdb;
     list(, $p) = nias_rev_tables();
     $n = (int) $wpdb->get_var("SELECT COUNT(*) FROM {$p} WHERE status = 'requested'");
-    add_submenu_page('nias-course-settings', __('درآمد مدرسین', 'nias-course-widget'), __('درآمد مدرسین', 'nias-course-widget') . ($n ? ' <span class="awaiting-mod">' . $n . '</span>' : ''), 'manage_options', 'nias-course-revenue', 'nias_rev_admin_page');
+    add_submenu_page('nias-course-settings', __('Instructor earnings', 'nias-course-widget'), __('Instructor earnings', 'nias-course-widget') . ($n ? ' <span class="awaiting-mod">' . $n . '</span>' : ''), 'manage_options', 'nias-course-revenue', 'nias_rev_admin_page');
 }, 43);
 
 function nias_rev_admin_page()
@@ -332,7 +332,7 @@ function nias_rev_admin_page()
     $msg = '';
     if (isset($_POST['nias_rev_do']) && check_admin_referer('nias_rev_admin', 'nias_rev_admin_nonce')) {
         nias_rev_process_payout((int) $_POST['payout'], $_POST['nias_rev_do'] === 'paid', wp_unslash($_POST['note'] ?? ''));
-        $msg = '<div class="notice notice-success inline"><p>' . esc_html__('انجام شد.', 'nias-course-widget') . '</p></div>';
+        $msg = '<div class="notice notice-success inline"><p>' . esc_html__('Done.', 'nias-course-widget') . '</p></div>';
     }
     $req  = $wpdb->get_results("SELECT * FROM {$p} WHERE status = 'requested' ORDER BY created ASC LIMIT 50", ARRAY_A);
     $now  = current_time('mysql');
@@ -340,30 +340,30 @@ function nias_rev_admin_page()
     echo '<div class="nias-settings-app" dir="rtl">';
     nias_settings_topbar('revenue');
     echo '<div class="nias-set-shell"><div class="nias-set-main">' . $msg; // phpcs:ignore
-    nias_set_card_open('<svg width="20" height="20" viewBox="0 0 24 24" fill="none"><rect x="2" y="6" width="20" height="13" rx="2" stroke="#3858e9" stroke-width="1.8"/><path d="M2 10h20" stroke="#3858e9" stroke-width="1.8"/></svg>', __('درخواست‌های تسویه', 'nias-course-widget'));
+    nias_set_card_open('<svg width="20" height="20" viewBox="0 0 24 24" fill="none"><rect x="2" y="6" width="20" height="13" rx="2" stroke="#3858e9" stroke-width="1.8"/><path d="M2 10h20" stroke="#3858e9" stroke-width="1.8"/></svg>', __('Payout requests', 'nias-course-widget'));
     echo '<div class="nias-card-pad">';
     if (!$req) {
-        echo '<p>' . esc_html__('درخواست بازی نیست.', 'nias-course-widget') . '</p>';
+        echo '<p>' . esc_html__('There are no open requests.', 'nias-course-widget') . '</p>';
     }
     foreach ($req as $r) {
         $u = get_userdata((int) $r['user_id']);
         echo '<form method="post" style="display:flex;flex-wrap:wrap;gap:8px;align-items:center;border-bottom:1px solid #eef1f6;padding:10px 0">';
         wp_nonce_field('nias_rev_admin', 'nias_rev_admin_nonce');
         echo '<input type="hidden" name="payout" value="' . (int) $r['id'] . '"><b>' . esc_html($u ? $u->display_name : '#' . $r['user_id']) . '</b><span>' . esc_html(nias_rev_money($r['amount'])) . '</span><code dir="ltr">' . esc_html($r['bank']) . '</code><span style="color:#64748b">' . esc_html(nias_rev_date($r['created'])) . '</span>'
-            . '<input type="text" name="note" placeholder="' . esc_attr__('شمارهٔ پیگیری / دلیل رد', 'nias-course-widget') . '" style="flex:1 1 200px">'
-            . '<button class="button button-primary" name="nias_rev_do" value="paid">' . esc_html__('پرداخت شد', 'nias-course-widget') . '</button><button class="button" name="nias_rev_do" value="rejected">' . esc_html__('رد', 'nias-course-widget') . '</button></form>';
+            . '<input type="text" name="note" placeholder="' . esc_attr__('Tracking number / reason for rejection', 'nias-course-widget') . '" style="flex:1 1 200px">'
+            . '<button class="button button-primary" name="nias_rev_do" value="paid">' . esc_html__('Paid out', 'nias-course-widget') . '</button><button class="button" name="nias_rev_do" value="rejected">' . esc_html__('Reject', 'nias-course-widget') . '</button></form>';
     }
     echo '</div>';
     nias_set_card_close();
-    nias_set_card_open('<svg width="20" height="20" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="8" r="4" stroke="#3858e9" stroke-width="1.8"/><path d="M4 21c1.5-4 4.5-6 8-6s6.5 2 8 6" stroke="#3858e9" stroke-width="1.8" stroke-linecap="round"/></svg>', __('حساب مدرسین', 'nias-course-widget'));
-    echo '<div class="nias-card-pad"><table class="widefat striped"><thead><tr><th>' . esc_html__('مدرس', 'nias-course-widget') . '</th><th>' . esc_html__('فروش (ناخالص)', 'nias-course-widget') . '</th><th>' . esc_html__('قابل برداشت', 'nias-course-widget') . '</th><th>' . esc_html__('در دورهٔ امن', 'nias-course-widget') . '</th><th>' . esc_html__('پرداخت‌شده', 'nias-course-widget') . '</th><th>' . esc_html__('درصد سهم', 'nias-course-widget') . '</th></tr></thead><tbody>';
+    nias_set_card_open('<svg width="20" height="20" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="8" r="4" stroke="#3858e9" stroke-width="1.8"/><path d="M4 21c1.5-4 4.5-6 8-6s6.5 2 8 6" stroke="#3858e9" stroke-width="1.8" stroke-linecap="round"/></svg>', __('Instructor accounts', 'nias-course-widget'));
+    echo '<div class="nias-card-pad"><table class="widefat striped"><thead><tr><th>' . esc_html__('Instructor', 'nias-course-widget') . '</th><th>' . esc_html__('Sales (gross)', 'nias-course-widget') . '</th><th>' . esc_html__('Withdrawable', 'nias-course-widget') . '</th><th>' . esc_html__('In holding period', 'nias-course-widget') . '</th><th>' . esc_html__('Paid', 'nias-course-widget') . '</th><th>' . esc_html__('Share percentage', 'nias-course-widget') . '</th></tr></thead><tbody>';
     if (!$bals) {
-        echo '<tr><td colspan="6">' . esc_html__('هنوز فروشی برای مدرسین ثبت نشده است.', 'nias-course-widget') . '</td></tr>';
+        echo '<tr><td colspan="6">' . esc_html__('No sales recorded for instructors yet.', 'nias-course-widget') . '</td></tr>';
     }
     foreach ($bals as $b) {
         $u = get_userdata((int) $b['user_id']);
         $own = get_user_meta((int) $b['user_id'], '_nias_rev_rate', true);
-        echo '<tr><td><a href="' . esc_url(get_edit_user_link((int) $b['user_id'])) . '#nias-rev">' . esc_html($u ? $u->display_name : '#' . $b['user_id']) . '</a></td><td>' . esc_html(nias_rev_money($b['gross'])) . '</td><td>' . esc_html(nias_rev_money($b['available'])) . '</td><td>' . esc_html(nias_rev_money($b['hold'])) . '</td><td>' . esc_html(nias_rev_money($b['paid'])) . '</td><td>' . esc_html(nias_fa_digits($own !== '' ? $own : nias_rev_opt('rate', 70)) . '٪' . ($own !== '' ? '' : ' (' . __('پیش‌فرض', 'nias-course-widget') . ')')) . '</td></tr>';
+        echo '<tr><td><a href="' . esc_url(get_edit_user_link((int) $b['user_id'])) . '#nias-rev">' . esc_html($u ? $u->display_name : '#' . $b['user_id']) . '</a></td><td>' . esc_html(nias_rev_money($b['gross'])) . '</td><td>' . esc_html(nias_rev_money($b['available'])) . '</td><td>' . esc_html(nias_rev_money($b['hold'])) . '</td><td>' . esc_html(nias_rev_money($b['paid'])) . '</td><td>' . esc_html(nias_fa_digits($own !== '' ? $own : nias_rev_opt('rate', 70)) . '٪' . ($own !== '' ? '' : ' (' . __('Default', 'nias-course-widget') . ')')) . '</td></tr>';
     }
     echo '</tbody></table></div>';
     nias_set_card_close();
@@ -381,8 +381,8 @@ function nias_rev_profile_field($user)
     }
     wp_nonce_field('nias_rev_rate_' . $user->ID, 'nias_rev_rate_nonce');
     $b = nias_rev_balance($user->ID);
-    echo '<h2 id="nias-rev">' . esc_html__('سهم درآمد مدرس (دوره ساز نیاس)', 'nias-course-widget') . '</h2><table class="form-table"><tr><th>' . esc_html__('درصد سهم این مدرس', 'nias-course-widget') . '</th><td><input type="number" min="0" max="100" step="0.5" name="nias_rev_rate" value="' . esc_attr(get_user_meta($user->ID, '_nias_rev_rate', true)) . '" placeholder="' . esc_attr(nias_rev_opt('rate', 70)) . '" style="width:90px"> ٪ <p class="description">' . esc_html__('خالی = درصد پیش‌فرض سایت. برای یک دورهٔ خاص می‌توانید در صفحهٔ ویرایش همان محصول درصد جدا بگذارید.', 'nias-course-widget') . '</p>'
-        . '<p>' . esc_html(sprintf(__('قابل برداشت: %1$s · در دورهٔ امن: %2$s · پرداخت‌شده: %3$s', 'nias-course-widget'), nias_rev_money($b['available']), nias_rev_money($b['hold']), nias_rev_money($b['paid']))) . '</p></td></tr></table>';
+    echo '<h2 id="nias-rev">' . esc_html__('Instructor revenue share (Nias Course Builder)', 'nias-course-widget') . '</h2><table class="form-table"><tr><th>' . esc_html__('This instructor\'s share percentage', 'nias-course-widget') . '</th><td><input type="number" min="0" max="100" step="0.5" name="nias_rev_rate" value="' . esc_attr(get_user_meta($user->ID, '_nias_rev_rate', true)) . '" placeholder="' . esc_attr(nias_rev_opt('rate', 70)) . '" style="width:90px"> ٪ <p class="description">' . esc_html__('Empty = site default percentage. For a specific course you can set a separate percentage on that product\'s edit page.', 'nias-course-widget') . '</p>'
+        . '<p>' . esc_html(sprintf(__('Withdrawable: %1$s · In holding: %2$s · Paid: %3$s', 'nias-course-widget'), nias_rev_money($b['available']), nias_rev_money($b['hold']), nias_rev_money($b['paid']))) . '</p></td></tr></table>';
 }
 add_action('edit_user_profile_update', 'nias_rev_profile_save');
 add_action('personal_options_update', 'nias_rev_profile_save');
@@ -397,9 +397,9 @@ function nias_rev_profile_save($uid)
 
 add_action('add_meta_boxes_product', function () {
     if (nias_rev_enabled()) {
-        add_meta_box('nias-rev-rate', __('سهم مدرس از فروش این دوره', 'nias-course-widget'), function ($post) {
+        add_meta_box('nias-rev-rate', __('Instructor share of this course\'s sales', 'nias-course-widget'), function ($post) {
             wp_nonce_field('nias_rev_course', 'nias_rev_course_nonce');
-            echo '<p><input type="number" min="0" max="100" step="0.5" name="nias_rev_course_rate" value="' . esc_attr(get_post_meta($post->ID, '_nias_rev_rate', true)) . '" style="width:80px"> ٪</p><p class="description">' . esc_html__('خالی = درصد خود مدرس (یا پیش‌فرض سایت).', 'nias-course-widget') . '</p>';
+            echo '<p><input type="number" min="0" max="100" step="0.5" name="nias_rev_course_rate" value="' . esc_attr(get_post_meta($post->ID, '_nias_rev_rate', true)) . '" style="width:80px"> ٪</p><p class="description">' . esc_html__('Empty = the instructor\'s own percentage (or the site default).', 'nias-course-widget') . '</p>';
         }, 'product', 'side');
     }
 });

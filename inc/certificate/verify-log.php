@@ -109,17 +109,17 @@ function nias_cert_log_device($ua)
 function nias_cert_log_result_label($r)
 {
     $map = array(
-        'valid'    => array('ok', __('معتبر', 'nias-course-widget')),
-        'pending'  => array('warn', __('در انتظار', 'nias-course-widget')),
-        'revoked'  => array('bad', __('باطل‌شده', 'nias-course-widget')),
-        'notfound' => array('bad', __('یافت نشد', 'nias-course-widget')),
+        'valid'    => array('ok', __('Valid', 'nias-course-widget')),
+        'pending'  => array('warn', __('Pending', 'nias-course-widget')),
+        'revoked'  => array('bad', __('Revoked', 'nias-course-widget')),
+        'notfound' => array('bad', __('Not found', 'nias-course-widget')),
     );
     return isset($map[$r]) ? $map[$r] : array('', $r);
 }
 
 function nias_cert_log_source_label($s)
 {
-    $map = array('web' => __('صفحهٔ استعلام', 'nias-course-widget'), 'api' => 'API', 'pdf' => __('مشاهدهٔ PDF', 'nias-course-widget'));
+    $map = array('web' => __('Verification page', 'nias-course-widget'), 'api' => 'API', 'pdf' => __('View PDF', 'nias-course-widget'));
     return isset($map[$s]) ? $map[$s] : $s;
 }
 
@@ -135,8 +135,8 @@ function nias_cert_register_log_page()
     }
     add_submenu_page(
         'nias-course-settings',
-        __('گزارش استعلام مدارک', 'nias-course-widget'),
-        __('گزارش استعلام‌ها', 'nias-course-widget'),
+        __('Certificate verification report', 'nias-course-widget'),
+        __('Verification report', 'nias-course-widget'),
         'manage_options',
         'nias-course-cert-verifications',
         'nias_cert_render_log_page'
@@ -204,24 +204,24 @@ function nias_cert_render_log_page()
         <div class="nias-set-shell">
         <div class="nias-set-main">
             <div class="nci-stats">
-                <div class="nci-stat"><span class="nci-stat-n"><?php echo esc_html($num($stats->total)); ?></span><span class="nci-stat-l"><?php echo esc_html__('استعلام در ۳۰ روز اخیر', 'nias-course-widget'); ?></span></div>
-                <div class="nci-stat nci-stat-valid"><span class="nci-stat-n"><?php echo esc_html($num($stats->ok)); ?></span><span class="nci-stat-l"><?php echo esc_html__('استعلام موفق', 'nias-course-widget'); ?></span></div>
-                <div class="nci-stat nci-stat-revoked"><span class="nci-stat-n"><?php echo esc_html($num($stats->miss)); ?></span><span class="nci-stat-l"><?php echo esc_html__('کد نامعتبر', 'nias-course-widget'); ?></span></div>
-                <div class="nci-stat"><span class="nci-stat-n"><?php echo esc_html($num($stats->visitors)); ?></span><span class="nci-stat-l"><?php echo esc_html__('بازدیدکنندهٔ یکتا', 'nias-course-widget'); ?></span></div>
+                <div class="nci-stat"><span class="nci-stat-n"><?php echo esc_html($num($stats->total)); ?></span><span class="nci-stat-l"><?php echo esc_html__('Verifications in the last 30 days', 'nias-course-widget'); ?></span></div>
+                <div class="nci-stat nci-stat-valid"><span class="nci-stat-n"><?php echo esc_html($num($stats->ok)); ?></span><span class="nci-stat-l"><?php echo esc_html__('Successful verifications', 'nias-course-widget'); ?></span></div>
+                <div class="nci-stat nci-stat-revoked"><span class="nci-stat-n"><?php echo esc_html($num($stats->miss)); ?></span><span class="nci-stat-l"><?php echo esc_html__('Invalid code', 'nias-course-widget'); ?></span></div>
+                <div class="nci-stat"><span class="nci-stat-n"><?php echo esc_html($num($stats->visitors)); ?></span><span class="nci-stat-l"><?php echo esc_html__('Unique visitors', 'nias-course-widget'); ?></span></div>
             </div>
 
             <?php if ($suspects) : ?>
                 <div class="ncl-alert">
-                    <b><?php echo esc_html__('⚠ تلاش مشکوک برای حدس زدن کد (۲۴ ساعت اخیر)', 'nias-course-widget'); ?></b>
+                    <b><?php echo esc_html__('⚠ Suspicious attempts to guess codes (last 24 hours)', 'nias-course-widget'); ?></b>
                     <?php foreach ($suspects as $s) : ?>
-                        <div><?php echo esc_html(sprintf(__('بازدیدکنندهٔ %1$s: %2$s کد نامعتبر — آخرین: %3$s — %4$s', 'nias-course-widget'), substr($s->visitor, 0, 6), $num($s->n), $when($s->last_at), nias_cert_log_device((string) $s->agent))); ?></div>
+                        <div><?php echo esc_html(sprintf(__('Visitor %1$s: %2$s invalid codes — last: %3$s — %4$s', 'nias-course-widget'), substr($s->visitor, 0, 6), $num($s->n), $when($s->last_at), nias_cert_log_device((string) $s->agent))); ?></div>
                     <?php endforeach; ?>
-                    <div class="nci-muted"><?php echo esc_html__('محدودیت درخواست جلوی ادامهٔ حدس زدن را می‌گیرد؛ اگر تکرار شد، IP را در فایروال میزبان مسدود کنید.', 'nias-course-widget'); ?></div>
+                    <div class="nci-muted"><?php echo esc_html__('The request limit stops further guessing; if it repeats, block the IP in your host\'s firewall.', 'nias-course-widget'); ?></div>
                 </div>
             <?php endif; ?>
 
             <?php if ($top && !$cert_id) : ?>
-                <?php nias_set_card_open('<svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2" stroke="#3858e9" stroke-width="1.8" stroke-linecap="round"/></svg>', __('پراستعلام‌ترین مدارک (۳۰ روز)', 'nias-course-widget')); ?>
+                <?php nias_set_card_open('<svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2" stroke="#3858e9" stroke-width="1.8" stroke-linecap="round"/></svg>', __('Most verified certificates (30 days)', 'nias-course-widget')); ?>
                     <div class="nias-card-pad">
                         <?php foreach ($top as $t) : ?>
                             <a class="ncl-top" href="<?php echo esc_url(add_query_arg('cert', (int) $t->cert_id, $base)); ?>">
@@ -233,30 +233,30 @@ function nias_cert_render_log_page()
                 <?php nias_set_card_close(); ?>
             <?php endif; ?>
 
-            <?php nias_set_card_open('<svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M12 3 4 6v6c0 5 3.4 8.4 8 9 4.6-.6 8-4 8-9V6l-8-3Z" stroke="#3858e9" stroke-width="1.8" stroke-linejoin="round"/><path d="m9 12 2 2 4-4" stroke="#3858e9" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>', $focus ? sprintf(__('استعلام‌های مدرک %s', 'nias-course-widget'), $focus['code']) : __('آخرین استعلام‌ها', 'nias-course-widget')); ?>
+            <?php nias_set_card_open('<svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M12 3 4 6v6c0 5 3.4 8.4 8 9 4.6-.6 8-4 8-9V6l-8-3Z" stroke="#3858e9" stroke-width="1.8" stroke-linejoin="round"/><path d="m9 12 2 2 4-4" stroke="#3858e9" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>', $focus ? sprintf(__('Verifications of certificate %s', 'nias-course-widget'), $focus['code']) : __('Latest verifications', 'nias-course-widget')); ?>
                 <div class="nias-card-pad">
                     <div class="nci-toolbar">
                         <div class="ncl-filters">
-                            <?php foreach (array('' => __('همه', 'nias-course-widget'), 'valid' => __('معتبر', 'nias-course-widget'), 'notfound' => __('یافت نشد', 'nias-course-widget'), 'revoked' => __('باطل‌شده', 'nias-course-widget')) as $k => $lbl) : ?>
+                            <?php foreach (array('' => __('All', 'nias-course-widget'), 'valid' => __('Valid', 'nias-course-widget'), 'notfound' => __('Not found', 'nias-course-widget'), 'revoked' => __('Revoked', 'nias-course-widget')) as $k => $lbl) : ?>
                                 <a class="nci-a <?php echo $result === $k ? 'ncl-on' : ''; ?>" href="<?php echo esc_url($k === '' ? remove_query_arg(array('result', 'paged')) : add_query_arg(array('result' => $k, 'paged' => 1))); ?>"><?php echo esc_html($lbl); ?></a>
                             <?php endforeach; ?>
                         </div>
                         <?php if ($focus) : ?>
-                            <a class="nci-a" href="<?php echo esc_url($base); ?>"><?php echo esc_html__('× نمایش همهٔ مدارک', 'nias-course-widget'); ?></a>
+                            <a class="nci-a" href="<?php echo esc_url($base); ?>"><?php echo esc_html__('× Show all certificates', 'nias-course-widget'); ?></a>
                         <?php endif; ?>
                     </div>
                     <?php if (!$rows) : ?>
-                        <div class="nci-empty"><?php echo esc_html__('هنوز استعلامی ثبت نشده است. هر بار که کسی QR مدرک را اسکن کند یا کد را در صفحهٔ استعلام وارد کند، اینجا نمایش داده می‌شود (استعلام‌های مدیران ثبت نمی‌شوند).', 'nias-course-widget'); ?></div>
+                        <div class="nci-empty"><?php echo esc_html__('No verification has been recorded yet. Each time someone scans a certificate\'s QR code or enters the code on the verification page, it shows up here (admins\' verifications are not recorded).', 'nias-course-widget'); ?></div>
                     <?php else : ?>
                         <div class="nci-table-wrap"><table class="nci-table">
                             <thead><tr>
-                                <th><?php echo esc_html__('زمان', 'nias-course-widget'); ?></th>
-                                <th><?php echo esc_html__('نتیجه', 'nias-course-widget'); ?></th>
-                                <th><?php echo esc_html__('مدرک', 'nias-course-widget'); ?></th>
-                                <th><?php echo esc_html__('روش', 'nias-course-widget'); ?></th>
-                                <th><?php echo esc_html__('دستگاه', 'nias-course-widget'); ?></th>
-                                <th><?php echo esc_html__('ارجاع از', 'nias-course-widget'); ?></th>
-                                <th><?php echo esc_html__('بازدیدکننده', 'nias-course-widget'); ?></th>
+                                <th><?php echo esc_html__('Time', 'nias-course-widget'); ?></th>
+                                <th><?php echo esc_html__('Result', 'nias-course-widget'); ?></th>
+                                <th><?php echo esc_html__('Certificate', 'nias-course-widget'); ?></th>
+                                <th><?php echo esc_html__('Method', 'nias-course-widget'); ?></th>
+                                <th><?php echo esc_html__('Device', 'nias-course-widget'); ?></th>
+                                <th><?php echo esc_html__('Referred from', 'nias-course-widget'); ?></th>
+                                <th><?php echo esc_html__('Visitor', 'nias-course-widget'); ?></th>
                             </tr></thead>
                             <tbody>
                             <?php foreach ($rows as $r) :
@@ -277,7 +277,7 @@ function nias_cert_render_log_page()
                                     <td><?php echo esc_html(nias_cert_log_device((string) $r->agent)); ?></td>
                                     <td dir="ltr" style="text-align:right"><?php echo esc_html($r->referer ? $r->referer : '—'); ?></td>
                                     <td>
-                                        <?php echo $u ? esc_html($u->display_name) : '<span class="nci-muted">' . esc_html__('مهمان', 'nias-course-widget') . '</span>'; ?>
+                                        <?php echo $u ? esc_html($u->display_name) : '<span class="nci-muted">' . esc_html__('Guest', 'nias-course-widget') . '</span>'; ?>
                                         <div class="nci-muted" dir="ltr" style="text-align:right">#<?php echo esc_html(substr($r->visitor, 0, 6)); ?></div>
                                     </td>
                                 </tr>
@@ -292,7 +292,7 @@ function nias_cert_render_log_page()
                             </div>
                         <?php endif; ?>
                     <?php endif; ?>
-                    <div class="nci-muted" style="margin-top:12px"><?php echo esc_html__('برای حفظ حریم خصوصی، IP بازدیدکنندگان ذخیره نمی‌شود و فقط یک شناسهٔ ناشناس (#) برای شمارش بازدیدکنندهٔ یکتا نگه داشته می‌شود. سوابق قدیمی‌تر از یک سال خودکار پاک می‌شوند.', 'nias-course-widget'); ?></div>
+                    <div class="nci-muted" style="margin-top:12px"><?php echo esc_html__('For privacy, visitors\' IP addresses are not stored; only an anonymous ID (#) is kept to count unique visitors. Records older than one year are deleted automatically.', 'nias-course-widget'); ?></div>
                 </div>
             <?php nias_set_card_close(); ?>
         </div>

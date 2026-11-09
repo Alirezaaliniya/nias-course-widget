@@ -81,7 +81,7 @@ function nias_course_is_free($post_id)
 /** Label of a course post type for messages ("محصول" / "دوره"). */
 function nias_course_type_label($post_id = 0)
 {
-    return ($post_id && get_post_type($post_id) === NIAS_COURSE_CPT) || !nias_wc_active() ? __('دوره', 'nias-course-widget') : __('محصول', 'nias-course-widget');
+    return ($post_id && get_post_type($post_id) === NIAS_COURSE_CPT) || !nias_wc_active() ? __('Course', 'nias-course-widget') : __('Product', 'nias-course-widget');
 }
 
 /**
@@ -120,19 +120,19 @@ function nias_course_register_cpt()
     }
     register_post_type(NIAS_COURSE_CPT, array(
         'labels' => array(
-            'name'               => __('دوره‌ها', 'nias-course-widget'),
-            'singular_name'      => __('دوره', 'nias-course-widget'),
-            'menu_name'          => __('دوره‌ها', 'nias-course-widget'),
-            'add_new'            => __('افزودن دوره', 'nias-course-widget'),
-            'add_new_item'       => __('افزودن دورهٔ جدید', 'nias-course-widget'),
-            'edit_item'          => __('ویرایش دوره', 'nias-course-widget'),
-            'new_item'           => __('دورهٔ جدید', 'nias-course-widget'),
-            'view_item'          => __('مشاهدهٔ دوره', 'nias-course-widget'),
-            'search_items'       => __('جستجوی دوره', 'nias-course-widget'),
-            'not_found'          => __('دوره‌ای پیدا نشد.', 'nias-course-widget'),
-            'not_found_in_trash' => __('دوره‌ای در زباله‌دان نیست.', 'nias-course-widget'),
-            'all_items'          => __('همهٔ دوره‌ها', 'nias-course-widget'),
-            'archives'           => __('بایگانی دوره‌ها', 'nias-course-widget'),
+            'name'               => __('Courses', 'nias-course-widget'),
+            'singular_name'      => __('Course', 'nias-course-widget'),
+            'menu_name'          => __('Courses', 'nias-course-widget'),
+            'add_new'            => __('Add course', 'nias-course-widget'),
+            'add_new_item'       => __('Add new course', 'nias-course-widget'),
+            'edit_item'          => __('Edit course', 'nias-course-widget'),
+            'new_item'           => __('New course', 'nias-course-widget'),
+            'view_item'          => __('View course', 'nias-course-widget'),
+            'search_items'       => __('Search courses', 'nias-course-widget'),
+            'not_found'          => __('No course found.', 'nias-course-widget'),
+            'not_found_in_trash' => __('No course in the trash.', 'nias-course-widget'),
+            'all_items'          => __('All courses', 'nias-course-widget'),
+            'archives'           => __('Course archives', 'nias-course-widget'),
         ),
         'public'       => true,
         'has_archive'  => true,
@@ -145,9 +145,9 @@ function nias_course_register_cpt()
     ));
     register_taxonomy(NIAS_COURSE_TAX, NIAS_COURSE_CPT, array(
         'labels' => array(
-            'name'          => __('دسته‌های دوره', 'nias-course-widget'),
-            'singular_name' => __('دستهٔ دوره', 'nias-course-widget'),
-            'add_new_item'  => __('افزودن دسته', 'nias-course-widget'),
+            'name'          => __('Course categories', 'nias-course-widget'),
+            'singular_name' => __('Course category', 'nias-course-widget'),
+            'add_new_item'  => __('Add category', 'nias-course-widget'),
         ),
         'public'            => true,
         'hierarchical'      => true,
@@ -218,7 +218,7 @@ add_filter('manage_' . NIAS_COURSE_CPT . '_posts_columns', function ($cols) {
     foreach ($cols as $k => $v) {
         $out[$k] = $v;
         if ($k === 'title') {
-            $out['nias_lessons'] = __('جلسات', 'nias-course-widget');
+            $out['nias_lessons'] = __('Lessons', 'nias-course-widget');
         }
     }
     return $out;
@@ -232,7 +232,7 @@ add_action('manage_' . NIAS_COURSE_CPT . '_posts_custom_column', function ($col,
         $n += isset($s['lessons']) ? count((array) $s['lessons']) : 0;
     }
     $url = admin_url('admin.php?page=nias-course-curriculum&product=' . (int) $post_id);
-    echo '<a href="' . esc_url($url) . '">' . esc_html($n ? sprintf(__('%s جلسه', 'nias-course-widget'), number_format_i18n($n)) : __('افزودن جلسات', 'nias-course-widget')) . '</a>';
+    echo '<a href="' . esc_url($url) . '">' . esc_html($n ? sprintf(__('%s lessons', 'nias-course-widget'), number_format_i18n($n)) : __('Add lessons', 'nias-course-widget')) . '</a>';
 }, 10, 2);
 
 /** Admin notice explaining free mode (once WooCommerce is missing). */
@@ -245,7 +245,7 @@ add_action('admin_notices', function () {
         return;
     }
     echo '<div class="notice notice-info"><p>' . wp_kses_post(sprintf(
-        __('دوره ساز نیاس در <b>حالت رایگان (بدون ووکامرس)</b> کار می‌کند: دوره‌ها را از منوی <a href="%s">«دوره‌ها»</a> بسازید. جلسات عمومی برای همه و جلسات «خصوصی» برای کاربران واردشده نمایش داده می‌شوند. برای فروش دوره، ووکامرس را نصب کنید.', 'nias-course-widget'),
+        __('Nias Course Builder is running in <b>free mode (without WooCommerce)</b>: build courses from the <a href="%s">"Courses"</a> menu. Public lessons are shown to everyone and "private" lessons to logged-in users. To sell courses, install WooCommerce.', 'nias-course-widget'),
         esc_url(admin_url('edit.php?post_type=' . NIAS_COURSE_CPT))
     )) . '</p></div>';
 });

@@ -271,7 +271,7 @@ add_action('init', function () {
     $ok  = hash_equals(substr(hash_hmac('sha256', 'nias-unsub|' . $uid, wp_salt('auth')), 0, 20), sanitize_text_field(wp_unslash($_GET['s'])));
     if ($ok && get_userdata($uid)) {
         update_user_meta($uid, '_nias_inactive_optout', '1');
-        wp_die('<h1>' . esc_html__('یادآوری‌ها خاموش شد', 'nias-course-widget') . '</h1><p>' . esc_html__('از این پس پیام «ادامهٔ دوره» برای شما ارسال نمی‌شود.', 'nias-course-widget') . '</p><p><a class="button" href="' . esc_url(home_url('/')) . '">' . esc_html__('صفحهٔ اصلی سایت', 'nias-course-widget') . '</a></p>', esc_html__('یادآوری‌ها خاموش شد', 'nias-course-widget'), array('response' => 200, 'text_direction' => 'rtl'));
+        wp_die('<h1>' . esc_html__('Reminders turned off', 'nias-course-widget') . '</h1><p>' . esc_html__('From now on, "Continue the course" messages will not be sent to you.', 'nias-course-widget') . '</p><p><a class="button" href="' . esc_url(home_url('/')) . '">' . esc_html__('Site home page', 'nias-course-widget') . '</a></p>', esc_html__('Reminders turned off', 'nias-course-widget'), array('response' => 200, 'text_direction' => 'rtl'));
     }
 }, 3);
 
@@ -285,14 +285,14 @@ add_action('nias_inactive_reminder', function ($uid, $pid, $days, $lesson, $link
     }
     $course = get_the_title($pid);
     $fa     = function ($n) { return function_exists('nias_fa_digits') ? nias_fa_digits($n) : $n; };
-    $subj   = sprintf(__('دورهٔ «%s» منتظر شماست', 'nias-course-widget'), $course);
+    $subj   = sprintf(__('The course "%s" is waiting for you', 'nias-course-widget'), $course);
     $line   = $lesson
-        ? sprintf(__('%1$s روز است به دورهٔ «%2$s» سر نزده‌اید. از جلسهٔ «%3$s» ادامه دهید؛ چند دقیقه در روز هم کافی است.', 'nias-course-widget'), $fa($days), $course, $lesson['title'])
-        : sprintf(__('%1$s روز است به دورهٔ «%2$s» سر نزده‌اید. همین امروز ادامه دهید؛ چند دقیقه در روز هم کافی است.', 'nias-course-widget'), $fa($days), $course);
+        ? sprintf(__('You have not visited the course "%2$s" for %1$s days. Continue from the lesson "%3$s"; a few minutes a day is enough.', 'nias-course-widget'), $fa($days), $course, $lesson['title'])
+        : sprintf(__('You have not visited the course "%2$s" for %1$s days. Continue today; a few minutes a day is enough.', 'nias-course-widget'), $fa($days), $course);
     $body = '<div dir="rtl" style="font-family:Tahoma,Arial,sans-serif;font-size:14px;line-height:2;color:#1f2a30">'
-        . '<p>' . esc_html(sprintf(__('%s عزیز،', 'nias-course-widget'), $u->display_name)) . '</p><p>' . esc_html($line) . '</p>'
-        . '<p><a href="' . esc_url($link) . '" style="display:inline-block;background:#1e83f0;color:#fff;text-decoration:none;padding:8px 18px;border-radius:9px">' . esc_html__('ادامهٔ دوره', 'nias-course-widget') . '</a></p>'
-        . '<p style="font-size:12px;color:#94a3b8">' . esc_html__('اگر نمی‌خواهید این یادآوری‌ها را بگیرید:', 'nias-course-widget') . ' <a href="' . esc_url(nias_inactive_unsub_url($uid)) . '" style="color:#94a3b8">' . esc_html__('لغو یادآوری‌ها', 'nias-course-widget') . '</a></p></div>';
+        . '<p>' . esc_html(sprintf(__('Dear %s,', 'nias-course-widget'), $u->display_name)) . '</p><p>' . esc_html($line) . '</p>'
+        . '<p><a href="' . esc_url($link) . '" style="display:inline-block;background:#1e83f0;color:#fff;text-decoration:none;padding:8px 18px;border-radius:9px">' . esc_html__('Continue the course', 'nias-course-widget') . '</a></p>'
+        . '<p style="font-size:12px;color:#94a3b8">' . esc_html__('If you do not want to receive these reminders:', 'nias-course-widget') . ' <a href="' . esc_url(nias_inactive_unsub_url($uid)) . '" style="color:#94a3b8">' . esc_html__('Unsubscribe from reminders', 'nias-course-widget') . '</a></p></div>';
     wp_mail($u->user_email, $subj, $body, array('Content-Type: text/html; charset=UTF-8'));
 }, 10, 5);
 

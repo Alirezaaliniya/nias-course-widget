@@ -290,12 +290,12 @@ function nias_quiz_user_can_take($quiz_id, $user_id)
 function nias_quiz_ajax_submit()
 {
     if (!check_ajax_referer('nias_quiz_take', 'nonce', false)) {
-        wp_send_json_error(array('message' => __('درخواست نامعتبر است.', 'nias-course-widget')));
+        wp_send_json_error(array('message' => __('Invalid request.', 'nias-course-widget')));
     }
     $quiz_id = isset($_POST['quiz_id']) ? (int) $_POST['quiz_id'] : 0;
     $quiz = function_exists('nias_quiz_get') ? nias_quiz_get($quiz_id) : null;
     if (!$quiz) {
-        wp_send_json_error(array('message' => __('آزمون یافت نشد.', 'nias-course-widget')));
+        wp_send_json_error(array('message' => __('Quiz not found.', 'nias-course-widget')));
     }
 
     $uid = get_current_user_id();
@@ -303,7 +303,7 @@ function nias_quiz_ajax_submit()
     // The grading reveals the right answers: only people who may open the
     // quiz (its course bought, a free course, or a preview lesson) send it.
     if (!nias_quiz_user_can_take($quiz_id, $uid)) {
-        wp_send_json_error(array('message' => __('برای شرکت در این آزمون باید در دوره ثبت نام کنید', 'nias-course-widget'), 'code' => 'no_access'), 403);
+        wp_send_json_error(array('message' => __('You must enrol in the course to take this quiz', 'nias-course-widget'), 'code' => 'no_access'), 403);
     }
 
     $answers = isset($_POST['answers']) ? json_decode(wp_unslash($_POST['answers']), true) : array();
@@ -319,7 +319,7 @@ function nias_quiz_ajax_submit()
     if ($uid) {
         $left = nias_quiz_attempts_left($quiz, nias_quiz_user_record($uid, $quiz_id));
         if ($left === 0) {
-            wp_send_json_error(array('message' => __('تعداد دفعات مجاز شرکت در این آزمون تمام شده است.', 'nias-course-widget'), 'code' => 'no_attempts'));
+            wp_send_json_error(array('message' => __('You have used all allowed attempts for this quiz.', 'nias-course-widget'), 'code' => 'no_attempts'));
         }
     }
 
@@ -336,7 +336,7 @@ function nias_quiz_ajax_submit()
             $ids = nias_quiz_draw_from_token($quiz, isset($_POST['draw']) ? sanitize_text_field(wp_unslash($_POST['draw'])) : '');
         }
         if ($ids === null) {
-            wp_send_json_error(array('message' => __('سوال‌های این آزمون تغییر کرده است؛ صفحه را دوباره باز کنید و از نو شرکت کنید.', 'nias-course-widget'), 'code' => 'draw'));
+            wp_send_json_error(array('message' => __('This quiz\'s questions have changed; reopen the page and start again.', 'nias-course-widget'), 'code' => 'draw'));
         }
         $quiz = nias_quiz_apply_draw($quiz, $ids);
     }
@@ -409,7 +409,7 @@ function nias_quiz_student_config($quiz)
 function nias_quiz_render_student($quiz)
 {
     if (empty($quiz['questions'])) {
-        return '<div class="nqs" dir="rtl"><div class="nqs-note">' . esc_html__('این آزمون هنوز سوالی ندارد.', 'nias-course-widget') . '</div></div>';
+        return '<div class="nqs" dir="rtl"><div class="nqs-note">' . esc_html__('This quiz has no questions yet.', 'nias-course-widget') . '</div></div>';
     }
 
     static $seq = 0;
@@ -465,7 +465,7 @@ function nias_quiz_render_for_course($product_id)
     }
     return '<div class="nqs-course-wrap" dir="rtl"><div class="nqs-course-head">'
         . '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#3858e9" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3 8-8"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>'
-        . '<span>' . esc_html__('آزمون پایانی دوره', 'nias-course-widget') . '</span></div>' . $out . '</div>';
+        . '<span>' . esc_html__('Course final quiz', 'nias-course-widget') . '</span></div>' . $out . '</div>';
 }
 
 /** Manual placement inside a split modern-course layout. */

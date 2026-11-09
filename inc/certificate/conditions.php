@@ -134,12 +134,12 @@ function nias_cert_evaluate($user_id, $product_id, $ctx)
     $checks[] = array(
         'key'   => 'order',
         'label' => (function_exists('nias_course_is_free') && nias_course_is_free($product_id))
-            ? __('شروع دوره (رایگان)', 'nias-course-widget')
+            ? __('Start the course (free)', 'nias-course-widget')
             : ($rules['order_status'] === 'completed'
-                ? __('تکمیل سفارش خرید دوره', 'nias-course-widget')
-                : __('خرید دوره', 'nias-course-widget')),
+                ? __('Complete the course purchase order', 'nias-course-widget')
+                : __('Buy the course', 'nias-course-widget')),
         'ok'    => $status_ok,
-        'hint'  => $status_ok ? '' : __('سفارش شما هنوز تکمیل نشده است.', 'nias-course-widget'),
+        'hint'  => $status_ok ? '' : __('Your order is not completed yet.', 'nias-course-widget'),
     );
 
     // Linked quiz.
@@ -147,9 +147,9 @@ function nias_cert_evaluate($user_id, $product_id, $ctx)
         $passed   = nias_quiz_course_gate_passed($user_id, $product_id);
         $checks[] = array(
             'key'   => 'quiz',
-            'label' => __('قبولی در آزمون دوره', 'nias-course-widget'),
+            'label' => __('Pass the course quiz', 'nias-course-widget'),
             'ok'    => $passed,
-            'hint'  => $passed ? '' : __('ابتدا در آزمون پایانی دوره قبول شوید.', 'nias-course-widget'),
+            'hint'  => $passed ? '' : __('First pass the course\'s final quiz.', 'nias-course-widget'),
         );
     }
 
@@ -160,10 +160,10 @@ function nias_cert_evaluate($user_id, $product_id, $ctx)
         $checks[] = array(
             'key'   => 'progress',
             /* translators: %d: required percent */
-            'label' => sprintf(__('مشاهدهٔ حداقل %d٪ از دوره', 'nias-course-widget'), $rules['min_progress']),
+            'label' => sprintf(__('Watch at least %d%% of the course', 'nias-course-widget'), $rules['min_progress']),
             'ok'    => $ok,
             /* translators: %d: current percent */
-            'hint'  => $ok ? '' : sprintf(__('پیشرفت فعلی شما %d٪ است.', 'nias-course-widget'), $pct),
+            'hint'  => $ok ? '' : sprintf(__('Your current progress is %d%%.', 'nias-course-widget'), $pct),
         );
     }
 
@@ -176,10 +176,10 @@ function nias_cert_evaluate($user_id, $product_id, $ctx)
         $checks[] = array(
             'key'   => 'wait',
             /* translators: %d: days */
-            'label' => sprintf(__('گذشت %d روز از خرید دوره', 'nias-course-widget'), $rules['wait_days']),
+            'label' => sprintf(__('%d days since buying the course', 'nias-course-widget'), $rules['wait_days']),
             'ok'    => $ok,
             /* translators: %d: days left */
-            'hint'  => $ok ? '' : sprintf(__('%d روز دیگر باقی مانده است.', 'nias-course-widget'), $left),
+            'hint'  => $ok ? '' : sprintf(__('%d days remaining.', 'nias-course-widget'), $left),
         );
     }
 
@@ -188,9 +188,9 @@ function nias_cert_evaluate($user_id, $product_id, $ctx)
         $ok       = nias_cert_user_has_real_name($user_id);
         $checks[] = array(
             'key'   => 'name',
-            'label' => __('ثبت نام و نام خانوادگی در حساب کاربری', 'nias-course-widget'),
+            'label' => __('First and last name in the user account', 'nias-course-widget'),
             'ok'    => $ok,
-            'hint'  => $ok ? '' : __('نام شما روی مدرک چاپ می‌شود؛ آن را کامل کنید.', 'nias-course-widget'),
+            'hint'  => $ok ? '' : __('Your name is printed on the certificate; complete it.', 'nias-course-widget'),
         );
     }
 
@@ -238,12 +238,12 @@ function nias_cert_name_form_html($user_id)
     ob_start();
     ?>
     <form method="post" class="nias-cert-nameform">
-        <div class="nias-cert-nameform-t"><?php echo esc_html__('نام خود را برای درج روی مدرک وارد کنید', 'nias-course-widget'); ?></div>
+        <div class="nias-cert-nameform-t"><?php echo esc_html__('Enter your name to be printed on the certificate', 'nias-course-widget'); ?></div>
         <div class="nias-cert-nameform-row">
-            <input type="text" name="nias_cert_first_name" value="<?php echo esc_attr($first); ?>" placeholder="<?php echo esc_attr__('نام', 'nias-course-widget'); ?>" required>
-            <input type="text" name="nias_cert_last_name" value="<?php echo esc_attr($last); ?>" placeholder="<?php echo esc_attr__('نام خانوادگی', 'nias-course-widget'); ?>" required>
+            <input type="text" name="nias_cert_first_name" value="<?php echo esc_attr($first); ?>" placeholder="<?php echo esc_attr__('First name', 'nias-course-widget'); ?>" required>
+            <input type="text" name="nias_cert_last_name" value="<?php echo esc_attr($last); ?>" placeholder="<?php echo esc_attr__('Last name', 'nias-course-widget'); ?>" required>
             <?php wp_nonce_field('nias_cert_name', 'nias_cert_name_nonce'); ?>
-            <button type="submit" name="nias_cert_name_submit" value="1" class="button"><?php echo esc_html__('ذخیره نام', 'nias-course-widget'); ?></button>
+            <button type="submit" name="nias_cert_name_submit" value="1" class="button"><?php echo esc_html__('Save name', 'nias-course-widget'); ?></button>
         </div>
     </form>
     <?php
@@ -260,7 +260,7 @@ function nias_cert_add_product_metabox($post_type = '')
     if (!nias_cert_feature_on() || !nias_is_course_type($post_type)) {
         return;
     }
-    add_meta_box('nias_cert_product', __('مدرک دوره (نیاس)', 'nias-course-widget'), 'nias_cert_render_product_metabox', $post_type, 'side', 'default');
+    add_meta_box('nias_cert_product', __('Course certificate (Nias)', 'nias-course-widget'), 'nias_cert_render_product_metabox', $post_type, 'side', 'default');
 }
 
 function nias_cert_render_product_metabox($post)
@@ -274,30 +274,30 @@ function nias_cert_render_product_metabox($post)
     $templates = function_exists('nias_cert_templates_list') ? nias_cert_templates_list() : array();
     ?>
     <div class="nias-cert-mb" style="display:flex;flex-direction:column;gap:10px">
-        <label><strong><?php echo esc_html__('قالب مدرک', 'nias-course-widget'); ?></strong><br>
+        <label><strong><?php echo esc_html__('Certificate template', 'nias-course-widget'); ?></strong><br>
             <select name="nias_cert_template" style="width:100%">
-                <option value="0"><?php echo esc_html__('پیش‌فرض (از تنظیمات مدرک)', 'nias-course-widget'); ?></option>
+                <option value="0"><?php echo esc_html__('Default (from certificate settings)', 'nias-course-widget'); ?></option>
                 <?php foreach ($templates as $id => $title) : ?>
                     <option value="<?php echo (int) $id; ?>" <?php selected($tpl, $id); ?>><?php echo esc_html($title); ?></option>
                 <?php endforeach; ?>
             </select>
-            <span class="description"><?php echo esc_html__('فقط در حالت «طراح پیشرفته» استفاده می‌شود.', 'nias-course-widget'); ?></span>
+            <span class="description"><?php echo esc_html__('Used only in "Advanced designer" mode.', 'nias-course-widget'); ?></span>
         </label>
-        <label><input type="checkbox" name="nias_cert_cond_override" value="on" <?php checked($override); ?> onchange="document.getElementById('nias-cert-mb-rules').style.display=this.checked?'flex':'none'"> <?php echo esc_html__('شرایط اختصاصی برای این دوره', 'nias-course-widget'); ?></label>
+        <label><input type="checkbox" name="nias_cert_cond_override" value="on" <?php checked($override); ?> onchange="document.getElementById('nias-cert-mb-rules').style.display=this.checked?'flex':'none'"> <?php echo esc_html__('Custom requirements for this course', 'nias-course-widget'); ?></label>
         <div id="nias-cert-mb-rules" style="display:<?php echo $override ? 'flex' : 'none'; ?>;flex-direction:column;gap:8px;padding:8px;background:#f6f7f7;border-radius:6px">
-            <label><?php echo esc_html__('وضعیت سفارش', 'nias-course-widget'); ?><br>
+            <label><?php echo esc_html__('Order status', 'nias-course-widget'); ?><br>
                 <select name="nias_cert_cond[order_status]" style="width:100%">
-                    <option value="completed_processing" <?php selected($rules['order_status'], 'completed_processing'); ?>><?php echo esc_html__('تکمیل‌شده یا در حال انجام', 'nias-course-widget'); ?></option>
-                    <option value="completed" <?php selected($rules['order_status'], 'completed'); ?>><?php echo esc_html__('فقط تکمیل‌شده', 'nias-course-widget'); ?></option>
+                    <option value="completed_processing" <?php selected($rules['order_status'], 'completed_processing'); ?>><?php echo esc_html__('Completed or processing', 'nias-course-widget'); ?></option>
+                    <option value="completed" <?php selected($rules['order_status'], 'completed'); ?>><?php echo esc_html__('Completed only', 'nias-course-widget'); ?></option>
                 </select>
             </label>
-            <label><input type="checkbox" name="nias_cert_cond[quiz]" value="on" <?php checked($rules['quiz'], 'on'); ?>> <?php echo esc_html__('الزام قبولی در آزمون متصل', 'nias-course-widget'); ?></label>
-            <label><?php echo esc_html__('حداقل درصد پیشرفت (۰ = غیرفعال)', 'nias-course-widget'); ?><br>
+            <label><input type="checkbox" name="nias_cert_cond[quiz]" value="on" <?php checked($rules['quiz'], 'on'); ?>> <?php echo esc_html__('Require passing the linked quiz', 'nias-course-widget'); ?></label>
+            <label><?php echo esc_html__('Minimum progress percentage (0 = disabled)', 'nias-course-widget'); ?><br>
                 <input type="number" min="0" max="100" name="nias_cert_cond[min_progress]" value="<?php echo (int) $rules['min_progress']; ?>" style="width:100%"></label>
-            <label><?php echo esc_html__('حداقل روز پس از خرید (۰ = غیرفعال)', 'nias-course-widget'); ?><br>
+            <label><?php echo esc_html__('Minimum days after purchase (0 = disabled)', 'nias-course-widget'); ?><br>
                 <input type="number" min="0" name="nias_cert_cond[wait_days]" value="<?php echo (int) $rules['wait_days']; ?>" style="width:100%"></label>
-            <label><input type="checkbox" name="nias_cert_cond[require_name]" value="on" <?php checked($rules['require_name'], 'on'); ?>> <?php echo esc_html__('الزام ثبت نام و نام خانوادگی', 'nias-course-widget'); ?></label>
-            <label><input type="checkbox" name="nias_cert_cond[approval]" value="on" <?php checked($rules['approval'], 'on'); ?>> <?php echo esc_html__('نیاز به تأیید دستی مدیر', 'nias-course-widget'); ?></label>
+            <label><input type="checkbox" name="nias_cert_cond[require_name]" value="on" <?php checked($rules['require_name'], 'on'); ?>> <?php echo esc_html__('Require first and last name', 'nias-course-widget'); ?></label>
+            <label><input type="checkbox" name="nias_cert_cond[approval]" value="on" <?php checked($rules['approval'], 'on'); ?>> <?php echo esc_html__('Require manual admin approval', 'nias-course-widget'); ?></label>
         </div>
     </div>
     <?php

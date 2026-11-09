@@ -162,7 +162,7 @@ function nias_cert_sign_openssl_config()
 function nias_cert_sign_generate_self_signed()
 {
     if (!nias_cert_sign_supported()) {
-        return new WP_Error('nias_sign', __('افزونهٔ OpenSSL روی سرور فعال نیست.', 'nias-course-widget'));
+        return new WP_Error('nias_sign', __('The OpenSSL extension is not enabled on the server.', 'nias-course-widget'));
     }
     $cfg = array(
         'config'           => nias_cert_sign_openssl_config(),
@@ -183,12 +183,12 @@ function nias_cert_sign_generate_self_signed()
     }
     $key = openssl_pkey_new($cfg);
     if (!$key) {
-        return new WP_Error('nias_sign', __('ساخت کلید ناموفق بود: ', 'nias-course-widget') . openssl_error_string());
+        return new WP_Error('nias_sign', __('Creating the key failed: ', 'nias-course-widget') . openssl_error_string());
     }
     $csr = openssl_csr_new($dn, $key, $cfg);
     $x   = $csr ? openssl_csr_sign($csr, null, $key, 3650, $cfg, random_int(1, PHP_INT_MAX)) : false;
     if (!$x || !openssl_x509_export($x, $cert_pem) || !openssl_pkey_export($key, $key_pem, null, $cfg)) {
-        return new WP_Error('nias_sign', __('ساخت گواهی ناموفق بود: ', 'nias-course-widget') . openssl_error_string());
+        return new WP_Error('nias_sign', __('Creating the certificate failed: ', 'nias-course-widget') . openssl_error_string());
     }
     nias_cert_sign_store($cert_pem, $key_pem, array(), 'self');
     return true;
@@ -204,21 +204,21 @@ function nias_cert_sign_import_p12($data, $password)
     $certs = array();
     if (!openssl_pkcs12_read($data, $certs, (string) $password)) {
         $err = openssl_error_string();
-        $msg = __('فایل یا رمز آن نادرست است.', 'nias-course-widget');
+        $msg = __('The file or its password is incorrect.', 'nias-course-widget');
         if ($err && stripos($err, 'unsupported') !== false) {
-            $msg .= ' ' . __('این فایل با الگوریتم قدیمی رمز شده؛ آن را با OpenSSL 3 دوباره خروجی بگیرید (openssl pkcs12 -export …).', 'nias-course-widget');
+            $msg .= ' ' . __('This file is encrypted with an old algorithm; export it again with OpenSSL 3 (openssl pkcs12 -export …).', 'nias-course-widget');
         }
         return new WP_Error('nias_sign', $msg);
     }
     if (empty($certs['cert']) || empty($certs['pkey'])) {
-        return new WP_Error('nias_sign', __('فایل شامل گواهی و کلید خصوصی نیست.', 'nias-course-widget'));
+        return new WP_Error('nias_sign', __('The file does not contain a certificate and private key.', 'nias-course-widget'));
     }
     if (!openssl_x509_check_private_key($certs['cert'], $certs['pkey'])) {
-        return new WP_Error('nias_sign', __('کلید خصوصی با گواهی هم‌خوانی ندارد.', 'nias-course-widget'));
+        return new WP_Error('nias_sign', __('The private key does not match the certificate.', 'nias-course-widget'));
     }
     $info = nias_cert_sign_cert_info($certs['cert']);
     if ($info && $info['expired']) {
-        return new WP_Error('nias_sign', __('تاریخ اعتبار این گواهی گذشته است.', 'nias-course-widget'));
+        return new WP_Error('nias_sign', __('This certificate has expired.', 'nias-course-widget'));
     }
     nias_cert_sign_store($certs['cert'], $certs['pkey'], isset($certs['extracerts']) ? $certs['extracerts'] : array(), 'upload');
     return true;
@@ -386,7 +386,7 @@ function nias_cert_sign_pdf_raw($pdf, $id, $data)
     $info    = nias_cert_sign_cert_info($id['cert']);
     $hexlen  = NIAS_CERT_SIG_BYTES * 2;
     $br_ph   = '/ByteRange [0 0000000000 0000000000 0000000000]';
-    $reason  = !empty($data['code']) ? sprintf(__('صدور مدرک %s', 'nias-course-widget'), $data['code']) : __('صدور مدرک', 'nias-course-widget');
+    $reason  = !empty($data['code']) ? sprintf(__('Certificate issuing %s', 'nias-course-widget'), $data['code']) : __('Certificate issuing', 'nias-course-widget');
     $sig_obj = '<< /Type /Sig /Filter /Adobe.PPKLite /SubFilter /adbe.pkcs7.detached ' . $br_ph
         . ' /Contents <' . str_repeat('0', $hexlen) . '>'
         . ' /M (D:' . gmdate('YmdHis') . "+00'00')"
@@ -501,7 +501,7 @@ add_action('admin_post_nias_cert_sign', 'nias_cert_handle_sign_action');
 function nias_cert_handle_sign_action()
 {
     if (!current_user_can('manage_options')) {
-        wp_die(esc_html__('دسترسی لازم را ندارید.', 'nias-course-widget'));
+        wp_die(esc_html__('You do not have the required permission.', 'nias-course-widget'));
     }
     check_admin_referer('nias_cert_sign');
     $do   = isset($_REQUEST['do']) ? sanitize_key(wp_unslash($_REQUEST['do'])) : '';
@@ -517,7 +517,7 @@ function nias_cert_handle_sign_action()
             break;
         case 'upload':
             if (empty($_FILES['p12']['tmp_name']) || !is_uploaded_file($_FILES['p12']['tmp_name'])) {
-                $res = new WP_Error('nias_sign', __('فایلی انتخاب نشده است.', 'nias-course-widget'));
+                $res = new WP_Error('nias_sign', __('No file selected.', 'nias-course-widget'));
                 break;
             }
             $res = nias_cert_sign_import_p12(file_get_contents($_FILES['p12']['tmp_name']), isset($_POST['p12_pass']) ? wp_unslash($_POST['p12_pass']) : ''); // phpcs:ignore -- password, not text
@@ -563,41 +563,41 @@ function nias_cert_sign_settings_card()
     $date   = function ($ts) {
         return nias_fa_digits(nias_cert_jalali(gmdate('Y-m-d', $ts), 'long'));
     };
-    nias_set_card_open('<svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M12 3 4 6v6c0 5 3.4 8.4 8 9 4.6-.6 8-4 8-9V6l-8-3Z" stroke="#3858e9" stroke-width="1.8" stroke-linejoin="round"/><rect x="9" y="10" width="6" height="5" rx="1" stroke="#3858e9" stroke-width="1.6"/><path d="M10 10V8.5a2 2 0 0 1 4 0V10" stroke="#3858e9" stroke-width="1.6"/></svg>', __('امضای دیجیتال PDF', 'nias-course-widget'));
+    nias_set_card_open('<svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M12 3 4 6v6c0 5 3.4 8.4 8 9 4.6-.6 8-4 8-9V6l-8-3Z" stroke="#3858e9" stroke-width="1.8" stroke-linejoin="round"/><rect x="9" y="10" width="6" height="5" rx="1" stroke="#3858e9" stroke-width="1.6"/><path d="M10 10V8.5a2 2 0 0 1 4 0V10" stroke="#3858e9" stroke-width="1.6"/></svg>', __('PDF digital signature', 'nias-course-widget'));
     ?>
     <div class="nias-row-block" id="nias-cert-sign">
         <?php if (isset($_GET['nias_sign_err'])) : ?>
             <div class="nias-sign-msg bad"><?php echo esc_html(sanitize_text_field(wp_unslash($_GET['nias_sign_err']))); ?></div>
         <?php elseif (isset($_GET['nias_sign_ok'])) : ?>
-            <div class="nias-sign-msg ok"><?php echo esc_html__('انجام شد.', 'nias-course-widget'); ?></div>
+            <div class="nias-sign-msg ok"><?php echo esc_html__('Done.', 'nias-course-widget'); ?></div>
         <?php endif; ?>
-        <div class="nias-row-desc"><?php echo esc_html__('هر PDF مدرک با یک گواهی X.509 امضا (Certify) می‌شود. Acrobat و Foxit نام صادرکننده را نشان می‌دهند و با کوچک‌ترین تغییر در فایل، امضا نامعتبر اعلام می‌شود؛ یعنی جعل یا ویرایش مدرک قابل تشخیص است. با فعال بودن امضا، قفل رمزی PDF استفاده نمی‌شود چون امضا خودش از فایل محافظت می‌کند.', 'nias-course-widget'); ?></div>
+        <div class="nias-row-desc"><?php echo esc_html__('Every certificate PDF is signed (certified) with an X.509 certificate. Acrobat and Foxit show the issuer\'s name and declare the signature invalid at the smallest change to the file; so forging or editing a certificate can be detected. With signing active, the PDF password lock is not used because the signature itself protects the file.', 'nias-course-widget'); ?></div>
 
         <?php if (!nias_cert_sign_supported()) : ?>
-            <div class="nias-sign-msg bad"><?php echo esc_html__('افزونهٔ OpenSSL در PHP این سرور فعال نیست؛ از میزبان بخواهید آن را فعال کند.', 'nias-course-widget'); ?></div>
+            <div class="nias-sign-msg bad"><?php echo esc_html__('The OpenSSL extension is not enabled in this server\'s PHP; ask your host to enable it.', 'nias-course-widget'); ?></div>
         <?php elseif ($info) : ?>
             <div class="nias-sign-box">
-                <div><span><?php echo esc_html__('وضعیت', 'nias-course-widget'); ?></span><b class="<?php echo $active ? 'ok' : 'off'; ?>"><?php echo $active ? esc_html__('فعال — مدارک جدید امضا می‌شوند', 'nias-course-widget') : esc_html__('غیرفعال', 'nias-course-widget'); ?></b></div>
-                <div><span><?php echo esc_html__('امضاکننده', 'nias-course-widget'); ?></span><b><?php echo esc_html($info['subject']); ?></b></div>
-                <div><span><?php echo esc_html__('صادرکنندهٔ گواهی', 'nias-course-widget'); ?></span><b><?php echo $info['self_signed'] ? esc_html__('خودامضا (ساخته‌شده در همین سایت)', 'nias-course-widget') : esc_html($info['issuer']); ?></b></div>
-                <div><span><?php echo esc_html__('اعتبار تا', 'nias-course-widget'); ?></span><b class="<?php echo $info['expired'] ? 'bad' : ''; ?>"><?php echo esc_html($date($info['valid_to'])); ?></b></div>
-                <div><span><?php echo esc_html__('اثرانگشت SHA-256', 'nias-course-widget'); ?></span><code dir="ltr"><?php echo esc_html($info['fingerprint']); ?></code></div>
+                <div><span><?php echo esc_html__('Status', 'nias-course-widget'); ?></span><b class="<?php echo $active ? 'ok' : 'off'; ?>"><?php echo $active ? esc_html__('Active — new certificates are signed', 'nias-course-widget') : esc_html__('Inactive', 'nias-course-widget'); ?></b></div>
+                <div><span><?php echo esc_html__('Signer', 'nias-course-widget'); ?></span><b><?php echo esc_html($info['subject']); ?></b></div>
+                <div><span><?php echo esc_html__('Certificate issuer', 'nias-course-widget'); ?></span><b><?php echo $info['self_signed'] ? esc_html__('Self-signed (created on this site)', 'nias-course-widget') : esc_html($info['issuer']); ?></b></div>
+                <div><span><?php echo esc_html__('Valid until', 'nias-course-widget'); ?></span><b class="<?php echo $info['expired'] ? 'bad' : ''; ?>"><?php echo esc_html($date($info['valid_to'])); ?></b></div>
+                <div><span><?php echo esc_html__('SHA-256 fingerprint', 'nias-course-widget'); ?></span><code dir="ltr"><?php echo esc_html($info['fingerprint']); ?></code></div>
             </div>
             <?php if ($info['self_signed']) : ?>
-                <div class="nias-row-desc" style="margin-top:10px"><?php echo esc_html__('گواهی خودامضا هر تغییری در فایل را آشکار می‌کند، اما Acrobat تا وقتی آن را «مورد اعتماد» نکنید هویت را «نامشخص» نشان می‌دهد. برای نمایش تیک سبز بدون تنظیم، گواهی «Document Signing» از یک مرجع معتبر (عضو AATL) تهیه و فایل .p12 آن را بارگذاری کنید.', 'nias-course-widget'); ?></div>
+                <div class="nias-row-desc" style="margin-top:10px"><?php echo esc_html__('A self-signed certificate reveals any change to the file, but Acrobat shows the identity as "unknown" until you mark it as "trusted". To show the green check without any setup, get a "Document Signing" certificate from a trusted authority (AATL member) and upload its .p12 file.', 'nias-course-widget'); ?></div>
             <?php endif; ?>
             <div class="nias-sign-actions">
                 <?php if ($active) : ?>
-                    <a class="nias-btn-soft" href="<?php echo esc_url($url('disable')); ?>"><?php echo esc_html__('توقف امضا', 'nias-course-widget'); ?></a>
+                    <a class="nias-btn-soft" href="<?php echo esc_url($url('disable')); ?>"><?php echo esc_html__('Stop signing', 'nias-course-widget'); ?></a>
                 <?php else : ?>
-                    <a class="nias-btn-soft" href="<?php echo esc_url($url('enable')); ?>"><?php echo esc_html__('فعال‌سازی امضا', 'nias-course-widget'); ?></a>
+                    <a class="nias-btn-soft" href="<?php echo esc_url($url('enable')); ?>"><?php echo esc_html__('Enable signing', 'nias-course-widget'); ?></a>
                 <?php endif; ?>
-                <a class="nias-btn-soft" href="<?php echo esc_url($url('download')); ?>"><?php echo esc_html__('دانلود گواهی عمومی (.cer)', 'nias-course-widget'); ?></a>
-                <a class="nias-btn-del" href="<?php echo esc_url($url('remove')); ?>" onclick="return confirm('<?php echo esc_js(__('گواهی و کلید امضا برای همیشه حذف شود؟ مدارکی که قبلاً امضا شده‌اند معتبر می‌مانند.', 'nias-course-widget')); ?>')"><?php echo esc_html__('حذف گواهی', 'nias-course-widget'); ?></a>
+                <a class="nias-btn-soft" href="<?php echo esc_url($url('download')); ?>"><?php echo esc_html__('Download public certificate (.cer)', 'nias-course-widget'); ?></a>
+                <a class="nias-btn-del" href="<?php echo esc_url($url('remove')); ?>" onclick="return confirm('<?php echo esc_js(__('Delete the signing certificate and key permanently? Certificates that were already signed stay valid.', 'nias-course-widget')); ?>')"><?php echo esc_html__('Delete certificate', 'nias-course-widget'); ?></a>
             </div>
         <?php else : ?>
             <div class="nias-sign-actions">
-                <a class="nias-btn-soft" href="<?php echo esc_url($url('generate')); ?>"><?php echo esc_html__('ساخت گواهی خودامضا و فعال‌سازی', 'nias-course-widget'); ?></a>
+                <a class="nias-btn-soft" href="<?php echo esc_url($url('generate')); ?>"><?php echo esc_html__('Create a self-signed certificate and enable', 'nias-course-widget'); ?></a>
             </div>
         <?php endif; ?>
 
@@ -606,11 +606,11 @@ function nias_cert_sign_settings_card()
                 <input type="hidden" name="action" value="nias_cert_sign">
                 <input type="hidden" name="do" value="upload">
                 <?php wp_nonce_field('nias_cert_sign'); ?>
-                <div class="nias-flabel"><?php echo $info ? esc_html__('جایگزینی با گواهی خریداری‌شده (.p12 / .pfx)', 'nias-course-widget') : esc_html__('یا بارگذاری گواهی خریداری‌شده (.p12 / .pfx)', 'nias-course-widget'); ?></div>
+                <div class="nias-flabel"><?php echo $info ? esc_html__('Replace with a purchased certificate (.p12 / .pfx)', 'nias-course-widget') : esc_html__('Or upload a purchased certificate (.p12 / .pfx)', 'nias-course-widget'); ?></div>
                 <div class="nias-sign-upload-row">
                     <input type="file" name="p12" accept=".p12,.pfx,application/x-pkcs12" required>
-                    <input type="password" class="nias-input" name="p12_pass" autocomplete="new-password" placeholder="<?php echo esc_attr__('رمز فایل', 'nias-course-widget'); ?>">
-                    <button type="submit" class="nias-btn-soft"><?php echo esc_html__('بارگذاری', 'nias-course-widget'); ?></button>
+                    <input type="password" class="nias-input" name="p12_pass" autocomplete="new-password" placeholder="<?php echo esc_attr__('File password', 'nias-course-widget'); ?>">
+                    <button type="submit" class="nias-btn-soft"><?php echo esc_html__('Upload', 'nias-course-widget'); ?></button>
                 </div>
             </form>
         <?php endif; ?>

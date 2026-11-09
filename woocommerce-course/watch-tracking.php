@@ -214,7 +214,7 @@ function nias_watch_register_metabox($post_type, $post = null)
     if (!$post || !nias_is_course_type($post_type) || !current_user_can('edit_post', $post->ID)) {
         return;
     }
-    add_meta_box('nias_watch_report', __('گزارش تماشای ویدیو', 'nias-course-widget'), 'nias_watch_render_metabox', $post_type, 'normal', 'low');
+    add_meta_box('nias_watch_report', __('Video watch report', 'nias-course-widget'), 'nias_watch_render_metabox', $post_type, 'normal', 'low');
 }
 
 /** Lessons of a course as id => "chapter › title". */
@@ -225,7 +225,7 @@ function nias_watch_lessons($product_id)
     $out = array();
     foreach ((array) $chapters as $ci => $ch) {
         foreach ((array) (isset($ch['lessons']) ? $ch['lessons'] : array()) as $li => $l) {
-            $out['c' . $ci . 'l' . $li] = isset($l['title']) && $l['title'] !== '' ? $l['title'] : sprintf(__('درس %d', 'nias-course-widget'), $li + 1);
+            $out['c' . $ci . 'l' . $li] = isset($l['title']) && $l['title'] !== '' ? $l['title'] : sprintf(__('Lesson %d', 'nias-course-widget'), $li + 1);
         }
     }
     return $out;
@@ -256,11 +256,11 @@ function nias_watch_render_metabox($post)
     .nwr-loading{opacity:.5;pointer-events:none}
     </style>
     <div class="nwr" id="nwr" data-pid="<?php echo (int) $pid; ?>" data-nonce="<?php echo esc_attr($nonce); ?>">
-        <p class="nwr-muted"><?php echo esc_html(sprintf(__('درصدها سهمی از هر ویدیو است که دانشجو واقعاً تماشا کرده (نه موقعیت نوار پخش). درس با %s٪ تماشا «تکمیل» حساب می‌شود.', 'nias-course-widget'), number_format_i18n($done))); ?></p>
-        <div class="nwr-tools"><input type="search" class="regular-text" id="nwr-s" placeholder="<?php esc_attr_e('جستجوی نام یا ایمیل دانشجو…', 'nias-course-widget'); ?>"></div>
-        <div id="nwr-list"><p class="nwr-muted"><?php esc_html_e('در حال بارگذاری…', 'nias-course-widget'); ?></p></div>
-        <h4><?php esc_html_e('میانگین تماشای هر درس (برای پیدا کردن جایی که دانشجوها رها می‌کنند)', 'nias-course-widget'); ?></h4>
-        <div id="nwr-avg"><button type="button" class="button" id="nwr-avg-btn"><?php esc_html_e('محاسبهٔ میانگین هر درس', 'nias-course-widget'); ?></button> <span class="nwr-muted"><?php esc_html_e('(روی همهٔ دانشجوها حساب می‌شود و تا ۳۰ دقیقه ذخیره می‌ماند)', 'nias-course-widget'); ?></span></div>
+        <p class="nwr-muted"><?php echo esc_html(sprintf(__('Percentages are the share of each video the student really watched (not the playhead position). A lesson with %s%% watched counts as "completed".', 'nias-course-widget'), number_format_i18n($done))); ?></p>
+        <div class="nwr-tools"><input type="search" class="regular-text" id="nwr-s" placeholder="<?php esc_attr_e('Search student name or email…', 'nias-course-widget'); ?>"></div>
+        <div id="nwr-list"><p class="nwr-muted"><?php esc_html_e('Loading…', 'nias-course-widget'); ?></p></div>
+        <h4><?php esc_html_e('Average watch of each lesson (to find where students drop off)', 'nias-course-widget'); ?></h4>
+        <div id="nwr-avg"><button type="button" class="button" id="nwr-avg-btn"><?php esc_html_e('Calculate each lesson\'s average', 'nias-course-widget'); ?></button> <span class="nwr-muted"><?php esc_html_e('(calculated over all students and kept for up to 30 minutes)', 'nias-course-widget'); ?></span></div>
     </div>
     <script>
     (function () {
@@ -278,7 +278,7 @@ function nias_watch_render_metabox($post)
             call('nias_watch_report', { page: page || 1, s: s.value.trim() }).then(function (res) {
                 if (my !== req) return;
                 list.classList.remove('nwr-loading');
-                list.innerHTML = res && res.success ? res.data.html : '<p class="nwr-muted"><?php echo esc_js(__('بارگذاری گزارش انجام نشد.', 'nias-course-widget')); ?></p>';
+                list.innerHTML = res && res.success ? res.data.html : '<p class="nwr-muted"><?php echo esc_js(__('Loading the report failed.', 'nias-course-widget')); ?></p>';
             });
         }
         s.addEventListener('input', function () { clearTimeout(t); t = setTimeout(function () { load(1); }, 300); });
@@ -299,7 +299,7 @@ function nias_watch_report_guard()
 {
     $pid = isset($_POST['product_id']) ? (int) $_POST['product_id'] : 0;
     if (!$pid || !check_ajax_referer('nias_watch_report_' . $pid, 'nonce', false) || !current_user_can('edit_post', $pid)) {
-        wp_send_json_error(array('message' => __('دسترسی لازم را ندارید.', 'nias-course-widget')), 403);
+        wp_send_json_error(array('message' => __('You do not have the required permission.', 'nias-course-widget')), 403);
     }
     return $pid;
 }
@@ -333,15 +333,15 @@ function nias_watch_report_ajax()
     $ids   = array_map('intval', $wpdb->get_col($wpdb->prepare("SELECT um.user_id FROM {$wpdb->usermeta} um{$join} {$where} ORDER BY um.umeta_id DESC LIMIT %d OFFSET %d", $per, ($page - 1) * $per)));
 
     if (!$ids) {
-        $msg = $s !== '' ? sprintf(__('دانشجویی با «%s» پیدا نشد.', 'nias-course-widget'), $s)
-            : __('هنوز هیچ دانشجویی ویدیوهای این دوره را در پلیر نیاس تماشا نکرده است. پس از تماشا، درصد واقعی دیده‌شدهٔ هر درس برای هر دانشجو اینجا نمایش داده می‌شود.', 'nias-course-widget');
+        $msg = $s !== '' ? sprintf(__('No student found with "%s".', 'nias-course-widget'), $s)
+            : __('No student has watched this course\'s videos in the Nias player yet. After watching, each student\'s real watched percentage of each lesson is shown here.', 'nias-course-widget');
         wp_send_json_success(array('html' => '<p class="nwr-muted">' . esc_html($msg) . '</p>'));
     }
     cache_users($ids);
     $lessons = nias_watch_lessons($pid);
     $done    = nias_watch_complete_pct();
-    $h = '<p class="nwr-muted">' . esc_html(sprintf(__('%s دانشجو', 'nias-course-widget'), nias_fa_digits(number_format_i18n($total)))) . '</p><table><thead><tr>'
-        . '<th>' . esc_html__('دانشجو', 'nias-course-widget') . '</th><th>' . esc_html__('میانگین تماشای ویدیوها', 'nias-course-widget') . '</th><th>' . esc_html__('درس‌های کامل دیده‌شده', 'nias-course-widget') . '</th><th>' . esc_html__('آخرین تماشا', 'nias-course-widget') . '</th><th>' . esc_html__('جزئیات', 'nias-course-widget') . '</th></tr></thead><tbody>';
+    $h = '<p class="nwr-muted">' . esc_html(sprintf(__('%s students', 'nias-course-widget'), nias_fa_digits(number_format_i18n($total)))) . '</p><table><thead><tr>'
+        . '<th>' . esc_html__('Student', 'nias-course-widget') . '</th><th>' . esc_html__('Average video watching', 'nias-course-widget') . '</th><th>' . esc_html__('Fully watched lessons', 'nias-course-widget') . '</th><th>' . esc_html__('Last watched', 'nias-course-widget') . '</th><th>' . esc_html__('Details', 'nias-course-widget') . '</th></tr></thead><tbody>';
     foreach ($ids as $uid) {
         $u = get_userdata($uid);
         $w = nias_watch_get($uid, $pid);
@@ -367,16 +367,16 @@ function nias_watch_report_ajax()
         $h .= '<tr><td><a href="' . esc_url(get_edit_user_link($uid)) . '">' . esc_html($u->display_name) . '</a><div class="nwr-muted">' . esc_html($u->user_email) . '</div></td>'
             . '<td>' . nias_watch_bar_html($sum / max(1, count($w))) . '</td>'
             . '<td>' . esc_html(number_format_i18n($complete) . ' / ' . number_format_i18n(count($w))) . '</td>'
-            . '<td>' . esc_html($last ? sprintf(__('%s پیش', 'nias-course-widget'), human_time_diff($last)) : '—') . '</td>'
-            . '<td><details><summary>' . esc_html__('هر درس', 'nias-course-widget') . '</summary>' . $det . '</details></td></tr>';
+            . '<td>' . esc_html($last ? sprintf(__('%s ago', 'nias-course-widget'), human_time_diff($last)) : '—') . '</td>'
+            . '<td><details><summary>' . esc_html__('Per lesson', 'nias-course-widget') . '</summary>' . $det . '</details></td></tr>';
     }
     $h .= '</tbody></table>';
     $pages = (int) ceil($total / $per);
     if ($pages > 1) {
         $h .= '<div class="nwr-pager">'
-            . ($page > 1 ? '<a href="#" class="button" data-nwr-page="' . ($page - 1) . '">‹ ' . esc_html__('قبلی', 'nias-course-widget') . '</a>' : '<span class="button disabled">‹ ' . esc_html__('قبلی', 'nias-course-widget') . '</span>')
-            . '<span>' . esc_html(sprintf(__('صفحهٔ %1$s از %2$s', 'nias-course-widget'), nias_fa_digits($page), nias_fa_digits($pages))) . '</span>'
-            . ($page < $pages ? '<a href="#" class="button" data-nwr-page="' . ($page + 1) . '">' . esc_html__('بعدی', 'nias-course-widget') . ' ›</a>' : '<span class="button disabled">' . esc_html__('بعدی', 'nias-course-widget') . ' ›</span>')
+            . ($page > 1 ? '<a href="#" class="button" data-nwr-page="' . ($page - 1) . '">‹ ' . esc_html__('Previous', 'nias-course-widget') . '</a>' : '<span class="button disabled">‹ ' . esc_html__('Previous', 'nias-course-widget') . '</span>')
+            . '<span>' . esc_html(sprintf(__('Page %1$s of %2$s', 'nias-course-widget'), nias_fa_digits($page), nias_fa_digits($pages))) . '</span>'
+            . ($page < $pages ? '<a href="#" class="button" data-nwr-page="' . ($page + 1) . '">' . esc_html__('Next', 'nias-course-widget') . ' ›</a>' : '<span class="button disabled">' . esc_html__('Next', 'nias-course-widget') . ' ›</span>')
             . '</div>';
     }
     wp_send_json_success(array('html' => $h));
@@ -412,12 +412,12 @@ function nias_watch_lesson_avg_ajax()
         set_transient($ck, $per, 30 * MINUTE_IN_SECONDS);
     }
     if (!$per) {
-        wp_send_json_success(array('html' => '<p class="nwr-muted">' . esc_html__('داده‌ای وجود ندارد.', 'nias-course-widget') . '</p>'));
+        wp_send_json_success(array('html' => '<p class="nwr-muted">' . esc_html__('No data.', 'nias-course-widget') . '</p>'));
     }
     $h = '';
     foreach (nias_watch_lessons($pid) as $lid => $title) {
         if (isset($per[$lid])) {
-            $h .= '<div class="nwr-l"><span>' . esc_html($title) . ' <span class="nwr-muted">(' . esc_html(sprintf(__('%s دانشجو', 'nias-course-widget'), number_format_i18n($per[$lid][1]))) . ')</span></span><span>' . nias_watch_bar_html($per[$lid][0] / $per[$lid][1]) . '</span></div>';
+            $h .= '<div class="nwr-l"><span>' . esc_html($title) . ' <span class="nwr-muted">(' . esc_html(sprintf(__('%s students', 'nias-course-widget'), number_format_i18n($per[$lid][1]))) . ')</span></span><span>' . nias_watch_bar_html($per[$lid][0] / $per[$lid][1]) . '</span></div>';
         }
     }
     wp_send_json_success(array('html' => $h));

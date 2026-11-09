@@ -51,94 +51,94 @@ function nias_sms_events()
 {
     return array(
         's_enrolled' => array(
-            'to' => 'student', 'label' => __('ثبت‌نام در دوره', 'nias-course-widget'),
-            'desc' => __('پس از تکمیل سفارش دوره (یا شروع دورهٔ رایگان) برای دانشجو.', 'nias-course-widget'),
+            'to' => 'student', 'label' => __('Course enrolment', 'nias-course-widget'),
+            'desc' => __('To the student after the course order is completed (or a free course is started).', 'nias-course-widget'),
             'tokens' => array('name', 'course', 'link'),
-            'text' => __('{name} عزیز، ثبت‌نام شما در دورهٔ «{course}» انجام شد. ورود به دوره: {link}', 'nias-course-widget'),
+            'text' => __('Dear {name}, you are enrolled in the course "{course}". Enter the course: {link}', 'nias-course-widget'),
         ),
         's_essay_graded' => array(
-            'to' => 'student', 'label' => __('اعلام نمرهٔ آزمون', 'nias-course-widget'),
-            'desc' => __('وقتی مدرس پاسخ تشریحی دانشجو را تصحیح می‌کند.', 'nias-course-widget'),
+            'to' => 'student', 'label' => __('Quiz score announcement', 'nias-course-widget'),
+            'desc' => __('When the instructor grades the student\'s essay answers.', 'nias-course-widget'),
             'tokens' => array('name', 'quiz', 'score', 'status', 'course', 'link'),
-            'text' => __('{name} عزیز، نمرهٔ شما در «{quiz}»: {score}٪ ({status}). {link}', 'nias-course-widget'),
+            'text' => __('Dear {name}, your score in "{quiz}": {score}% ({status}). {link}', 'nias-course-widget'),
         ),
         's_qa_answered' => array(
-            'to' => 'student', 'label' => __('پاسخ مدرس به پرسش', 'nias-course-widget'),
-            'desc' => __('وقتی مدرس به پرسش دانشجو در پرسش و پاسخ پاسخ می‌دهد.', 'nias-course-widget'),
+            'to' => 'student', 'label' => __('Instructor reply to a question', 'nias-course-widget'),
+            'desc' => __('When the instructor replies to a student\'s question in Q&A.', 'nias-course-widget'),
             'tokens' => array('name', 'course', 'lesson', 'link'),
-            'text' => __('{name} عزیز، مدرس به پرسش شما در دورهٔ «{course}» پاسخ داد. {link}', 'nias-course-widget'),
+            'text' => __('Dear {name}, the instructor replied to your question in the course "{course}". {link}', 'nias-course-widget'),
         ),
         's_certificate' => array(
-            'to' => 'student', 'label' => __('صدور مدرک', 'nias-course-widget'),
-            'desc' => __('وقتی مدرک پایان دوره برای دانشجو صادر می‌شود.', 'nias-course-widget'),
+            'to' => 'student', 'label' => __('Certificate issuing', 'nias-course-widget'),
+            'desc' => __('When the course completion certificate is issued for the student.', 'nias-course-widget'),
             'tokens' => array('name', 'course', 'code', 'link'),
-            'text' => __('{name} عزیز، مدرک دورهٔ «{course}» صادر شد. کد مدرک: {code} {link}', 'nias-course-widget'),
+            'text' => __('Dear {name}, the certificate of the course "{course}" was issued. Certificate code: {code} {link}', 'nias-course-widget'),
         ),
         's_drip_open' => array(
-            'to' => 'student', 'label' => __('باز شدن جلسهٔ قطره‌ای', 'nias-course-widget'),
-            'desc' => __('وقتی جلسهٔ جدیدی از دورهٔ قطره‌ای برای دانشجو باز می‌شود (ماژول «محتوای قطره‌ای»).', 'nias-course-widget'),
+            'to' => 'student', 'label' => __('Drip lesson opened', 'nias-course-widget'),
+            'desc' => __('When a new lesson of a drip course opens for the student ("Drip content" module).', 'nias-course-widget'),
             'tokens' => array('name', 'course', 'lesson', 'link'),
-            'text' => __('{name} عزیز، جلسهٔ «{lesson}» از دورهٔ «{course}» برای شما باز شد. {link}', 'nias-course-widget'),
+            'text' => __('Dear {name}, the lesson "{lesson}" of the course "{course}" is now open for you. {link}', 'nias-course-widget'),
         ),
         's_access_expiring' => array(
-            'to' => 'student', 'label' => __('یادآوری پایان دسترسی', 'nias-course-widget'),
-            'desc' => __('چند روز مانده به پایان دسترسی زمان‌دار (ماژول «دسترسی زمان‌دار و تمدید»).', 'nias-course-widget'),
+            'to' => 'student', 'label' => __('Access ending reminder', 'nias-course-widget'),
+            'desc' => __('A few days before time-limited access ends ("Time-limited access and renewal" module).', 'nias-course-widget'),
             'tokens' => array('name', 'course', 'days', 'date', 'link'),
-            'text' => __('{name} عزیز، دسترسی شما به دورهٔ «{course}» {days} روز دیگر ({date}) تمام می‌شود. تمدید: {link}', 'nias-course-widget'),
+            'text' => __('Dear {name}, your access to the course "{course}" ends in {days} days ({date}). Renew: {link}', 'nias-course-widget'),
         ),
         's_access_expired' => array(
-            'to' => 'student', 'label' => __('پایان دسترسی', 'nias-course-widget'),
-            'desc' => __('روزی که دسترسی زمان‌دار دانشجو تمام می‌شود.', 'nias-course-widget'),
+            'to' => 'student', 'label' => __('Access ends', 'nias-course-widget'),
+            'desc' => __('The day the student\'s time-limited access ends.', 'nias-course-widget'),
             'tokens' => array('name', 'course', 'link'),
-            'text' => __('{name} عزیز، دسترسی شما به دورهٔ «{course}» به پایان رسید. برای تمدید: {link}', 'nias-course-widget'),
+            'text' => __('Dear {name}, your access to the course "{course}" has ended. To renew: {link}', 'nias-course-widget'),
         ),
         's_inactive' => array(
-            'to' => 'student', 'label' => __('یادآوری ادامهٔ دوره (دانشجوی غیرفعال)', 'nias-course-widget'),
-            'desc' => __('وقتی دانشجو چند روز به دوره سر نزده است (ماژول «یادآوری به دانشجوی غیرفعال»).', 'nias-course-widget'),
+            'to' => 'student', 'label' => __('Course continuation reminder (inactive student)', 'nias-course-widget'),
+            'desc' => __('When the student has not visited the course for a few days ("Inactive student reminders" module).', 'nias-course-widget'),
             'tokens' => array('name', 'course', 'days', 'lesson', 'link'),
-            'text' => __('{name} عزیز، {days} روز است به دورهٔ «{course}» سر نزده‌اید. از «{lesson}» ادامه دهید: {link}', 'nias-course-widget'),
+            'text' => __('Dear {name}, you have not visited the course "{course}" for {days} days. Continue from "{lesson}": {link}', 'nias-course-widget'),
         ),
         's_assign_graded' => array(
-            'to' => 'student', 'label' => __('نتیجهٔ تکلیف', 'nias-course-widget'),
-            'desc' => __('وقتی مدرس تکلیف ارسالی دانشجو را بررسی می‌کند (ماژول «تکلیف»).', 'nias-course-widget'),
+            'to' => 'student', 'label' => __('Assignment result', 'nias-course-widget'),
+            'desc' => __('When the instructor reviews the student\'s submitted assignment ("Assignment" module).', 'nias-course-widget'),
             'tokens' => array('name', 'course', 'lesson', 'status', 'score', 'link'),
-            'text' => __('{name} عزیز، تکلیف «{lesson}» بررسی شد: {status} {score}. {link}', 'nias-course-widget'),
+            'text' => __('Dear {name}, the assignment "{lesson}" was reviewed: {status} {score}. {link}', 'nias-course-widget'),
         ),
         't_assign_new' => array(
-            'to' => 'teacher', 'label' => __('تکلیف جدید', 'nias-course-widget'),
-            'desc' => __('وقتی دانشجو برای یکی از جلسات دوره تکلیف می‌فرستد.', 'nias-course-widget'),
+            'to' => 'teacher', 'label' => __('New assignment', 'nias-course-widget'),
+            'desc' => __('When a student sends an assignment for one of the course lessons.', 'nias-course-widget'),
             'tokens' => array('name', 'student', 'course', 'lesson', 'link'),
-            'text' => __('{name} عزیز، {student} برای «{lesson}» از دورهٔ «{course}» تکلیف فرستاد. {link}', 'nias-course-widget'),
+            'text' => __('Dear {name}, {student} sent an assignment for "{lesson}" of the course "{course}". {link}', 'nias-course-widget'),
         ),
         's_live_reminder' => array(
-            'to' => 'student', 'label' => __('یادآوری کلاس زنده', 'nias-course-widget'),
-            'desc' => __('حدود یک ساعت قبل از شروع کلاس آنلاین (ماژول «کلاس آنلاین»).', 'nias-course-widget'),
+            'to' => 'student', 'label' => __('Live class reminder', 'nias-course-widget'),
+            'desc' => __('About one hour before the online class starts ("Online class" module).', 'nias-course-widget'),
             'tokens' => array('name', 'course', 'lesson', 'date', 'link'),
-            'text' => __('{name} عزیز، کلاس «{lesson}» از دورهٔ «{course}» ساعت {date} شروع می‌شود. ورود: {link}', 'nias-course-widget'),
+            'text' => __('Dear {name}, the class "{lesson}" of the course "{course}" starts at {date}. Join: {link}', 'nias-course-widget'),
         ),
         't_new_student' => array(
-            'to' => 'teacher', 'label' => __('دانشجوی جدید', 'nias-course-widget'),
-            'desc' => __('وقتی کسی در یکی از دوره‌های مدرس ثبت‌نام می‌کند.', 'nias-course-widget'),
+            'to' => 'teacher', 'label' => __('New student', 'nias-course-widget'),
+            'desc' => __('When someone enrols in one of the instructor\'s courses.', 'nias-course-widget'),
             'tokens' => array('name', 'student', 'course'),
-            'text' => __('{name} عزیز، {student} در دورهٔ «{course}» ثبت‌نام کرد.', 'nias-course-widget'),
+            'text' => __('Dear {name}, {student} enrolled in the course "{course}".', 'nias-course-widget'),
         ),
         't_new_question' => array(
-            'to' => 'teacher', 'label' => __('پرسش جدید', 'nias-course-widget'),
-            'desc' => __('وقتی دانشجو در دورهٔ مدرس پرسش (یا ادامهٔ پرسش) ثبت می‌کند.', 'nias-course-widget'),
+            'to' => 'teacher', 'label' => __('New question', 'nias-course-widget'),
+            'desc' => __('When a student posts a question (or a follow-up) in the instructor\'s course.', 'nias-course-widget'),
             'tokens' => array('name', 'student', 'course', 'lesson', 'link'),
-            'text' => __('{name} عزیز، {student} در دورهٔ «{course}» پرسشی ثبت کرد. پاسخ: {link}', 'nias-course-widget'),
+            'text' => __('Dear {name}, {student} posted a question in the course "{course}". Reply: {link}', 'nias-course-widget'),
         ),
         't_essay_submitted' => array(
-            'to' => 'teacher', 'label' => __('آزمون منتظر تصحیح', 'nias-course-widget'),
-            'desc' => __('وقتی دانشجو آزمونِ دارای سوال تشریحی را می‌فرستد.', 'nias-course-widget'),
+            'to' => 'teacher', 'label' => __('Quiz awaiting grading', 'nias-course-widget'),
+            'desc' => __('When a student submits a quiz that has essay questions.', 'nias-course-widget'),
             'tokens' => array('name', 'student', 'quiz', 'course', 'link'),
-            'text' => __('{name} عزیز، {student} آزمون «{quiz}» را فرستاد و منتظر تصحیح شماست. {link}', 'nias-course-widget'),
+            'text' => __('Dear {name}, {student} submitted the quiz "{quiz}" and it is waiting for your grading. {link}', 'nias-course-widget'),
         ),
         't_review' => array(
-            'to' => 'teacher', 'label' => __('نتیجهٔ بررسی دوره', 'nias-course-widget'),
-            'desc' => __('وقتی مدیر دوره یا تغییرات مدرس را تأیید یا رد می‌کند («نیاز به تأیید»).', 'nias-course-widget'),
+            'to' => 'teacher', 'label' => __('Course review result', 'nias-course-widget'),
+            'desc' => __('When the admin approves or rejects a course or an instructor\'s changes ("Requires approval").', 'nias-course-widget'),
             'tokens' => array('name', 'course', 'status', 'link'),
-            'text' => __('{name} عزیز، {status}: «{course}». {link}', 'nias-course-widget'),
+            'text' => __('Dear {name}, {status}: "{course}". {link}', 'nias-course-widget'),
         ),
     );
 }
@@ -147,10 +147,10 @@ function nias_sms_events()
 function nias_sms_token_labels()
 {
     return array(
-        'name' => __('نام گیرنده', 'nias-course-widget'), 'student' => __('نام دانشجو', 'nias-course-widget'), 'course' => __('نام دوره', 'nias-course-widget'),
-        'lesson' => __('نام جلسه', 'nias-course-widget'), 'quiz' => __('نام آزمون', 'nias-course-widget'), 'score' => __('نمره', 'nias-course-widget'),
-        'status' => __('وضعیت', 'nias-course-widget'), 'code' => __('کد مدرک', 'nias-course-widget'), 'link' => __('لینک', 'nias-course-widget'),
-        'days' => __('روزهای باقی‌مانده', 'nias-course-widget'), 'date' => __('تاریخ پایان', 'nias-course-widget'),
+        'name' => __('Recipient name', 'nias-course-widget'), 'student' => __('Student name', 'nias-course-widget'), 'course' => __('Course name', 'nias-course-widget'),
+        'lesson' => __('Lesson name', 'nias-course-widget'), 'quiz' => __('Quiz name', 'nias-course-widget'), 'score' => __('Score', 'nias-course-widget'),
+        'status' => __('Status', 'nias-course-widget'), 'code' => __('Certificate code', 'nias-course-widget'), 'link' => __('Link', 'nias-course-widget'),
+        'days' => __('Days remaining', 'nias-course-widget'), 'date' => __('End date', 'nias-course-widget'),
     );
 }
 
@@ -255,15 +255,15 @@ function nias_sms_deliver($key, $phone, $vars, $user_id = 0)
 {
     $ev = nias_sms_events();
     if (!isset($ev[$key]) || !nias_sms_available()) {
-        return new WP_Error('nias_sms_off', __('نیاس لاگین فعال نیست.', 'nias-course-widget'));
+        return new WP_Error('nias_sms_off', __('Nias Login is not active.', 'nias-course-widget'));
     }
     $s     = nias_sms_event_settings($key);
-    $label = sprintf(__('دوره ساز نیاس: %s', 'nias-course-widget'), $ev[$key]['label']);
+    $label = sprintf(__('Nias Course Builder: %s', 'nias-course-widget'), $ev[$key]['label']);
     if ($s['mode'] === 'text' && nias_sms_supports_text()) {
         return nias_sms_send_text($phone, nias_sms_fill($s['text'], $vars), array('label' => $label, 'user_id' => $user_id));
     }
     if (trim($s['pattern']) === '') {
-        return new WP_Error('nias_sms_no_pattern', __('کد پترن این رویداد وارد نشده است.', 'nias-course-widget'));
+        return new WP_Error('nias_sms_no_pattern', __('The pattern code for this event has not been entered.', 'nias-course-widget'));
     }
     return nias_sms_send_pattern($phone, trim($s['pattern']), nias_sms_pattern_params($s['params'], $vars), array('label' => $label, 'user_id' => $user_id));
 }
@@ -338,7 +338,7 @@ add_action('nias_quiz_attempt_graded', function ($user_id, $quiz_id, $attempt, $
     $passed = $quiz && (int) $attempt['final'] >= (int) $quiz['passScore'];
     nias_sms_queue('s_essay_graded', $user_id, array(
         'quiz' => $quiz ? $quiz['title'] : '', 'score' => (string) (int) $attempt['final'],
-        'status' => $passed ? __('قبول', 'nias-course-widget') : __('مردود', 'nias-course-widget'),
+        'status' => $passed ? __('Passed', 'nias-course-widget') : __('Failed', 'nias-course-widget'),
         'course' => $courses ? get_the_title($courses[0]) : '', 'link' => $courses ? nias_sms_course_link($courses[0]) : home_url('/'),
     ));
 }, 20, 4);
@@ -397,7 +397,7 @@ add_action('nias_assign_graded', function ($row) {
 
 // Inactive student: "continue the course".
 add_action('nias_inactive_reminder', function ($user_id, $post_id, $days, $lesson, $link) {
-    nias_sms_queue('s_inactive', (int) $user_id, array('course' => get_the_title((int) $post_id), 'days' => nias_fa_digits($days), 'lesson' => $lesson ? $lesson['title'] : __('جلسهٔ بعدی', 'nias-course-widget'), 'link' => $link));
+    nias_sms_queue('s_inactive', (int) $user_id, array('course' => get_the_title((int) $post_id), 'days' => nias_fa_digits($days), 'lesson' => $lesson ? $lesson['title'] : __('Next lesson', 'nias-course-widget'), 'link' => $link));
 }, 20, 5);
 
 // Time-limited access: reminders before the end, and on the end day.
@@ -417,8 +417,8 @@ add_action('nias_drip_lessons_opened', function ($user_id, $post_id, $titles) {
 // Instructor course review (approval).
 add_action('nias_inst_reviewed', function ($user_id, $post_id, $approved, $kind) {
     $status = $kind === 'new'
-        ? ($approved ? __('دورهٔ شما منتشر شد', 'nias-course-widget') : __('دورهٔ شما منتشر نشد', 'nias-course-widget'))
-        : ($approved ? __('تغییرات شما تأیید شد', 'nias-course-widget') : __('تغییرات شما تأیید نشد', 'nias-course-widget'));
+        ? ($approved ? __('Your course was published', 'nias-course-widget') : __('Your course was not published', 'nias-course-widget'))
+        : ($approved ? __('Your changes were approved', 'nias-course-widget') : __('Your changes were not approved', 'nias-course-widget'));
     nias_sms_queue('t_review', $user_id, array('course' => get_the_title($post_id), 'status' => $status, 'link' => nias_sms_panel_link()));
 }, 20, 4);
 
@@ -430,7 +430,7 @@ add_action('admin_menu', function () {
     if (!current_user_can('manage_options')) {
         return;
     }
-    add_submenu_page('nias-course-settings', __('پیامک', 'nias-course-widget'), __('پیامک', 'nias-course-widget'), 'manage_options', 'nias-course-sms', 'nias_sms_settings_page');
+    add_submenu_page('nias-course-settings', __('SMS', 'nias-course-widget'), __('SMS', 'nias-course-widget'), 'manage_options', 'nias-course-sms', 'nias_sms_settings_page');
 }, 24);
 
 /** Save the settings form. */
@@ -458,27 +458,27 @@ function nias_sms_settings_save()
 /** «ارسال آزمایشی» (AJAX). */
 add_action('wp_ajax_nias_sms_test', function () {
     if (!current_user_can('manage_options') || !check_ajax_referer('nias_sms_test', 'nonce', false)) {
-        wp_send_json_error(array('message' => __('دسترسی لازم را ندارید.', 'nias-course-widget')));
+        wp_send_json_error(array('message' => __('You do not have the required permission.', 'nias-course-widget')));
     }
     if (!nias_sms_ready()) {
-        wp_send_json_error(array('message' => __('نیاس لاگین فعال نیست یا درگاه پیامک آن تنظیم نشده است.', 'nias-course-widget')));
+        wp_send_json_error(array('message' => __('Nias Login is not active or its SMS gateway is not set up.', 'nias-course-widget')));
     }
     // A few test sends per minute at most (each SMS costs money).
     $k = 'nias_sms_test_' . get_current_user_id();
     $n = (int) get_transient($k);
     if ($n >= 5) {
-        wp_send_json_error(array('message' => __('کمی صبر کنید و دوباره امتحان کنید.', 'nias-course-widget')));
+        wp_send_json_error(array('message' => __('Wait a moment and try again.', 'nias-course-widget')));
     }
     set_transient($k, $n + 1, MINUTE_IN_SECONDS);
     $key   = isset($_POST['event']) ? sanitize_key(wp_unslash($_POST['event'])) : '';
     $phone = nias_normalize_mobile(isset($_POST['phone']) ? wp_unslash($_POST['phone']) : '');
     if ($phone === '') {
-        wp_send_json_error(array('message' => __('شماره موبایل معتبر نیست.', 'nias-course-widget')));
+        wp_send_json_error(array('message' => __('The mobile number is not valid.', 'nias-course-widget')));
     }
-    $sample = array('name' => wp_get_current_user()->display_name, 'student' => __('علی رضایی', 'nias-course-widget'), 'course' => __('دورهٔ نمونه', 'nias-course-widget'),
-        'lesson' => __('جلسهٔ اول', 'nias-course-widget'), 'quiz' => __('آزمون فصل اول', 'nias-course-widget'), 'score' => '85', 'status' => __('قبول', 'nias-course-widget'), 'code' => 'CERT-DEMO', 'link' => home_url('/'));
+    $sample = array('name' => wp_get_current_user()->display_name, 'student' => __('Ali Rezaei', 'nias-course-widget'), 'course' => __('Sample course', 'nias-course-widget'),
+        'lesson' => __('First lesson', 'nias-course-widget'), 'quiz' => __('Chapter one quiz', 'nias-course-widget'), 'score' => '85', 'status' => __('Passed', 'nias-course-widget'), 'code' => 'CERT-DEMO', 'link' => home_url('/'));
     $r = nias_sms_deliver($key, $phone, $sample, get_current_user_id());
-    is_wp_error($r) ? wp_send_json_error(array('message' => $r->get_error_message())) : wp_send_json_success(array('message' => __('ارسال شد.', 'nias-course-widget')));
+    is_wp_error($r) ? wp_send_json_error(array('message' => $r->get_error_message())) : wp_send_json_success(array('message' => __('Sent.', 'nias-course-widget')));
 });
 
 function nias_sms_settings_page()
@@ -505,15 +505,15 @@ function nias_sms_settings_page()
         . '.nsm-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.nsm-grid label{display:flex;flex-direction:column;gap:5px;font-size:13px;font-weight:700}.nsm-grid input[type=text],.nsm-grid textarea{border:1px solid #dbe3ef;border-radius:9px;padding:7px 10px;font:inherit;font-weight:400;direction:ltr;text-align:left}.nsm-grid textarea.rtl{direction:rtl;text-align:right}.nsm-tokens{font-size:12px;color:#64748b;margin-top:8px}.nsm-tokens code{background:#f1f5f9;border-radius:6px;padding:1px 6px;margin:0 2px;direction:ltr;display:inline-block}'
         . '.nsm-test{display:flex;gap:8px;align-items:center;margin-top:10px;flex-wrap:wrap}.nsm-test input{width:160px;border:1px solid #dbe3ef;border-radius:9px;padding:6px 10px;direction:ltr}.nsm-test button{height:34px;border-radius:9px;border:1px solid #dbe3ef;background:#f5f8ff;color:#3858e9;font:inherit;font-weight:700;padding:0 12px;cursor:pointer}.nsm-test span{font-size:12.5px}.nsm-switch{margin-right:auto;display:flex;align-items:center;gap:8px;font-weight:700;font-size:13px;cursor:pointer}.nsm-switch .nias-switch{margin-top:0}.nsm-switch .nias-switch-cb:disabled~.nias-switch-track{opacity:.5;cursor:not-allowed}@media(max-width:782px){.nsm-grid{grid-template-columns:1fr}}</style>';
     if (!$avail) {
-        echo '<div class="nsm-status off"><div><b>' . esc_html__('پیامک‌ها غیرفعال است: افزونهٔ «نیاس لاگین» نصب یا فعال نیست.', 'nias-course-widget') . '</b><br>'
-            . esc_html__('ارسال پیامک دوره‌ها فقط از طریق درگاهی انجام می‌شود که در نیاس لاگین تنظیم کرده‌اید (نسخهٔ ۱.۴ به بعد، که رابط برنامه‌نویسی پیامک دارد). تا نیاس لاگین فعال نشود، هیچ پیامکی ارسال نمی‌شود.', 'nias-course-widget')
-            . ' <a href="https://nias.ir/product/nias-login-signup/" target="_blank" rel="noopener">' . esc_html__('دریافت نیاس لاگین', 'nias-course-widget') . '</a></div></div>';
+        echo '<div class="nsm-status off"><div><b>' . esc_html__('SMS is disabled: the "Nias Login" plugin is not installed or active.', 'nias-course-widget') . '</b><br>'
+            . esc_html__('Course SMS is sent only through the gateway you set up in Nias Login (version 1.4 or later, which has the SMS API). Until Nias Login is active, no SMS is sent.', 'nias-course-widget')
+            . ' <a href="https://nias.ir/product/nias-login-signup/" target="_blank" rel="noopener">' . esc_html__('Get Nias Login', 'nias-course-widget') . '</a></div></div>';
     } elseif (!$ready) {
-        echo '<div class="nsm-status warn"><div><b>' . esc_html__('نیاس لاگین فعال است، ولی درگاه پیامک آن انتخاب نشده.', 'nias-course-widget') . '</b><br>' . esc_html__('در تنظیمات نیاس لاگین درگاه و اطلاعات پنل پیامکی را وارد کنید؛ تا آن زمان پیامکی ارسال نمی‌شود.', 'nias-course-widget') . '</div></div>';
+        echo '<div class="nsm-status warn"><div><b>' . esc_html__('Nias Login is active, but its SMS gateway is not selected.', 'nias-course-widget') . '</b><br>' . esc_html__('Enter the gateway and SMS panel details in the Nias Login settings; until then no SMS is sent.', 'nias-course-widget') . '</div></div>';
     } else {
-        echo '<div class="nsm-status ok"><div><b>' . esc_html(sprintf(__('ارسال از طریق نیاس لاگین · درگاه: %s', 'nias-course-widget'), $gw ? $gw['name'] : '—')) . '</b><br>'
-            . esc_html($text ? __('این درگاه هم پترن و هم متن آزاد را پشتیبانی می‌کند.', 'nias-course-widget') : __('این درگاه فقط ارسال با پترن را پشتیبانی می‌کند.', 'nias-course-widget'))
-            . ' ' . esc_html__('همهٔ ارسال‌ها در «گزارش پیام‌ها»ی نیاس لاگین با برچسب «دوره ساز نیاس» ثبت می‌شوند.', 'nias-course-widget') . '</div></div>';
+        echo '<div class="nsm-status ok"><div><b>' . esc_html(sprintf(__('Sending through Nias Login · Gateway: %s', 'nias-course-widget'), $gw ? $gw['name'] : '—')) . '</b><br>'
+            . esc_html($text ? __('This gateway supports both patterns and free text.', 'nias-course-widget') : __('This gateway only supports sending with a pattern.', 'nias-course-widget'))
+            . ' ' . esc_html__('All sends are recorded in Nias Login\'s "Message log" with the label "Nias Course Builder".', 'nias-course-widget') . '</div></div>';
     }
     echo '<form method="post">';
     wp_nonce_field('nias_sms_settings', 'nias_sms_nonce');
@@ -521,25 +521,25 @@ function nias_sms_settings_page()
     foreach (nias_sms_events() as $key => $ev) {
         $s = nias_sms_event_settings($key);
         $n = 'sms[' . $key . ']';
-        echo '<div class="nsm-ev' . ($avail ? '' : ' dis') . '"><div class="nsm-ev-h"><b>' . esc_html($ev['label']) . '</b><span class="nsm-to ' . esc_attr($ev['to']) . '">' . esc_html($ev['to'] === 'student' ? __('دانشجو', 'nias-course-widget') : __('مدرس', 'nias-course-widget')) . '</span>'
-            . '<label class="nsm-switch"><span>' . esc_html__('فعال', 'nias-course-widget') . '</span><span class="nias-switch"><input type="checkbox" class="nias-switch-cb" name="' . esc_attr($n) . '[on]" value="on"' . checked($s['on'], 'on', false) . $dis . '><span class="nias-switch-track"><span class="nias-switch-knob"></span></span></span></label></div>'
+        echo '<div class="nsm-ev' . ($avail ? '' : ' dis') . '"><div class="nsm-ev-h"><b>' . esc_html($ev['label']) . '</b><span class="nsm-to ' . esc_attr($ev['to']) . '">' . esc_html($ev['to'] === 'student' ? __('Student', 'nias-course-widget') : __('Instructor', 'nias-course-widget')) . '</span>'
+            . '<label class="nsm-switch"><span>' . esc_html__('Active', 'nias-course-widget') . '</span><span class="nias-switch"><input type="checkbox" class="nias-switch-cb" name="' . esc_attr($n) . '[on]" value="on"' . checked($s['on'], 'on', false) . $dis . '><span class="nias-switch-track"><span class="nias-switch-knob"></span></span></span></label></div>'
             . '<div class="nsm-ev-d">' . esc_html($ev['desc']) . '</div>'
-            . '<div class="nsm-grid"><label>' . esc_html__('روش ارسال', 'nias-course-widget') . '<select name="' . esc_attr($n) . '[mode]"' . $dis . '><option value="pattern"' . selected($s['mode'], 'pattern', false) . '>' . esc_html__('پترن (پیشنهادی)', 'nias-course-widget') . '</option>'
-            . '<option value="text"' . selected($s['mode'], 'text', false) . ($text ? '' : ' disabled') . '>' . esc_html__('متن آزاد', 'nias-course-widget') . ($text ? '' : ' ' . esc_html__('(درگاه پشتیبانی نمی‌کند)', 'nias-course-widget')) . '</option></select></label>'
-            . '<label>' . esc_html__('کد پترن', 'nias-course-widget') . '<input type="text" name="' . esc_attr($n) . '[pattern]" value="' . esc_attr($s['pattern']) . '" placeholder="12345"' . $dis . '></label>'
-            . '<label>' . esc_html__('متغیرهای پترن (به همان ترتیب پترن)', 'nias-course-widget') . '<textarea name="' . esc_attr($n) . '[params]" rows="3"' . $dis . '>' . esc_textarea($s['params']) . '</textarea></label>'
-            . '<label>' . esc_html__('متن آزاد', 'nias-course-widget') . '<textarea class="rtl" name="' . esc_attr($n) . '[text]" rows="3"' . $dis . '>' . esc_textarea($s['text']) . '</textarea></label></div>'
-            . '<div class="nsm-tokens">' . esc_html__('متغیرهای این رویداد:', 'nias-course-widget') . ' ' . implode(' ', array_map(function ($t) use ($tok) {
+            . '<div class="nsm-grid"><label>' . esc_html__('Sending method', 'nias-course-widget') . '<select name="' . esc_attr($n) . '[mode]"' . $dis . '><option value="pattern"' . selected($s['mode'], 'pattern', false) . '>' . esc_html__('Pattern (recommended)', 'nias-course-widget') . '</option>'
+            . '<option value="text"' . selected($s['mode'], 'text', false) . ($text ? '' : ' disabled') . '>' . esc_html__('Free text', 'nias-course-widget') . ($text ? '' : ' ' . esc_html__('(not supported by the gateway)', 'nias-course-widget')) . '</option></select></label>'
+            . '<label>' . esc_html__('Pattern code', 'nias-course-widget') . '<input type="text" name="' . esc_attr($n) . '[pattern]" value="' . esc_attr($s['pattern']) . '" placeholder="12345"' . $dis . '></label>'
+            . '<label>' . esc_html__('Pattern variables (in the pattern\'s order)', 'nias-course-widget') . '<textarea name="' . esc_attr($n) . '[params]" rows="3"' . $dis . '>' . esc_textarea($s['params']) . '</textarea></label>'
+            . '<label>' . esc_html__('Free text', 'nias-course-widget') . '<textarea class="rtl" name="' . esc_attr($n) . '[text]" rows="3"' . $dis . '>' . esc_textarea($s['text']) . '</textarea></label></div>'
+            . '<div class="nsm-tokens">' . esc_html__('Variables of this event:', 'nias-course-widget') . ' ' . implode(' ', array_map(function ($t) use ($tok) {
                 return '<code>{' . esc_html($t) . '}</code>' . esc_html(isset($tok[$t]) ? $tok[$t] : $t);
             }, $ev['tokens'])) . '</div>'
-            . ($ready ? '<div class="nsm-test" data-ev="' . esc_attr($key) . '"><input type="text" placeholder="09xxxxxxxxx"><button type="button">' . esc_html__('ارسال آزمایشی', 'nias-course-widget') . '</button><span></span></div>' : '')
+            . ($ready ? '<div class="nsm-test" data-ev="' . esc_attr($key) . '"><input type="text" placeholder="09xxxxxxxxx"><button type="button">' . esc_html__('Test send', 'nias-course-widget') . '</button><span></span></div>' : '')
             . '</div>';
     }
     if ($avail) {
         nias_set_save_button('nias_sms_save');
     }
     echo '</form>';
-    echo '<p style="color:#64748b;font-size:12.5px;line-height:2">' . esc_html__('شمارهٔ گیرنده: شمارهٔ موبایل حساب کاربری در نیاس لاگین، و اگر نبود شمارهٔ صورت‌حساب ووکامرس. نام متغیرها را همان نامی بگذارید که در پترن پنل پیامکی نوشته‌اید و ترتیبشان را با ترتیب پترن یکی کنید تا با درگاه‌هایی که متغیر را به‌ترتیب می‌خوانند هم درست کار کند. ارسال‌ها در صف اجرا می‌شوند تا صفحه‌ها منتظر درگاه نمانند.', 'nias-course-widget') . '</p>';
+    echo '<p style="color:#64748b;font-size:12.5px;line-height:2">' . esc_html__('Recipient number: the user account\'s mobile number in Nias Login, or else the WooCommerce billing number. Name the variables exactly as in the SMS panel pattern and keep them in the pattern\'s order so it also works with gateways that read variables in order. Sends run in a queue so pages do not wait for the gateway.', 'nias-course-widget') . '</p>';
     echo "<script>document.querySelectorAll('.nsm-test').forEach(function(b){b.querySelector('button').addEventListener('click',function(){var o=b.querySelector('span');o.textContent='در حال ارسال…';var f=new URLSearchParams();f.append('action','nias_sms_test');f.append('nonce'," . wp_json_encode(wp_create_nonce('nias_sms_test')) . ");f.append('event',b.getAttribute('data-ev'));f.append('phone',b.querySelector('input').value);fetch(ajaxurl,{method:'POST',credentials:'same-origin',body:f}).then(function(r){return r.json();}).then(function(r){o.textContent=(r&&r.data&&r.data.message)||'خطا';o.style.color=r&&r.success?'#16a34a':'#d64545';});});});</script>";
     echo '</div></div></div>';
 }

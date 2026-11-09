@@ -108,7 +108,7 @@ add_filter('woocommerce_add_to_cart_validation', function ($ok, $product_id) {
     }
     $missing = nias_prereq_missing(get_current_user_id(), $product_id);
     if ($missing) {
-        wc_add_notice(sprintf(__('برای خرید این دوره ابتدا باید %s را به پایان برسانید.', 'nias-course-widget'), '«' . implode('»، «', array_map('get_the_title', $missing)) . '»'), 'error');
+        wc_add_notice(sprintf(__('To buy this course you must first finish %s.', 'nias-course-widget'), '«' . implode('»، «', array_map('get_the_title', $missing)) . '»'), 'error');
         return false;
     }
     return $ok;
@@ -138,7 +138,7 @@ add_action('woocommerce_single_product_summary', function () {
     }
     $r = nias_prereq_rules($pid);
     echo '<div class="woocommerce-info" style="margin:12px 0">' . esc_html(sprintf(
-        $r['mode'] === 'buy' ? __('پیش‌نیاز خرید این دوره: %s', 'nias-course-widget') : __('پیش‌نیاز این دوره: %s (جلسات این دوره پس از آن باز می‌شوند).', 'nias-course-widget'),
+        $r['mode'] === 'buy' ? __('Prerequisite for buying this course: %s', 'nias-course-widget') : __('Prerequisite for this course: %s (this course\'s lessons open after that).', 'nias-course-widget'),
         '«' . implode('»، «', array_map('get_the_title', $m)) . '»'
     )) . '</div>';
 }, 25);
@@ -147,7 +147,7 @@ add_action('woocommerce_single_product_summary', function () {
 
 add_action('add_meta_boxes', function ($post_type) {
     if (nias_paths_enabled() && function_exists('nias_is_course_type') && nias_is_course_type($post_type)) {
-        add_meta_box('nias-prereq', __('پیش‌نیاز دوره (دوره ساز نیاس)', 'nias-course-widget'), 'nias_prereq_box', $post_type, 'side');
+        add_meta_box('nias-prereq', __('Course prerequisite (Nias Course Builder)', 'nias-course-widget'), 'nias_prereq_box', $post_type, 'side');
     }
 });
 
@@ -165,13 +165,13 @@ function nias_prereq_box($post)
     $need = get_post_meta($post->ID, '_nias_prereq_need', true) === 'certificate' ? 'certificate' : 'complete';
     $mode = get_post_meta($post->ID, '_nias_prereq_mode', true) === 'buy' ? 'buy' : 'content';
     ?>
-    <p style="margin-top:0"><b><?php echo esc_html__('دوره‌هایی که باید اول تمام شوند', 'nias-course-widget'); ?></b></p>
+    <p style="margin-top:0"><b><?php echo esc_html__('Courses that must be finished first', 'nias-course-widget'); ?></b></p>
     <div data-nias-prereq-pick></div>
     <input type="hidden" name="nias_prereq" value="<?php echo esc_attr(implode(',', $ids)); ?>">
-    <p><label><b><?php echo esc_html__('تمام شدن یعنی', 'nias-course-widget'); ?></b><br>
-        <select name="nias_prereq_need"><option value="complete" <?php selected($need, 'complete'); ?>><?php echo esc_html__('پیشرفت ۱۰۰٪', 'nias-course-widget'); ?></option><option value="certificate" <?php selected($need, 'certificate'); ?>><?php echo esc_html__('گرفتن مدرک', 'nias-course-widget'); ?></option></select></label></p>
-    <p><label><b><?php echo esc_html__('قبل از آن', 'nias-course-widget'); ?></b><br>
-        <select name="nias_prereq_mode"><option value="content" <?php selected($mode, 'content'); ?>><?php echo esc_html__('خرید آزاد، جلسات قفل', 'nias-course-widget'); ?></option><option value="buy" <?php selected($mode, 'buy'); ?>><?php echo esc_html__('خرید هم ممکن نیست', 'nias-course-widget'); ?></option></select></label></p>
+    <p><label><b><?php echo esc_html__('Finished means', 'nias-course-widget'); ?></b><br>
+        <select name="nias_prereq_need"><option value="complete" <?php selected($need, 'complete'); ?>><?php echo esc_html__('100% progress', 'nias-course-widget'); ?></option><option value="certificate" <?php selected($need, 'certificate'); ?>><?php echo esc_html__('Getting the certificate', 'nias-course-widget'); ?></option></select></label></p>
+    <p><label><b><?php echo esc_html__('Before that', 'nias-course-widget'); ?></b><br>
+        <select name="nias_prereq_mode"><option value="content" <?php selected($mode, 'content'); ?>><?php echo esc_html__('Buying allowed, lessons locked', 'nias-course-widget'); ?></option><option value="buy" <?php selected($mode, 'buy'); ?>><?php echo esc_html__('Buying not possible either', 'nias-course-widget'); ?></option></select></label></p>
     <script>
     document.addEventListener('DOMContentLoaded', function () {
         var h = document.querySelector('[data-nias-prereq-pick]'), inp = document.querySelector('[name=nias_prereq]');
@@ -201,7 +201,7 @@ add_action('init', function () {
         return;
     }
     register_post_type(NIAS_PATH_CPT, array(
-        'labels'       => array('name' => __('مسیرهای یادگیری', 'nias-course-widget'), 'singular_name' => __('مسیر یادگیری', 'nias-course-widget'), 'add_new_item' => __('افزودن مسیر یادگیری', 'nias-course-widget'), 'edit_item' => __('ویرایش مسیر یادگیری', 'nias-course-widget'), 'menu_name' => __('مسیرهای یادگیری', 'nias-course-widget')),
+        'labels'       => array('name' => __('Learning paths', 'nias-course-widget'), 'singular_name' => __('Learning path', 'nias-course-widget'), 'add_new_item' => __('Add learning path', 'nias-course-widget'), 'edit_item' => __('Edit learning path', 'nias-course-widget'), 'menu_name' => __('Learning paths', 'nias-course-widget')),
         'public'       => true,
         'has_archive'  => false,
         'rewrite'      => array('slug' => 'learning-path', 'with_front' => false),
@@ -237,7 +237,7 @@ function nias_paths_of_course($course_id)
 }
 
 add_action('add_meta_boxes_' . NIAS_PATH_CPT, function () {
-    add_meta_box('nias-path-courses', __('دوره‌های این مسیر (به ترتیب)', 'nias-course-widget'), function ($post) {
+    add_meta_box('nias-path-courses', __('Courses of this path (in order)', 'nias-course-widget'), function ($post) {
         wp_nonce_field('nias_path', 'nias_path_nonce');
         if (function_exists('nias_picker_enqueue')) {
             nias_picker_enqueue();
@@ -248,10 +248,10 @@ add_action('add_meta_boxes_' . NIAS_PATH_CPT, function () {
             $items[] = function_exists('nias_picker_product_item') ? nias_picker_product_item($id) : array('id' => $id, 'label' => get_the_title($id));
         }
         ?>
-        <p><?php echo esc_html__('دوره‌ها را به ترتیبی که باید گذرانده شوند انتخاب کنید. نمایش در هر جای سایت با شورت‌کد:', 'nias-course-widget'); ?> <code>[nias_path id="<?php echo (int) $post->ID; ?>"]</code></p>
+        <p><?php echo esc_html__('Select the courses in the order they should be taken. Show it anywhere on the site with the shortcode:', 'nias-course-widget'); ?> <code>[nias_path id="<?php echo (int) $post->ID; ?>"]</code></p>
         <div data-nias-path-pick></div>
         <input type="hidden" name="nias_path_courses" value="<?php echo esc_attr(implode(',', $ids)); ?>">
-        <p><label><input type="checkbox" name="nias_path_seq" value="on" <?php checked(get_post_meta($post->ID, '_nias_path_seq', true), 'on'); ?>> <b><?php echo esc_html__('ترتیبی', 'nias-course-widget'); ?></b> — <?php echo esc_html__('جلسات هر دوره پس از تمام کردن دورهٔ قبلی همین مسیر باز می‌شود.', 'nias-course-widget'); ?></label></p>
+        <p><label><input type="checkbox" name="nias_path_seq" value="on" <?php checked(get_post_meta($post->ID, '_nias_path_seq', true), 'on'); ?>> <b><?php echo esc_html__('Sequential', 'nias-course-widget'); ?></b> — <?php echo esc_html__('Each course\'s lessons open after finishing the previous course of this path.', 'nias-course-widget'); ?></label></p>
         <script>
         document.addEventListener('DOMContentLoaded', function () {
             var h = document.querySelector('[data-nias-path-pick]'), inp = document.querySelector('[name=nias_path_courses]');
@@ -293,7 +293,7 @@ function nias_path_html($path_id)
         $fin  = $uid && nias_prereq_done($uid, $cid);
         $miss = nias_prereq_missing($uid, $cid);
         $done += $fin ? 1 : 0;
-        $state = $fin ? array('done', __('تمام‌شده', 'nias-course-widget')) : ($miss ? array('lock', __('پس از دورهٔ قبل', 'nias-course-widget')) : ($has ? array('now', sprintf(__('در حال یادگیری · %s٪', 'nias-course-widget'), nias_fa_digits($pct))) : array('open', __('آمادهٔ شروع', 'nias-course-widget'))));
+        $state = $fin ? array('done', __('Finished', 'nias-course-widget')) : ($miss ? array('lock', __('After the previous course', 'nias-course-widget')) : ($has ? array('now', sprintf(__('In progress · %s%%', 'nias-course-widget'), nias_fa_digits($pct))) : array('open', __('Ready to start', 'nias-course-widget'))));
         $url   = $has && function_exists('nias_course_modern_view_url') ? nias_course_modern_view_url($cid) : get_permalink($cid);
         $img   = get_the_post_thumbnail_url($cid, 'medium');
         $steps .= '<li class="npt-s ' . esc_attr($state[0]) . '"><span class="npt-n">' . esc_html(nias_fa_digits($n)) . '</span>'
@@ -327,7 +327,7 @@ function nias_path_html($path_id)
         .npt-bar i{background:#3858e9}
         </style>
         <div class="npt-h"><b><?php echo esc_html(get_the_title($path_id)); ?></b>
-            <div class="npt-p"><span><?php echo esc_html(sprintf(__('%1$s از %2$s دوره تمام شده', 'nias-course-widget'), nias_fa_digits($done), nias_fa_digits($n))); ?></span><em><i style="width:<?php echo (int) round($done / $total * 100); ?>%"></i></em></div>
+            <div class="npt-p"><span><?php echo esc_html(sprintf(__('%1$s of %2$s courses finished', 'nias-course-widget'), nias_fa_digits($done), nias_fa_digits($n))); ?></span><em><i style="width:<?php echo (int) round($done / $total * 100); ?>%"></i></em></div>
         </div>
         <ol><?php echo $steps; // phpcs:ignore -- escaped above ?></ol>
     </div>

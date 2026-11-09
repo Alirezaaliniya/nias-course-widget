@@ -39,7 +39,7 @@ add_action('elementor/frontend/after_render', function ($element) {
 function nias_modal_player()
 {
     ?>
-    <div id="videoModal" class="nias-video-modal" role="dialog" aria-modal="true" aria-label="<?php echo esc_attr__('پیش‌نمایش درس', 'nias-course-widget'); ?>" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.8);justify-content:center;align-items:center;z-index:99999;">
+    <div id="videoModal" class="nias-video-modal" role="dialog" aria-modal="true" aria-label="<?php echo esc_attr__('Lesson preview', 'nias-course-widget'); ?>" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.8);justify-content:center;align-items:center;z-index:99999;">
         <div class="nias-video-modal-inner" style="position:relative;width:92%;max-width:880px;">
             <button id="closeModal" type="button" style="position:relative;top:0;right:0;background:#e11d48;color:#fff;font-size:13px;border:none;cursor:pointer;font-family:inherit;border-radius:8px 8px 0 0;padding:7px 14px;">بستن</button>
             <div id="niasModalStage" class="nias-modal-stage" style="position:relative;width:100%;aspect-ratio:16/9;background:#000;border-radius:0 8px 8px 8px;overflow:hidden;">

@@ -45,7 +45,7 @@ function nias_instructors_ensure_role()
         return;
     }
     if (!get_role(NIAS_INSTRUCTOR_ROLE)) {
-        add_role(NIAS_INSTRUCTOR_ROLE, __('مدرس', 'nias-course-widget'), array('read' => true));
+        add_role(NIAS_INSTRUCTOR_ROLE, __('Instructor', 'nias-course-widget'), array('read' => true));
     }
 }
 
@@ -141,8 +141,8 @@ function nias_instructors_register_page()
     }
     add_submenu_page(
         'nias-course-settings',
-        __('مدرسین', 'nias-course-widget'),
-        __('مدرسین', 'nias-course-widget'),
+        __('Instructors', 'nias-course-widget'),
+        __('Instructors', 'nias-course-widget'),
         'manage_options',
         'nias-course-instructors',
         'nias_instructors_render_page'
@@ -168,16 +168,16 @@ function nias_instructors_handle_actions(&$notice)
     $user    = $user_id ? get_userdata($user_id) : null;
 
     if (!$user) {
-        $notice = array('err', __('کاربر معتبری انتخاب نشد.', 'nias-course-widget'));
+        $notice = array('err', __('No valid user was selected.', 'nias-course-widget'));
         return;
     }
 
     if ($action === 'add') {
         $user->add_role(NIAS_INSTRUCTOR_ROLE);
-        $notice = array('ok', sprintf(__('«%s» به فهرست مدرسین اضافه شد.', 'nias-course-widget'), $user->display_name));
+        $notice = array('ok', sprintf(__('"%s" was added to the instructors list.', 'nias-course-widget'), $user->display_name));
     } elseif ($action === 'remove') {
         $user->remove_role(NIAS_INSTRUCTOR_ROLE);
-        $notice = array('ok', sprintf(__('«%s» از فهرست مدرسین حذف شد.', 'nias-course-widget'), $user->display_name));
+        $notice = array('ok', sprintf(__('"%s" was removed from the instructors list.', 'nias-course-widget'), $user->display_name));
     }
 }
 
@@ -204,7 +204,7 @@ function nias_instructors_render_page()
         $show_saved = true;
     }
     $dash_page = (int) carbon_get_theme_option('instructors_dashboard_page');
-    $page_options = array('' => __('— بدون نمایش —', 'nias-course-widget'));
+    $page_options = array('' => __('— Not shown —', 'nias-course-widget'));
     foreach (get_pages(array('post_status' => 'publish', 'sort_column' => 'post_title', 'sort_order' => 'ASC')) as $page) {
         $page_options[$page->ID] = $page->post_title;
     }
@@ -236,31 +236,31 @@ function nias_instructors_render_page()
                     <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8ZM4 21a8 8 0 0 1 16 0" stroke="#3858e9" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
                 </div>
                 <div class="nias-alert-body">
-                    <div class="nias-alert-title"><?php echo esc_html__('مدیریت مدرسین', 'nias-course-widget'); ?></div>
-                    <div class="nias-alert-desc"><?php echo esc_html__('در این صفحه می‌توانید کاربران وردپرس را به نقش «مدرس» تغییر دهید، مدرسین را حذف کنید و دوره‌های هر مدرس را مشاهده کنید. برای اختصاص مدرس به یک محصول، از صفحهٔ «ویرایش جلسات و فصل‌ها» همان محصول استفاده کنید.', 'nias-course-widget'); ?></div>
+                    <div class="nias-alert-title"><?php echo esc_html__('Manage instructors', 'nias-course-widget'); ?></div>
+                    <div class="nias-alert-desc"><?php echo esc_html__('On this page you can change WordPress users to the "Instructor" role, remove instructors and see each instructor\'s courses. To assign an instructor to a product, use that product\'s "Edit lessons and chapters" page.', 'nias-course-widget'); ?></div>
                 </div>
             </div>
 
             <!-- Dashboard page selection ("انتخاب برگه") -->
             <?php nias_set_saved_banner($dash_saved); ?>
-            <?php nias_set_card_open('<svg width="20" height="20" viewBox="0 0 24 24" fill="none"><rect x="2" y="3" width="20" height="14" rx="3" stroke="#3858e9" stroke-width="1.8"/><path d="M8 21h8M12 17v4" stroke="#3858e9" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>', __('برگهٔ پیشخوان مدرس', 'nias-course-widget')); ?>
+            <?php nias_set_card_open('<svg width="20" height="20" viewBox="0 0 24 24" fill="none"><rect x="2" y="3" width="20" height="14" rx="3" stroke="#3858e9" stroke-width="1.8"/><path d="M8 21h8M12 17v4" stroke="#3858e9" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>', __('Instructor dashboard page', 'nias-course-widget')); ?>
                 <form method="post">
                     <?php wp_nonce_field('nias_instructor_dashboard', 'nias_inst_dash_nonce'); ?>
                     <div class="nias-row-block">
-                        <div class="nias-row-desc"><?php echo esc_html__('برگه‌ای را انتخاب کنید تا «پیشخوان مدرس» در آن نمایش داده شود. هر مدرس پس از ورود، پیشخوان خودش را با داده‌های واقعی (دوره‌ها، دانشجویان، درآمد ووکامرس، گواهی‌ها و نظرات) می‌بیند. اگر می‌خواهید محل نمایش را خودتان تعیین کنید، از شورت‌کد زیر استفاده کنید.', 'nias-course-widget'); ?></div>
-                        <?php nias_set_select_field('instructors_dashboard_page', __('برگهٔ نمایش پیشخوان', 'nias-course-widget'), '', $page_options); ?>
+                        <div class="nias-row-desc"><?php echo esc_html__('Choose a page to show the "Instructor dashboard" on. After logging in, each instructor sees their own dashboard with real data (courses, students, WooCommerce income, certificates and reviews). If you want to choose the location yourself, use the shortcode below.', 'nias-course-widget'); ?></div>
+                        <?php nias_set_select_field('instructors_dashboard_page', __('Dashboard display page', 'nias-course-widget'), '', $page_options); ?>
                     </div>
                     <div class="nias-shortcodes" style="margin-top:6px">
                         <div class="nias-sc-head">
                             <svg width="19" height="19" viewBox="0 0 24 24" fill="none"><path d="m8 16-4-4 4-4m8 0 4 4-4 4M14 4l-4 16" stroke="#c98a16" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
-                            <span><?php echo esc_html__('شورت‌کد پیشخوان مدرس', 'nias-course-widget'); ?></span>
+                            <span><?php echo esc_html__('Instructor dashboard shortcode', 'nias-course-widget'); ?></span>
                         </div>
                         <div class="nias-sc-list">
-                            <div class="nias-sc-item"><code dir="ltr">[nias_instructor_dashboard]</code><span><?php echo esc_html__('نمایش پیشخوان مدرس برای کاربر واردشده', 'nias-course-widget'); ?></span></div>
+                            <div class="nias-sc-item"><code dir="ltr">[nias_instructor_dashboard]</code><span><?php echo esc_html__('Shows the instructor dashboard for the logged-in user', 'nias-course-widget'); ?></span></div>
                         </div>
                         <?php if ($dash_page) : ?>
                             <div class="nias-sc-sub" style="margin-top:10px">
-                                <?php echo esc_html__('برگهٔ فعلی:', 'nias-course-widget'); ?>
+                                <?php echo esc_html__('Current page:', 'nias-course-widget'); ?>
                                 <a href="<?php echo esc_url(get_permalink($dash_page)); ?>" target="_blank" rel="noopener" style="color:#3858e9;font-weight:700"><?php echo esc_html(get_the_title($dash_page)); ?></a>
                             </div>
                         <?php endif; ?>
@@ -271,25 +271,25 @@ function nias_instructors_render_page()
 
             <!-- Instructor name on the course page -->
             <?php nias_set_saved_banner($show_saved); ?>
-            <?php nias_set_card_open('<svg width="20" height="20" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="8" r="4" stroke="#3858e9" stroke-width="1.8"/><path d="M4 21a8 8 0 0 1 16 0" stroke="#3858e9" stroke-width="1.8" stroke-linecap="round"/></svg>', __('نمایش مدرس در صفحهٔ دوره', 'nias-course-widget')); ?>
+            <?php nias_set_card_open('<svg width="20" height="20" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="8" r="4" stroke="#3858e9" stroke-width="1.8"/><path d="M4 21a8 8 0 0 1 16 0" stroke="#3858e9" stroke-width="1.8" stroke-linecap="round"/></svg>', __('Show the instructor on the course page', 'nias-course-widget')); ?>
                 <form method="post">
                     <?php wp_nonce_field('nias_instructor_show', 'nias_inst_show_nonce'); ?>
                     <?php nias_set_toggle_row(
                         'nias_inst_auto_show',
-                        __('نمایش خودکار نام مدرس', 'nias-course-widget'),
-                        __('نام (و تصویر) مدرس هر دوره زیر عنوان صفحهٔ محصول ووکامرس و بالای صفحهٔ «دوره» نمایش داده می‌شود. اگر صفحهٔ محصول را با المنتور ساخته‌اید یا جای دیگری می‌خواهید، این گزینه را خاموش بگذارید و از شورت‌کد زیر استفاده کنید.', 'nias-course-widget'),
+                        __('Show the instructor name automatically', 'nias-course-widget'),
+                        __('The name (and photo) of each course\'s instructor is shown below the WooCommerce product page title and at the top of the "Course" page. If you built the product page with Elementor or want another place, leave this off and use the shortcode below.', 'nias-course-widget'),
                         'off'
                     ); ?>
                     <div class="nias-shortcodes" style="margin-top:6px">
                         <div class="nias-sc-head">
                             <svg width="19" height="19" viewBox="0 0 24 24" fill="none"><path d="m8 16-4-4 4-4m8 0 4 4-4 4M14 4l-4 16" stroke="#c98a16" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
-                            <span><?php echo esc_html__('شورت‌کد نام مدرس', 'nias-course-widget'); ?></span>
+                            <span><?php echo esc_html__('Instructor name shortcode', 'nias-course-widget'); ?></span>
                         </div>
                         <div class="nias-sc-list">
-                            <div class="nias-sc-item"><code dir="ltr">[nias_course_instructors]</code><span><?php echo esc_html__('نام و تصویر مدرس(های) همین دوره — در قالب تک‌محصول المنتور با ویجت «کد کوتاه»', 'nias-course-widget'); ?></span></div>
-                            <div class="nias-sc-item"><code dir="ltr">[nias_course_instructors layout="card"]</code><span><?php echo esc_html__('کارت مدرس همراه با بیوگرافی (از «اطلاعات زندگی‌نامه» پروفایل کاربر)', 'nias-course-widget'); ?></span></div>
-                            <div class="nias-sc-item"><code dir="ltr">[nias_course_instructors avatar="no" label=""]</code><span><?php echo esc_html__('فقط نام مدرس، بدون تصویر و برچسب', 'nias-course-widget'); ?></span></div>
-                            <div class="nias-sc-item"><code dir="ltr">[nias_course_instructors id="123"]</code><span><?php echo esc_html__('مدرس یک دورهٔ مشخص (در هر صفحه‌ای)', 'nias-course-widget'); ?></span></div>
+                            <div class="nias-sc-item"><code dir="ltr">[nias_course_instructors]</code><span><?php echo esc_html__('Name and photo of this course\'s instructor(s) — in an Elementor single product template with the "Shortcode" widget', 'nias-course-widget'); ?></span></div>
+                            <div class="nias-sc-item"><code dir="ltr">[nias_course_instructors layout="card"]</code><span><?php echo esc_html__('Instructor card with biography (from the user profile\'s "Biographical info")', 'nias-course-widget'); ?></span></div>
+                            <div class="nias-sc-item"><code dir="ltr">[nias_course_instructors avatar="no" label=""]</code><span><?php echo esc_html__('Instructor name only, without photo or label', 'nias-course-widget'); ?></span></div>
+                            <div class="nias-sc-item"><code dir="ltr">[nias_course_instructors id="123"]</code><span><?php echo esc_html__('Instructor of a specific course (on any page)', 'nias-course-widget'); ?></span></div>
                         </div>
                     </div>
                     <?php nias_set_save_button('nias_save_instructor_show'); ?>
@@ -300,27 +300,27 @@ function nias_instructors_render_page()
             <?php if (function_exists('nias_inst_panel_settings_card')) { nias_inst_panel_settings_card(); } ?>
 
             <!-- Add instructor -->
-            <?php nias_set_card_open('<svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8ZM19 8v6M22 11h-6" stroke="#3858e9" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>', __('افزودن مدرس جدید', 'nias-course-widget')); ?>
+            <?php nias_set_card_open('<svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8ZM19 8v6M22 11h-6" stroke="#3858e9" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>', __('Add new instructor', 'nias-course-widget')); ?>
                 <div class="nias-card-pad">
-                    <div class="nias-fdesc" style="margin-bottom:12px"><?php echo esc_html__('یک کاربر وردپرس را انتخاب کنید تا نقش «مدرس» به او اضافه شود.', 'nias-course-widget'); ?></div>
-                        <form method="post" class="nias-inst-add" onsubmit="var h=this.querySelector('input[name=nias_inst_user]');if(!h||!h.value){alert('<?php echo esc_js(__('ابتدا یک کاربر را جستجو و انتخاب کنید.', 'nias-course-widget')); ?>');return false;}">
+                    <div class="nias-fdesc" style="margin-bottom:12px"><?php echo esc_html__('Choose a WordPress user to add the "Instructor" role to.', 'nias-course-widget'); ?></div>
+                        <form method="post" class="nias-inst-add" onsubmit="var h=this.querySelector('input[name=nias_inst_user]');if(!h||!h.value){alert('<?php echo esc_js(__('First search for and select a user.', 'nias-course-widget')); ?>');return false;}">
                             <?php wp_nonce_field('nias_instructors_manage', 'nias_inst_nonce'); ?>
                             <input type="hidden" name="nias_inst_action" value="add">
                             <div class="nias-inst-grow" id="nias-inst-pick"></div>
-                            <script>document.addEventListener('DOMContentLoaded',function(){ if(window.NiasPicker){ window.NiasPicker.attach(document.getElementById('nias-inst-pick'),{source:'user',name:'nias_inst_user',emptyLabel:<?php echo wp_json_encode(__('جستجوی نام، ایمیل یا نام کاربری…', 'nias-course-widget')); ?>,placeholder:<?php echo wp_json_encode(__('نام، ایمیل یا نام کاربری…', 'nias-course-widget')); ?>,params:{exclude:<?php echo wp_json_encode(implode(',', $inst_ids)); ?>}}); } });</script>
+                            <script>document.addEventListener('DOMContentLoaded',function(){ if(window.NiasPicker){ window.NiasPicker.attach(document.getElementById('nias-inst-pick'),{source:'user',name:'nias_inst_user',emptyLabel:<?php echo wp_json_encode(__('Search name, email or username…', 'nias-course-widget')); ?>,placeholder:<?php echo wp_json_encode(__('Name, email or username…', 'nias-course-widget')); ?>,params:{exclude:<?php echo wp_json_encode(implode(',', $inst_ids)); ?>}}); } });</script>
                             <button type="submit" class="nias-btn-primary">
                                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M12 5v14M5 12h14" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-                                <?php echo esc_html__('افزودن به مدرسین', 'nias-course-widget'); ?>
+                                <?php echo esc_html__('Add to instructors', 'nias-course-widget'); ?>
                             </button>
                         </form>
                 </div>
             <?php nias_set_card_close(); ?>
 
             <!-- Instructor list -->
-            <?php nias_set_card_open('<svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8ZM23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75" stroke="#3858e9" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>', sprintf(__('فهرست مدرسین (%s)', 'nias-course-widget'), nias_fa_digits(count($instructors)))); ?>
+            <?php nias_set_card_open('<svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8ZM23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75" stroke="#3858e9" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>', sprintf(__('Instructors list (%s)', 'nias-course-widget'), nias_fa_digits(count($instructors)))); ?>
                 <div class="nias-card-pad">
                     <?php if (empty($instructors)) : ?>
-                        <div class="nias-inst-empty"><?php echo esc_html__('هنوز مدرسی اضافه نشده است.', 'nias-course-widget'); ?></div>
+                        <div class="nias-inst-empty"><?php echo esc_html__('No instructor has been added yet.', 'nias-course-widget'); ?></div>
                     <?php else : ?>
                         <div class="nias-inst-list">
                             <?php foreach ($instructors as $inst) :
@@ -331,23 +331,23 @@ function nias_instructors_render_page()
                                         <div class="nias-inst-name"><?php echo esc_html($inst->display_name); ?></div>
                                         <div class="nias-inst-email"><?php echo esc_html($inst->user_email); ?></div>
                                         <div class="nias-inst-courses">
-                                            <span class="nias-inst-count-chip"><?php echo esc_html(sprintf(__('%s دوره', 'nias-course-widget'), nias_fa_digits(count($courses)))); ?></span>
+                                            <span class="nias-inst-count-chip"><?php echo esc_html(sprintf(__('%s courses', 'nias-course-widget'), nias_fa_digits(count($courses)))); ?></span>
                                             <?php if (!empty($courses)) : ?>
                                                 <?php foreach ($courses as $course) : ?>
-                                                    <a href="<?php echo esc_url(get_edit_post_link($course->ID)); ?>" class="nias-inst-course"><?php echo esc_html($course->post_title ? $course->post_title : __('(بدون عنوان)', 'nias-course-widget')); ?></a>
+                                                    <a href="<?php echo esc_url(get_edit_post_link($course->ID)); ?>" class="nias-inst-course"><?php echo esc_html($course->post_title ? $course->post_title : __('(no title)', 'nias-course-widget')); ?></a>
                                                 <?php endforeach; ?>
                                             <?php else : ?>
-                                                <span class="nias-inst-nocourse"><?php echo esc_html__('هنوز به دوره‌ای اختصاص نیافته است.', 'nias-course-widget'); ?></span>
+                                                <span class="nias-inst-nocourse"><?php echo esc_html__('Not assigned to any course yet.', 'nias-course-widget'); ?></span>
                                             <?php endif; ?>
                                         </div>
                                     </div>
-                                    <form method="post" class="nias-inst-rmform" onsubmit="return confirm('<?php echo esc_js(__('این مدرس از فهرست حذف شود؟', 'nias-course-widget')); ?>');">
+                                    <form method="post" class="nias-inst-rmform" onsubmit="return confirm('<?php echo esc_js(__('Remove this instructor from the list?', 'nias-course-widget')); ?>');">
                                         <?php wp_nonce_field('nias_instructors_manage', 'nias_inst_nonce'); ?>
                                         <input type="hidden" name="nias_inst_action" value="remove">
                                         <input type="hidden" name="nias_inst_user" value="<?php echo esc_attr($inst->ID); ?>">
                                         <button type="submit" class="nias-btn-danger nias-inst-rm">
                                             <svg width="15" height="15" viewBox="0 0 24 24" fill="none"><path d="M3 6h18M8 6V4a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2m2 0v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
-                                            <?php echo esc_html__('حذف', 'nias-course-widget'); ?>
+                                            <?php echo esc_html__('Remove', 'nias-course-widget'); ?>
                                         </button>
                                     </form>
                                 </div>
@@ -357,7 +357,7 @@ function nias_instructors_render_page()
                 </div>
             <?php nias_set_card_close(); ?>
 
-            <div class="nias-foot"><?php echo wp_kses_post(__('سپاسگزاریم از اینکه سایت خود را با <span style="color:#3858e9;font-weight:600">وردپرس</span> ساخته‌اید.', 'nias-course-widget')); ?></div>
+            <div class="nias-foot"><?php echo wp_kses_post(__('Thank you for building your site with <span style="color:#3858e9;font-weight:600">WordPress</span>.', 'nias-course-widget')); ?></div>
         </div>
         <?php nias_settings_ads_sidebar(); ?>
         </div>
@@ -392,7 +392,7 @@ function nias_course_instructors_html($post_id, $a = array())
         return '';
     }
     $label = $a['label'] === null || $a['label'] === 'default'
-        ? (count($users) > 1 ? __('مدرسین:', 'nias-course-widget') : __('مدرس:', 'nias-course-widget'))
+        ? (count($users) > 1 ? __('Instructors:', 'nias-course-widget') : __('Instructor:', 'nias-course-widget'))
         : $a['label'];
     $size = max(16, min(160, (int) $a['size']));
     $name = function ($u) use ($a) {

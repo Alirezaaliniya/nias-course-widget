@@ -53,7 +53,7 @@ class Nias_course_widget extends \Elementor\Widget_Base {
 	 }
   
 	 public function get_title() {
-		return esc_html__( 'دوره ساز نیاس', 'nias-course-widget' );
+		return esc_html__( 'Nias Course Builder', 'nias-course-widget' );
 	 }
   
 	 public function get_icon() {

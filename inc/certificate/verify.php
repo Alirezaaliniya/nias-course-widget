@@ -227,7 +227,7 @@ function nias_cert_builtin_verify_page()
     }
     nias_cert_verify_no_cache();
     status_header(200);
-    $title = __('استعلام اصالت مدرک', 'nias-course-widget') . ' — ' . get_bloginfo('name');
+    $title = __('Certificate authenticity check', 'nias-course-widget') . ' — ' . get_bloginfo('name');
     add_filter('pre_get_document_title', function () use ($title) { return $title; });
 
     $block_theme = function_exists('wp_is_block_theme') && wp_is_block_theme();
@@ -266,7 +266,7 @@ function nias_cert_builtin_verify_page()
 function nias_cert_verify_shortcode($atts)
 {
     $atts = shortcode_atts(array(
-        'title'  => __('استعلام اصالت مدرک', 'nias-course-widget'),
+        'title'  => __('Certificate authenticity check', 'nias-course-widget'),
         'param'  => 'cert_code',
         'action' => '',
     ), $atts, 'nias_certificate_verify');
@@ -295,13 +295,13 @@ function nias_cert_verify_shortcode($atts)
                 <span class="ncv-head-ic"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 4 6v6c0 5 3.4 8.4 8 9 4.6-.6 8-4 8-9V6l-8-3Z"/><path d="m9 12 2 2 4-4"/></svg></span>
                 <div>
                     <div class="ncv-title"><?php echo esc_html($atts['title']); ?></div>
-                    <div class="ncv-sub"><?php echo esc_html__('کد درج‌شده روی مدرک را وارد کنید یا QR آن را اسکن کنید.', 'nias-course-widget'); ?></div>
+                    <div class="ncv-sub"><?php echo esc_html__('Enter the code printed on the certificate or scan its QR code.', 'nias-course-widget'); ?></div>
                 </div>
             </div>
             <form class="ncv-form" method="get" action="<?php echo esc_url($action); ?>">
                 <input class="ncv-input" type="text" name="<?php echo esc_attr($param); ?>" dir="ltr" autocomplete="off" autocapitalize="characters" spellcheck="false" required maxlength="64"
-                       value="<?php echo esc_attr($code); ?>" placeholder="CERT-XXXX-XXXXXXXXXX" aria-label="<?php echo esc_attr__('کد مدرک', 'nias-course-widget'); ?>">
-                <button class="ncv-btn" type="submit"><?php echo esc_html__('استعلام', 'nias-course-widget'); ?></button>
+                       value="<?php echo esc_attr($code); ?>" placeholder="CERT-XXXX-XXXXXXXXXX" aria-label="<?php echo esc_attr__('Certificate code', 'nias-course-widget'); ?>">
+                <button class="ncv-btn" type="submit"><?php echo esc_html__('Verification', 'nias-course-widget'); ?></button>
             </form>
             <?php echo nias_cert_verify_result_html($result); // phpcs:ignore WordPress.Security.EscapeOutput -- escaped inside ?>
         </div>
@@ -318,28 +318,28 @@ function nias_cert_verify_result_html($result)
         return '';
     }
     if ($state === 'limited') {
-        return '<div class="ncv-res ncv-warn" role="status"><div class="ncv-res-t">' . esc_html__('تعداد استعلام‌ها بیش از حد مجاز است', 'nias-course-widget') . '</div><div class="ncv-res-m">' . esc_html__('لطفاً چند دقیقه بعد دوباره تلاش کنید.', 'nias-course-widget') . '</div></div>';
+        return '<div class="ncv-res ncv-warn" role="status"><div class="ncv-res-t">' . esc_html__('Too many verification requests', 'nias-course-widget') . '</div><div class="ncv-res-m">' . esc_html__('Please try again in a few minutes.', 'nias-course-widget') . '</div></div>';
     }
     if ($state === 'notfound') {
-        return '<div class="ncv-res ncv-bad" role="status"><div class="ncv-res-t">✖ ' . esc_html__('مدرکی با این کد یافت نشد', 'nias-course-widget') . '</div><div class="ncv-res-m">' . esc_html__('کد را دوباره بررسی کنید. این مدرک توسط این مرکز صادر نشده یا کد اشتباه وارد شده است.', 'nias-course-widget') . '</div></div>';
+        return '<div class="ncv-res ncv-bad" role="status"><div class="ncv-res-t">✖ ' . esc_html__('No certificate found with this code', 'nias-course-widget') . '</div><div class="ncv-res-m">' . esc_html__('Check the code again. This certificate was not issued by this center or the code was entered incorrectly.', 'nias-course-widget') . '</div></div>';
     }
 
     $row  = $result['row'];
     $map  = array(
-        'valid'   => array('ncv-ok', '✔ ' . __('این مدرک معتبر است', 'nias-course-widget'), __('این مدرک توسط این مرکز صادر شده و معتبر است.', 'nias-course-widget')),
-        'pending' => array('ncv-warn', __('مدرک در انتظار تأیید است', 'nias-course-widget'), __('این مدرک ثبت شده اما هنوز توسط مدیر تأیید نهایی نشده است.', 'nias-course-widget')),
-        'revoked' => array('ncv-bad', '✖ ' . __('این مدرک باطل شده است', 'nias-course-widget'), __('این مدرک پیش‌تر صادر شده بود اما اعتبار آن لغو شده است.', 'nias-course-widget')),
+        'valid'   => array('ncv-ok', '✔ ' . __('This certificate is valid', 'nias-course-widget'), __('This certificate was issued by this center and is valid.', 'nias-course-widget')),
+        'pending' => array('ncv-warn', __('The certificate is awaiting approval', 'nias-course-widget'), __('This certificate is registered but has not yet been finally approved by the admin.', 'nias-course-widget')),
+        'revoked' => array('ncv-bad', '✖ ' . __('This certificate has been revoked', 'nias-course-widget'), __('This certificate was issued earlier but its validity has been revoked.', 'nias-course-widget')),
     );
     $info = isset($map[$state]) ? $map[$state] : $map['revoked'];
     $rec  = nias_cert_public_record($row);
 
     $rows = array(
-        array(__('نام دارنده', 'nias-course-widget'), $rec['holder'], false),
-        array(__('عنوان دوره', 'nias-course-widget'), $rec['course'], false),
-        array(__('تاریخ صدور', 'nias-course-widget'), $rec['issued_text'], false),
-        array(__('کد مدرک', 'nias-course-widget'), $rec['code'], true),
-        array(__('صادرکننده', 'nias-course-widget'), $rec['issuer'], false),
-        array(__('زمان استعلام', 'nias-course-widget'), nias_cert_jalali(current_time('Y-m-d'), 'long') . ' — ' . current_time('H:i'), false),
+        array(__('Holder name', 'nias-course-widget'), $rec['holder'], false),
+        array(__('Course title', 'nias-course-widget'), $rec['course'], false),
+        array(__('Issue date', 'nias-course-widget'), $rec['issued_text'], false),
+        array(__('Certificate code', 'nias-course-widget'), $rec['code'], true),
+        array(__('Issuer', 'nias-course-widget'), $rec['issuer'], false),
+        array(__('Verification time', 'nias-course-widget'), nias_cert_jalali(current_time('Y-m-d'), 'long') . ' — ' . current_time('H:i'), false),
     );
 
     $html  = '<div class="ncv-res ' . esc_attr($info[0]) . '" role="status">';
@@ -354,21 +354,21 @@ function nias_cert_verify_result_html($result)
         }
         if (!empty($rec['signature'])) {
             $fp    = $rec['signature']['fingerprint_sha256'];
-            $html .= '<div><dt>' . esc_html__('امضای دیجیتال', 'nias-course-widget') . '</dt><dd><span title="' . esc_attr('SHA-256: ' . $fp) . '">✔ ' . esc_html($rec['signature']['signer']) . '</span>'
+            $html .= '<div><dt>' . esc_html__('Digital signature', 'nias-course-widget') . '</dt><dd><span title="' . esc_attr('SHA-256: ' . $fp) . '">✔ ' . esc_html($rec['signature']['signer']) . '</span>'
                 . '<small class="ncv-fp" dir="ltr">' . esc_html(substr($fp, 0, 23)) . '…</small></dd></div>';
         }
         $html .= '</dl>';
         if (!empty($rec['signature'])) {
-            $html .= '<div class="ncv-res-m" style="margin-top:10px">' . esc_html__('فایل PDF این مدرک امضای دیجیتال دارد. در Adobe Acrobat یا Foxit، پنل امضا باید همین امضاکننده و اثرانگشت را نشان دهد و هر تغییری در فایل، امضا را نامعتبر می‌کند.', 'nias-course-widget') . '</div>';
+            $html .= '<div class="ncv-res-m" style="margin-top:10px">' . esc_html__('This certificate\'s PDF has a digital signature. In Adobe Acrobat or Foxit, the signature panel should show this same signer and fingerprint, and any change to the file invalidates the signature.', 'nias-course-widget') . '</div>';
         }
 
         $btns     = '';
         $is_owner = is_user_logged_in() && get_current_user_id() === (int) $row['user_id'];
         if (nias_cert_public_pdf_allowed($row)) {
-            $btns .= '<a class="ncv-btn ncv-btn-sm" target="_blank" rel="noopener" href="' . esc_url(nias_cert_public_pdf_url($row['code'])) . '">' . esc_html__('مشاهدهٔ مدرک (PDF)', 'nias-course-widget') . '</a>';
+            $btns .= '<a class="ncv-btn ncv-btn-sm" target="_blank" rel="noopener" href="' . esc_url(nias_cert_public_pdf_url($row['code'])) . '">' . esc_html__('View certificate (PDF)', 'nias-course-widget') . '</a>';
         }
         if ($is_owner && $state === 'valid') {
-            $btns .= '<a class="ncv-btn ncv-btn-sm ncv-btn-soft" href="' . esc_url((function_exists('nias_cert_account_url') && nias_cert_account_url()) ? nias_cert_account_url() : get_certificate_display_page_url()) . '">' . esc_html__('مدارک من', 'nias-course-widget') . '</a>';
+            $btns .= '<a class="ncv-btn ncv-btn-sm ncv-btn-soft" href="' . esc_url((function_exists('nias_cert_account_url') && nias_cert_account_url()) ? nias_cert_account_url() : get_certificate_display_page_url()) . '">' . esc_html__('My certificates', 'nias-course-widget') . '</a>';
         }
         if ($btns) {
             $html .= '<div class="ncv-actions">' . $btns . '</div>';
@@ -389,17 +389,17 @@ function nias_cert_handle_public_view()
     $code   = isset($_GET['code']) ? wp_unslash($_GET['code']) : '';
     $result = nias_cert_verify_lookup($code, 0, 'pdf');
     if ($result['state'] === 'limited') {
-        wp_die(esc_html__('تعداد درخواست‌ها بیش از حد مجاز است؛ چند دقیقه بعد تلاش کنید.', 'nias-course-widget'), '', array('response' => 429));
+        wp_die(esc_html__('Too many requests; try again in a few minutes.', 'nias-course-widget'), '', array('response' => 429));
     }
     if (!$result['row'] || !nias_cert_public_pdf_allowed($result['row'])) {
-        wp_die(esc_html__('این مدرک قابل نمایش نیست.', 'nias-course-widget'), '', array('response' => 404));
+        wp_die(esc_html__('This certificate cannot be displayed.', 'nias-course-widget'), '', array('response' => 404));
     }
     nocache_headers();
     header('X-Robots-Tag: noindex, nofollow', true);
     try {
         nias_cert_output_pdf(nias_cert_row_data($result['row']), nias_cert_design_for_row($result['row']), 'I');
     } catch (\Throwable $e) {
-        wp_die(esc_html__('خطا در ساخت مدرک.', 'nias-course-widget'));
+        wp_die(esc_html__('Error building the certificate.', 'nias-course-widget'));
     }
     exit;
 }

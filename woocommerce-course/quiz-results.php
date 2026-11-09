@@ -233,9 +233,9 @@ function nias_quiz_results_pager($base, $page, $total, $per = NIAS_QR_PER_PAGE, 
         return '';
     }
     $h = '<nav class="nqr-pager">';
-    $h .= $page > 1 ? '<a class="nqr-btn" href="' . esc_url(add_query_arg($arg, $page - 1, $base)) . '">‹ ' . esc_html__('قبلی', 'nias-course-widget') . '</a>' : '<span class="nqr-btn off">‹ ' . esc_html__('قبلی', 'nias-course-widget') . '</span>';
-    $h .= '<span class="nqr-pager-i">' . esc_html(sprintf(__('صفحهٔ %1$s از %2$s', 'nias-course-widget'), nias_fa_digits($page), nias_fa_digits($pages))) . '</span>';
-    $h .= $page < $pages ? '<a class="nqr-btn" href="' . esc_url(add_query_arg($arg, $page + 1, $base)) . '">' . esc_html__('بعدی', 'nias-course-widget') . ' ›</a>' : '<span class="nqr-btn off">' . esc_html__('بعدی', 'nias-course-widget') . ' ›</span>';
+    $h .= $page > 1 ? '<a class="nqr-btn" href="' . esc_url(add_query_arg($arg, $page - 1, $base)) . '">‹ ' . esc_html__('Previous', 'nias-course-widget') . '</a>' : '<span class="nqr-btn off">‹ ' . esc_html__('Previous', 'nias-course-widget') . '</span>';
+    $h .= '<span class="nqr-pager-i">' . esc_html(sprintf(__('Page %1$s of %2$s', 'nias-course-widget'), nias_fa_digits($page), nias_fa_digits($pages))) . '</span>';
+    $h .= $page < $pages ? '<a class="nqr-btn" href="' . esc_url(add_query_arg($arg, $page + 1, $base)) . '">' . esc_html__('Next', 'nias-course-widget') . ' ›</a>' : '<span class="nqr-btn off">' . esc_html__('Next', 'nias-course-widget') . ' ›</span>';
     return $h . '</nav>';
 }
 
@@ -265,7 +265,7 @@ function nias_quiz_results_guard($action)
     $qid = isset($_POST['quiz_id']) ? (int) $_POST['quiz_id'] : (isset($_GET['quiz_id']) ? (int) $_GET['quiz_id'] : 0);
     $nonce = isset($_REQUEST['_wpnonce']) ? sanitize_text_field(wp_unslash($_REQUEST['_wpnonce'])) : '';
     if (!is_user_logged_in() || !wp_verify_nonce($nonce, $action . '_' . $qid) || !nias_quiz_can_grade(get_current_user_id(), $qid)) {
-        wp_die(esc_html__('دسترسی لازم را ندارید یا درخواست منقضی شده است.', 'nias-course-widget'), '', array('response' => 403, 'back_link' => true));
+        wp_die(esc_html__('You do not have the required permission or the request has expired.', 'nias-course-widget'), '', array('response' => 403, 'back_link' => true));
     }
     return $qid;
 }
@@ -377,10 +377,10 @@ function nias_quiz_results_render($ctx)
     $html = nias_quiz_results_css();
     $notice = isset($_GET['nqr_notice']) ? sanitize_key(wp_unslash($_GET['nqr_notice'])) : '';
     $notices = array(
-        'graded' => __('نمره ثبت شد و نتیجه به دانشجو اعلام شد.', 'nias-course-widget'),
-        'bonus'  => __('یک فرصت شرکت دیگر به دانشجو داده شد.', 'nias-course-widget'),
-        'reset'  => __('نتایج این دانشجو در این آزمون پاک شد.', 'nias-course-widget'),
-        'error'  => __('ثبت انجام نشد؛ دوباره تلاش کنید.', 'nias-course-widget'),
+        'graded' => __('The score was saved and the result was announced to the student.', 'nias-course-widget'),
+        'bonus'  => __('The student was given one more attempt.', 'nias-course-widget'),
+        'reset'  => __('This student\'s results in this quiz were cleared.', 'nias-course-widget'),
+        'error'  => __('Saving failed; try again.', 'nias-course-widget'),
     );
     if (isset($notices[$notice])) {
         $html .= '<div class="nqr-notice ' . ($notice === 'error' ? 'err' : '') . '">' . esc_html($notices[$notice]) . '</div>';
@@ -405,7 +405,7 @@ function nias_quiz_results_user_cell($uid)
 {
     $u = get_userdata($uid);
     if (!$u) {
-        return '<span class="nqr-muted">' . esc_html__('کاربر حذف‌شده', 'nias-course-widget') . '</span>';
+        return '<span class="nqr-muted">' . esc_html__('Deleted user', 'nias-course-widget') . '</span>';
     }
     return '<div class="nqr-user">' . get_avatar($uid, 32) . '<div><b>' . esc_html($u->display_name) . '</b><span>' . esc_html($u->user_email) . '</span></div></div>';
 }
@@ -413,12 +413,12 @@ function nias_quiz_results_user_cell($uid)
 function nias_quiz_results_status($r)
 {
     if (!$r) {
-        return '<span class="nqr-st">' . esc_html__('شرکت نکرده', 'nias-course-widget') . '</span>';
+        return '<span class="nqr-st">' . esc_html__('Not taken', 'nias-course-widget') . '</span>';
     }
-    $s = $r['passed'] ? '<span class="nqr-st ok">' . esc_html__('قبول', 'nias-course-widget') . '</span>'
-        : ($r['best'] === null ? '' : '<span class="nqr-st no">' . esc_html__('مردود', 'nias-course-widget') . '</span>');
+    $s = $r['passed'] ? '<span class="nqr-st ok">' . esc_html__('Passed', 'nias-course-widget') . '</span>'
+        : ($r['best'] === null ? '' : '<span class="nqr-st no">' . esc_html__('Failed', 'nias-course-widget') . '</span>');
     if ($r['pending']) {
-        $s .= ' <span class="nqr-st wait">' . esc_html__('در انتظار تصحیح', 'nias-course-widget') . '</span>';
+        $s .= ' <span class="nqr-st wait">' . esc_html__('Awaiting grading', 'nias-course-widget') . '</span>';
     }
     return $s;
 }
@@ -460,57 +460,57 @@ function nias_quiz_results_overview($base, $scope)
         $all_quizzes = $n_quiz;
     }
 
-    $h = '<div class="nqr-head"><h2>' . esc_html__('نتایج و تصحیح آزمون‌ها', 'nias-course-widget') . '</h2></div>';
+    $h = '<div class="nqr-head"><h2>' . esc_html__('Quiz results and grading', 'nias-course-widget') . '</h2></div>';
     if (function_exists('nias_quiz_index_complete') && !nias_quiz_index_complete()) {
-        $h .= '<div class="nqr-notice">' . esc_html__('در حال آماده‌سازی فهرست نتایج قبلی… با هر بار باز کردن پیشخوان بخشی از آن انجام می‌شود.', 'nias-course-widget') . '</div>';
+        $h .= '<div class="nqr-notice">' . esc_html__('Preparing the list of previous results… part of it is done each time the dashboard is opened.', 'nias-course-widget') . '</div>';
     }
     $h .= '<div class="nqr-kpis">'
-        . nias_quiz_results_kpi(__('آزمون', 'nias-course-widget'), nias_fa_digits($all_quizzes))
-        . nias_quiz_results_kpi(__('دانشجوی شرکت‌کرده', 'nias-course-widget'), nias_fa_digits($totals['students']))
-        . nias_quiz_results_kpi(__('در انتظار تصحیح', 'nias-course-widget'), nias_fa_digits($pending), $pending ? 'wait' : '')
-        . nias_quiz_results_kpi(__('میانگین نمره', 'nias-course-widget'), $totals['avg'] === null ? '—' : nias_fa_digits($totals['avg']) . '٪')
+        . nias_quiz_results_kpi(__('Quiz', 'nias-course-widget'), nias_fa_digits($all_quizzes))
+        . nias_quiz_results_kpi(__('Students who took part', 'nias-course-widget'), nias_fa_digits($totals['students']))
+        . nias_quiz_results_kpi(__('Awaiting grading', 'nias-course-widget'), nias_fa_digits($pending), $pending ? 'wait' : '')
+        . nias_quiz_results_kpi(__('Average score', 'nias-course-widget'), $totals['avg'] === null ? '—' : nias_fa_digits($totals['avg']) . '٪')
         . '</div>';
 
     // Grading queue (paged).
-    $h .= '<section class="nqr-card" id="nqr-queue"><header><h3>' . esc_html__('صف تصحیح سوال‌های تشریحی', 'nias-course-widget') . '</h3><span class="nqr-count">' . nias_fa_digits($pending) . '</span></header>';
+    $h .= '<section class="nqr-card" id="nqr-queue"><header><h3>' . esc_html__('Essay question grading queue', 'nias-course-widget') . '</h3><span class="nqr-count">' . nias_fa_digits($pending) . '</span></header>';
     if (!$queue['items']) {
-        $h .= '<div class="nqr-empty">' . esc_html__('پاسخی در انتظار تصحیح نیست. 🎉', 'nias-course-widget') . '</div>';
+        $h .= '<div class="nqr-empty">' . esc_html__('No answers are awaiting grading. 🎉', 'nias-course-widget') . '</div>';
     } else {
         $qids = array_unique(wp_list_pluck($queue['items'], 'quiz'));
         cache_users(array_unique(wp_list_pluck($queue['items'], 'user')));
-        $h .= '<table class="nqr-table"><thead><tr><th>' . esc_html__('دانشجو', 'nias-course-widget') . '</th><th>' . esc_html__('آزمون', 'nias-course-widget') . '</th><th>' . esc_html__('سوال تشریحی', 'nias-course-widget') . '</th><th>' . esc_html__('زمان ارسال', 'nias-course-widget') . '</th><th></th></tr></thead><tbody>';
+        $h .= '<table class="nqr-table"><thead><tr><th>' . esc_html__('Student', 'nias-course-widget') . '</th><th>' . esc_html__('Quiz', 'nias-course-widget') . '</th><th>' . esc_html__('Essay question', 'nias-course-widget') . '</th><th>' . esc_html__('Submitted at', 'nias-course-widget') . '</th><th></th></tr></thead><tbody>';
         foreach ($queue['items'] as $item) {
             $url = add_query_arg(array('quiz' => $item['quiz'], 'user' => $item['user']), $base) . '#a-' . $item['attempt']['id'];
             $h .= '<tr><td>' . nias_quiz_results_user_cell($item['user']) . '</td>'
                 . '<td>' . esc_html(get_the_title($item['quiz'])) . '</td>'
                 . '<td>' . esc_html(nias_fa_digits(count($item['attempt']['essays']))) . '</td>'
                 . '<td>' . esc_html(nias_quiz_dt($item['attempt']['date'])) . '</td>'
-                . '<td class="nqr-act"><a class="nqr-btn pri" href="' . esc_url($url) . '">' . esc_html__('تصحیح', 'nias-course-widget') . '</a></td></tr>';
+                . '<td class="nqr-act"><a class="nqr-btn pri" href="' . esc_url($url) . '">' . esc_html__('Grade', 'nias-course-widget') . '</a></td></tr>';
         }
         $h .= '</tbody></table>' . nias_quiz_results_pager(add_query_arg('qs', $s_term, $base) . '#nqr-queue', $ppage, $queue['total'], NIAS_QR_PER_PAGE, 'ppg');
     }
     $h .= '</section>';
 
     // Quizzes (paged + search).
-    $h .= '<section class="nqr-card" id="nqr-quizzes"><header><h3>' . esc_html__('آزمون‌ها', 'nias-course-widget') . '</h3>'
+    $h .= '<section class="nqr-card" id="nqr-quizzes"><header><h3>' . esc_html__('Quizzes', 'nias-course-widget') . '</h3>'
         . '<form class="nqr-hsearch" method="get" action="' . esc_url(strtok($base, '?')) . '">' . nias_quiz_results_hidden($base, array('qs', 'qpg'))
-        . '<input class="nqr-search" type="search" name="qs" value="' . esc_attr($s_term) . '" placeholder="' . esc_attr__('جستجوی نام آزمون یا شماره…', 'nias-course-widget') . '"></form></header>';
+        . '<input class="nqr-search" type="search" name="qs" value="' . esc_attr($s_term) . '" placeholder="' . esc_attr__('Search quiz name or number…', 'nias-course-widget') . '"></form></header>';
     if (!$quiz_ids) {
-        $h .= '<div class="nqr-empty">' . esc_html($s_term !== '' ? sprintf(__('آزمونی با «%s» پیدا نشد.', 'nias-course-widget'), $s_term) : __('آزمونی وجود ندارد.', 'nias-course-widget')) . '</div>';
+        $h .= '<div class="nqr-empty">' . esc_html($s_term !== '' ? sprintf(__('No quiz found with "%s".', 'nias-course-widget'), $s_term) : __('There are no quizzes.', 'nias-course-widget')) . '</div>';
     } else {
-        $h .= '<table class="nqr-table"><thead><tr><th>' . esc_html__('آزمون', 'nias-course-widget') . '</th><th>' . esc_html__('دوره', 'nias-course-widget') . '</th><th>' . esc_html__('شرکت‌کننده', 'nias-course-widget') . '</th><th>' . esc_html__('میانگین', 'nias-course-widget') . '</th><th>' . esc_html__('قبولی', 'nias-course-widget') . '</th><th>' . esc_html__('در انتظار', 'nias-course-widget') . '</th><th></th></tr></thead><tbody>';
+        $h .= '<table class="nqr-table"><thead><tr><th>' . esc_html__('Quiz', 'nias-course-widget') . '</th><th>' . esc_html__('Course', 'nias-course-widget') . '</th><th>' . esc_html__('Participants', 'nias-course-widget') . '</th><th>' . esc_html__('Average', 'nias-course-widget') . '</th><th>' . esc_html__('Passes', 'nias-course-widget') . '</th><th>' . esc_html__('Pending', 'nias-course-widget') . '</th><th></th></tr></thead><tbody>';
         foreach ($quiz_ids as $qid) {
             $s = $stats[$qid];
             $courses = nias_quiz_course_titles($qid);
             $qc = get_post_meta($qid, '_nias_quiz_qcount', true);
             $ps = get_post_meta($qid, '_nias_quiz_pass', true);
-            $h .= '<tr><td><b>' . esc_html(get_the_title($qid)) . '</b><span class="nqr-sub">' . esc_html('#' . nias_fa_digits($qid) . ($qc !== '' ? ' · ' . sprintf(__('%1$s سوال · قبولی از %2$s٪', 'nias-course-widget'), nias_fa_digits((int) $qc), nias_fa_digits((int) $ps)) : '')) . '</span></td>'
+            $h .= '<tr><td><b>' . esc_html(get_the_title($qid)) . '</b><span class="nqr-sub">' . esc_html('#' . nias_fa_digits($qid) . ($qc !== '' ? ' · ' . sprintf(__('%1$s questions · pass at %2$s%%', 'nias-course-widget'), nias_fa_digits((int) $qc), nias_fa_digits((int) $ps)) : '')) . '</span></td>'
                 . '<td>' . ($courses ? esc_html(implode('، ', array_slice($courses, 0, 3)) . (count($courses) > 3 ? '، …' : '')) : '<span class="nqr-muted">—</span>') . '</td>'
                 . '<td>' . esc_html(nias_fa_digits($s['participants'])) . '</td>'
                 . '<td>' . ($s['avg'] === null ? '—' : esc_html(nias_fa_digits($s['avg']) . '٪')) . '</td>'
                 . '<td>' . ($s['passRate'] === null ? '—' : esc_html(nias_fa_digits($s['passRate']) . '٪')) . '</td>'
                 . '<td>' . ($s['pending'] ? '<span class="nqr-st wait">' . esc_html(nias_fa_digits($s['pending'])) . '</span>' : '—') . '</td>'
-                . '<td class="nqr-act"><a class="nqr-btn" href="' . esc_url(add_query_arg('quiz', $qid, remove_query_arg(array('qs', 'qpg', 'ppg'), $base))) . '">' . esc_html__('نتایج', 'nias-course-widget') . '</a></td></tr>';
+                . '<td class="nqr-act"><a class="nqr-btn" href="' . esc_url(add_query_arg('quiz', $qid, remove_query_arg(array('qs', 'qpg', 'ppg'), $base))) . '">' . esc_html__('Results', 'nias-course-widget') . '</a></td></tr>';
         }
         $h .= '</tbody></table>' . nias_quiz_results_pager(add_query_arg('qs', $s_term, $base) . '#nqr-quizzes', $qpage, $n_quiz, NIAS_QR_PER_PAGE, 'qpg');
     }
@@ -533,7 +533,7 @@ function nias_quiz_results_quiz($base, $qid)
 {
     $quiz = nias_quiz_get($qid);
     if (!$quiz) {
-        return '<div class="nqr-empty">' . esc_html__('آزمون یافت نشد.', 'nias-course-widget') . '</div>';
+        return '<div class="nqr-empty">' . esc_html__('Quiz not found.', 'nias-course-widget') . '</div>';
     }
     $filter = isset($_GET['f']) ? sanitize_key(wp_unslash($_GET['f'])) : 'all';
     $search = isset($_GET['s']) ? sanitize_text_field(wp_unslash($_GET['s'])) : '';
@@ -542,30 +542,30 @@ function nias_quiz_results_quiz($base, $qid)
     $list   = nias_quiz_participants_page($qid, $filter, $search, $page);
     $here   = add_query_arg(array('quiz' => $qid, 'f' => $filter, 's' => $search), remove_query_arg(array('pg', 'nqr_notice'), $base));
 
-    $h = '<div class="nqr-head"><a class="nqr-back" href="' . esc_url(remove_query_arg(array('quiz', 'user', 'f', 's', 'pg', 'nqr_notice'), $base)) . '">→ ' . esc_html__('همهٔ آزمون‌ها', 'nias-course-widget') . '</a>'
+    $h = '<div class="nqr-head"><a class="nqr-back" href="' . esc_url(remove_query_arg(array('quiz', 'user', 'f', 's', 'pg', 'nqr_notice'), $base)) . '">→ ' . esc_html__('All quizzes', 'nias-course-widget') . '</a>'
         . '<h2>' . esc_html($quiz['title']) . '</h2>'
-        . '<a class="nqr-btn" href="' . esc_url(wp_nonce_url(admin_url('admin-post.php?action=nias_quiz_csv&quiz_id=' . $qid), 'nias_quiz_csv_' . $qid)) . '">' . esc_html__('خروجی اکسل (CSV)', 'nias-course-widget') . '</a></div>';
+        . '<a class="nqr-btn" href="' . esc_url(wp_nonce_url(admin_url('admin-post.php?action=nias_quiz_csv&quiz_id=' . $qid), 'nias_quiz_csv_' . $qid)) . '">' . esc_html__('Excel export (CSV)', 'nias-course-widget') . '</a></div>';
     $h .= '<div class="nqr-kpis">'
-        . nias_quiz_results_kpi(__('شرکت‌کننده', 'nias-course-widget'), nias_fa_digits($s['participants']))
-        . nias_quiz_results_kpi(__('قبول', 'nias-course-widget'), nias_fa_digits($s['passed']) . ($s['passRate'] !== null ? ' (' . nias_fa_digits($s['passRate']) . '٪)' : ''), 'ok')
-        . nias_quiz_results_kpi(__('میانگین بهترین نمره', 'nias-course-widget'), $s['avg'] === null ? '—' : nias_fa_digits($s['avg']) . '٪')
-        . nias_quiz_results_kpi(__('در انتظار تصحیح', 'nias-course-widget'), nias_fa_digits($s['pending']), $s['pending'] ? 'wait' : '')
+        . nias_quiz_results_kpi(__('Participants', 'nias-course-widget'), nias_fa_digits($s['participants']))
+        . nias_quiz_results_kpi(__('Passed', 'nias-course-widget'), nias_fa_digits($s['passed']) . ($s['passRate'] !== null ? ' (' . nias_fa_digits($s['passRate']) . '٪)' : ''), 'ok')
+        . nias_quiz_results_kpi(__('Average best score', 'nias-course-widget'), $s['avg'] === null ? '—' : nias_fa_digits($s['avg']) . '٪')
+        . nias_quiz_results_kpi(__('Awaiting grading', 'nias-course-widget'), nias_fa_digits($s['pending']), $s['pending'] ? 'wait' : '')
         . '</div>';
 
-    $chips = array('all' => __('همه', 'nias-course-widget'), 'pending' => __('در انتظار تصحیح', 'nias-course-widget'), 'passed' => __('قبول', 'nias-course-widget'), 'failed' => __('مردود', 'nias-course-widget'));
+    $chips = array('all' => __('All', 'nias-course-widget'), 'pending' => __('Awaiting grading', 'nias-course-widget'), 'passed' => __('Passed', 'nias-course-widget'), 'failed' => __('Failed', 'nias-course-widget'));
     $h .= '<form class="nqr-filter" method="get" action="' . esc_url(strtok($base, '?')) . '">' . nias_quiz_results_hidden($base, array('quiz', 'f', 's', 'pg', 'user', 'nqr_notice'));
     $h .= '<input type="hidden" name="quiz" value="' . (int) $qid . '"><input type="hidden" name="f" value="' . esc_attr($filter) . '">';
     foreach ($chips as $k => $label) {
         $h .= '<a class="nqr-chip ' . ($filter === $k ? 'on' : '') . '" href="' . esc_url(add_query_arg(array('quiz' => $qid, 'f' => $k, 's' => $search), remove_query_arg(array('pg', 'nqr_notice'), $base))) . '">' . esc_html($label) . '</a>';
     }
-    $h .= '<input class="nqr-search" type="search" name="s" value="' . esc_attr($search) . '" placeholder="' . esc_attr__('جستجوی نام، ایمیل یا نام کاربری…', 'nias-course-widget') . '"></form>';
+    $h .= '<input class="nqr-search" type="search" name="s" value="' . esc_attr($search) . '" placeholder="' . esc_attr__('Search name, email or username…', 'nias-course-widget') . '"></form>';
 
     $h .= '<section class="nqr-card">';
     if (!$list['rows']) {
-        $h .= '<div class="nqr-empty">' . esc_html__('موردی پیدا نشد.', 'nias-course-widget') . '</div>';
+        $h .= '<div class="nqr-empty">' . esc_html__('Nothing found.', 'nias-course-widget') . '</div>';
     } else {
-        $h .= '<div class="nqr-count-line">' . esc_html(sprintf(__('%s دانشجو', 'nias-course-widget'), nias_fa_digits($list['total']))) . '</div>';
-        $h .= '<table class="nqr-table"><thead><tr><th>' . esc_html__('دانشجو', 'nias-course-widget') . '</th><th>' . esc_html__('بهترین', 'nias-course-widget') . '</th><th>' . esc_html__('آخرین', 'nias-course-widget') . '</th><th>' . esc_html__('دفعات', 'nias-course-widget') . '</th><th>' . esc_html__('وضعیت', 'nias-course-widget') . '</th><th>' . esc_html__('آخرین شرکت', 'nias-course-widget') . '</th><th></th></tr></thead><tbody>';
+        $h .= '<div class="nqr-count-line">' . esc_html(sprintf(__('%s students', 'nias-course-widget'), nias_fa_digits($list['total']))) . '</div>';
+        $h .= '<table class="nqr-table"><thead><tr><th>' . esc_html__('Student', 'nias-course-widget') . '</th><th>' . esc_html__('Best', 'nias-course-widget') . '</th><th>' . esc_html__('Last', 'nias-course-widget') . '</th><th>' . esc_html__('Attempts', 'nias-course-widget') . '</th><th>' . esc_html__('Status', 'nias-course-widget') . '</th><th>' . esc_html__('Last attempt', 'nias-course-widget') . '</th><th></th></tr></thead><tbody>';
         foreach ($list['rows'] as $row) {
             $uid = (int) $row['user_id'];
             $r = array(
@@ -579,10 +579,10 @@ function nias_quiz_results_quiz($base, $qid)
             $h .= '<tr><td>' . nias_quiz_results_user_cell($uid) . '</td>'
                 . '<td class="nqr-score">' . ($r['best'] === null ? '—' : esc_html(nias_fa_digits($r['best']) . '٪')) . '</td>'
                 . '<td>' . ($r['last'] === null ? '—' : esc_html(nias_fa_digits($r['last']) . '٪')) . '</td>'
-                . '<td>' . esc_html(nias_fa_digits($r['attempts'])) . ($left !== null ? '<span class="nqr-sub">' . esc_html(sprintf(__('%s فرصت مانده', 'nias-course-widget'), nias_fa_digits($left))) . '</span>' : '') . '</td>'
+                . '<td>' . esc_html(nias_fa_digits($r['attempts'])) . ($left !== null ? '<span class="nqr-sub">' . esc_html(sprintf(__('%s attempts left', 'nias-course-widget'), nias_fa_digits($left))) . '</span>' : '') . '</td>'
                 . '<td>' . nias_quiz_results_status($r) . '</td>'
                 . '<td>' . esc_html(nias_quiz_dt($row['updated'])) . '</td>'
-                . '<td class="nqr-act"><a class="nqr-btn ' . ($r['pending'] ? 'pri' : '') . '" href="' . esc_url(add_query_arg('user', $uid, $here)) . '">' . esc_html($r['pending'] ? __('تصحیح', 'nias-course-widget') : __('جزئیات', 'nias-course-widget')) . '</a></td></tr>';
+                . '<td class="nqr-act"><a class="nqr-btn ' . ($r['pending'] ? 'pri' : '') . '" href="' . esc_url(add_query_arg('user', $uid, $here)) . '">' . esc_html($r['pending'] ? __('Grade', 'nias-course-widget') : __('Details', 'nias-course-widget')) . '</a></td></tr>';
         }
         $h .= '</tbody></table>' . nias_quiz_results_pager($here, $page, $list['total']);
     }
@@ -594,7 +594,7 @@ function nias_quiz_results_student($base, $qid, $uid)
     $quiz = nias_quiz_get($qid);
     $u    = get_userdata($uid);
     if (!$quiz || !$u) {
-        return '<div class="nqr-empty">' . esc_html__('موردی یافت نشد.', 'nias-course-widget') . '</div>';
+        return '<div class="nqr-empty">' . esc_html__('No items found.', 'nias-course-widget') . '</div>';
     }
     $r        = nias_quiz_user_record($uid, $qid);
     $attempts = array_reverse(nias_quiz_user_attempts($uid, $qid));
@@ -606,40 +606,40 @@ function nias_quiz_results_student($base, $qid, $uid)
     $h .= '<section class="nqr-card nqr-stu"><div class="nqr-stu-id">' . nias_quiz_results_user_cell($uid) . '<div class="nqr-stu-st">' . nias_quiz_results_status($r) . '</div></div>';
     if ($r) {
         $h .= '<div class="nqr-kpis in">'
-            . nias_quiz_results_kpi(__('بهترین نمره', 'nias-course-widget'), $r['best'] === null ? '—' : nias_fa_digits($r['best']) . '٪', $r['passed'] ? 'ok' : '')
-            . nias_quiz_results_kpi(__('آخرین نمره', 'nias-course-widget'), $r['last'] === null ? '—' : nias_fa_digits($r['last']) . '٪')
-            . nias_quiz_results_kpi(__('دفعات شرکت', 'nias-course-widget'), nias_fa_digits($r['attempts']) . ($left !== null ? ' / ' . nias_fa_digits($left) . ' ' . __('مانده', 'nias-course-widget') : ''))
-            . nias_quiz_results_kpi(__('تاریخ قبولی', 'nias-course-widget'), $r['passedDate'] ? nias_quiz_date_label($r['passedDate']) : '—')
+            . nias_quiz_results_kpi(__('Best score', 'nias-course-widget'), $r['best'] === null ? '—' : nias_fa_digits($r['best']) . '٪', $r['passed'] ? 'ok' : '')
+            . nias_quiz_results_kpi(__('Last score', 'nias-course-widget'), $r['last'] === null ? '—' : nias_fa_digits($r['last']) . '٪')
+            . nias_quiz_results_kpi(__('Number of attempts', 'nias-course-widget'), nias_fa_digits($r['attempts']) . ($left !== null ? ' / ' . nias_fa_digits($left) . ' ' . __('Left', 'nias-course-widget') : ''))
+            . nias_quiz_results_kpi(__('Pass date', 'nias-course-widget'), $r['passedDate'] ? nias_quiz_date_label($r['passedDate']) : '—')
             . '</div>';
         $h .= '<div class="nqr-stu-actions">';
         if ($left !== null) {
             $h .= '<form method="post" action="' . esc_url($post) . '">' . wp_nonce_field('nias_quiz_bonus_' . $qid, '_wpnonce', false, false)
                 . '<input type="hidden" name="action" value="nias_quiz_bonus"><input type="hidden" name="quiz_id" value="' . (int) $qid . '"><input type="hidden" name="user_id" value="' . (int) $uid . '"><input type="hidden" name="back" value="' . esc_attr($here) . '">'
-                . '<button class="nqr-btn" type="submit">' . esc_html__('+ یک فرصت شرکت دیگر', 'nias-course-widget') . '</button></form>';
+                . '<button class="nqr-btn" type="submit">' . esc_html__('+ One more attempt', 'nias-course-widget') . '</button></form>';
         }
-        $h .= '<form method="post" action="' . esc_url($post) . '" onsubmit="return confirm(\'' . esc_js(__('همهٔ نتایج و پاسخ‌های این دانشجو در این آزمون پاک شود؟', 'nias-course-widget')) . '\')">' . wp_nonce_field('nias_quiz_reset_' . $qid, '_wpnonce', false, false)
+        $h .= '<form method="post" action="' . esc_url($post) . '" onsubmit="return confirm(\'' . esc_js(__('Clear all of this student\'s results and answers in this quiz?', 'nias-course-widget')) . '\')">' . wp_nonce_field('nias_quiz_reset_' . $qid, '_wpnonce', false, false)
             . '<input type="hidden" name="action" value="nias_quiz_reset"><input type="hidden" name="quiz_id" value="' . (int) $qid . '"><input type="hidden" name="user_id" value="' . (int) $uid . '"><input type="hidden" name="back" value="' . esc_attr($here) . '">'
-            . '<button class="nqr-btn danger" type="submit">' . esc_html__('پاک کردن نتایج (شرکت از نو)', 'nias-course-widget') . '</button></form>';
+            . '<button class="nqr-btn danger" type="submit">' . esc_html__('Clear results (start over)', 'nias-course-widget') . '</button></form>';
         $h .= '</div>';
     }
     $h .= '</section>';
 
     if (!$attempts) {
-        return $h . '<div class="nqr-empty">' . esc_html__('جزئیات شرکت در آزمون برای این دانشجو ثبت نشده است (نتایج قدیمی‌تر فقط نمرهٔ کلی دارند).', 'nias-course-widget') . '</div>';
+        return $h . '<div class="nqr-empty">' . esc_html__('Attempt details were not recorded for this student (older results only have the overall score).', 'nias-course-widget') . '</div>';
     }
 
     $n = count($attempts);
     foreach ($attempts as $i => $a) {
         $num = $n - $i;
-        $st = $a['status'] === 'pending' ? '<span class="nqr-st wait">' . esc_html__('در انتظار تصحیح', 'nias-course-widget') . '</span>'
-            : ((int) $a['final'] >= (int) $quiz['passScore'] ? '<span class="nqr-st ok">' . esc_html__('قبول', 'nias-course-widget') . '</span>' : '<span class="nqr-st no">' . esc_html__('مردود', 'nias-course-widget') . '</span>');
+        $st = $a['status'] === 'pending' ? '<span class="nqr-st wait">' . esc_html__('Awaiting grading', 'nias-course-widget') . '</span>'
+            : ((int) $a['final'] >= (int) $quiz['passScore'] ? '<span class="nqr-st ok">' . esc_html__('Passed', 'nias-course-widget') . '</span>' : '<span class="nqr-st no">' . esc_html__('Failed', 'nias-course-widget') . '</span>');
         $open = $a['status'] === 'pending' || $i === 0;
         $h .= '<details class="nqr-card nqr-att" id="a-' . esc_attr($a['id']) . '"' . ($open ? ' open' : '') . '><summary>'
-            . '<b>' . esc_html(sprintf(__('شرکت %s', 'nias-course-widget'), nias_fa_digits($num))) . '</b>'
+            . '<b>' . esc_html(sprintf(__('Attempt %s', 'nias-course-widget'), nias_fa_digits($num))) . '</b>'
             . '<span class="nqr-muted">' . esc_html(nias_quiz_dt($a['date'])) . '</span>' . $st
             . '<span class="nqr-att-score">' . ($a['final'] === null
-                ? esc_html(sprintf(__('بخش خودکار: %s٪', 'nias-course-widget'), nias_fa_digits($a['pct'])))
-                : esc_html(sprintf(__('نمرهٔ نهایی: %s٪', 'nias-course-widget'), nias_fa_digits($a['final'])))) . '</span></summary>';
+                ? esc_html(sprintf(__('Automatic part: %s%%', 'nias-course-widget'), nias_fa_digits($a['pct'])))
+                : esc_html(sprintf(__('Final score: %s%%', 'nias-course-widget'), nias_fa_digits($a['final'])))) . '</span></summary>';
 
         // Per-question review.
         $h .= '<div class="nqr-review">';
@@ -647,7 +647,7 @@ function nias_quiz_results_student($base, $qid, $uid)
             $cls = !$rv['isAuto'] ? 'man' : ($rv['ok'] ? 'ok' : 'no');
             $h .= '<div class="nqr-rv ' . $cls . '"><span class="nqr-rv-n">' . esc_html(nias_fa_digits($k + 1)) . '</span><div><div class="nqr-rv-t">' . esc_html($rv['text']) . '</div>'
                 . ($rv['detail'] !== '' && $rv['isAuto'] ? '<div class="nqr-rv-d">' . esc_html($rv['detail']) . '</div>' : '') . '</div>'
-                . '<span class="nqr-rv-s">' . esc_html($rv['isAuto'] ? $rv['score'] : __('تشریحی', 'nias-course-widget')) . '</span></div>';
+                . '<span class="nqr-rv-s">' . esc_html($rv['isAuto'] ? $rv['score'] : __('Essay', 'nias-course-widget')) . '</span></div>';
         }
         $h .= '</div>';
 
@@ -656,18 +656,18 @@ function nias_quiz_results_student($base, $qid, $uid)
             $h .= '<form class="nqr-grade" method="post" action="' . esc_url($post) . '">' . wp_nonce_field('nias_quiz_grade_' . $qid, '_wpnonce', false, false)
                 . '<input type="hidden" name="action" value="nias_quiz_grade"><input type="hidden" name="quiz_id" value="' . (int) $qid . '"><input type="hidden" name="user_id" value="' . (int) $uid . '">'
                 . '<input type="hidden" name="attempt" value="' . esc_attr($a['id']) . '"><input type="hidden" name="back" value="' . esc_attr($here . '#a-' . $a['id']) . '">'
-                . '<div class="nqr-grade-t">' . esc_html__('تصحیح سوال‌های تشریحی', 'nias-course-widget') . '<span class="nqr-muted">' . esc_html(sprintf(__('بخش خودکار: %1$s از %2$s نمره', 'nias-course-widget'), nias_fa_digits($a['earned'] + 0), nias_fa_digits($a['autoTotal'] + 0))) . '</span></div>';
+                . '<div class="nqr-grade-t">' . esc_html__('Grade essay questions', 'nias-course-widget') . '<span class="nqr-muted">' . esc_html(sprintf(__('Automatic part: %1$s of %2$s points', 'nias-course-widget'), nias_fa_digits($a['earned'] + 0), nias_fa_digits($a['autoTotal'] + 0))) . '</span></div>';
             foreach ($a['essays'] as $e) {
                 $qkey = esc_attr($e['qid']);
                 $h .= '<div class="nqr-essay"><div class="nqr-essay-q">' . esc_html($e['text']) . '</div>'
-                    . '<div class="nqr-essay-a">' . ($e['answer'] !== '' ? nl2br(esc_html($e['answer'])) : '<span class="nqr-muted">' . esc_html__('(بدون پاسخ)', 'nias-course-widget') . '</span>') . '</div>'
-                    . (!empty($e['model']) ? '<div class="nqr-essay-m"><b>' . esc_html__('پاسخ مرجع:', 'nias-course-widget') . '</b> ' . nl2br(esc_html($e['model'])) . '</div>' : '')
-                    . '<div class="nqr-essay-in"><label>' . esc_html__('نمره', 'nias-course-widget') . ' <input type="number" step="0.25" min="0" max="' . esc_attr($e['max']) . '" name="score[' . $qkey . ']" value="' . esc_attr($e['score'] === null ? '' : $e['score']) . '" required> ' . esc_html(sprintf(__('از %s', 'nias-course-widget'), nias_fa_digits($e['max'] + 0))) . '</label>'
-                    . '<textarea name="feedback[' . $qkey . ']" rows="2" placeholder="' . esc_attr__('بازخورد به دانشجو (اختیاری)…', 'nias-course-widget') . '">' . esc_textarea($e['feedback']) . '</textarea></div></div>';
+                    . '<div class="nqr-essay-a">' . ($e['answer'] !== '' ? nl2br(esc_html($e['answer'])) : '<span class="nqr-muted">' . esc_html__('(no answer)', 'nias-course-widget') . '</span>') . '</div>'
+                    . (!empty($e['model']) ? '<div class="nqr-essay-m"><b>' . esc_html__('Reference answer:', 'nias-course-widget') . '</b> ' . nl2br(esc_html($e['model'])) . '</div>' : '')
+                    . '<div class="nqr-essay-in"><label>' . esc_html__('Score', 'nias-course-widget') . ' <input type="number" step="0.25" min="0" max="' . esc_attr($e['max']) . '" name="score[' . $qkey . ']" value="' . esc_attr($e['score'] === null ? '' : $e['score']) . '" required> ' . esc_html(sprintf(__('out of %s', 'nias-course-widget'), nias_fa_digits($e['max'] + 0))) . '</label>'
+                    . '<textarea name="feedback[' . $qkey . ']" rows="2" placeholder="' . esc_attr__('Feedback to the student (optional)…', 'nias-course-widget') . '">' . esc_textarea($e['feedback']) . '</textarea></div></div>';
             }
-            $h .= '<textarea class="nqr-note" name="note" rows="2" placeholder="' . esc_attr__('نظر کلی دربارهٔ این آزمون (اختیاری)…', 'nias-course-widget') . '">' . esc_textarea($a['note']) . '</textarea>'
-                . '<div class="nqr-grade-foot"><button class="nqr-btn pri" type="submit">' . esc_html($a['status'] === 'pending' ? __('ثبت نمره و اعلام به دانشجو', 'nias-course-widget') : __('به‌روزرسانی نمره', 'nias-course-widget')) . '</button>'
-                . ($a['gradedAt'] ? '<span class="nqr-muted">' . esc_html(sprintf(__('تصحیح‌شده در %1$s توسط %2$s', 'nias-course-widget'), nias_quiz_dt($a['gradedAt']), ($g = get_userdata($a['gradedBy'])) ? $g->display_name : '—')) . '</span>' : '')
+            $h .= '<textarea class="nqr-note" name="note" rows="2" placeholder="' . esc_attr__('Overall comment about this quiz (optional)…', 'nias-course-widget') . '">' . esc_textarea($a['note']) . '</textarea>'
+                . '<div class="nqr-grade-foot"><button class="nqr-btn pri" type="submit">' . esc_html($a['status'] === 'pending' ? __('Save score and notify the student', 'nias-course-widget') : __('Update score', 'nias-course-widget')) . '</button>'
+                . ($a['gradedAt'] ? '<span class="nqr-muted">' . esc_html(sprintf(__('Graded on %1$s by %2$s', 'nias-course-widget'), nias_quiz_dt($a['gradedAt']), ($g = get_userdata($a['gradedBy'])) ? $g->display_name : '—')) . '</span>' : '')
                 . '</div></form>';
         }
         $h .= '</details>';
@@ -776,8 +776,8 @@ function nias_quiz_results_menu()
     $bubble = $n ? ' <span class="awaiting-mod">' . nias_fa_digits($n) . '</span>' : '';
     add_submenu_page(
         'nias-course-settings',
-        __('نتایج و تصحیح آزمون‌ها', 'nias-course-widget'),
-        __('نتایج آزمون‌ها', 'nias-course-widget') . $bubble,
+        __('Quiz results and grading', 'nias-course-widget'),
+        __('Quiz results', 'nias-course-widget') . $bubble,
         'manage_options',
         'nias-course-quiz-results',
         'nias_quiz_results_admin_page'
@@ -819,10 +819,10 @@ function nias_quiz_results_dashboard_card($user_id)
     $pend  = nias_quiz_pending_page($scope, 1, 5);
     $queue = array_slice($pend['items'], 0, 5);
     $base  = add_query_arg('nias_qr', 1, get_permalink());
-    $h = nias_quiz_results_css() . '<section class="nias-idash-card nqr-dash" dir="rtl"><div class="nqr-dash-h"><h3>' . esc_html__('صف تصحیح آزمون‌ها', 'nias-course-widget') . '</h3>'
+    $h = nias_quiz_results_css() . '<section class="nias-idash-card nqr-dash" dir="rtl"><div class="nqr-dash-h"><h3>' . esc_html__('Quiz grading queue', 'nias-course-widget') . '</h3>'
         . '<span class="nqr-count">' . nias_fa_digits(nias_quiz_pending_count($scope)) . '</span></div>';
     if (!$queue) {
-        $h .= '<div class="nqr-empty" style="padding:14px">' . esc_html__('پاسخی در انتظار تصحیح نیست.', 'nias-course-widget') . '</div>';
+        $h .= '<div class="nqr-empty" style="padding:14px">' . esc_html__('No answers are awaiting grading.', 'nias-course-widget') . '</div>';
     } else {
         foreach ($queue as $item) {
             $u = get_userdata($item['user']);
@@ -831,7 +831,7 @@ function nias_quiz_results_dashboard_card($user_id)
                 . '<b>' . esc_html($u ? $u->display_name : '—') . '</b><span>' . esc_html(($q ? $q['title'] : '') . ' · ' . nias_quiz_dt($item['attempt']['date'])) . '</span></a>';
         }
     }
-    $h .= '<a class="nqr-btn" style="margin-top:10px" href="' . esc_url($base) . '">' . esc_html__('همهٔ نتایج و نمرات', 'nias-course-widget') . '</a>';
+    $h .= '<a class="nqr-btn" style="margin-top:10px" href="' . esc_url($base) . '">' . esc_html__('All results and grades', 'nias-course-widget') . '</a>';
     $h .= '<style>.nqr-dash{padding:16px 18px}.nqr-dash-h{display:flex;align-items:center;gap:8px;margin-bottom:8px}.nqr-dash-h h3{margin:0;font-size:15px;font-weight:800;flex:1}'
         . '.nqr-dash-row{display:flex;flex-direction:column;gap:2px;padding:9px 0;border-bottom:1px solid #f1f3f5;text-decoration:none;color:#1f2a30}.nqr-dash-row span{font-size:12px;color:#8a979e}</style>';
     return $h . '</section>';
@@ -842,7 +842,7 @@ function nias_quiz_results_frontend($user_id)
 {
     $scope = nias_quiz_grader_scope($user_id);
     $back  = remove_query_arg(array('nias_qr', 'quiz', 'user', 'f', 's', 'nqr_notice'));
-    return '<div style="max-width:1240px;margin:0 auto;padding:10px 0" dir="rtl"><a class="nqr-back" style="display:inline-block;margin-bottom:10px;color:#1e83f0;font-weight:700;text-decoration:none" href="' . esc_url($back) . '">→ ' . esc_html__('بازگشت به پیشخوان مدرس', 'nias-course-widget') . '</a>'
+    return '<div style="max-width:1240px;margin:0 auto;padding:10px 0" dir="rtl"><a class="nqr-back" style="display:inline-block;margin-bottom:10px;color:#1e83f0;font-weight:700;text-decoration:none" href="' . esc_url($back) . '">→ ' . esc_html__('Back to the instructor dashboard', 'nias-course-widget') . '</a>'
         . nias_quiz_results_render(array(
             'base'  => add_query_arg('nias_qr', 1, remove_query_arg(array('quiz', 'user', 'f', 's', 'nqr_notice'))),
             'scope' => $scope === null ? null : $scope,

@@ -42,7 +42,7 @@ class Nias_course_woocommerce extends \Elementor\Widget_Base
     // Widget title
     public function get_title()
     {
-        return esc_html__('نمایش دوره ووکامرس', 'nias-course-widget');
+        return esc_html__('WooCommerce course display', 'nias-course-widget');
     }
 
     // Widget icon
@@ -76,7 +76,7 @@ class Nias_course_woocommerce extends \Elementor\Widget_Base
         $this->start_controls_section(
             'lesson_section',
             [
-                'label' => esc_html__('تنظیمات فصل', 'nias-course-widget'),
+                'label' => esc_html__('Chapter settings', 'nias-course-widget'),
                 'type' => \Elementor\Controls_Manager::SECTION,
 
             ]
@@ -85,7 +85,7 @@ class Nias_course_woocommerce extends \Elementor\Widget_Base
         $this->add_control(
             'image_woocommerce',
             [
-                'label' => __('آیکون فصل(عمومی)', 'nias-course-widget'),
+                'label' => __('Chapter icon (general)', 'nias-course-widget'),
                 'type' => \Elementor\Controls_Manager::MEDIA,
                 'default' => [
                     'url' => \Elementor\Utils::get_placeholder_image_src(),
@@ -99,10 +99,10 @@ class Nias_course_woocommerce extends \Elementor\Widget_Base
         $this->add_control(
             'nias_openorclose',
             [
-                'label' => __('قابلیت باز و بسته شدن؟', 'nias-course-widget'),
+                'label' => __('Collapsible?', 'nias-course-widget'),
                 'type' => \Elementor\Controls_Manager::SWITCHER,
-                'label_on' => esc_html__("بله", 'nias-course-widget'),
-                'label_off' => esc_html__("خیر", 'nias-course-widget'),
+                'label_on' => esc_html__("Yes", 'nias-course-widget'),
+                'label_off' => esc_html__("No", 'nias-course-widget'),
                 'default' => 'yes'
 
             ]
@@ -113,7 +113,7 @@ class Nias_course_woocommerce extends \Elementor\Widget_Base
                 'condition' => [
                     'nias_openorclose' => 'yes',
                 ],
-                'label' => esc_html__('آیکون باز و بسته شدن', 'nias-course-widget'),
+                'label' => esc_html__('Expand/collapse icon', 'nias-course-widget'),
                 'type' => \Elementor\Controls_Manager::ICONS,
                 'default' => [
                     'value' => 'fas fa-chevron-down',
@@ -137,7 +137,7 @@ class Nias_course_woocommerce extends \Elementor\Widget_Base
         $this->add_control(
             'nsarrowicon_part',
             [
-                'label' => esc_html__('آیکون باز و بسته شدن درس ها', 'nias-course-widget'),
+                'label' => esc_html__('Lessons expand/collapse icon', 'nias-course-widget'),
                 'type' => \Elementor\Controls_Manager::ICONS,
                 'default' => [
                     'value' => 'fas fa-chevron-down',
@@ -160,7 +160,7 @@ class Nias_course_woocommerce extends \Elementor\Widget_Base
         $this->add_control(
             'nspreviewicon',
             [
-                'label' => esc_html__('آیکون پیش نمایش', 'nias-course-widget'),
+                'label' => esc_html__('Preview icon', 'nias-course-widget'),
                 'type' => \Elementor\Controls_Manager::ICONS,
                 'default' => [
                     'value' => 'fa fa-play-circle',
@@ -183,10 +183,10 @@ class Nias_course_woocommerce extends \Elementor\Widget_Base
         $this->add_control(
             'nspreviewtext',
             [
-                'label' => esc_html__('متن دکمه پیش نمایش', 'nias-course-widget'),
+                'label' => esc_html__('Preview button text', 'nias-course-widget'),
                 'type' => \Elementor\Controls_Manager::TEXT,
-                'default' => esc_html__('پیش نمایش', 'nias-course-widget'),
-                'placeholder' => esc_html__('پیش نمایش', 'nias-course-widget'),
+                'default' => esc_html__('Preview', 'nias-course-widget'),
+                'placeholder' => esc_html__('Preview', 'nias-course-widget'),
                 'dynamic' => [
                     'active' => true,
                 ],
@@ -196,19 +196,19 @@ class Nias_course_woocommerce extends \Elementor\Widget_Base
         $this->add_control(
             'nsprivatetextcontent',
             [
-                'label' => esc_html__('متن دوره خصوصی در محتوا', 'nias-course-widget'),
+                'label' => esc_html__('Private course text in content', 'nias-course-widget'),
                 'type' => \Elementor\Controls_Manager::WYSIWYG,
                 'dynamic' => [
                     'active' => true,
                 ],
-                'default' => esc_html__('این دوره خصوصی است برای دسترسی کامل باید دوره را خریداری کنید', 'nias-course-widget'),
-                'placeholder' => esc_html__('این دوره خصوصی است برای دسترسی کامل باید دوره را خریداری کنید', 'nias-course-widget'),
+                'default' => esc_html__('This course is private; buy the course for full access', 'nias-course-widget'),
+                'placeholder' => esc_html__('This course is private; buy the course for full access', 'nias-course-widget'),
             ]
         );
         $this->add_control(
             'singlelessonicon',
             [
-                'label' => esc_html__('آیکن مخصوص این درس', 'nias-course-widget'),
+                'label' => esc_html__('Icon for this lesson', 'nias-course-widget'),
                 'type' => \Elementor\Controls_Manager::ICONS,
                 'default' => [
                     'value' => 'fas fa-book',
@@ -232,7 +232,7 @@ class Nias_course_woocommerce extends \Elementor\Widget_Base
         $this->add_control(
             'nsdownloadicon',
             [
-                'label' => esc_html__('آیکون دانلود', 'nias-course-widget'),
+                'label' => esc_html__('Download icon', 'nias-course-widget'),
                 'type' => \Elementor\Controls_Manager::ICONS,
                 'default' => [
                     'value' => 'fa fa-download',
@@ -265,7 +265,7 @@ class Nias_course_woocommerce extends \Elementor\Widget_Base
         $this->start_controls_section(
             'nsstylewidget',
             [
-                'label' => esc_html__('استایل باکس', 'nias-course-widget'),
+                'label' => esc_html__('Box style', 'nias-course-widget'),
                 'tab' => \Elementor\Controls_Manager::TAB_STYLE,
             ]
         );
@@ -288,7 +288,7 @@ class Nias_course_woocommerce extends \Elementor\Widget_Base
         $this->add_responsive_control(
             'nsmainradius',
             [
-                'label' => esc_html__('نرمی حاشیه', 'nias-course-widget'),
+                'label' => esc_html__('Border radius', 'nias-course-widget'),
                 'type' => \Elementor\Controls_Manager::DIMENSIONS,
                 'size_units' => ['px', '%', 'em', 'rem', 'custom'],
                 'default' => [
@@ -303,7 +303,7 @@ class Nias_course_woocommerce extends \Elementor\Widget_Base
         $this->add_responsive_control(
             'nsmainpadding',
             [
-                'label' => esc_html__('فاصله داخلی', 'nias-course-widget'),
+                'label' => esc_html__('Padding', 'nias-course-widget'),
                 'type' => \Elementor\Controls_Manager::DIMENSIONS,
                 'size_units' => ['px', '%', 'em', 'rem', 'custom'],
                 'default' => [
@@ -320,7 +320,7 @@ class Nias_course_woocommerce extends \Elementor\Widget_Base
         $this->start_controls_section(
             'nsstylewidget_head',
             [
-                'label' => esc_html__('استایل هد/فصل', 'nias-course-widget'),
+                'label' => esc_html__('Header/chapter style', 'nias-course-widget'),
                 'tab' => \Elementor\Controls_Manager::TAB_STYLE,
             ]
         );
@@ -343,7 +343,7 @@ class Nias_course_woocommerce extends \Elementor\Widget_Base
         $this->add_responsive_control(
             'nsmainradius_head',
             [
-                'label' => esc_html__('نرمی حاشیه', 'nias-course-widget'),
+                'label' => esc_html__('Border radius', 'nias-course-widget'),
                 'type' => \Elementor\Controls_Manager::DIMENSIONS,
                 'size_units' => ['px', '%', 'em', 'rem', 'custom'],
                 'default' => [
@@ -358,7 +358,7 @@ class Nias_course_woocommerce extends \Elementor\Widget_Base
         $this->add_responsive_control(
             'nsmainpadding_head',
             [
-                'label' => esc_html__('فاصله داخلی', 'nias-course-widget'),
+                'label' => esc_html__('Padding', 'nias-course-widget'),
                 'type' => \Elementor\Controls_Manager::DIMENSIONS,
                 'size_units' => ['px', '%', 'em', 'rem', 'custom'],
                 'default' => [
@@ -375,7 +375,7 @@ class Nias_course_woocommerce extends \Elementor\Widget_Base
         $this->start_controls_section(
             'nsstyle_eachcourse_insidehead',
             [
-                'label' => esc_html__('استایل داخل فصل', 'nias-course-widget'),
+                'label' => esc_html__('Inside chapter style', 'nias-course-widget'),
                 'tab' => \Elementor\Controls_Manager::TAB_STYLE,
             ]
         );
@@ -383,7 +383,7 @@ class Nias_course_woocommerce extends \Elementor\Widget_Base
         $this->add_control(
             'nslessoniconsize_insidehead',
             [
-                'label' => esc_html__('اندازه عکس فصل ها', 'nias-course-widget'),
+                'label' => esc_html__('Chapter image size', 'nias-course-widget'),
                 'type' => \Elementor\Controls_Manager::SLIDER,
                 'size_units' => ['px', 'em', 'rem', 'custom'],
                 'range' => [
@@ -407,7 +407,7 @@ class Nias_course_woocommerce extends \Elementor\Widget_Base
         $this->add_control(
             'nstoggleiconsize_insidehead',
             [
-                'label' => esc_html__('اندازه آیکن باز و بسته شدن', 'nias-course-widget'),
+                'label' => esc_html__('Expand/collapse icon size', 'nias-course-widget'),
                 'type' => \Elementor\Controls_Manager::SLIDER,
                 'size_units' => ['px', 'em', 'rem', 'custom'],
                 'range' => [
@@ -433,7 +433,7 @@ class Nias_course_woocommerce extends \Elementor\Widget_Base
         $this->add_control(
             'nslessonicon_color_insidehead',
             [
-                'label' => esc_html__('رنگ آیکن باز و بسته شدن', 'nias-course-widget'),
+                'label' => esc_html__('Expand/collapse icon color', 'nias-course-widget'),
                 'type' => \Elementor\Controls_Manager::COLOR,
                 'selectors' => [
                     '{{WRAPPER}} .section_header .nsarrowicon i' => 'color: {{VALUE}}',
@@ -447,7 +447,7 @@ class Nias_course_woocommerce extends \Elementor\Widget_Base
         $this->add_group_control(
             \Elementor\Group_Control_Typography::get_type(),
             [
-                'label' => esc_html__('فونت عنوان فصل', 'nias-course-widget'),
+                'label' => esc_html__('Chapter title font', 'nias-course-widget'),
                 'name' => 'nsbadgtypograpy_insidehead_season',
                 'selector' => '{{WRAPPER}} .section_title',
             ]
@@ -455,7 +455,7 @@ class Nias_course_woocommerce extends \Elementor\Widget_Base
         $this->add_control(
             'nsbadge-itemcolor_insidehead_season',
             [
-                'label' => esc_html__('رنگ عنوان فصل', 'nias-course-widget'),
+                'label' => esc_html__('Chapter title color', 'nias-course-widget'),
                 'type' => \Elementor\Controls_Manager::COLOR,
                 'selectors' => [
                     '{{WRAPPER}} .section_title' => 'color: {{VALUE}}',
@@ -465,7 +465,7 @@ class Nias_course_woocommerce extends \Elementor\Widget_Base
         $this->add_control(
             'nsbadge-itembackcolor_insidehead_season',
             [
-                'label' => esc_html__('رنگ بک گراند عنوان فصل', 'nias-course-widget'),
+                'label' => esc_html__('Chapter title background color', 'nias-course-widget'),
                 'type' => \Elementor\Controls_Manager::COLOR,
                 'selectors' => [
                     '{{WRAPPER}} .section_title' => 'background-color: {{VALUE}}',
@@ -476,7 +476,7 @@ class Nias_course_woocommerce extends \Elementor\Widget_Base
         $this->add_group_control(
             \Elementor\Group_Control_Typography::get_type(),
             [
-                'label' => esc_html__('فونت لیبل فصل', 'nias-course-widget'),
+                'label' => esc_html__('Chapter label font', 'nias-course-widget'),
                 'name' => 'nsstitlecoursetypography_insidehead',
                 'selector' => '{{WRAPPER}} .section_subtitle',
             ]
@@ -484,7 +484,7 @@ class Nias_course_woocommerce extends \Elementor\Widget_Base
         $this->add_control(
             'nsbadge-itemcolor_label_insidehead',
             [
-                'label' => esc_html__('رنگ لیبل فصل', 'nias-course-widget'),
+                'label' => esc_html__('Chapter label color', 'nias-course-widget'),
                 'type' => \Elementor\Controls_Manager::COLOR,
                 'selectors' => [
                     '{{WRAPPER}} .section_subtitle' => 'color: {{VALUE}}',
@@ -494,7 +494,7 @@ class Nias_course_woocommerce extends \Elementor\Widget_Base
         $this->add_control(
             'nsbadge-itembackcolor_label_insidehead',
             [
-                'label' => esc_html__('رنگ بک گراند لیبل فصل', 'nias-course-widget'),
+                'label' => esc_html__('Chapter label background color', 'nias-course-widget'),
                 'type' => \Elementor\Controls_Manager::COLOR,
                 'selectors' => [
                     '{{WRAPPER}} .section_subtitle' => 'background-color: {{VALUE}}',
@@ -507,7 +507,7 @@ class Nias_course_woocommerce extends \Elementor\Widget_Base
         $this->start_controls_section(
             'nsstyle_eachlessoncourse',
             [
-                'label' => esc_html__('استایل درس', 'nias-course-widget'),
+                'label' => esc_html__('Lesson style', 'nias-course-widget'),
                 'tab' => \Elementor\Controls_Manager::TAB_STYLE,
             ]
         );
@@ -515,7 +515,7 @@ class Nias_course_woocommerce extends \Elementor\Widget_Base
         $this->add_group_control(
             \Elementor\Group_Control_Typography::get_type(),
             [
-                'label' => esc_html__('فونت عنوان درس', 'nias-course-widget'),
+                'label' => esc_html__('Lesson title font', 'nias-course-widget'),
                 'name' => 'nsbadgtypograpy_insidehead',
                 'selector' => '{{WRAPPER}} .lesson_title',
             ]
@@ -523,7 +523,7 @@ class Nias_course_woocommerce extends \Elementor\Widget_Base
         $this->add_control(
             'nsbadge-itemcolor_insidehead',
             [
-                'label' => esc_html__('رنگ عنوان درس', 'nias-course-widget'),
+                'label' => esc_html__('Lesson title color', 'nias-course-widget'),
                 'type' => \Elementor\Controls_Manager::COLOR,
                 'selectors' => [
                     '{{WRAPPER}} .lesson_title' => 'color: {{VALUE}}',
@@ -533,7 +533,7 @@ class Nias_course_woocommerce extends \Elementor\Widget_Base
         $this->add_control(
             'nsbadge-itembackcolor_insidehead',
             [
-                'label' => esc_html__('رنگ بک گراند عنوان درس', 'nias-course-widget'),
+                'label' => esc_html__('Lesson title background color', 'nias-course-widget'),
                 'type' => \Elementor\Controls_Manager::COLOR,
                 'selectors' => [
                     '{{WRAPPER}} .lesson_title' => 'background-color: {{VALUE}}',
@@ -544,7 +544,7 @@ class Nias_course_woocommerce extends \Elementor\Widget_Base
         $this->add_group_control(
             \Elementor\Group_Control_Typography::get_type(),
             [
-                'label' => esc_html__('فونت  زیر عنوان درس', 'nias-course-widget'),
+                'label' => esc_html__('Lesson subtitle  font', 'nias-course-widget'),
                 'name' => 'nsstitl_sub_ecoursetypography_insidehead',
                 'selector' => '{{WRAPPER}} .lesson_label',
             ]
@@ -552,7 +552,7 @@ class Nias_course_woocommerce extends \Elementor\Widget_Base
         $this->add_control(
             'nsbadge-sub-itemcolor_insidehead',
             [
-                'label' => esc_html__('رنگ زیر عنوان درس', 'nias-course-widget'),
+                'label' => esc_html__('Lesson subtitle color', 'nias-course-widget'),
                 'type' => \Elementor\Controls_Manager::COLOR,
                 'selectors' => [
                     '{{WRAPPER}} .lesson_label' => 'color: {{VALUE}}',
@@ -562,7 +562,7 @@ class Nias_course_woocommerce extends \Elementor\Widget_Base
         $this->add_control(
             'nsbadge-sub-itembackcolor_insidehead',
             [
-                'label' => esc_html__('رنگ بک گراند زیر عنوان درس', 'nias-course-widget'),
+                'label' => esc_html__('Lesson subtitle background color', 'nias-course-widget'),
                 'type' => \Elementor\Controls_Manager::COLOR,
                 'selectors' => [
                     '{{WRAPPER}} .lesson_label' => 'background-color: {{VALUE}}',
@@ -576,7 +576,7 @@ class Nias_course_woocommerce extends \Elementor\Widget_Base
         $this->start_controls_section(
             'nsstyle_section_content',
             [
-                'label' => esc_html__('استایل محتوای فصل', 'nias-course-widget'),
+                'label' => esc_html__('Chapter content style', 'nias-course-widget'),
                 'tab' => \Elementor\Controls_Manager::TAB_STYLE,
             ]
         );
@@ -598,7 +598,7 @@ class Nias_course_woocommerce extends \Elementor\Widget_Base
         $this->add_responsive_control(
             'nsradius_section_content',
             [
-                'label' => esc_html__('نرمی حاشیه', 'nias-course-widget'),
+                'label' => esc_html__('Border radius', 'nias-course-widget'),
                 'type' => \Elementor\Controls_Manager::DIMENSIONS,
                 'size_units' => ['px', '%', 'em', 'rem', 'custom'],
                 'selectors' => [
@@ -609,7 +609,7 @@ class Nias_course_woocommerce extends \Elementor\Widget_Base
         $this->add_responsive_control(
             'nspadding_section_content',
             [
-                'label' => esc_html__('فاصله داخلی', 'nias-course-widget'),
+                'label' => esc_html__('Padding', 'nias-course-widget'),
                 'type' => \Elementor\Controls_Manager::DIMENSIONS,
                 'size_units' => ['px', '%', 'em', 'rem', 'custom'],
                 'selectors' => [
@@ -620,7 +620,7 @@ class Nias_course_woocommerce extends \Elementor\Widget_Base
         $this->add_responsive_control(
             'nsgap_lessons_list',
             [
-                'label' => esc_html__('فاصله بین درس‌ها', 'nias-course-widget'),
+                'label' => esc_html__('Space between lessons', 'nias-course-widget'),
                 'type' => \Elementor\Controls_Manager::SLIDER,
                 'size_units' => ['px', 'em', 'rem'],
                 'range' => [
@@ -637,7 +637,7 @@ class Nias_course_woocommerce extends \Elementor\Widget_Base
         $this->start_controls_section(
             'nsstyle_lesson_box',
             [
-                'label' => esc_html__('استایل باکس درس', 'nias-course-widget'),
+                'label' => esc_html__('Lesson box style', 'nias-course-widget'),
                 'tab' => \Elementor\Controls_Manager::TAB_STYLE,
             ]
         );
@@ -659,7 +659,7 @@ class Nias_course_woocommerce extends \Elementor\Widget_Base
         $this->add_responsive_control(
             'nsradius_lesson_box',
             [
-                'label' => esc_html__('نرمی حاشیه', 'nias-course-widget'),
+                'label' => esc_html__('Border radius', 'nias-course-widget'),
                 'type' => \Elementor\Controls_Manager::DIMENSIONS,
                 'size_units' => ['px', '%', 'em', 'rem', 'custom'],
                 'selectors' => [
@@ -670,7 +670,7 @@ class Nias_course_woocommerce extends \Elementor\Widget_Base
         $this->add_responsive_control(
             'nspadding_lesson_box',
             [
-                'label' => esc_html__('فاصله داخلی', 'nias-course-widget'),
+                'label' => esc_html__('Padding', 'nias-course-widget'),
                 'type' => \Elementor\Controls_Manager::DIMENSIONS,
                 'size_units' => ['px', '%', 'em', 'rem', 'custom'],
                 'selectors' => [
@@ -681,7 +681,7 @@ class Nias_course_woocommerce extends \Elementor\Widget_Base
         $this->add_responsive_control(
             'nsgap_lesson_header',
             [
-                'label' => esc_html__('فاصله بین اجزای ردیف درس', 'nias-course-widget'),
+                'label' => esc_html__('Space between lesson row items', 'nias-course-widget'),
                 'type' => \Elementor\Controls_Manager::SLIDER,
                 'size_units' => ['px', 'em', 'rem'],
                 'range' => [
@@ -698,14 +698,14 @@ class Nias_course_woocommerce extends \Elementor\Widget_Base
         $this->start_controls_section(
             'nsstyle_lesson_icon',
             [
-                'label' => esc_html__('استایل آیکن درس', 'nias-course-widget'),
+                'label' => esc_html__('Lesson icon style', 'nias-course-widget'),
                 'tab' => \Elementor\Controls_Manager::TAB_STYLE,
             ]
         );
         $this->add_responsive_control(
             'nslessonicon_size',
             [
-                'label' => esc_html__('اندازه آیکن/عکس درس', 'nias-course-widget'),
+                'label' => esc_html__('Lesson icon/image size', 'nias-course-widget'),
                 'type' => \Elementor\Controls_Manager::SLIDER,
                 'size_units' => ['px', 'em', 'rem'],
                 'range' => [
@@ -721,7 +721,7 @@ class Nias_course_woocommerce extends \Elementor\Widget_Base
         $this->add_control(
             'nslessonicon_color',
             [
-                'label' => esc_html__('رنگ آیکن درس', 'nias-course-widget'),
+                'label' => esc_html__('Lesson icon color', 'nias-course-widget'),
                 'type' => \Elementor\Controls_Manager::COLOR,
                 'selectors' => [
                     '{{WRAPPER}} .lesson_item i' => 'color: {{VALUE}};',
@@ -732,7 +732,7 @@ class Nias_course_woocommerce extends \Elementor\Widget_Base
         $this->add_responsive_control(
             'nslessonicon_radius',
             [
-                'label' => esc_html__('نرمی حاشیه عکس درس', 'nias-course-widget'),
+                'label' => esc_html__('Lesson image border radius', 'nias-course-widget'),
                 'type' => \Elementor\Controls_Manager::DIMENSIONS,
                 'size_units' => ['px', '%', 'em', 'rem', 'custom'],
                 'selectors' => [
@@ -746,14 +746,14 @@ class Nias_course_woocommerce extends \Elementor\Widget_Base
         $this->start_controls_section(
             'nsstyle_preview_btn',
             [
-                'label' => esc_html__('استایل دکمه پیش‌نمایش', 'nias-course-widget'),
+                'label' => esc_html__('Preview button style', 'nias-course-widget'),
                 'tab' => \Elementor\Controls_Manager::TAB_STYLE,
             ]
         );
         $this->add_responsive_control(
             'nspreview_icon_size',
             [
-                'label' => esc_html__('اندازه آیکن پیش‌نمایش', 'nias-course-widget'),
+                'label' => esc_html__('Preview icon size', 'nias-course-widget'),
                 'type' => \Elementor\Controls_Manager::SLIDER,
                 'size_units' => ['px', 'em', 'rem'],
                 'range' => [
@@ -768,7 +768,7 @@ class Nias_course_woocommerce extends \Elementor\Widget_Base
         $this->add_group_control(
             \Elementor\Group_Control_Typography::get_type(),
             [
-                'label' => esc_html__('فونت متن پیش‌نمایش', 'nias-course-widget'),
+                'label' => esc_html__('Preview text font', 'nias-course-widget'),
                 'name' => 'nspreview_text_typography',
                 'selector' => '{{WRAPPER}} .nias-preview-tag .nsspanpreviewtext',
             ]
@@ -776,7 +776,7 @@ class Nias_course_woocommerce extends \Elementor\Widget_Base
         $this->add_responsive_control(
             'nspreview_radius',
             [
-                'label' => esc_html__('نرمی حاشیه', 'nias-course-widget'),
+                'label' => esc_html__('Border radius', 'nias-course-widget'),
                 'type' => \Elementor\Controls_Manager::DIMENSIONS,
                 'size_units' => ['px', '%', 'em', 'rem', 'custom'],
                 'selectors' => [
@@ -787,7 +787,7 @@ class Nias_course_woocommerce extends \Elementor\Widget_Base
         $this->add_responsive_control(
             'nspreview_padding',
             [
-                'label' => esc_html__('فاصله داخلی', 'nias-course-widget'),
+                'label' => esc_html__('Padding', 'nias-course-widget'),
                 'type' => \Elementor\Controls_Manager::DIMENSIONS,
                 'size_units' => ['px', '%', 'em', 'rem', 'custom'],
                 'selectors' => [
@@ -798,12 +798,12 @@ class Nias_course_woocommerce extends \Elementor\Widget_Base
         $this->start_controls_tabs('nspreview_btn_tabs');
         $this->start_controls_tab(
             'nspreview_btn_normal',
-            ['label' => esc_html__('عادی', 'nias-course-widget')]
+            ['label' => esc_html__('Normal', 'nias-course-widget')]
         );
         $this->add_control(
             'nspreview_color',
             [
-                'label' => esc_html__('رنگ متن و آیکن', 'nias-course-widget'),
+                'label' => esc_html__('Text and icon color', 'nias-course-widget'),
                 'type' => \Elementor\Controls_Manager::COLOR,
                 'selectors' => [
                     '{{WRAPPER}} .nias-preview-tag' => 'color: {{VALUE}};',
@@ -822,12 +822,12 @@ class Nias_course_woocommerce extends \Elementor\Widget_Base
         $this->end_controls_tab();
         $this->start_controls_tab(
             'nspreview_btn_hover',
-            ['label' => esc_html__('هاور', 'nias-course-widget')]
+            ['label' => esc_html__('Hover', 'nias-course-widget')]
         );
         $this->add_control(
             'nspreview_color_hover',
             [
-                'label' => esc_html__('رنگ متن و آیکن', 'nias-course-widget'),
+                'label' => esc_html__('Text and icon color', 'nias-course-widget'),
                 'type' => \Elementor\Controls_Manager::COLOR,
                 'selectors' => [
                     '{{WRAPPER}} .nias-preview-tag:hover' => 'color: {{VALUE}};',
@@ -851,14 +851,14 @@ class Nias_course_woocommerce extends \Elementor\Widget_Base
         $this->start_controls_section(
             'nsstyle_download_btn',
             [
-                'label' => esc_html__('استایل دکمه دانلود', 'nias-course-widget'),
+                'label' => esc_html__('Download button style', 'nias-course-widget'),
                 'tab' => \Elementor\Controls_Manager::TAB_STYLE,
             ]
         );
         $this->add_responsive_control(
             'nsdownload_icon_size',
             [
-                'label' => esc_html__('اندازه آیکن دانلود', 'nias-course-widget'),
+                'label' => esc_html__('Download icon size', 'nias-course-widget'),
                 'type' => \Elementor\Controls_Manager::SLIDER,
                 'size_units' => ['px', 'em', 'rem'],
                 'range' => [
@@ -873,7 +873,7 @@ class Nias_course_woocommerce extends \Elementor\Widget_Base
         $this->add_responsive_control(
             'nsdownload_size',
             [
-                'label' => esc_html__('اندازه دکمه', 'nias-course-widget'),
+                'label' => esc_html__('Button size', 'nias-course-widget'),
                 'type' => \Elementor\Controls_Manager::SLIDER,
                 'size_units' => ['px', 'em', 'rem'],
                 'range' => [
@@ -887,7 +887,7 @@ class Nias_course_woocommerce extends \Elementor\Widget_Base
         $this->add_responsive_control(
             'nsdownload_radius',
             [
-                'label' => esc_html__('نرمی حاشیه', 'nias-course-widget'),
+                'label' => esc_html__('Border radius', 'nias-course-widget'),
                 'type' => \Elementor\Controls_Manager::DIMENSIONS,
                 'size_units' => ['px', '%', 'em', 'rem', 'custom'],
                 'selectors' => [
@@ -898,12 +898,12 @@ class Nias_course_woocommerce extends \Elementor\Widget_Base
         $this->start_controls_tabs('nsdownload_btn_tabs');
         $this->start_controls_tab(
             'nsdownload_btn_normal',
-            ['label' => esc_html__('عادی', 'nias-course-widget')]
+            ['label' => esc_html__('Normal', 'nias-course-widget')]
         );
         $this->add_control(
             'nsdownload_color',
             [
-                'label' => esc_html__('رنگ آیکن', 'nias-course-widget'),
+                'label' => esc_html__('Icon color', 'nias-course-widget'),
                 'type' => \Elementor\Controls_Manager::COLOR,
                 'selectors' => [
                     '{{WRAPPER}} .nsdownload-button' => 'color: {{VALUE}};',
@@ -922,12 +922,12 @@ class Nias_course_woocommerce extends \Elementor\Widget_Base
         $this->end_controls_tab();
         $this->start_controls_tab(
             'nsdownload_btn_hover',
-            ['label' => esc_html__('هاور', 'nias-course-widget')]
+            ['label' => esc_html__('Hover', 'nias-course-widget')]
         );
         $this->add_control(
             'nsdownload_color_hover',
             [
-                'label' => esc_html__('رنگ آیکن', 'nias-course-widget'),
+                'label' => esc_html__('Icon color', 'nias-course-widget'),
                 'type' => \Elementor\Controls_Manager::COLOR,
                 'selectors' => [
                     '{{WRAPPER}} .nsdownload-button:hover' => 'color: {{VALUE}};',
@@ -951,14 +951,14 @@ class Nias_course_woocommerce extends \Elementor\Widget_Base
         $this->start_controls_section(
             'nsstyle_private',
             [
-                'label' => esc_html__('استایل بخش خصوصی', 'nias-course-widget'),
+                'label' => esc_html__('Private section style', 'nias-course-widget'),
                 'tab' => \Elementor\Controls_Manager::TAB_STYLE,
             ]
         );
         $this->add_responsive_control(
             'nsprivate_icon_size',
             [
-                'label' => esc_html__('اندازه آیکن قفل', 'nias-course-widget'),
+                'label' => esc_html__('Lock icon size', 'nias-course-widget'),
                 'type' => \Elementor\Controls_Manager::SLIDER,
                 'size_units' => ['px', 'em', 'rem'],
                 'range' => [
@@ -972,7 +972,7 @@ class Nias_course_woocommerce extends \Elementor\Widget_Base
         $this->add_control(
             'nsprivate_icon_color',
             [
-                'label' => esc_html__('رنگ آیکن قفل', 'nias-course-widget'),
+                'label' => esc_html__('Lock icon color', 'nias-course-widget'),
                 'type' => \Elementor\Controls_Manager::COLOR,
                 'selectors' => [
                     '{{WRAPPER}} .ns-private-icon svg path' => 'fill: {{VALUE}};',
@@ -983,7 +983,7 @@ class Nias_course_woocommerce extends \Elementor\Widget_Base
         $this->add_group_control(
             \Elementor\Group_Control_Typography::get_type(),
             [
-                'label' => esc_html__('فونت متن راهنما (خصوصی)', 'nias-course-widget'),
+                'label' => esc_html__('Hint text font (private)', 'nias-course-widget'),
                 'name' => 'nsprivate_tooltip_typography',
                 'selector' => '{{WRAPPER}} .ns-private-lesson span',
             ]
@@ -991,7 +991,7 @@ class Nias_course_woocommerce extends \Elementor\Widget_Base
         $this->add_control(
             'nsprivate_tooltip_color',
             [
-                'label' => esc_html__('رنگ متن راهنما', 'nias-course-widget'),
+                'label' => esc_html__('Hint text color', 'nias-course-widget'),
                 'type' => \Elementor\Controls_Manager::COLOR,
                 'selectors' => [
                     '{{WRAPPER}} .ns-private-lesson span' => 'color: {{VALUE}};',
@@ -1001,7 +1001,7 @@ class Nias_course_woocommerce extends \Elementor\Widget_Base
         $this->add_control(
             'nsprivate_tooltip_bg',
             [
-                'label' => esc_html__('رنگ بک گراند متن راهنما', 'nias-course-widget'),
+                'label' => esc_html__('Hint text background color', 'nias-course-widget'),
                 'type' => \Elementor\Controls_Manager::COLOR,
                 'selectors' => [
                     '{{WRAPPER}} .ns-private-lesson span' => 'background-color: {{VALUE}};',
@@ -1015,14 +1015,14 @@ class Nias_course_woocommerce extends \Elementor\Widget_Base
         $this->start_controls_section(
             'nsstyle_lesson_toggle',
             [
-                'label' => esc_html__('استایل آیکن باز/بسته درس', 'nias-course-widget'),
+                'label' => esc_html__('Lesson expand/collapse icon style', 'nias-course-widget'),
                 'tab' => \Elementor\Controls_Manager::TAB_STYLE,
             ]
         );
         $this->add_responsive_control(
             'nslesson_toggle_size',
             [
-                'label' => esc_html__('اندازه آیکن', 'nias-course-widget'),
+                'label' => esc_html__('Icon size', 'nias-course-widget'),
                 'type' => \Elementor\Controls_Manager::SLIDER,
                 'size_units' => ['px', 'em', 'rem'],
                 'range' => [
@@ -1037,7 +1037,7 @@ class Nias_course_woocommerce extends \Elementor\Widget_Base
         $this->add_control(
             'nslesson_toggle_color',
             [
-                'label' => esc_html__('رنگ آیکن', 'nias-course-widget'),
+                'label' => esc_html__('Icon color', 'nias-course-widget'),
                 'type' => \Elementor\Controls_Manager::COLOR,
                 'selectors' => [
                     '{{WRAPPER}} .lesson_header .nsarrowicon i' => 'color: {{VALUE}};',
@@ -1051,14 +1051,14 @@ class Nias_course_woocommerce extends \Elementor\Widget_Base
         $this->start_controls_section(
             'nsstyle_lesson_content',
             [
-                'label' => esc_html__('استایل محتوای درس', 'nias-course-widget'),
+                'label' => esc_html__('Lesson content style', 'nias-course-widget'),
                 'tab' => \Elementor\Controls_Manager::TAB_STYLE,
             ]
         );
         $this->add_group_control(
             \Elementor\Group_Control_Typography::get_type(),
             [
-                'label' => esc_html__('فونت محتوای درس', 'nias-course-widget'),
+                'label' => esc_html__('Lesson content font', 'nias-course-widget'),
                 'name' => 'nslesson_content_typography',
                 'selector' => '{{WRAPPER}} .lesson_content',
             ]
@@ -1066,7 +1066,7 @@ class Nias_course_woocommerce extends \Elementor\Widget_Base
         $this->add_control(
             'nslesson_content_color',
             [
-                'label' => esc_html__('رنگ متن محتوا', 'nias-course-widget'),
+                'label' => esc_html__('Content text color', 'nias-course-widget'),
                 'type' => \Elementor\Controls_Manager::COLOR,
                 'selectors' => [
                     '{{WRAPPER}} .lesson_content' => 'color: {{VALUE}};',
@@ -1091,7 +1091,7 @@ class Nias_course_woocommerce extends \Elementor\Widget_Base
         $this->add_responsive_control(
             'nslesson_content_radius',
             [
-                'label' => esc_html__('نرمی حاشیه', 'nias-course-widget'),
+                'label' => esc_html__('Border radius', 'nias-course-widget'),
                 'type' => \Elementor\Controls_Manager::DIMENSIONS,
                 'size_units' => ['px', '%', 'em', 'rem', 'custom'],
                 'selectors' => [
@@ -1102,7 +1102,7 @@ class Nias_course_woocommerce extends \Elementor\Widget_Base
         $this->add_responsive_control(
             'nslesson_content_padding',
             [
-                'label' => esc_html__('فاصله داخلی', 'nias-course-widget'),
+                'label' => esc_html__('Padding', 'nias-course-widget'),
                 'type' => \Elementor\Controls_Manager::DIMENSIONS,
                 'size_units' => ['px', '%', 'em', 'rem', 'custom'],
                 'selectors' => [

@@ -1,13 +1,14 @@
 <?php
 
 /**
- * Plugin Name: Nias course | دوره ساز نیاس
- * Description:   دوره ساز نیاس برای فروش و برگزاری دوره های آموزشی؛ با ووکامرس یا بدون آن، و با المنتور (ویجت های دوره ساز) یا بدون آن | این پلاگین بصورت رایگان منتشر شده و رایگان هم خواهد ماند❤️
+ * Plugin Name: Nias Course Builder
+ * Description:   Build, sell and run online courses: lessons and chapters, modern course view, quizzes, certificates, instructors, SpotPlayer licenses and more; with or without WooCommerce and Elementor. Free forever ❤️
  * Plugin URI:  https://nias.ir/product/nias-course-widget/
  * Version:     1.7.0
  * Author:      Alireza aliniya
  * Author URI:  https://nias.ir/
  * Text Domain: nias-course-widget
+ * Domain Path: /languages
  * License:GPL v2 or later
  * License URI: https://www.gnu.org/licenses/gpl-2.0.html 
  **/
@@ -16,6 +17,15 @@ if (! defined('ABSPATH')) {
     exit; // Exit if accessed directly.
 }
 define('NIAS_COURSE_VERSION', '1.7.0');
+
+/**
+ * Translations. Source strings are English; the Persian translation comes
+ * from translate.wordpress.org (wp-content/languages/plugins/, which WordPress
+ * prefers) or, until that language pack exists, from the bundled /languages.
+ */
+add_action('init', function () {
+    load_plugin_textdomain('nias-course-widget', false, dirname(plugin_basename(__FILE__)) . '/languages');
+}, 0);
 
 define('NIAS_FUNCTIONS' , plugin_dir_path(__FILE__).'inc/functions.php');
 define('NIAS_COURSE', plugin_dir_path(__FILE__) );
@@ -141,7 +151,7 @@ function nias_course_add_custom_category_widget()
     \Elementor\Plugin::$instance->elements_manager->add_category(
         'nias-widget-category',
         [
-            'title' => esc_html__('ویجت دوره ساز نیاس', 'nias-course-widget'), // عنوان دسته بندی
+            'title' => esc_html__('Nias course builder widget', 'nias-course-widget'), // عنوان دسته بندی
             'icon' => 'fa fa-plug', // آیکون دسته بندی (اختیاری)
         ]
     );

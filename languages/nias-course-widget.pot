@@ -1,0 +1,6949 @@
+# Nias course (nias-course-widget)
+# This file is distributed under the GPL v2 or later.
+msgid ""
+msgstr ""
+"Project-Id-Version: Nias course 1.7.0\n"
+"Report-Msgid-Bugs-To: https://nias.ir/\n"
+"POT-Creation-Date: 2026-11-09 14:28+0000\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=INTEGER; plural=EXPRESSION;\n"
+"X-Domain: nias-course-widget\n"
+
+#: inc/certificate-config-user.php
+#, php-format
+msgid "%s certificate"
+msgid_plural "%s certificate"
+msgstr[0] ""
+msgstr[1] ""
+
+#: inc/drip.php
+#, php-format
+msgid "This lesson of the course \"%s\" is now open for you:"
+msgid_plural "These lessons of the course \"%s\" are now open for you:"
+msgstr[0] ""
+msgstr[1] ""
+
+#: admin/adminpannel.php
+msgid "Nias Course Builder Settings"
+msgstr ""
+
+#. Plugin Name of the plugin
+#: nias-course-widget.php
+msgid "Nias Course Builder"
+msgstr ""
+
+#: admin/adminpannel.php
+msgid "Course Certificate Settings"
+msgstr ""
+
+#: admin/adminpannel.php
+msgid "SpotPlayer License"
+msgstr ""
+
+#: admin/adminpannel.php inc/instructor-approval.php woocommerce-course/curriculum-editor.php
+msgid "Choose image"
+msgstr ""
+
+#: admin/adminpannel.php inc/devices.php inc/instructor-approval.php inc/instructors.php woocommerce-course/product-meta.php
+msgid "Remove"
+msgstr ""
+
+#: admin/adminpannel.php
+msgid "Plugin settings panel"
+msgstr ""
+
+#: admin/adminpannel.php
+msgid "Version"
+msgstr ""
+
+#: admin/adminpannel.php
+msgid "Main settings"
+msgstr ""
+
+#: admin/adminpannel.php inc/sms.php
+msgid "Active"
+msgstr ""
+
+#: admin/adminpannel.php inc/certificate/designer.php
+msgid "Certificate designer"
+msgstr ""
+
+#: admin/adminpannel.php inc/certificate/admin-issued.php
+msgid "Issued certificates"
+msgstr ""
+
+#: admin/adminpannel.php inc/instructors.php
+msgid "Instructors"
+msgstr ""
+
+#: admin/adminpannel.php woocommerce-course/quiz-builder.php
+msgid "Quiz builder"
+msgstr ""
+
+#: admin/adminpannel.php inc/instructor-panel.php
+msgid "Results & grading"
+msgstr ""
+
+#: admin/adminpannel.php inc/instructor-panel.php woocommerce-course/qa.php
+msgid "Q&A"
+msgstr ""
+
+#: admin/adminpannel.php inc/instructor-approval.php
+msgid "Instructor requests"
+msgstr ""
+
+#: admin/adminpannel.php inc/revenue.php
+msgid "Instructor earnings"
+msgstr ""
+
+#: admin/adminpannel.php inc/transfer.php
+msgid "Course transfer"
+msgstr ""
+
+#: admin/adminpannel.php inc/analytics.php inc/instructor-panel.php
+msgid "Reports"
+msgstr ""
+
+#: admin/adminpannel.php inc/analytics.php inc/assignments.php inc/instructor-panel.php
+msgid "Assignments"
+msgstr ""
+
+#: admin/adminpannel.php inc/modules.php
+msgid "Modules"
+msgstr ""
+
+#: admin/adminpannel.php inc/sms.php
+msgid "SMS"
+msgstr ""
+
+#: admin/adminpannel.php admin/player-settings.php
+msgid "Video player"
+msgstr ""
+
+#: admin/adminpannel.php woocommerce-course/product-meta.php
+msgid "Meta"
+msgstr ""
+
+#: admin/adminpannel.php
+msgid "Settings saved."
+msgstr ""
+
+#: admin/adminpannel.php
+msgid "Hold down Ctrl to select multiple items."
+msgstr ""
+
+#: admin/adminpannel.php
+msgid "Search a name to add…"
+msgstr ""
+
+#: admin/adminpannel.php
+msgid "Type a few letters of the name to see results; remove an item with ×."
+msgstr ""
+
+#: admin/adminpannel.php
+msgid "Save changes"
+msgstr ""
+
+#: admin/adminpannel.php
+msgid "Special offer"
+msgstr ""
+
+#: admin/adminpannel.php
+msgid "Nias Login; beyond sign-in and sign-up"
+msgstr ""
+
+#: admin/adminpannel.php
+msgid "Special purchase discount code:"
+msgstr ""
+
+#: admin/adminpannel.php
+msgid "<b>Sign up and log in with mobile, email and Google account</b>, <b>WooCommerce order SMS</b>, <b>SpotPlayer license delivery</b> and dozens of other handy features for a better user experience and <b>more sales</b>; lightweight, WooCommerce-compatible and optimized for site speed."
+msgstr ""
+
+#: admin/adminpannel.php
+msgid "Sign up and log in with mobile, email and Google account"
+msgstr ""
+
+#: admin/adminpannel.php
+msgid "SMS for WooCommerce order status"
+msgstr ""
+
+#: admin/adminpannel.php
+msgid "SpotPlayer license delivery support"
+msgstr ""
+
+#: admin/adminpannel.php
+msgid "Dozens of handy features for a better user experience and more sales"
+msgstr ""
+
+#: admin/adminpannel.php
+msgid "View plugin"
+msgstr ""
+
+#: admin/adminpannel.php
+msgid "Nias suggests: the Nias Login plugin"
+msgstr ""
+
+#: admin/adminpannel.php
+msgid "Discount code:"
+msgstr ""
+
+#: admin/adminpannel.php
+msgid "Copied ✓"
+msgstr ""
+
+#: admin/adminpannel.php woocommerce-course/product-meta.php
+msgid "Copy"
+msgstr ""
+
+#: admin/adminpannel.php
+msgid "Nias suggestions"
+msgstr ""
+
+#: admin/adminpannel.php
+msgid " Move data to the new course builder (for versions before 1.1.5) "
+msgstr ""
+
+#: admin/adminpannel.php
+msgid "If you used the course builder's WooCommerce widget and see problems after the update, click to move the data to the new editor. Be sure to back up the site before moving."
+msgstr ""
+
+#: admin/adminpannel.php
+msgid "Start moving and syncing"
+msgstr ""
+
+#: admin/adminpannel.php
+msgid "Activation options"
+msgstr ""
+
+#: admin/adminpannel.php
+msgid "Enable two-way course purchase check"
+msgstr ""
+
+#: admin/adminpannel.php
+msgid "Use this mode only if purchased courses do not open for your users."
+msgstr ""
+
+#: admin/adminpannel.php
+msgid "Show courses in the user account"
+msgstr ""
+
+#: admin/adminpannel.php
+msgid "This option only works if your user account is standard and you have used the WooCommerce widget. If nothing changes, click Save once on the <a href=\"/wp-admin/options-permalink.php\">Permalinks</a> page."
+msgstr ""
+
+#: admin/adminpannel.php
+msgid "Enable modern view in the account"
+msgstr ""
+
+#: admin/adminpannel.php
+msgid "With this option, purchased courses on the account's \"My courses\" page are shown as cards instead of the old accordion, and each card links to that course's display page (modern view). To show them manually you can also use the shortcode <code dir=\"ltr\">[nias_purchased_courses]</code>."
+msgstr ""
+
+#: admin/adminpannel.php
+msgid "Modern"
+msgstr ""
+
+#: admin/adminpannel.php
+msgid "Enable course certificate with verification"
+msgstr ""
+
+#: admin/adminpannel.php
+msgid "With this option, issuing and verifying course certificates is enabled. After saving, the \"Course Certificate Settings\" submenu appears."
+msgstr ""
+
+#: admin/adminpannel.php inc/certificate/verify-log.php
+msgid "Certificate"
+msgstr ""
+
+#: admin/adminpannel.php
+msgid "Enable SpotPlayer license"
+msgstr ""
+
+#: admin/adminpannel.php
+msgid "With this option, SpotPlayer features (automatic license after purchase, player and download display) are enabled and the \"SpotPlayer License\" tab appears. To avoid conflicts, deactivate the separate SpotPlayer plugin."
+msgstr ""
+
+#: admin/adminpannel.php widgets/nias-controls.php
+msgid "SpotPlayer"
+msgstr ""
+
+#: admin/adminpannel.php
+msgid "Enable instructors"
+msgstr ""
+
+#: admin/adminpannel.php
+msgid "With this option, the \"Instructor\" role is created and the \"Instructors\" submenu appears; there you can manage instructors and see each instructor's courses. Then choose each product's instructors on its \"Edit lessons and chapters\" page."
+msgstr ""
+
+#: admin/adminpannel.php
+msgid "Enable quiz builder"
+msgstr ""
+
+#: admin/adminpannel.php
+msgid "With this option, the \"Quiz builder\" section appears; there you can build quizzes (6 question types), link them to a course and show them with the shortcode <code dir=\"ltr\">[nias_quiz id=\"...\"]</code> or inside the modern course view. Passing the linked quiz can be a condition for the course certificate."
+msgstr ""
+
+#: admin/adminpannel.php inc/analytics.php inc/instructor-approval.php woocommerce-course/quiz-results.php
+msgid "Quiz"
+msgstr ""
+
+#: admin/adminpannel.php
+msgid "Enable meta"
+msgstr ""
+
+#: admin/adminpannel.php
+msgid "With this option, the \"Meta\" tab appears; there you can create custom metas (name and key). Then enter each meta's value on the product's \"Edit lessons and chapters\" page and show it with the shortcode <code dir=\"ltr\">[nias_meta key=\"...\"]</code>."
+msgstr ""
+
+#: admin/adminpannel.php
+msgid "Enable Q&A"
+msgstr ""
+
+#: admin/adminpannel.php
+msgid "Students ask questions under each lesson or about the whole course and the course instructor answers. After enabling, the \"Q&A\" tab in the modern course view, the \"Q&A\" submenu and its card in the instructor dashboard appear."
+msgstr ""
+
+#: admin/adminpannel.php
+msgid "Where to ask"
+msgstr ""
+
+#: admin/adminpannel.php
+msgid "Each lesson + whole course"
+msgstr ""
+
+#: admin/adminpannel.php
+msgid "Only under lessons"
+msgstr ""
+
+#: admin/adminpannel.php
+msgid "Only general for the course"
+msgstr ""
+
+#: admin/adminpannel.php
+msgid "Who can ask"
+msgstr ""
+
+#: admin/adminpannel.php
+msgid "Course participants (buyers / logged-in users in a free course)"
+msgstr ""
+
+#: admin/adminpannel.php
+msgid "All logged-in users"
+msgstr ""
+
+#: admin/adminpannel.php
+msgid "Who sees the questions"
+msgstr ""
+
+#: admin/adminpannel.php
+msgid "Everyone (even guests)"
+msgstr ""
+
+#: admin/adminpannel.php
+msgid "Only course participants"
+msgstr ""
+
+#: admin/adminpannel.php
+msgid "Publish after approval"
+msgstr ""
+
+#: admin/adminpannel.php
+msgid "A student's question is shown only to them until the instructor approves (or answers) it."
+msgstr ""
+
+#: admin/adminpannel.php
+msgid "Email notifications"
+msgstr ""
+
+#: admin/adminpannel.php
+msgid "New questions are emailed to the course instructor(s) (or the site admin if no instructor is set) and the instructor's answer to the person who asked."
+msgstr ""
+
+#: admin/adminpannel.php
+msgid "\"Course\" post type (free courses)"
+msgstr ""
+
+#: admin/adminpannel.php
+msgid "A \"Courses\" menu is added so that next to WooCommerce products you can build free (not for sale) courses too. All course features (lessons and chapters, modern view, instructors, quiz, certificate, watch report) work on it. Public lessons are shown to everyone and \"private\" lessons to logged-in users."
+msgstr ""
+
+#: admin/adminpannel.php
+msgid "Free course"
+msgstr ""
+
+#: admin/adminpannel.php
+msgid "Free mode (without WooCommerce)"
+msgstr ""
+
+#: admin/adminpannel.php
+#, php-format
+msgid "WooCommerce is not installed; build courses from the <a href=\"%s\">\"Courses\"</a> menu. Public lessons are shown to everyone and \"private\" lessons to logged-in users. To sell courses, install WooCommerce."
+msgstr ""
+
+#: admin/adminpannel.php
+msgid "Modern course view"
+msgstr ""
+
+#: admin/adminpannel.php
+msgid "Enable modern course view"
+msgstr ""
+
+#: admin/adminpannel.php inc/modules.php
+msgid "New"
+msgstr ""
+
+#: admin/adminpannel.php
+msgid "The modern course view includes the player, progress bar, curriculum and certificate, built from the product's own lessons and chapters and the plugin settings (instructors, certificate, private lessons). Choose the display mode:"
+msgstr ""
+
+#: admin/adminpannel.php
+msgid "Off"
+msgstr ""
+
+#: admin/adminpannel.php
+msgid "Automatic on the product page"
+msgstr ""
+
+#: admin/adminpannel.php
+msgid "Manual with shortcode"
+msgstr ""
+
+#: admin/adminpannel.php
+msgid "In this mode, the modern course view is shown automatically on the WooCommerce single product page (below the product summary) for products that have chapters and lessons."
+msgstr ""
+
+#: admin/adminpannel.php
+msgid "Modern course view shortcodes"
+msgstr ""
+
+#: admin/adminpannel.php
+msgid "The full shortcode shows the whole course. For a custom layout each part has its own shortcode and all parts stay in sync (selected lesson and shared progress). Each shortcode can take id=\"123\"."
+msgstr ""
+
+#: admin/adminpannel.php
+msgid "Full course view"
+msgstr ""
+
+#: admin/adminpannel.php
+msgid "Course header + progress bar + certificate button"
+msgstr ""
+
+#: admin/adminpannel.php
+msgid "Current lesson player"
+msgstr ""
+
+#: admin/adminpannel.php
+msgid "Lesson info bar (navigation and description/resources)"
+msgstr ""
+
+#: admin/adminpannel.php
+msgid "Chapters and lessons list"
+msgstr ""
+
+#: admin/adminpannel.php
+msgid "Course completion certificate section"
+msgstr ""
+
+#: admin/adminpannel.php
+msgid "Button to enter the modern course view (independent of the display mode)"
+msgstr ""
+
+#: admin/adminpannel.php
+msgid "Private lesson lock"
+msgstr ""
+
+#: admin/adminpannel.php
+msgid "For \"private\" lessons when the user has not bought the course yet, choose which parts are locked (hidden). This applies to the modern course view, the account view and the Elementor WooCommerce widget. By default everything is \"locked\"."
+msgstr ""
+
+#: admin/adminpannel.php
+msgid "Lock preview / lesson video"
+msgstr ""
+
+#: admin/adminpannel.php
+msgid "Hides the \"Preview\" link in the account view and widget, and the lesson video player in the modern course view, for users who have not bought the course."
+msgstr ""
+
+#: admin/adminpannel.php
+msgid "Lock description / lesson content"
+msgstr ""
+
+#: admin/adminpannel.php
+msgid "Hides the lesson's text content (description and text lessons) for users who have not bought the course."
+msgstr ""
+
+#: admin/adminpannel.php
+msgid "Lock resources and attachment (download file)"
+msgstr ""
+
+#: admin/adminpannel.php
+msgid "Hides the lesson's download file, resources and attachments for users who have not bought the course."
+msgstr ""
+
+#: admin/adminpannel.php
+msgid "Personal video and file links for each user"
+msgstr ""
+
+#: admin/adminpannel.php
+msgid "The real address of private lesson videos and files is never sent to the browser; each user gets their own signed link (valid for 12 hours). If someone else opens the link, they see \"You are not logged in\" or \"This link does not belong to you\". Aparat/YouTube videos and HLS/DASH streams are not covered by this option."
+msgstr ""
+
+#: admin/adminpannel.php
+msgid "Security"
+msgstr ""
+
+#: admin/adminpannel.php
+msgid "Video player and watch tracking"
+msgstr ""
+
+#: admin/adminpannel.php
+msgid "Look, controls, speeds, watermark, seek prevention, lesson completion percentage and HLS/DASH settings with a live preview."
+msgstr ""
+
+#: admin/adminpannel.php
+msgid "Player settings"
+msgstr ""
+
+#: admin/adminpannel.php
+msgid "How to use the plugin"
+msgstr ""
+
+#: admin/adminpannel.php
+msgid "Follow the course builder tutorials on Nias Aparat and Nias YouTube"
+msgstr ""
+
+#: admin/adminpannel.php
+msgid "Nias Aparat"
+msgstr ""
+
+#: admin/adminpannel.php
+msgid "Nias YouTube"
+msgstr ""
+
+#: admin/adminpannel.php
+msgid "If you have a problem or question, contact us on Telegram."
+msgstr ""
+
+#: admin/adminpannel.php
+msgid "Nias web design tutorials"
+msgstr ""
+
+#: admin/adminpannel.php
+msgid "Log in"
+msgstr ""
+
+#: admin/adminpannel.php
+msgid "ProElement — download theme"
+msgstr ""
+
+#: admin/adminpannel.php inc/instructors.php woocommerce-course/product-meta.php
+msgid "Thank you for building your site with <span style=\"color:#3858e9;font-weight:600\">WordPress</span>."
+msgstr ""
+
+#: admin/adminpannel.php
+msgid "Select page"
+msgstr ""
+
+#: admin/adminpannel.php
+msgid "(course)"
+msgstr ""
+
+#: admin/adminpannel.php
+msgid "Show certificate"
+msgstr ""
+
+#: admin/adminpannel.php
+msgid "Certificate display mode"
+msgstr ""
+
+#: admin/adminpannel.php
+msgid "Choose how the certificate is shown for products."
+msgstr ""
+
+#: admin/adminpannel.php
+msgid "All products"
+msgstr ""
+
+#: admin/adminpannel.php
+msgid "Selected product"
+msgstr ""
+
+#: admin/adminpannel.php
+msgid "From category"
+msgstr ""
+
+#: admin/adminpannel.php
+msgid "None"
+msgstr ""
+
+#: admin/adminpannel.php
+msgid "Selected products"
+msgstr ""
+
+#: admin/adminpannel.php
+msgid "Selected categories"
+msgstr ""
+
+#: admin/adminpannel.php
+msgid "Certificate display page"
+msgstr ""
+
+#: admin/adminpannel.php
+msgid "Choose the page where the certificate should be shown."
+msgstr ""
+
+#: admin/adminpannel.php
+msgid "Certificate design mode"
+msgstr ""
+
+#: admin/adminpannel.php
+msgid "In \"Classic\" mode the certificate is built with the previous design and the images and texts below on this page. In \"Advanced designer\" mode it is built from a template you designed yourself with drag and drop in the \"Certificate designer\"."
+msgstr ""
+
+#: admin/adminpannel.php
+msgid "Classic (current design)"
+msgstr ""
+
+#: admin/adminpannel.php
+msgid "Advanced designer (canvas)"
+msgstr ""
+
+#: admin/adminpannel.php
+msgid "Default template"
+msgstr ""
+
+#: admin/adminpannel.php
+msgid "For each course you can choose a separate template on the product edit page (\"Course certificate\" box)."
+msgstr ""
+
+#: admin/adminpannel.php
+msgid "— Select template —"
+msgstr ""
+
+#: admin/adminpannel.php
+msgid "You have not built a template yet. Until you do, certificates are issued with the classic design."
+msgstr ""
+
+#: admin/adminpannel.php
+msgid "Open certificate designer"
+msgstr ""
+
+#: admin/adminpannel.php
+msgid "Keep the design of issued certificates"
+msgstr ""
+
+#: admin/adminpannel.php
+msgid "Each certificate is built with the design it had when issued; editing or replacing the template only affects new certificates (like a paper certificate that does not change after printing). For a specific certificate you can apply the current template in \"Issued certificates\". Certificates issued before version 1.5.1 still follow the current template."
+msgstr ""
+
+#: admin/adminpannel.php
+msgid "Certificate requirements"
+msgstr ""
+
+#: admin/adminpannel.php
+msgid "These requirements apply to all courses, and custom requirements can be set on each product's edit page (\"Course certificate\" box). Students see in their certificate list which requirement is not met yet. Certificates already issued are not revoked when requirements become stricter."
+msgstr ""
+
+#: admin/adminpannel.php
+msgid "Accepted order status"
+msgstr ""
+
+#: admin/adminpannel.php inc/certificate/conditions.php
+msgid "Completed or processing"
+msgstr ""
+
+#: admin/adminpannel.php
+msgid "Only completed orders"
+msgstr ""
+
+#: admin/adminpannel.php
+msgid "Require passing the quiz linked to the course"
+msgstr ""
+
+#: admin/adminpannel.php
+msgid "If a quiz is linked to the course, no certificate is issued until it is passed."
+msgstr ""
+
+#: admin/adminpannel.php
+msgid "Minimum course progress percentage"
+msgstr ""
+
+#: admin/adminpannel.php
+msgid "0 means disabled. Progress is recorded from the modern course view."
+msgstr ""
+
+#: admin/adminpannel.php
+msgid "Minimum days after purchase"
+msgstr ""
+
+#: admin/adminpannel.php
+msgid "0 means disabled."
+msgstr ""
+
+#: admin/adminpannel.php inc/certificate/conditions.php
+msgid "Require first and last name"
+msgstr ""
+
+#: admin/adminpannel.php
+msgid "No certificate is issued until the student completes their first and last name; the name form is shown on the same certificates page."
+msgstr ""
+
+#: admin/adminpannel.php inc/certificate/conditions.php
+msgid "Require manual admin approval"
+msgstr ""
+
+#: admin/adminpannel.php
+msgid "New certificates are recorded as \"Awaiting approval\" and become downloadable and verifiable after you approve them on the \"Issued certificates\" page."
+msgstr ""
+
+#: admin/adminpannel.php
+msgid "Show certificates in the user account"
+msgstr ""
+
+#: admin/adminpannel.php
+msgid "Add a \"My certificates\" tab to the user account"
+msgstr ""
+
+#: admin/adminpannel.php
+msgid "A new page (endpoint) is added to the WooCommerce account menu where students see their course certificates, the requirement status and the download button. There is no need to save the permalinks again."
+msgstr ""
+
+#: admin/adminpannel.php
+msgid "Menu title"
+msgstr ""
+
+#: admin/adminpannel.php inc/certificate/account.php inc/certificate/verify.php
+msgid "My certificates"
+msgstr ""
+
+#: admin/adminpannel.php
+msgid "Endpoint address (Latin)"
+msgstr ""
+
+#: admin/adminpannel.php
+msgid "Current address:"
+msgstr ""
+
+#: admin/adminpannel.php
+msgid "Certificate verification"
+msgstr ""
+
+#: admin/adminpannel.php inc/certificate/email.php
+msgid "Certificate verification page"
+msgstr ""
+
+#: admin/adminpannel.php
+msgid "The page where you placed the shortcode [nias_certificate_verify]. Once selected, the QR code of new certificates points to the verification form (QR links of old certificates keep working). If left empty, the certificate display page is used, and if that is not set either, the plugin's built-in verification page (/?nias_verify=code); so certificate QR codes never lead to an error page."
+msgstr ""
+
+#: admin/adminpannel.php
+msgid "Mask part of the name in the verification result"
+msgstr ""
+
+#: admin/adminpannel.php
+msgid "For privacy, the holder's name is shown like \"J***n S***h\". With this option on, the \"View certificate (PDF)\" button is not shown in the verification result."
+msgstr ""
+
+#: admin/adminpannel.php
+msgid "Verification via API"
+msgstr ""
+
+#: admin/adminpannel.php
+msgid "Other systems (employers, LMS) can check a certificate's validity as JSON with this address. The request limit and name masking apply to it too."
+msgstr ""
+
+#: admin/adminpannel.php
+msgid "Automatic certificate email"
+msgstr ""
+
+#: admin/adminpannel.php
+#, php-format
+msgid "A test email was sent to %s."
+msgstr ""
+
+#: admin/adminpannel.php
+msgid "Sending the email failed; check the site's SMTP settings."
+msgstr ""
+
+#: admin/adminpannel.php
+msgid "Send an email when a certificate is issued"
+msgstr ""
+
+#: admin/adminpannel.php
+msgid "As soon as the student meets the requirements (order completed, quiz passed, course progress) or the admin approves the certificate, a congratulation email with the verification link is sent. Each certificate is emailed only once and sending happens in the background."
+msgstr ""
+
+#: admin/adminpannel.php
+msgid "Attach the certificate PDF"
+msgstr ""
+
+#: admin/adminpannel.php
+msgid "If the digital signature is active, the attached PDF is signed too."
+msgstr ""
+
+#: admin/adminpannel.php
+msgid "Email subject"
+msgstr ""
+
+#: admin/adminpannel.php
+msgid "Email body"
+msgstr ""
+
+#: admin/adminpannel.php
+msgid "Available fields: {student_name} {course_name} {code} {date} {verify_url} {account_url} {instructor} {site_name}. The \"Get certificate\" and \"Verification page\" buttons are added to the end of the email automatically."
+msgstr ""
+
+#: admin/adminpannel.php
+msgid "Send me a test email (with the saved settings)"
+msgstr ""
+
+#: admin/adminpannel.php
+msgid "Shortcodes"
+msgstr ""
+
+#: admin/adminpannel.php
+msgid "Use the shortcode on the page you selected."
+msgstr ""
+
+#: admin/adminpannel.php inc/instructor-approval.php widgets/nias-controls.php widgets/nias-woocommerce.php
+msgid "Preview"
+msgstr ""
+
+#: admin/adminpannel.php
+msgid "Button leading to the certificate"
+msgstr ""
+
+#: admin/adminpannel.php
+msgid "Certificate verification form by code"
+msgstr ""
+
+#: admin/adminpannel.php
+msgid "⚠ Remember to remove the preview shortcode after testing."
+msgstr ""
+
+#: admin/adminpannel.php
+msgid "Certificate images"
+msgstr ""
+
+#: admin/adminpannel.php
+msgid "Your logo image"
+msgstr ""
+
+#: admin/adminpannel.php
+msgid "Upload the certificate's brand or logo (not svg)."
+msgstr ""
+
+#: admin/adminpannel.php
+msgid "Header background image"
+msgstr ""
+
+#: admin/adminpannel.php
+msgid "Background of the top part of the certificate (not svg)."
+msgstr ""
+
+#: admin/adminpannel.php
+msgid "Footer background image"
+msgstr ""
+
+#: admin/adminpannel.php
+msgid "Background of the bottom part of the certificate (not svg)."
+msgstr ""
+
+#: admin/adminpannel.php
+msgid "Certificate emblem"
+msgstr ""
+
+#: admin/adminpannel.php
+msgid "Upload the certificate's emblem or icon (not svg)."
+msgstr ""
+
+#: admin/adminpannel.php
+msgid "Download sample certificate images"
+msgstr ""
+
+#: admin/adminpannel.php
+msgid "Ready sample images including header, footer, watermark and icon."
+msgstr ""
+
+#: admin/adminpannel.php
+msgid "Download sample images"
+msgstr ""
+
+#: admin/adminpannel.php
+msgid "Certificate texts"
+msgstr ""
+
+#: admin/adminpannel.php
+msgid "Certificate first title"
+msgstr ""
+
+#: admin/adminpannel.php
+msgid "Main title at the top of the certificate"
+msgstr ""
+
+#: admin/adminpannel.php
+msgid "Title before the student name"
+msgstr ""
+
+#: admin/adminpannel.php
+msgid "Text before the student name"
+msgstr ""
+
+#: admin/adminpannel.php
+msgid "Title after the student name"
+msgstr ""
+
+#: admin/adminpannel.php
+msgid "Text after the student name"
+msgstr ""
+
+#: admin/adminpannel.php
+msgid "Certificate date"
+msgstr ""
+
+#: admin/adminpannel.php
+msgid "Show date"
+msgstr ""
+
+#: admin/adminpannel.php
+msgid "Date source"
+msgstr ""
+
+#: admin/adminpannel.php
+msgid "Course purchase date"
+msgstr ""
+
+#: admin/adminpannel.php
+msgid "Manual date"
+msgstr ""
+
+#: admin/adminpannel.php
+msgid "Date from the user's nias_certificate_date field"
+msgstr ""
+
+#: admin/adminpannel.php
+msgid "Seal and signature"
+msgstr ""
+
+#: admin/adminpannel.php
+msgid "Your seal image"
+msgstr ""
+
+#: admin/adminpannel.php
+msgid "Upload your official seal (not svg)."
+msgstr ""
+
+#: admin/adminpannel.php
+msgid "Signature image"
+msgstr ""
+
+#: admin/adminpannel.php
+msgid "Upload the signature of the person issuing the certificate (not svg)."
+msgstr ""
+
+#: admin/adminpannel.php inc/certificate/renderer.php
+msgid "Signer name"
+msgstr ""
+
+#: admin/adminpannel.php
+msgid "Name of the person who signs the certificate"
+msgstr ""
+
+#: admin/adminpannel.php
+msgid "Data was moved and synced successfully; please check the pages after clearing the cache"
+msgstr ""
+
+#: admin/player-settings.php
+msgid "Video player settings"
+msgstr ""
+
+#: admin/player-settings.php widgets/nias-woocommerce.php
+msgid "Normal"
+msgstr ""
+
+#: admin/player-settings.php widgets/nias-instructors.php
+msgid "Appearance"
+msgstr ""
+
+#: admin/player-settings.php
+msgid "Main color (buttons and progress bar)"
+msgstr ""
+
+#: admin/player-settings.php
+msgid "\"Watched\" bar color"
+msgstr ""
+
+#: admin/player-settings.php
+msgid "Corner radius"
+msgstr ""
+
+#: admin/player-settings.php
+msgid "Play button in the middle of the video"
+msgstr ""
+
+#: admin/player-settings.php
+msgid "Circle"
+msgstr ""
+
+#: admin/player-settings.php
+msgid "Rounded rectangle"
+msgstr ""
+
+#: admin/player-settings.php
+msgid "No button"
+msgstr ""
+
+#: admin/player-settings.php
+msgid "Aspect ratio"
+msgstr ""
+
+#: admin/player-settings.php
+msgid "9:16 (vertical)"
+msgstr ""
+
+#: admin/player-settings.php
+msgid "For the lesson content player and the modern course view."
+msgstr ""
+
+#: admin/player-settings.php
+msgid "Default image before playing (poster)"
+msgstr ""
+
+#: admin/player-settings.php
+msgid "Shown when the video has no image of its own."
+msgstr ""
+
+#: admin/player-settings.php
+msgid "Logo on the video"
+msgstr ""
+
+#: admin/player-settings.php
+msgid "PNG with a transparent background; also visible in full screen."
+msgstr ""
+
+#: admin/player-settings.php
+msgid "Logo position"
+msgstr ""
+
+#: admin/player-settings.php
+msgid "Top right"
+msgstr ""
+
+#: admin/player-settings.php
+msgid "Top left"
+msgstr ""
+
+#: admin/player-settings.php
+msgid "Bottom right"
+msgstr ""
+
+#: admin/player-settings.php
+msgid "Bottom left"
+msgstr ""
+
+#: admin/player-settings.php
+msgid "Logo opacity"
+msgstr ""
+
+#: admin/player-settings.php
+msgid "Logo link (optional)"
+msgstr ""
+
+#: admin/player-settings.php
+msgid "Controls"
+msgstr ""
+
+#: admin/player-settings.php
+msgid "Forward and back buttons"
+msgstr ""
+
+#: admin/player-settings.php
+msgid "Skip amount (seconds)"
+msgstr ""
+
+#: admin/player-settings.php
+msgid "For the buttons, the J/L keys and double tap on mobile."
+msgstr ""
+
+#: admin/player-settings.php
+msgid "Volume control"
+msgstr ""
+
+#: admin/player-settings.php
+msgid "Show time"
+msgstr ""
+
+#: admin/player-settings.php
+msgid "Clicking the time switches between \"elapsed\" and \"remaining\"."
+msgstr ""
+
+#: admin/player-settings.php
+msgid "Playback speed selection"
+msgstr ""
+
+#: admin/player-settings.php
+msgid "Quality selection"
+msgstr ""
+
+#: admin/player-settings.php
+msgid "Students change the video quality from the player's settings menu: for HLS and DASH videos with several qualities, and for MP4 files when \"Other qualities\" (e.g. 720p and 480p) were added in the lesson editor. Each user's choice is remembered."
+msgstr ""
+
+#: admin/player-settings.php
+msgid "\"Watched\" badge and bar"
+msgstr ""
+
+#: admin/player-settings.php
+msgid "Students see what percentage and which parts of the video they have watched."
+msgstr ""
+
+#: admin/player-settings.php
+msgid "Picture in picture (PiP)"
+msgstr ""
+
+#: admin/player-settings.php
+msgid "Full screen"
+msgstr ""
+
+#: admin/player-settings.php
+msgid "Keyboard shortcuts"
+msgstr ""
+
+#: admin/player-settings.php
+#, php-format
+msgid "Space: play/pause · ← →: 5 seconds · J/L: skip · ↑ ↓: volume · M: mute · F: full screen · 0 to 9: jump to 0% to 90%"
+msgstr ""
+
+#: admin/player-settings.php
+msgid "Double tap to skip on mobile"
+msgstr ""
+
+#: admin/player-settings.php
+msgid "Hide controls while playing after"
+msgstr ""
+
+#: admin/player-settings.php
+msgid "seconds"
+msgstr ""
+
+#: admin/player-settings.php
+msgid "Playback"
+msgstr ""
+
+#: admin/player-settings.php
+msgid "Selectable speeds"
+msgstr ""
+
+#: admin/player-settings.php
+msgid "\"Normal\" is always available."
+msgstr ""
+
+#: admin/player-settings.php
+msgid "Default speed"
+msgstr ""
+
+#: admin/player-settings.php
+msgid "Maximum allowed speed"
+msgstr ""
+
+#: admin/player-settings.php
+msgid "For courses that should not be watched fast."
+msgstr ""
+
+#: admin/player-settings.php
+msgid "Normal (no speed-up)"
+msgstr ""
+
+#: admin/player-settings.php
+msgid "Resume from the last position"
+msgstr ""
+
+#: admin/player-settings.php woocommerce-course/curriculum-editor.php woocommerce-course/spotplayer-license.php
+msgid "Automatic"
+msgstr ""
+
+#: admin/player-settings.php
+msgid "Ask"
+msgstr ""
+
+#: admin/player-settings.php
+msgid "Always from the start"
+msgstr ""
+
+#: admin/player-settings.php
+msgid "Autoplay next lesson"
+msgstr ""
+
+#: admin/player-settings.php
+msgid "At the end of the video, the next lesson starts after a (cancellable) countdown. In the modern course view."
+msgstr ""
+
+#: admin/player-settings.php
+msgid "Countdown"
+msgstr ""
+
+#: admin/player-settings.php
+msgid "Start playing automatically"
+msgstr ""
+
+#: admin/player-settings.php
+msgid "Browsers block autoplay with sound; in that case the video starts muted."
+msgstr ""
+
+#: admin/player-settings.php
+msgid "Remember each user's volume and speed"
+msgstr ""
+
+#: admin/player-settings.php
+msgid "Preload"
+msgstr ""
+
+#: admin/player-settings.php
+msgid "Metadata only (recommended)"
+msgstr ""
+
+#: admin/player-settings.php
+msgid "Part of the video"
+msgstr ""
+
+#: admin/player-settings.php
+msgid "None (lowest usage)"
+msgstr ""
+
+#: admin/player-settings.php
+msgid "Learning rules"
+msgstr ""
+
+#: admin/player-settings.php
+msgid "The player records every second of video the student really watches; skipping ahead, paused time and speeds above 2x do not count. Each student's report is on the product edit page, in the \"Video watch report\" box."
+msgstr ""
+
+#: admin/player-settings.php
+msgid "Watch percentage to complete a lesson"
+msgstr ""
+
+#: admin/player-settings.php
+msgid "Course progress and the certificate's \"minimum progress\" requirement are based on this."
+msgstr ""
+
+#: admin/player-settings.php
+msgid "Prevent skipping ahead"
+msgstr ""
+
+#: admin/player-settings.php
+msgid "Free"
+msgstr ""
+
+#: admin/player-settings.php
+msgid "Until the lesson is completed"
+msgstr ""
+
+#: admin/player-settings.php
+msgid "Always"
+msgstr ""
+
+#: admin/player-settings.php
+msgid "Students cannot jump to a part they have not watched yet (going back is free). In \"Until the lesson is completed\" mode, skipping is allowed once the completion percentage is reached."
+msgstr ""
+
+#: admin/player-settings.php
+msgid "Pause when the tab is left"
+msgstr ""
+
+#: admin/player-settings.php
+msgid "If the student switches to another tab or app, the video pauses (except in picture-in-picture)."
+msgstr ""
+
+#: admin/player-settings.php
+msgid "Video protection"
+msgstr ""
+
+#: admin/player-settings.php
+msgid "Personal watermark for each student"
+msgstr ""
+
+#: admin/player-settings.php
+msgid "The student's details are shown faintly on the video so unauthorized recording and sharing can be traced."
+msgstr ""
+
+#: admin/player-settings.php
+msgid "Watermark text"
+msgstr ""
+
+#: admin/player-settings.php
+msgid "Fields: {name} full name · {first_name} · {phone} mobile (partly masked) · {email} email (masked) · {username} · {user_id} · {date} today's date · {site} domain"
+msgstr ""
+
+#: admin/player-settings.php
+msgid "Display mode"
+msgstr ""
+
+#: admin/player-settings.php
+msgid "Moving (recommended)"
+msgstr ""
+
+#: admin/player-settings.php
+msgid "Fixed in a corner"
+msgstr ""
+
+#: admin/player-settings.php
+msgid "Opacity"
+msgstr ""
+
+#: admin/player-settings.php
+msgid "Text size"
+msgstr ""
+
+#: admin/player-settings.php
+msgid "Move every"
+msgstr ""
+
+#: admin/player-settings.php
+msgid "Prevent download"
+msgstr ""
+
+#: admin/player-settings.php
+msgid "Video download buttons are removed, right click and \"Save video\" are blocked on the course page and player, Ctrl+S is disabled, and the video link does not play/save if opened directly in the browser. Pressing PrintScreen or the snipping tool (Win+Shift+S) and switching to another app turns the video black and pauses it. Note: no website can fully block screenshots or screen recording; the user-name watermark (on this page) is the main deterrent."
+msgstr ""
+
+#: admin/player-settings.php
+msgid "Disable right click on the video"
+msgstr ""
+
+#: admin/player-settings.php
+msgid "The browser's \"Save video\" options are hidden. The player's download button is always hidden."
+msgstr ""
+
+#: admin/player-settings.php
+msgid "Streaming (HLS / DASH)"
+msgstr ""
+
+#: admin/player-settings.php
+msgid "Starting quality"
+msgstr ""
+
+#: admin/player-settings.php
+msgid "Lowest (fast start)"
+msgstr ""
+
+#: admin/player-settings.php
+msgid "Highest"
+msgstr ""
+
+#: admin/player-settings.php
+msgid "Limit quality to the player size"
+msgstr ""
+
+#: admin/player-settings.php
+msgid "On a small player or mobile, 1080p is not loaded; the student uses less data."
+msgstr ""
+
+#: admin/player-settings.php
+msgid "Buffer ahead of playback"
+msgstr ""
+
+#: admin/player-settings.php
+msgid "More = smoother playback on weak connections, more data used if the video is left."
+msgstr ""
+
+#: admin/player-settings.php
+msgid "Reset all player settings to default?"
+msgstr ""
+
+#: admin/player-settings.php
+msgid "Reset to default"
+msgstr ""
+
+#: admin/player-settings.php
+msgid "Live preview"
+msgstr ""
+
+#: admin/player-settings.php
+msgid "Sample video"
+msgstr ""
+
+#: admin/player-settings.php
+msgid "Changes apply here immediately; click \"Save\" to apply them on the site. The watermark is shown with your own details. The preview is not recorded in student progress."
+msgstr ""
+
+#: admin/player-settings.php
+msgid "Enter a video address for the preview"
+msgstr ""
+
+#: inc/access.php
+msgid "Unlimited"
+msgstr ""
+
+#: inc/access.php
+#, php-format
+msgid "%s months"
+msgstr ""
+
+#: inc/access.php inc/analytics.php
+#, php-format
+msgid "%s days"
+msgstr ""
+
+#: inc/access.php inc/assignments.php inc/drip.php inc/inactive.php
+#, php-format
+msgid "Dear %s,"
+msgstr ""
+
+#: inc/access.php
+msgid "Renew access"
+msgstr ""
+
+#: inc/access.php
+#, php-format
+msgid "Your access to the course \"%s\" is ending soon"
+msgstr ""
+
+#: inc/access.php
+#, php-format
+msgid "Your access to the course \"%1$s\" ends in %2$s days (%3$s). Renew it to keep access."
+msgstr ""
+
+#: inc/access.php
+#, php-format
+msgid "Your access to the course \"%s\" has ended"
+msgstr ""
+
+#: inc/access.php
+#, php-format
+msgid "Your access period for the course \"%s\" is over. By renewing, you get access again to all lessons and your previous progress."
+msgstr ""
+
+#: inc/access.php
+#, php-format
+msgid "Expired (%s)"
+msgstr ""
+
+#: inc/access.php
+#, php-format
+msgid "Access until %s"
+msgstr ""
+
+#: inc/access.php
+msgid "Time-limited access (Nias Course Builder)"
+msgstr ""
+
+#: inc/access.php
+msgid "Access period after purchase"
+msgstr ""
+
+#: inc/access.php
+msgid "Days"
+msgstr ""
+
+#: inc/access.php
+msgid "Months (30 days)"
+msgstr ""
+
+#: inc/access.php
+#, php-format
+msgid "Empty = site default (%s days). 0 = unlimited."
+msgstr ""
+
+#: inc/access.php
+msgid "Empty or 0 = unlimited."
+msgstr ""
+
+#: inc/access.php
+msgid "Renewal product"
+msgstr ""
+
+#: inc/access.php
+msgid "Empty = renew by buying this same course again. You can create a separate product (e.g. a cheaper \"3-month renewal\") and select it here."
+msgstr ""
+
+#: inc/access.php
+msgid "Length of each renewal (days)"
+msgstr ""
+
+#: inc/access.php
+msgid "Empty = same as the course period"
+msgstr ""
+
+#: inc/access.php
+msgid "Time-limited course access (Nias Course Builder)"
+msgstr ""
+
+#: inc/access.php inc/certificate/signature.php inc/devices.php inc/revenue.php woocommerce-course/qa.php
+msgid "Done."
+msgstr ""
+
+#: inc/access.php
+msgid "This user has no time-limited course."
+msgstr ""
+
+#: inc/access.php inc/certificate/admin-issued.php inc/course-type.php inc/drip.php inc/revenue.php woocommerce-course/quiz-results.php
+msgid "Course"
+msgstr ""
+
+#: inc/access.php inc/sms.php
+msgid "Access ends"
+msgstr ""
+
+#: inc/access.php
+msgid "Change"
+msgstr ""
+
+#: inc/access.php
+#, php-format
+msgid "Expired: %s"
+msgstr ""
+
+#: inc/access.php
+msgid "End access right now?"
+msgstr ""
+
+#: inc/access.php
+msgid "End now"
+msgstr ""
+
+#: inc/access.php
+msgid "Recalculate"
+msgstr ""
+
+#: inc/access.php inc/assignments.php inc/devices.php inc/drip.php inc/notes.php inc/protect.php
+msgid "You do not have access."
+msgstr ""
+
+#: inc/analytics.php
+msgid "You have no course to report on."
+msgstr ""
+
+#: inc/analytics.php
+#, php-format
+msgid "Calculated: %s"
+msgstr ""
+
+#: inc/analytics.php
+msgid "Refresh"
+msgstr ""
+
+#: inc/analytics.php inc/certificate/admin-issued.php inc/drip.php inc/gamify.php inc/sms.php woocommerce-course/quiz-results.php
+msgid "Student"
+msgstr ""
+
+#: inc/analytics.php
+msgid "Have started"
+msgstr ""
+
+#: inc/analytics.php
+msgid "Have finished the course"
+msgstr ""
+
+#: inc/analytics.php
+#, php-format
+msgid "Completion rate %s%%"
+msgstr ""
+
+#: inc/analytics.php
+msgid "Average progress"
+msgstr ""
+
+#: inc/analytics.php
+msgid "12-month sales"
+msgstr ""
+
+#: inc/analytics.php
+#, php-format
+msgid "%s orders"
+msgstr ""
+
+#: inc/analytics.php
+msgid "Lesson-by-lesson drop-off"
+msgstr ""
+
+#: inc/analytics.php
+msgid "How many students fully watched each video lesson (real watch percentage in the Nias player). A sudden drop means that lesson drives students out of the course."
+msgstr ""
+
+#: inc/analytics.php
+#, php-format
+msgid "Biggest drop-off: %1$s students between \"%2$s\" and \"%3$s\""
+msgstr ""
+
+#: inc/analytics.php
+msgid "No video watching data has been recorded for this course yet."
+msgstr ""
+
+#: inc/analytics.php inc/instructor-panel.php woocommerce-course/quiz-builder.php woocommerce-course/quiz-results.php
+msgid "Quizzes"
+msgstr ""
+
+#: inc/analytics.php woocommerce-course/quiz-results.php
+msgid "Participants"
+msgstr ""
+
+#: inc/analytics.php woocommerce-course/quiz-results.php
+msgid "Average best score"
+msgstr ""
+
+#: inc/analytics.php woocommerce-course/quiz-results.php
+msgid "Passes"
+msgstr ""
+
+#: inc/analytics.php
+#, php-format
+msgid "%s awaiting grading"
+msgstr ""
+
+#: inc/analytics.php
+msgid "This course has no quiz."
+msgstr ""
+
+#: inc/analytics.php
+#, php-format
+msgid "%1$s submitted · %2$s passed · %3$s awaiting grading · %4$s failed/resubmit"
+msgstr ""
+
+#: inc/analytics.php
+msgid "Students falling behind"
+msgstr ""
+
+#: inc/analytics.php
+#, php-format
+msgid "Below 50% progress and more than 14 days without activity."
+msgstr ""
+
+#: inc/analytics.php
+msgid "Progress"
+msgstr ""
+
+#: inc/analytics.php
+msgid "No activity"
+msgstr ""
+
+#: inc/analytics.php
+msgid "Nothing here."
+msgstr ""
+
+#: inc/analytics.php
+msgid "Monthly sales (completed orders)"
+msgstr ""
+
+#: inc/assignments.php woocommerce-course/quiz-course.php woocommerce-course/quiz-results.php
+msgid "Awaiting grading"
+msgstr ""
+
+#: inc/assignments.php inc/sms.php woocommerce-course/quiz-course.php woocommerce-course/quiz-results.php
+msgid "Passed"
+msgstr ""
+
+#: inc/assignments.php inc/sms.php woocommerce-course/quiz-course.php woocommerce-course/quiz-results.php
+msgid "Failed"
+msgstr ""
+
+#: inc/assignments.php
+msgid "Resubmission needed"
+msgstr ""
+
+#: inc/assignments.php inc/protect.php
+msgid "File not found."
+msgstr ""
+
+#: inc/assignments.php inc/notes.php inc/reviews.php woocommerce-course/curriculum-editor.php woocommerce-course/qa.php woocommerce-course/quiz-builder.php
+msgid "Invalid request."
+msgstr ""
+
+#: inc/assignments.php
+msgid "This lesson has no assignment."
+msgstr ""
+
+#: inc/assignments.php
+msgid "Submitting an assignment for this lesson is not possible."
+msgstr ""
+
+#: inc/assignments.php
+msgid "This assignment has already been passed."
+msgstr ""
+
+#: inc/assignments.php
+msgid "Too many submissions in one hour; try again a bit later."
+msgstr ""
+
+#: inc/assignments.php
+msgid "No file was received."
+msgstr ""
+
+#: inc/assignments.php
+#, php-format
+msgid "File type not allowed. Allowed: %s"
+msgstr ""
+
+#: inc/assignments.php
+#, php-format
+msgid "The file is larger than %s MB."
+msgstr ""
+
+#: inc/assignments.php
+msgid "The file content does not match its extension or is not allowed."
+msgstr ""
+
+#: inc/assignments.php
+msgid "The file could not be saved."
+msgstr ""
+
+#: inc/assignments.php
+msgid "Enter the score."
+msgstr ""
+
+#: inc/assignments.php
+#, php-format
+msgid "Score: %s"
+msgstr ""
+
+#: inc/assignments.php
+#, php-format
+msgid "The assignment of the lesson \"%1$s\" in the course \"%2$s\" was reviewed: %3$s"
+msgstr ""
+
+#: inc/assignments.php inc/course-type.php inc/instructor-panel.php
+msgid "View course"
+msgstr ""
+
+#: inc/assignments.php
+#, php-format
+msgid "Assignment result \"%s\""
+msgstr ""
+
+#: inc/assignments.php
+msgid "Student assignments"
+msgstr ""
+
+#: inc/assignments.php
+msgid "Resubmit"
+msgstr ""
+
+#: inc/assignments.php inc/certificate/admin-issued.php inc/certificate/verify-log.php inc/instructor-dashboard.php woocommerce-course/qa.php woocommerce-course/quiz-results.php
+msgid "All"
+msgstr ""
+
+#: inc/certificate-config-user.php
+msgid "Certificate information"
+msgstr ""
+
+#: inc/certificate-config-user.php
+msgid "Certificate ID"
+msgstr ""
+
+#: inc/certificate-config-user.php
+msgid "No certificate code has been assigned yet."
+msgstr ""
+
+#: inc/certificate-config-user.php
+msgid "Generate code"
+msgstr ""
+
+#: inc/certificate-config-user.php
+msgid "This code was created automatically when the user bought the certificate product."
+msgstr ""
+
+#: inc/certificate-config-user.php inc/certificate/email.php
+msgid "Get certificate"
+msgstr ""
+
+#: inc/certificate-config-user.php
+msgid "Get certificate  with QR code"
+msgstr ""
+
+#: inc/certificate/admin-issued.php inc/certificate/designer.php inc/certificate/email.php inc/certificate/signature.php inc/instructor-approval.php inc/nias-picker.php
+msgid "You do not have the required permission."
+msgstr ""
+
+#: inc/certificate/admin-issued.php
+msgid "Certificate not found."
+msgstr ""
+
+#: inc/certificate/admin-issued.php
+msgid "Error generating the certificate: "
+msgstr ""
+
+#: inc/certificate/admin-issued.php
+msgid "Certificate approved."
+msgstr ""
+
+#: inc/certificate/admin-issued.php
+msgid "Certificate is valid again."
+msgstr ""
+
+#: inc/certificate/admin-issued.php
+msgid "Certificate revoked."
+msgstr ""
+
+#: inc/certificate/admin-issued.php
+msgid "Certificate record deleted."
+msgstr ""
+
+#: inc/certificate/admin-issued.php
+msgid "The certificate design was updated with the course's current template."
+msgstr ""
+
+#: inc/certificate/admin-issued.php
+msgid "Certificate email sent."
+msgstr ""
+
+#: inc/certificate/admin-issued.php
+#, php-format
+msgid "%d old certificates were added to the list."
+msgstr ""
+
+#: inc/certificate/admin-issued.php inc/certificate/registry.php inc/certificate/verify-log.php
+msgid "Valid"
+msgstr ""
+
+#: inc/certificate/admin-issued.php inc/certificate/registry.php
+msgid "Awaiting approval"
+msgstr ""
+
+#: inc/certificate/admin-issued.php inc/certificate/registry.php inc/certificate/verify-log.php
+msgid "Revoked"
+msgstr ""
+
+#: inc/certificate/admin-issued.php
+msgid "Search code, name or course…"
+msgstr ""
+
+#: inc/certificate/admin-issued.php
+msgid "Search"
+msgstr ""
+
+#: inc/certificate/admin-issued.php
+msgid "Adds certificate codes created before this version to this list."
+msgstr ""
+
+#: inc/certificate/admin-issued.php
+msgid "Sync old certificates"
+msgstr ""
+
+#: inc/certificate/admin-issued.php
+msgid "No certificate found. Certificates are added to this list after a student meets the requirements, or with \"Sync old certificates\"."
+msgstr ""
+
+#: inc/certificate/admin-issued.php inc/certificate/renderer.php inc/certificate/verify.php inc/sms.php
+msgid "Certificate code"
+msgstr ""
+
+#: inc/certificate/admin-issued.php inc/revenue.php
+msgid "Date"
+msgstr ""
+
+#: inc/certificate/admin-issued.php inc/certificate/signature.php inc/revenue.php inc/sms.php woocommerce-course/quiz-results.php
+msgid "Status"
+msgstr ""
+
+#: inc/certificate/admin-issued.php inc/certificate/verify.php
+msgid "Verification"
+msgstr ""
+
+#: inc/certificate/admin-issued.php
+msgid "Actions"
+msgstr ""
+
+#: inc/certificate/admin-issued.php
+msgid "Emailed"
+msgstr ""
+
+#: inc/certificate/admin-issued.php
+msgid "This certificate is built with the design it had when issued."
+msgstr ""
+
+#: inc/certificate/admin-issued.php
+msgid "Fixed design"
+msgstr ""
+
+#: inc/certificate/admin-issued.php
+msgid "Approve"
+msgstr ""
+
+#: inc/certificate/admin-issued.php
+msgid "Restore"
+msgstr ""
+
+#: inc/certificate/admin-issued.php
+msgid "Revoke"
+msgstr ""
+
+#: inc/certificate/admin-issued.php
+msgid "Replace this certificate's design with the course's current template."
+msgstr ""
+
+#: inc/certificate/admin-issued.php
+msgid "Replace this certificate's design with the course's current template?"
+msgstr ""
+
+#: inc/certificate/admin-issued.php
+msgid "Apply current template"
+msgstr ""
+
+#: inc/certificate/admin-issued.php
+msgid "Resend email"
+msgstr ""
+
+#: inc/certificate/admin-issued.php
+msgid "Send email"
+msgstr ""
+
+#: inc/certificate/admin-issued.php
+msgid "Reason for revoking (optional):"
+msgstr ""
+
+#: inc/certificate/conditions.php
+msgid "Start the course (free)"
+msgstr ""
+
+#: inc/certificate/conditions.php
+msgid "Complete the course purchase order"
+msgstr ""
+
+#: inc/certificate/conditions.php
+msgid "Buy the course"
+msgstr ""
+
+#: inc/certificate/conditions.php
+msgid "Your order is not completed yet."
+msgstr ""
+
+#: inc/certificate/conditions.php
+msgid "Pass the course quiz"
+msgstr ""
+
+#: inc/certificate/conditions.php
+msgid "First pass the course's final quiz."
+msgstr ""
+
+#: inc/certificate/conditions.php
+#, php-format
+msgid "Watch at least %d%% of the course"
+msgstr ""
+
+#: inc/certificate/conditions.php
+#, php-format
+msgid "Your current progress is %d%%."
+msgstr ""
+
+#: inc/certificate/conditions.php
+#, php-format
+msgid "%d days since buying the course"
+msgstr ""
+
+#: inc/certificate/conditions.php
+#, php-format
+msgid "%d days remaining."
+msgstr ""
+
+#: inc/certificate/conditions.php
+msgid "First and last name in the user account"
+msgstr ""
+
+#: inc/certificate/conditions.php
+msgid "Your name is printed on the certificate; complete it."
+msgstr ""
+
+#: inc/certificate/conditions.php
+msgid "Enter your name to be printed on the certificate"
+msgstr ""
+
+#: inc/certificate/conditions.php inc/certificate/renderer.php woocommerce-course/spotplayer-license.php
+msgid "First name"
+msgstr ""
+
+#: inc/certificate/conditions.php inc/certificate/renderer.php
+msgid "Last name"
+msgstr ""
+
+#: inc/certificate/conditions.php
+msgid "Save name"
+msgstr ""
+
+#: inc/certificate/conditions.php
+msgid "Course certificate (Nias)"
+msgstr ""
+
+#: inc/certificate/conditions.php inc/certificate/designer.php
+msgid "Certificate template"
+msgstr ""
+
+#: inc/certificate/conditions.php
+msgid "Default (from certificate settings)"
+msgstr ""
+
+#: inc/certificate/conditions.php
+msgid "Used only in \"Advanced designer\" mode."
+msgstr ""
+
+#: inc/certificate/conditions.php
+msgid "Custom requirements for this course"
+msgstr ""
+
+#: inc/certificate/conditions.php
+msgid "Order status"
+msgstr ""
+
+#: inc/certificate/conditions.php
+msgid "Completed only"
+msgstr ""
+
+#: inc/certificate/conditions.php
+msgid "Require passing the linked quiz"
+msgstr ""
+
+#: inc/certificate/conditions.php
+msgid "Minimum progress percentage (0 = disabled)"
+msgstr ""
+
+#: inc/certificate/conditions.php
+msgid "Minimum days after purchase (0 = disabled)"
+msgstr ""
+
+#: inc/certificate/designer.php
+msgid "Certificate templates"
+msgstr ""
+
+#: inc/certificate/designer.php
+msgid "Classic (from your current images and texts)"
+msgstr ""
+
+#: inc/certificate/designer.php
+msgid "Modern with a color band"
+msgstr ""
+
+#: inc/certificate/designer.php
+msgid "Minimal"
+msgstr ""
+
+#: inc/certificate/designer.php
+msgid "Formal with QR and barcode"
+msgstr ""
+
+#: inc/certificate/designer.php
+msgid "Blank page"
+msgstr ""
+
+#: inc/certificate/designer.php
+msgid "Loading the certificate designer…"
+msgstr ""
+
+#: inc/certificate/designer.php
+msgid "Invalid request; reload the page."
+msgstr ""
+
+#: inc/certificate/designer.php
+msgid "Template not found."
+msgstr ""
+
+#: inc/certificate/designer.php
+msgid "Invalid template file."
+msgstr ""
+
+#: inc/certificate/designer.php
+msgid "Creating the template failed."
+msgstr ""
+
+#: inc/certificate/designer.php
+msgid "Invalid template data."
+msgstr ""
+
+#: inc/certificate/designer.php
+msgid "Template saved."
+msgstr ""
+
+#: inc/certificate/designer.php woocommerce-course/curriculum-editor.php woocommerce-course/quiz-builder.php
+msgid " (copy)"
+msgstr ""
+
+#: inc/certificate/designer.php woocommerce-course/quiz-builder.php
+msgid "Duplicating failed."
+msgstr ""
+
+#: inc/certificate/designer.php
+msgid "Error building the preview: "
+msgstr ""
+
+#: inc/certificate/email.php
+msgid "Certificate issued for the course \"{course_name}\""
+msgstr ""
+
+#: inc/certificate/email.php
+msgid ""
+"Hello dear {student_name},\n"
+"\n"
+"Congratulations! The completion certificate of the course \"{course_name}\" has been issued in your name.\n"
+"\n"
+"Certificate code: {code}\n"
+"Issue date: {date}\n"
+"\n"
+"Anyone (for example an employer) can check the authenticity of your certificate at this address:\n"
+"{verify_url}\n"
+"\n"
+"Wishing you success\n"
+"{site_name}"
+msgstr ""
+
+#: inc/certificate/renderer.php
+msgid "Student full name"
+msgstr ""
+
+#: inc/certificate/renderer.php inc/sms.php
+msgid "Course name"
+msgstr ""
+
+#: inc/certificate/renderer.php
+msgid "Solar Hijri date (5 Mehr 1405)"
+msgstr ""
+
+#: inc/certificate/renderer.php
+msgid "Numeric Solar Hijri date"
+msgstr ""
+
+#: inc/certificate/renderer.php
+msgid "Gregorian date"
+msgstr ""
+
+#: inc/certificate/renderer.php
+msgid "Verification link"
+msgstr ""
+
+#: inc/certificate/renderer.php
+msgid "Instructor name"
+msgstr ""
+
+#: inc/certificate/renderer.php
+msgid "Quiz score (percent)"
+msgstr ""
+
+#: inc/certificate/renderer.php
+msgid "Site name"
+msgstr ""
+
+#: inc/certificate/renderer.php
+msgid "Site address"
+msgstr ""
+
+#: inc/certificate/signature.php
+msgid "The OpenSSL extension is not enabled on the server."
+msgstr ""
+
+#: inc/certificate/signature.php
+msgid "Creating the key failed: "
+msgstr ""
+
+#: inc/certificate/signature.php
+msgid "Creating the certificate failed: "
+msgstr ""
+
+#: inc/certificate/signature.php
+msgid "The file or its password is incorrect."
+msgstr ""
+
+#: inc/certificate/signature.php
+msgid "This file is encrypted with an old algorithm; export it again with OpenSSL 3 (openssl pkcs12 -export …)."
+msgstr ""
+
+#: inc/certificate/signature.php
+msgid "The file does not contain a certificate and private key."
+msgstr ""
+
+#: inc/certificate/signature.php
+msgid "The private key does not match the certificate."
+msgstr ""
+
+#: inc/certificate/signature.php
+msgid "This certificate has expired."
+msgstr ""
+
+#: inc/certificate/signature.php
+#, php-format
+msgid "Certificate issuing %s"
+msgstr ""
+
+#: inc/certificate/signature.php inc/sms.php
+msgid "Certificate issuing"
+msgstr ""
+
+#: inc/certificate/signature.php
+msgid "No file selected."
+msgstr ""
+
+#: inc/certificate/signature.php
+msgid "PDF digital signature"
+msgstr ""
+
+#: inc/certificate/signature.php
+msgid "Every certificate PDF is signed (certified) with an X.509 certificate. Acrobat and Foxit show the issuer's name and declare the signature invalid at the smallest change to the file; so forging or editing a certificate can be detected. With signing active, the PDF password lock is not used because the signature itself protects the file."
+msgstr ""
+
+#: inc/certificate/signature.php
+msgid "The OpenSSL extension is not enabled in this server's PHP; ask your host to enable it."
+msgstr ""
+
+#: inc/certificate/signature.php
+msgid "Active — new certificates are signed"
+msgstr ""
+
+#: inc/certificate/signature.php
+msgid "Inactive"
+msgstr ""
+
+#: inc/certificate/signature.php
+msgid "Signer"
+msgstr ""
+
+#: inc/certificate/signature.php
+msgid "Certificate issuer"
+msgstr ""
+
+#: inc/certificate/signature.php
+msgid "Self-signed (created on this site)"
+msgstr ""
+
+#: inc/certificate/signature.php
+msgid "Valid until"
+msgstr ""
+
+#: inc/certificate/signature.php
+msgid "SHA-256 fingerprint"
+msgstr ""
+
+#: inc/certificate/signature.php
+msgid "A self-signed certificate reveals any change to the file, but Acrobat shows the identity as \"unknown\" until you mark it as \"trusted\". To show the green check without any setup, get a \"Document Signing\" certificate from a trusted authority (AATL member) and upload its .p12 file."
+msgstr ""
+
+#: inc/certificate/signature.php
+msgid "Stop signing"
+msgstr ""
+
+#: inc/certificate/signature.php
+msgid "Enable signing"
+msgstr ""
+
+#: inc/certificate/signature.php
+msgid "Download public certificate (.cer)"
+msgstr ""
+
+#: inc/certificate/signature.php
+msgid "Delete the signing certificate and key permanently? Certificates that were already signed stay valid."
+msgstr ""
+
+#: inc/certificate/signature.php
+msgid "Delete certificate"
+msgstr ""
+
+#: inc/certificate/signature.php
+msgid "Create a self-signed certificate and enable"
+msgstr ""
+
+#: inc/certificate/signature.php
+msgid "Replace with a purchased certificate (.p12 / .pfx)"
+msgstr ""
+
+#: inc/certificate/signature.php
+msgid "Or upload a purchased certificate (.p12 / .pfx)"
+msgstr ""
+
+#: inc/certificate/signature.php
+msgid "File password"
+msgstr ""
+
+#: inc/certificate/signature.php
+msgid "Upload"
+msgstr ""
+
+#: inc/certificate/verify-log.php woocommerce-course/quiz-results.php
+msgid "Pending"
+msgstr ""
+
+#: inc/certificate/verify-log.php
+msgid "Not found"
+msgstr ""
+
+#: inc/certificate/verify-log.php
+msgid "Verification page"
+msgstr ""
+
+#: inc/certificate/verify-log.php
+msgid "View PDF"
+msgstr ""
+
+#: inc/certificate/verify-log.php
+msgid "Certificate verification report"
+msgstr ""
+
+#: inc/certificate/verify-log.php
+msgid "Verification report"
+msgstr ""
+
+#: inc/certificate/verify-log.php
+msgid "Verifications in the last 30 days"
+msgstr ""
+
+#: inc/certificate/verify-log.php
+msgid "Successful verifications"
+msgstr ""
+
+#: inc/certificate/verify-log.php
+msgid "Invalid code"
+msgstr ""
+
+#: inc/certificate/verify-log.php
+msgid "Unique visitors"
+msgstr ""
+
+#: inc/certificate/verify-log.php
+msgid "⚠ Suspicious attempts to guess codes (last 24 hours)"
+msgstr ""
+
+#: inc/certificate/verify-log.php
+#, php-format
+msgid "Visitor %1$s: %2$s invalid codes — last: %3$s — %4$s"
+msgstr ""
+
+#: inc/certificate/verify-log.php
+msgid "The request limit stops further guessing; if it repeats, block the IP in your host's firewall."
+msgstr ""
+
+#: inc/certificate/verify-log.php
+msgid "Most verified certificates (30 days)"
+msgstr ""
+
+#: inc/certificate/verify-log.php
+#, php-format
+msgid "Verifications of certificate %s"
+msgstr ""
+
+#: inc/certificate/verify-log.php
+msgid "Latest verifications"
+msgstr ""
+
+#: inc/certificate/verify-log.php
+msgid "× Show all certificates"
+msgstr ""
+
+#: inc/certificate/verify-log.php
+msgid "No verification has been recorded yet. Each time someone scans a certificate's QR code or enters the code on the verification page, it shows up here (admins' verifications are not recorded)."
+msgstr ""
+
+#: inc/certificate/verify-log.php
+msgid "Time"
+msgstr ""
+
+#: inc/certificate/verify-log.php
+msgid "Result"
+msgstr ""
+
+#: inc/certificate/verify-log.php
+msgid "Method"
+msgstr ""
+
+#: inc/certificate/verify-log.php inc/devices.php
+msgid "Device"
+msgstr ""
+
+#: inc/certificate/verify-log.php
+msgid "Referred from"
+msgstr ""
+
+#: inc/certificate/verify-log.php
+msgid "Visitor"
+msgstr ""
+
+#: inc/certificate/verify-log.php
+msgid "Guest"
+msgstr ""
+
+#: inc/certificate/verify-log.php
+msgid "For privacy, visitors' IP addresses are not stored; only an anonymous ID (#) is kept to count unique visitors. Records older than one year are deleted automatically."
+msgstr ""
+
+#: inc/certificate/verify.php
+msgid "Certificate authenticity check"
+msgstr ""
+
+#: inc/certificate/verify.php
+msgid "Enter the code printed on the certificate or scan its QR code."
+msgstr ""
+
+#: inc/certificate/verify.php
+msgid "Too many verification requests"
+msgstr ""
+
+#: inc/certificate/verify.php
+msgid "Please try again in a few minutes."
+msgstr ""
+
+#: inc/certificate/verify.php
+msgid "No certificate found with this code"
+msgstr ""
+
+#: inc/certificate/verify.php
+msgid "Check the code again. This certificate was not issued by this center or the code was entered incorrectly."
+msgstr ""
+
+#: inc/certificate/verify.php
+msgid "This certificate is valid"
+msgstr ""
+
+#: inc/certificate/verify.php
+msgid "This certificate was issued by this center and is valid."
+msgstr ""
+
+#: inc/certificate/verify.php
+msgid "The certificate is awaiting approval"
+msgstr ""
+
+#: inc/certificate/verify.php
+msgid "This certificate is registered but has not yet been finally approved by the admin."
+msgstr ""
+
+#: inc/certificate/verify.php
+msgid "This certificate has been revoked"
+msgstr ""
+
+#: inc/certificate/verify.php
+msgid "This certificate was issued earlier but its validity has been revoked."
+msgstr ""
+
+#: inc/certificate/verify.php
+msgid "Holder name"
+msgstr ""
+
+#: inc/certificate/verify.php inc/instructor-approval.php
+msgid "Course title"
+msgstr ""
+
+#: inc/certificate/verify.php
+msgid "Issue date"
+msgstr ""
+
+#: inc/certificate/verify.php
+msgid "Issuer"
+msgstr ""
+
+#: inc/certificate/verify.php
+msgid "Verification time"
+msgstr ""
+
+#: inc/certificate/verify.php
+msgid "Digital signature"
+msgstr ""
+
+#: inc/certificate/verify.php
+msgid "This certificate's PDF has a digital signature. In Adobe Acrobat or Foxit, the signature panel should show this same signer and fingerprint, and any change to the file invalidates the signature."
+msgstr ""
+
+#: inc/certificate/verify.php
+msgid "View certificate (PDF)"
+msgstr ""
+
+#: inc/certificate/verify.php
+msgid "Too many requests; try again in a few minutes."
+msgstr ""
+
+#: inc/certificate/verify.php
+msgid "This certificate cannot be displayed."
+msgstr ""
+
+#: inc/certificate/verify.php
+msgid "Error building the certificate."
+msgstr ""
+
+#: inc/course-type.php
+msgid "Product"
+msgstr ""
+
+#: inc/course-type.php
+msgid "Courses"
+msgstr ""
+
+#: inc/course-type.php
+msgid "Add course"
+msgstr ""
+
+#: inc/course-type.php
+msgid "Add new course"
+msgstr ""
+
+#: inc/course-type.php inc/transfer.php
+msgid "Edit course"
+msgstr ""
+
+#: inc/course-type.php inc/instructor-approval.php inc/instructor-dashboard.php inc/instructor-panel.php
+msgid "New course"
+msgstr ""
+
+#: inc/course-type.php
+msgid "Search courses"
+msgstr ""
+
+#: inc/course-type.php
+msgid "No course found."
+msgstr ""
+
+#: inc/course-type.php
+msgid "No course in the trash."
+msgstr ""
+
+#: inc/course-type.php
+msgid "All courses"
+msgstr ""
+
+#: inc/course-type.php
+msgid "Course archives"
+msgstr ""
+
+#: inc/course-type.php
+msgid "Course categories"
+msgstr ""
+
+#: inc/course-type.php
+msgid "Course category"
+msgstr ""
+
+#: inc/course-type.php
+msgid "Add category"
+msgstr ""
+
+#: inc/course-type.php inc/instructor-approval.php widgets/nias-controls.php
+msgid "Lessons"
+msgstr ""
+
+#: inc/course-type.php inc/instructor-panel.php
+#, php-format
+msgid "%s lessons"
+msgstr ""
+
+#: inc/course-type.php
+msgid "Add lessons"
+msgstr ""
+
+#: inc/course-type.php
+#, php-format
+msgid "Nias Course Builder is running in <b>free mode (without WooCommerce)</b>: build courses from the <a href=\"%s\">\"Courses\"</a> menu. Public lessons are shown to everyone and \"private\" lessons to logged-in users. To sell courses, install WooCommerce."
+msgstr ""
+
+#: inc/devices.php
+msgid "Unknown system"
+msgstr ""
+
+#: inc/devices.php
+#, php-format
+msgid "Your account is active on the maximum number of allowed devices (%s devices). To log in from this device, log in on one of your previous devices and remove a device from \"Account › My devices\", or contact support."
+msgstr ""
+
+#: inc/devices.php
+msgid "Your account became active on another device and since simultaneous login is not allowed, you were logged out of this device. Log in again to continue."
+msgstr ""
+
+#: inc/devices.php
+msgid "This device was removed from \"My devices\" and you were logged out."
+msgstr ""
+
+#: inc/devices.php
+msgid "Your account logged in on a new device and since the device limit was reached, this device (the least used one) was logged out."
+msgstr ""
+
+#: inc/devices.php
+msgid "You were logged out"
+msgstr ""
+
+#: inc/devices.php
+msgid "Logging in from this device is not possible"
+msgstr ""
+
+#: inc/devices.php
+msgid "The device was removed and logged out of your account."
+msgstr ""
+
+#: inc/devices.php
+msgid "The device removal limit for the last 30 days has been reached; contact support to remove more."
+msgstr ""
+
+#: inc/devices.php
+msgid "Removing the device failed."
+msgstr ""
+
+#: inc/devices.php
+#, php-format
+msgid "%1$s of %2$s devices"
+msgstr ""
+
+#: inc/devices.php
+msgid "Simultaneous login is not allowed: logging in on one device logs the others out."
+msgstr ""
+
+#: inc/devices.php
+msgid "Your account is active on these devices."
+msgstr ""
+
+#: inc/devices.php
+msgid "No device has been registered yet."
+msgstr ""
+
+#: inc/devices.php
+msgid "This device"
+msgstr ""
+
+#: inc/devices.php
+#, php-format
+msgid "First login: %1$s · Last activity: %2$s"
+msgstr ""
+
+#: inc/devices.php
+msgid "Remove this device? Your account will be logged out on it."
+msgstr ""
+
+#: inc/devices.php
+msgid "Contact support to remove a device."
+msgstr ""
+
+#: inc/devices.php
+#, php-format
+msgid "You can remove %1$s devices every 30 days (remaining: %2$s). Clearing cookies or using the browser's private mode also counts as a new device."
+msgstr ""
+
+#: inc/devices.php
+msgid "Clearing cookies or using the browser's private mode also counts as a new device."
+msgstr ""
+
+#: inc/devices.php
+msgid "Log in to your account to see your devices."
+msgstr ""
+
+#: inc/devices.php
+msgid "My devices"
+msgstr ""
+
+#: inc/devices.php
+msgid "User devices (Nias Course Builder)"
+msgstr ""
+
+#: inc/devices.php
+msgid "First login"
+msgstr ""
+
+#: inc/devices.php
+msgid "Last activity"
+msgstr ""
+
+#: inc/devices.php
+msgid "No device registered."
+msgstr ""
+
+#: inc/devices.php
+#, php-format
+msgid "Limit: %1$s devices."
+msgstr ""
+
+#: inc/devices.php
+#, php-format
+msgid "Removals by the user in the last 30 days: %s remaining."
+msgstr ""
+
+#: inc/devices.php
+msgid "Remove all of this user's devices? They will be logged out everywhere."
+msgstr ""
+
+#: inc/devices.php
+msgid "Remove all devices"
+msgstr ""
+
+#: inc/devices.php
+msgid "Reset removal quota"
+msgstr ""
+
+#: inc/drip.php
+msgid "at"
+msgstr ""
+
+#: inc/drip.php
+#, php-format
+msgid "Day %s after enrolment"
+msgstr ""
+
+#: inc/drip.php
+#, php-format
+msgid "This lesson opens %s."
+msgstr ""
+
+#: inc/drip.php
+#, php-format
+msgid "This lesson opens according to the course schedule (%s)."
+msgstr ""
+
+#: inc/drip.php
+#, php-format
+msgid "Opens: %s"
+msgstr ""
+
+#: inc/drip.php
+#, php-format
+msgid "This quiz opens %s."
+msgstr ""
+
+#: inc/drip.php
+msgid "This quiz opens according to the course schedule after you enrol in the course."
+msgstr ""
+
+#: inc/drip.php
+#, php-format
+msgid "A new lesson of the course \"%s\" is open"
+msgstr ""
+
+#: inc/drip.php inc/inactive.php
+msgid "Continue the course"
+msgstr ""
+
+#: inc/drip.php
+msgid "Name, username, email or mobile of an enrolled student…"
+msgstr ""
+
+#: inc/drip.php
+msgid "This user is not enrolled in this course."
+msgstr ""
+
+#: inc/drip.php
+#, php-format
+msgid "Day %s"
+msgstr ""
+
+#: inc/drip.php
+msgid "Invalid operation."
+msgstr ""
+
+#: inc/gamify.php
+msgid "Starter"
+msgstr ""
+
+#: inc/gamify.php
+msgid "You fully watched your first lesson"
+msgstr ""
+
+#: inc/gamify.php
+msgid "Diligent"
+msgstr ""
+
+#: inc/gamify.php
+msgid "You fully watched 10 lessons"
+msgstr ""
+
+#: inc/gamify.php
+msgid "Quiz master"
+msgstr ""
+
+#: inc/gamify.php
+msgid "You passed 5 quizzes"
+msgstr ""
+
+#: inc/gamify.php
+msgid "Project-driven"
+msgstr ""
+
+#: inc/gamify.php
+msgid "Your first assignment was passed"
+msgstr ""
+
+#: inc/gamify.php
+msgid "Graduate"
+msgstr ""
+
+#: inc/gamify.php
+msgid "You finished a course"
+msgstr ""
+
+#: inc/gamify.php
+msgid "Critic"
+msgstr ""
+
+#: inc/gamify.php
+msgid "You wrote your opinion about a course"
+msgstr ""
+
+#: inc/gamify.php
+msgid "Class star"
+msgstr ""
+
+#: inc/gamify.php
+msgid "You earned 500 points"
+msgstr ""
+
+#: inc/gamify.php
+msgid "Points and badges"
+msgstr ""
+
+#: inc/gamify.php
+msgid "Your points in this course"
+msgstr ""
+
+#: inc/gamify.php
+msgid "Your rank"
+msgstr ""
+
+#: inc/gamify.php
+msgid "Total points"
+msgstr ""
+
+#: inc/gamify.php
+msgid "Badges"
+msgstr ""
+
+#: inc/gamify.php
+#, php-format
+msgid "%1$s of %2$s"
+msgstr ""
+
+#: inc/gamify.php
+msgid "Top students of this course"
+msgstr ""
+
+#: inc/gamify.php
+msgid "You"
+msgstr ""
+
+#: inc/gamify.php
+msgid "Nobody has earned points yet; be the first!"
+msgstr ""
+
+#: inc/gamify.php
+#, php-format
+msgid "New badge: %s"
+msgstr ""
+
+#: inc/gamify.php
+#, php-format
+msgid "Your points: %s"
+msgstr ""
+
+#: inc/inactive.php
+msgid "Reminders turned off"
+msgstr ""
+
+#: inc/inactive.php
+msgid "From now on, \"Continue the course\" messages will not be sent to you."
+msgstr ""
+
+#: inc/inactive.php inc/secure-media.php
+msgid "Site home page"
+msgstr ""
+
+#: inc/inactive.php
+#, php-format
+msgid "The course \"%s\" is waiting for you"
+msgstr ""
+
+#: inc/inactive.php
+#, php-format
+msgid "You have not visited the course \"%2$s\" for %1$s days. Continue from the lesson \"%3$s\"; a few minutes a day is enough."
+msgstr ""
+
+#: inc/inactive.php
+#, php-format
+msgid "You have not visited the course \"%2$s\" for %1$s days. Continue today; a few minutes a day is enough."
+msgstr ""
+
+#: inc/inactive.php
+msgid "If you do not want to receive these reminders:"
+msgstr ""
+
+#: inc/inactive.php
+msgid "Unsubscribe from reminders"
+msgstr ""
+
+#: inc/instructor-approval.php woocommerce-course/qa.php
+msgid "The request has expired."
+msgstr ""
+
+#: inc/instructor-approval.php
+msgid "Course details"
+msgstr ""
+
+#: inc/instructor-approval.php
+msgid "Lessons and chapters"
+msgstr ""
+
+#: inc/instructor-approval.php
+#, php-format
+msgid "The course is created as a %s and stays \"Pending review\" until the site admin reviews and publishes it."
+msgstr ""
+
+#: inc/instructor-approval.php
+msgid "WooCommerce product"
+msgstr ""
+
+#: inc/instructor-approval.php
+msgid "\"Course\""
+msgstr ""
+
+#: inc/instructor-approval.php
+#, php-format
+msgid "The course is created and published as a %s."
+msgstr ""
+
+#: inc/instructor-approval.php
+msgid "Changes to this course's details are awaiting admin approval; until then the site shows the previous version."
+msgstr ""
+
+#: inc/instructor-approval.php
+msgid "Short description"
+msgstr ""
+
+#: inc/instructor-approval.php
+msgid "Full description"
+msgstr ""
+
+#: inc/instructor-approval.php
+msgid "Course image"
+msgstr ""
+
+#: inc/instructor-approval.php
+msgid "Price (Toman)"
+msgstr ""
+
+#: inc/instructor-approval.php
+msgid "The price applies after admin approval."
+msgstr ""
+
+#: inc/instructor-approval.php
+msgid "Send for approval"
+msgstr ""
+
+#: inc/instructor-approval.php
+msgid "Save"
+msgstr ""
+
+#: inc/instructor-approval.php
+msgid "Create course and go to lessons"
+msgstr ""
+
+#: inc/instructor-approval.php
+msgid "Saved."
+msgstr ""
+
+#: inc/instructor-approval.php
+msgid "The changes were sent for admin approval; they apply to the course after approval."
+msgstr ""
+
+#: inc/instructor-approval.php
+msgid "The course was created. Now add chapters and lessons."
+msgstr ""
+
+#: inc/instructor-approval.php
+msgid "The course was created and is awaiting admin review. Now add chapters and lessons."
+msgstr ""
+
+#: inc/instructor-approval.php
+msgid "Enter the course title."
+msgstr ""
+
+#: inc/instructor-approval.php woocommerce-course/qa.php
+msgid "Failed."
+msgstr ""
+
+#: inc/instructor-approval.php
+#, php-format
+msgid "New course \"%s\" pending review"
+msgstr ""
+
+#: inc/instructor-approval.php
+#, php-format
+msgid "Changes to the course \"%s\" awaiting approval"
+msgstr ""
+
+#: inc/instructor-approval.php
+#, php-format
+msgid ""
+"%1$s %2$s.\n"
+"\n"
+"Review: %3$s"
+msgstr ""
+
+#: inc/instructor-approval.php woocommerce-course/curriculum-editor.php
+msgid "An instructor"
+msgstr ""
+
+#: inc/instructor-approval.php
+#, php-format
+msgid "created the course \"%s\""
+msgstr ""
+
+#: inc/instructor-approval.php
+#, php-format
+msgid "edited the course \"%s\""
+msgstr ""
+
+#: inc/instructor-approval.php
+#, php-format
+msgid "The course \"%s\" was published"
+msgstr ""
+
+#: inc/instructor-approval.php
+#, php-format
+msgid "The course \"%s\" was not published"
+msgstr ""
+
+#: inc/instructor-approval.php
+#, php-format
+msgid ""
+"Dear %1$s,\n"
+"\n"
+"%2$s%3$s\n"
+"\n"
+"%4$s"
+msgstr ""
+
+#: inc/instructor-approval.php
+#, php-format
+msgid "The site admin reviewed and published the course \"%1$s\": %2$s"
+msgstr ""
+
+#: inc/instructor-approval.php
+#, php-format
+msgid "The site admin did not approve the course \"%s\" for publishing and returned it to draft."
+msgstr ""
+
+#: inc/instructor-approval.php
+msgid "Admin note:"
+msgstr ""
+
+#: inc/instructor-approval.php
+#, php-format
+msgid "Changes to the course \"%s\" were approved"
+msgstr ""
+
+#: inc/instructor-approval.php
+#, php-format
+msgid "Changes to the course \"%s\" were not approved"
+msgstr ""
+
+#: inc/instructor-approval.php
+#, php-format
+msgid "The site admin approved your changes to the course \"%s\" and they were applied on the site."
+msgstr ""
+
+#: inc/instructor-approval.php
+#, php-format
+msgid "The site admin did not approve your changes to the course \"%s\"."
+msgstr ""
+
+#: inc/instructor-approval.php
+#, php-format
+msgid "New chapter: \"%1$s\" (%2$s lessons)"
+msgstr ""
+
+#: inc/instructor-approval.php
+#, php-format
+msgid "Chapter removed: \"%s\""
+msgstr ""
+
+#: inc/instructor-approval.php
+#, php-format
+msgid "Chapter title: \"%1$s\" → \"%2$s\""
+msgstr ""
+
+#: inc/instructor-approval.php
+#, php-format
+msgid "New lesson in \"%1$s\": \"%2$s\""
+msgstr ""
+
+#: inc/instructor-approval.php
+#, php-format
+msgid "Lesson removed from \"%1$s\": \"%2$s\""
+msgstr ""
+
+#: inc/instructor-approval.php
+msgid "Title"
+msgstr ""
+
+#: inc/instructor-approval.php
+msgid "Content"
+msgstr ""
+
+#: inc/instructor-approval.php
+msgid "Video"
+msgstr ""
+
+#: inc/instructor-approval.php
+msgid "File"
+msgstr ""
+
+#: inc/instructor-approval.php
+msgid "Privacy"
+msgstr ""
+
+#: inc/instructor-approval.php
+msgid "Duration"
+msgstr ""
+
+#: inc/instructor-approval.php
+msgid "Prerequisite"
+msgstr ""
+
+#: inc/instructor-approval.php widgets/nias-instructors.php
+msgid "Label"
+msgstr ""
+
+#: inc/instructor-approval.php
+msgid "Video qualities"
+msgstr ""
+
+#: inc/instructor-approval.php
+msgid "Live class"
+msgstr ""
+
+#: inc/instructor-approval.php
+msgid "Live class time"
+msgstr ""
+
+#: inc/instructor-approval.php
+msgid "Live class link"
+msgstr ""
+
+#: inc/instructor-approval.php
+msgid "Assignment"
+msgstr ""
+
+#: inc/instructor-approval.php
+msgid "Assignment description"
+msgstr ""
+
+#: inc/instructor-approval.php
+msgid "Drip"
+msgstr ""
+
+#: inc/instructor-approval.php
+msgid "Opening day"
+msgstr ""
+
+#: inc/instructor-approval.php
+msgid "Opening time"
+msgstr ""
+
+#: inc/instructor-approval.php
+#, php-format
+msgid "Lesson \"%1$s\": %2$s changed"
+msgstr ""
+
+#: inc/instructor-approval.php
+msgid "Note for the instructor (optional)…"
+msgstr ""
+
+#: inc/instructor-approval.php
+msgid "Done, and the instructor was notified."
+msgstr ""
+
+#: inc/instructor-approval.php
+msgid "\"Requires approval\" is off in the instructor panel settings; instructors' changes apply directly."
+msgstr ""
+
+#: inc/instructor-approval.php
+#, php-format
+msgid "New courses pending review (%s)"
+msgstr ""
+
+#: inc/instructor-approval.php
+msgid "No new course is pending."
+msgstr ""
+
+#: inc/instructor-approval.php inc/instructor-panel.php inc/nias-picker.php inc/revenue.php
+msgid "Pending review"
+msgstr ""
+
+#: inc/instructor-approval.php
+#, php-format
+msgid "%1$s · %2$s · %3$s lessons"
+msgstr ""
+
+#: inc/instructor-approval.php
+msgid "Edit"
+msgstr ""
+
+#: inc/instructor-approval.php
+#, php-format
+msgid "Price: %s"
+msgstr ""
+
+#: inc/instructor-approval.php
+msgid "Not set"
+msgstr ""
+
+#: inc/instructor-approval.php
+msgid "Publish course"
+msgstr ""
+
+#: inc/instructor-approval.php
+msgid "Reject (draft)"
+msgstr ""
+
+#: inc/instructor-approval.php
+#, php-format
+msgid "Changes awaiting approval (%s)"
+msgstr ""
+
+#: inc/instructor-approval.php
+msgid "No changes are awaiting approval."
+msgstr ""
+
+#: inc/instructor-approval.php
+msgid "Description"
+msgstr ""
+
+#: inc/instructor-approval.php
+msgid "Image"
+msgstr ""
+
+#: inc/instructor-approval.php
+msgid "Price"
+msgstr ""
+
+#: inc/instructor-approval.php
+#, php-format
+msgid "Title: \"%1$s\" → \"%2$s\""
+msgstr ""
+
+#: inc/instructor-approval.php
+#, php-format
+msgid "Price: %1$s → %2$s"
+msgstr ""
+
+#: inc/instructor-approval.php
+#, php-format
+msgid "%s changed"
+msgstr ""
+
+#: inc/instructor-approval.php
+msgid "No difference from the current version"
+msgstr ""
+
+#: inc/instructor-approval.php
+msgid "Current version"
+msgstr ""
+
+#: inc/instructor-approval.php
+msgid "Approve and apply"
+msgstr ""
+
+#: inc/instructor-approval.php
+msgid "Reject changes"
+msgstr ""
+
+#: inc/instructor-dashboard.php inc/instructors.php
+msgid "(no title)"
+msgstr ""
+
+#: inc/instructor-dashboard.php woocommerce-course/qa.php
+msgid "User"
+msgstr ""
+
+#: inc/instructor-dashboard.php inc/instructors.php inc/revenue.php inc/sms.php woocommerce-course/qa.php
+msgid "Instructor"
+msgstr ""
+
+#: inc/instructor-dashboard.php
+msgid "No data last month"
+msgstr ""
+
+#: inc/instructor-dashboard.php inc/instructors.php
+#, php-format
+msgid "%s courses"
+msgstr ""
+
+#: inc/instructor-dashboard.php
+#, php-format
+msgid "%s drafts"
+msgstr ""
+
+#: inc/instructor-dashboard.php
+msgid "No drafts"
+msgstr ""
+
+#: inc/instructor-dashboard.php inc/reviews.php
+#, php-format
+msgid "%s reviews"
+msgstr ""
+
+#: inc/instructor-dashboard.php
+msgid "Instructor dashboard"
+msgstr ""
+
+#: inc/instructor-dashboard.php
+msgid "Site admin"
+msgstr ""
+
+#: inc/instructor-dashboard.php
+#, php-format
+msgid "Hello, %s 👋"
+msgstr ""
+
+#: inc/instructor-dashboard.php
+msgid "Overview of all courses with instructors on your site."
+msgstr ""
+
+#: inc/instructor-dashboard.php
+#, php-format
+msgid "You have %s students in %s courses."
+msgstr ""
+
+#: inc/instructor-dashboard.php
+msgid "This month's income"
+msgstr ""
+
+#: inc/instructor-dashboard.php
+msgid "Toman"
+msgstr ""
+
+#: inc/instructor-dashboard.php
+msgid "Students"
+msgstr ""
+
+#: inc/instructor-dashboard.php
+msgid "Published courses"
+msgstr ""
+
+#: inc/instructor-dashboard.php
+msgid "Average satisfaction"
+msgstr ""
+
+#: inc/instructor-dashboard.php
+msgid "out of 5"
+msgstr ""
+
+#: inc/instructor-dashboard.php
+msgid "Nias Course Builder · Instructor dashboard"
+msgstr ""
+
+#: inc/instructor-dashboard.php
+msgid "Sales trend"
+msgstr ""
+
+#: inc/instructor-dashboard.php
+msgid "Toman in"
+msgstr ""
+
+#: inc/instructor-dashboard.php
+msgid "12 months"
+msgstr ""
+
+#: inc/instructor-dashboard.php
+msgid "6 months"
+msgstr ""
+
+#: inc/instructor-dashboard.php
+msgid "No sales have been recorded for your courses yet."
+msgstr ""
+
+#: inc/instructor-dashboard.php inc/instructor-panel.php
+msgid "My courses"
+msgstr ""
+
+#: inc/instructor-dashboard.php
+msgid "Published"
+msgstr ""
+
+#: inc/instructor-dashboard.php inc/nias-picker.php
+msgid "Draft"
+msgstr ""
+
+#: inc/instructor-dashboard.php
+msgid "No course has been assigned to you yet."
+msgstr ""
+
+#: inc/instructor-dashboard.php
+msgid "lesson"
+msgstr ""
+
+#: inc/instructor-dashboard.php
+msgid "Total income"
+msgstr ""
+
+#: inc/instructor-dashboard.php
+msgid "Manage"
+msgstr ""
+
+#: inc/instructor-dashboard.php
+msgid "Recent students"
+msgstr ""
+
+#: inc/instructor-dashboard.php
+msgid "No enrolment recorded yet."
+msgstr ""
+
+#: inc/instructor-dashboard.php
+msgid "Recent certificates"
+msgstr ""
+
+#: inc/instructor-dashboard.php
+msgid "Recent course reviews"
+msgstr ""
+
+#: inc/instructor-dashboard.php
+msgid "Log in first to see the instructor dashboard."
+msgstr ""
+
+#: inc/instructor-dashboard.php
+msgid "This page is for instructors only."
+msgstr ""
+
+#: inc/instructor-dashboard.php
+msgid "Create a new course"
+msgstr ""
+
+#: inc/instructor-dashboard.php
+msgid "Enter the title, description and image and build the lessons; the course is published after admin review."
+msgstr ""
+
+#: inc/instructor-dashboard.php
+msgid "Enter the title, description and image and build the lessons and chapters."
+msgstr ""
+
+#: inc/instructor-panel.php
+msgid "Instructor panel"
+msgstr ""
+
+#: inc/instructor-panel.php
+msgid "Enable instructor panel"
+msgstr ""
+
+#: inc/instructor-panel.php
+msgid "The \"My courses\", \"Quizzes\", \"Results & grading\" and \"Q&A\" tabs are shown in the \"Instructor dashboard\" so instructors can manage their own courses without entering the WordPress dashboard. Instructors only have access to courses they teach; price, stock and WooCommerce settings, SpotPlayer and instructor selection stay with the site admin."
+msgstr ""
+
+#: inc/instructor-panel.php
+msgid "Edit chapters and lessons"
+msgstr ""
+
+#: inc/instructor-panel.php
+msgid "Full lessons and chapters editor (content, video, file, private lesson, lesson quiz and prerequisite) for the instructor's own courses."
+msgstr ""
+
+#: inc/instructor-panel.php
+msgid "Build and configure quizzes"
+msgstr ""
+
+#: inc/instructor-panel.php
+msgid "Quiz builder with all settings; instructors see their own quizzes and their courses' quizzes and can only link them to their own courses."
+msgstr ""
+
+#: inc/instructor-panel.php
+msgid "File upload"
+msgstr ""
+
+#: inc/instructor-panel.php
+msgid "Instructors can upload images, videos and attachments; in the media library they only see their own files."
+msgstr ""
+
+#: inc/instructor-panel.php
+msgid "Create new course"
+msgstr ""
+
+#: inc/instructor-panel.php
+msgid "Instructors can create new courses (with WooCommerce: a WooCommerce product; without WooCommerce: a \"Course\") and edit their courses' details (title, description, image)."
+msgstr ""
+
+#: inc/instructor-panel.php
+msgid "Requires approval"
+msgstr ""
+
+#: inc/instructor-panel.php
+msgid "An instructor's changes to a published course do not apply until the admin approves them, and the site shows the previous version; a newly created course also stays \"Pending review\" until the admin publishes it. Requests are reviewed in the \"Instructor requests\" submenu. With this option instructors can also propose the product price."
+msgstr ""
+
+#: inc/instructor-panel.php
+msgid "Dashboard"
+msgstr ""
+
+#: inc/instructor-panel.php
+msgid "Income"
+msgstr ""
+
+#: inc/instructor-panel.php
+msgid "You have no courses yet. Create your first course; courses the site admin assigns to you are shown here too."
+msgstr ""
+
+#: inc/instructor-panel.php
+msgid "No course has been assigned to you yet. The site admin must select you under \"Course instructors\"."
+msgstr ""
+
+#: inc/instructor-panel.php
+msgid "Create your first course"
+msgstr ""
+
+#: inc/instructor-panel.php
+msgid "Draft (not approved)"
+msgstr ""
+
+#: inc/instructor-panel.php inc/nias-picker.php widgets/nias-controls.php
+msgid "Private"
+msgstr ""
+
+#: inc/instructor-panel.php
+#, php-format
+msgid "%s unanswered questions"
+msgstr ""
+
+#: inc/instructor-panel.php
+msgid "Changes awaiting approval"
+msgstr ""
+
+#: inc/instructor-panel.php
+msgid "Info"
+msgstr ""
+
+#: inc/instructor-panel.php woocommerce-course/curriculum-editor.php
+msgid "Edit lessons and chapters"
+msgstr ""
+
+#: inc/instructor-panel.php
+msgid "Students' drip schedule"
+msgstr ""
+
+#: inc/instructor-panel.php
+msgid "Questions"
+msgstr ""
+
+#: inc/instructor-panel.php
+msgid "You do not have access to edit this course."
+msgstr ""
+
+#: inc/instructor-panel.php
+msgid "This is your version awaiting admin approval; until approved the site shows the previous lessons. You can keep editing."
+msgstr ""
+
+#: inc/instructor-panel.php
+msgid "This course is published; your changes apply on the site after admin approval."
+msgstr ""
+
+#: inc/instructor-panel.php
+msgid "Quiz building is not enabled for you."
+msgstr ""
+
+#: inc/instructor-panel.php
+msgid "You do not have access to this section."
+msgstr ""
+
+#: inc/instructor-panel.php
+#, php-format
+msgid "Students' drip schedule for \"%s\""
+msgstr ""
+
+#: inc/instructor-panel.php
+msgid "Find a student to see when their lessons open; you can open all lessons for them or move their course start."
+msgstr ""
+
+#: inc/instructors.php
+msgid "No valid user was selected."
+msgstr ""
+
+#: inc/instructors.php
+#, php-format
+msgid "\"%s\" was added to the instructors list."
+msgstr ""
+
+#: inc/instructors.php
+#, php-format
+msgid "\"%s\" was removed from the instructors list."
+msgstr ""
+
+#: inc/instructors.php
+msgid "— Not shown —"
+msgstr ""
+
+#: inc/instructors.php woocommerce-course/curriculum-editor.php
+msgid "Manage instructors"
+msgstr ""
+
+#: inc/instructors.php
+msgid "On this page you can change WordPress users to the \"Instructor\" role, remove instructors and see each instructor's courses. To assign an instructor to a product, use that product's \"Edit lessons and chapters\" page."
+msgstr ""
+
+#: inc/instructors.php
+msgid "Instructor dashboard page"
+msgstr ""
+
+#: inc/instructors.php
+msgid "Choose a page to show the \"Instructor dashboard\" on. After logging in, each instructor sees their own dashboard with real data (courses, students, WooCommerce income, certificates and reviews). If you want to choose the location yourself, use the shortcode below."
+msgstr ""
+
+#: inc/instructors.php
+msgid "Dashboard display page"
+msgstr ""
+
+#: inc/instructors.php
+msgid "Instructor dashboard shortcode"
+msgstr ""
+
+#: inc/instructors.php
+msgid "Shows the instructor dashboard for the logged-in user"
+msgstr ""
+
+#: inc/instructors.php
+msgid "Current page:"
+msgstr ""
+
+#: inc/instructors.php
+msgid "Show the instructor on the course page"
+msgstr ""
+
+#: inc/instructors.php
+msgid "Show the instructor name automatically"
+msgstr ""
+
+#: inc/instructors.php
+msgid "The name (and photo) of each course's instructor is shown below the WooCommerce product page title and at the top of the \"Course\" page. If you built the product page with Elementor or want another place, leave this off and use the shortcode below."
+msgstr ""
+
+#: inc/instructors.php
+msgid "Instructor name shortcode"
+msgstr ""
+
+#: inc/instructors.php
+msgid "Name and photo of this course's instructor(s) — in an Elementor single product template with the \"Shortcode\" widget"
+msgstr ""
+
+#: inc/instructors.php
+msgid "Instructor card with biography (from the user profile's \"Biographical info\")"
+msgstr ""
+
+#: inc/instructors.php
+msgid "Instructor name only, without photo or label"
+msgstr ""
+
+#: inc/instructors.php
+msgid "Instructor of a specific course (on any page)"
+msgstr ""
+
+#: inc/instructors.php
+msgid "Add new instructor"
+msgstr ""
+
+#: inc/instructors.php
+msgid "Choose a WordPress user to add the \"Instructor\" role to."
+msgstr ""
+
+#: inc/instructors.php
+msgid "First search for and select a user."
+msgstr ""
+
+#: inc/instructors.php woocommerce-course/quiz-results.php
+msgid "Search name, email or username…"
+msgstr ""
+
+#: inc/instructors.php
+msgid "Name, email or username…"
+msgstr ""
+
+#: inc/instructors.php
+msgid "Add to instructors"
+msgstr ""
+
+#: inc/instructors.php
+#, php-format
+msgid "Instructors list (%s)"
+msgstr ""
+
+#: inc/instructors.php
+msgid "No instructor has been added yet."
+msgstr ""
+
+#: inc/instructors.php
+msgid "Not assigned to any course yet."
+msgstr ""
+
+#: inc/instructors.php
+msgid "Remove this instructor from the list?"
+msgstr ""
+
+#: inc/instructors.php
+msgid "Instructors:"
+msgstr ""
+
+#: inc/instructors.php
+msgid "Instructor:"
+msgstr ""
+
+#: inc/live.php
+msgid "Online class; the join link appears on the course page 10 minutes before the start:"
+msgstr ""
+
+#: inc/modules.php
+msgid "Drip content"
+msgstr ""
+
+#: inc/modules.php
+msgid "Enable drip content"
+msgstr ""
+
+#: inc/modules.php
+msgid "After a student enrols, lessons open in the order the instructor sets (day and time); for example the first lesson today, the second tomorrow. Set each lesson in the lesson editor (dashboard and instructor panel) with the \"Drip\" option. Day 1 is the enrolment day; an empty time means 00:00. The content of a closed lesson is never sent to the browser."
+msgstr ""
+
+#: inc/modules.php
+msgid "\"New lesson opened\" email"
+msgstr ""
+
+#: inc/modules.php
+#, php-format
+msgid "When a lesson opens for a student, send a notification email with the course link. SMS for this event is set on the <a href=\"%s\">SMS</a> page (\"Drip lesson opened\" event)."
+msgstr ""
+
+#: inc/modules.php
+msgid "Points & badges"
+msgstr ""
+
+#: inc/modules.php
+msgid "Enable points and badges"
+msgstr ""
+
+#: inc/modules.php
+msgid "Students earn points and badges for completing a lesson (+10), passing a quiz (+20), passing an assignment (+30), finishing a course (+50), a review (+5) and a question (+2) (each action once). Below the course page the points, rank, badges and the top students table of that course are shown, and a message appears when a new badge is earned. Shortcode [nias_my_badges] for the user account. Points are counted from the day of activation."
+msgstr ""
+
+#: inc/modules.php
+msgid "Top students table"
+msgstr ""
+
+#: inc/modules.php
+msgid "The top 10 of each course below the course page."
+msgstr ""
+
+#: inc/modules.php
+msgid "Student names in the table"
+msgstr ""
+
+#: inc/modules.php
+msgid "First name + last name initial"
+msgstr ""
+
+#: inc/modules.php
+msgid "Full name"
+msgstr ""
+
+#: inc/modules.php
+msgid "Hidden"
+msgstr ""
+
+#: inc/modules.php
+msgid "Online class"
+msgstr ""
+
+#: inc/modules.php
+msgid "Enable online class"
+msgstr ""
+
+#: inc/modules.php
+msgid "A \"Live class\" option is added to the lesson editor: class link (Skyroom, BigBlueButton, Google Meet, …), start time and duration. Before the class, students see a countdown and \"Add to calendar\"; the join link is given only from 10 minutes before until the end of the class, and only to people with access to the lesson. An SMS reminder goes out one hour before. Put the recording in the same lesson later so it plays instead of the class card."
+msgstr ""
+
+#: inc/modules.php
+msgid "Instructor revenue share"
+msgstr ""
+
+#: inc/modules.php
+msgid "Enable instructor revenue share"
+msgstr ""
+
+#: inc/modules.php
+msgid "When an order is completed, the course instructor's (or instructors') share is recorded in their account and can be withdrawn after the holding period; a refund or cancellation reverses the share. Instructors see their balance, sales and payout requests in the \"Income\" panel, and the admin pays or rejects requests in the \"Instructor earnings\" tab. The percentage can be changed per instructor (user edit page) and per course (product page). Sales before activation are not counted."
+msgstr ""
+
+#: inc/modules.php
+msgid "This module needs WooCommerce."
+msgstr ""
+
+#: inc/modules.php
+#, php-format
+msgid "Default instructor share (%)"
+msgstr ""
+
+#: inc/modules.php
+msgid "Of each course's sale amount (after discount)."
+msgstr ""
+
+#: inc/modules.php
+msgid "Holding period (days)"
+msgstr ""
+
+#: inc/modules.php
+msgid "The share becomes withdrawable after this period."
+msgstr ""
+
+#: inc/modules.php
+msgid "Minimum payout amount"
+msgstr ""
+
+#: inc/modules.php
+msgid "In the store's currency."
+msgstr ""
+
+#: inc/modules.php
+msgid "Course copy and transfer"
+msgstr ""
+
+#: inc/modules.php
+msgid "Enable copy and transfer"
+msgstr ""
+
+#: inc/modules.php
+msgid "\"Copy course\" and \"Export course\" are added under each course name in the courses list. Copy: a draft with the same content, lessons, settings and separate copies of the quizzes (the two courses' results do not mix). Export: a JSON file that is imported on the \"Course transfer\" page of this site or another site."
+msgstr ""
+
+#: inc/modules.php
+msgid "Prerequisites and learning paths"
+msgstr ""
+
+#: inc/modules.php
+msgid "Enable prerequisites and learning paths"
+msgstr ""
+
+#: inc/modules.php
+#, php-format
+msgid "A \"Course prerequisite\" box is added to each course's edit page: courses that must be finished first (100% progress or getting the certificate), and whether buying is allowed before that with only the lessons locked, or buying is not possible either. A \"Learning paths\" menu is added too: several courses in order with overall progress, shown with the shortcode [nias_path id=\"\"] and on the path's own page; the \"Sequential\" option makes each course depend on the previous one. Admins and the course instructor are never restricted."
+msgstr ""
+
+#: inc/modules.php
+msgid "Timestamped notes and bookmarks"
+msgstr ""
+
+#: inc/modules.php
+msgid "Enable notes"
+msgstr ""
+
+#: inc/modules.php
+msgid "A \"Notes\" tab is added to video lessons: students add a note at any moment and clicking the note's time jumps back to that moment. All notes are shown in \"Account › My notes\" (or the shortcode [nias_my_notes]) with search, a link to the same moment and a text file download. Notes are private."
+msgstr ""
+
+#: inc/modules.php
+msgid "Buyer ratings and reviews"
+msgstr ""
+
+#: inc/modules.php
+msgid "Enable ratings and reviews"
+msgstr ""
+
+#: inc/modules.php
+msgid "A \"Student reviews\" section with the average rating, star distribution and reviews is added below the course page. Only the course's own students (after a set progress percentage) can give 1 to 5 stars and a review, and each person has one review they can edit. The instructor and admin reply under each review. The rating is also shown on the \"My courses\" card and (for products) in WooCommerce ratings and schema."
+msgstr ""
+
+#: inc/modules.php
+#, php-format
+msgid "Minimum progress to review (%)"
+msgstr ""
+
+#: inc/modules.php
+msgid "Students cannot rate until they have watched this much of the course."
+msgstr ""
+
+#: inc/modules.php
+msgid "Approve reviews before showing"
+msgstr ""
+
+#: inc/modules.php
+msgid "A new review is not shown until approved in WordPress \"Comments\"."
+msgstr ""
+
+#: inc/modules.php
+msgid "Analytics report"
+msgstr ""
+
+#: inc/modules.php
+msgid "Enable reports"
+msgstr ""
+
+#: inc/modules.php
+msgid "For each course: number of students, start and completion rate, average progress, lesson-by-lesson drop-off chart (based on real video watch percentage), quiz and assignment status, students falling behind and 12-month sales. The admin sees all courses in the \"Reports\" tab and instructors their own courses in the instructor panel. Each report is kept for 6 hours to keep the server light."
+msgstr ""
+
+#: inc/modules.php
+msgid "Assignments with file upload"
+msgstr ""
+
+#: inc/modules.php
+msgid "Enable assignments"
+msgstr ""
+
+#: inc/modules.php
+msgid "An \"Assignment\" option is added to the lesson editor (dashboard and instructor panel): description, allowed extensions, maximum size and pass score. Students send a file from the lesson's \"Assignment\" tab (in a protected folder) and the instructor gives a score and feedback, or asks for a resubmission, from \"Assignments\". Students are notified by email and SMS and instructors by SMS."
+msgstr ""
+
+#: inc/modules.php
+msgid "Inactive student reminders"
+msgstr ""
+
+#: inc/modules.php
+msgid "Enable course continuation reminders"
+msgstr ""
+
+#: inc/modules.php
+msgid "If a student does not visit the course for a few days (does not open the course, watch a video or take a quiz), a \"Continue from lesson X\" message with the course link is sent; a student who bought the course but has not started also gets reminders. Any activity resets the count. Nothing is sent for finished courses, expired access, admins or instructors, and every email has an unsubscribe link. Current students are counted from the activation day (no flood of messages)."
+msgstr ""
+
+#: inc/modules.php
+#, php-format
+msgid "Sent in the last 30 days: %s"
+msgstr ""
+
+#: inc/modules.php
+msgid "After this many inactive days"
+msgstr ""
+
+#: inc/modules.php
+msgid "Steps separated by commas; e.g. 3,7,14 means once after 3 days, once after 7 and once after 14 days."
+msgstr ""
+
+#: inc/modules.php
+msgid "Allowed sending hours"
+msgstr ""
+
+#: inc/modules.php
+msgid "E.g. 9-21; no message is sent outside these hours."
+msgstr ""
+
+#: inc/modules.php
+msgid "Send by email"
+msgstr ""
+
+#: inc/modules.php
+#, php-format
+msgid "Email with a \"Continue the course\" button and an unsubscribe link. SMS for this reminder is set on the <a href=\"%s\">SMS</a> page (\"Course continuation reminder\" event)."
+msgstr ""
+
+#: inc/modules.php
+msgid "Time-limited access and renewal"
+msgstr ""
+
+#: inc/modules.php
+msgid "Enable time-limited access"
+msgstr ""
+
+#: inc/modules.php
+msgid "Set an access period after purchase for each course (on the product edit page, \"Time-limited access\" box); after it, private lessons are closed like for someone who has not bought the course and the student sees a \"Renew access\" button. Renew by buying the course again or a separate renewal product. Students who bought before the period was set are counted from that day. Admins and the course instructor are never restricted."
+msgstr ""
+
+#: inc/modules.php
+msgid "This module is for selling courses and needs WooCommerce."
+msgstr ""
+
+#: inc/modules.php
+msgid "Default period (days)"
+msgstr ""
+
+#: inc/modules.php
+msgid "For courses without their own period. 0 = unlimited."
+msgstr ""
+
+#: inc/modules.php
+msgid "Reminder before the end (days)"
+msgstr ""
+
+#: inc/modules.php
+msgid "Separate with commas; e.g. 7,1. The end day is notified too."
+msgstr ""
+
+#: inc/modules.php
+msgid "Reminder and access-ended email"
+msgstr ""
+
+#: inc/modules.php
+#, php-format
+msgid "Email with a \"Renew access\" button. SMS for these events is set on the <a href=\"%s\">SMS</a> page (\"Access ending reminder\" and \"Access ended\"). The admin can renew, make unlimited or end access from each user's edit page (\"Time-limited course access\" section)."
+msgstr ""
+
+#: inc/modules.php
+msgid "Block direct access to files"
+msgstr ""
+
+#: inc/modules.php
+msgid "Enable the protected folder"
+msgstr ""
+
+#: inc/modules.php
+msgid "Videos and files uploaded from the lesson editor are stored in the \"nias-protected\" folder, which cannot be opened by direct address; only with a signed link (for a private lesson: that user's personal link, for a public lesson: a temporary link). Even if a file's address leaks, it does not work. Move existing files with the tool below."
+msgstr ""
+
+#: inc/modules.php
+msgid "File delivery"
+msgstr ""
+
+#: inc/modules.php
+msgid "With PHP (works everywhere)"
+msgstr ""
+
+#: inc/modules.php
+msgid "For large videos and heavy traffic, delivery by the web server itself is lighter; choose it only when the mod_xsendfile module is installed on Apache or the internal rule above has been added on Nginx."
+msgstr ""
+
+#: inc/modules.php
+msgid "Device limit and simultaneous login"
+msgstr ""
+
+#: inc/modules.php
+msgid "Enable device limit"
+msgstr ""
+
+#: inc/modules.php
+msgid "Prevents several people from using one account. Each browser counts as one device and the account stays active only on a set number of devices. Works with all login methods (Nias Login SMS and Google login, WooCommerce and the WordPress form). Admins and shop managers are never restricted."
+msgstr ""
+
+#: inc/modules.php
+msgid "Maximum number of devices"
+msgstr ""
+
+#: inc/modules.php
+msgid "Per user (1 to 20)."
+msgstr ""
+
+#: inc/modules.php
+msgid "When the limit is reached and a new device logs in"
+msgstr ""
+
+#: inc/modules.php
+msgid "Reject the login"
+msgstr ""
+
+#: inc/modules.php
+msgid "Log out the oldest device"
+msgstr ""
+
+#: inc/modules.php
+msgid "\"Reject the login\": the user sees a message that they must remove one of their previous devices. \"Log out the oldest\": the device unused for the longest time is removed automatically."
+msgstr ""
+
+#: inc/modules.php
+msgid "Simultaneous login not allowed"
+msgstr ""
+
+#: inc/modules.php
+msgid "Only one device is active at a time: activity on one device logs the account out on the others (the devices stay in the list)."
+msgstr ""
+
+#: inc/modules.php
+msgid "Do not restrict instructors"
+msgstr ""
+
+#: inc/modules.php
+msgid "Instructors (who usually work from several devices) are not restricted."
+msgstr ""
+
+#: inc/modules.php
+msgid "Device removal by the user"
+msgstr ""
+
+#: inc/modules.php
+msgid "A \"My devices\" tab in the user account (or the shortcode [nias_my_devices]) where users see their devices and can remove one. The admin can always see and remove devices from the user edit page (\"User devices\" section)."
+msgstr ""
+
+#: inc/modules.php
+msgid "Maximum removals every 30 days"
+msgstr ""
+
+#: inc/modules.php
+msgid "0 = no limit. Limiting it prevents passing an account around by repeatedly removing and logging in."
+msgstr ""
+
+#: inc/modules.php
+msgid "Move the courses' current files to the protected folder"
+msgstr ""
+
+#: inc/modules.php
+msgid "A student's drip schedule"
+msgstr ""
+
+#: inc/modules.php
+msgid "Find a course and student to see when their lessons open; you can open all lessons for them or move their course start. Instructors have the same tool for their own courses in the instructor panel."
+msgstr ""
+
+#: inc/modules.php
+msgid "Upcoming modules"
+msgstr ""
+
+#: inc/modules.php woocommerce-course/spotplayer-license.php
+msgid "Coming soon"
+msgstr ""
+
+#: inc/nias-picker.php woocommerce-course/quiz-builder.php
+msgid "Untitled quiz"
+msgstr ""
+
+#: inc/nias-picker.php woocommerce-course/quiz-results.php
+#, php-format
+msgid "%1$s questions · pass at %2$s%%"
+msgstr ""
+
+#: inc/notes.php
+msgid "Write the note text."
+msgstr ""
+
+#: inc/notes.php
+msgid "Maximum 500 notes per course."
+msgstr ""
+
+#: inc/notes.php
+msgid "You have not written any notes yet. In video lessons you can add a note at any moment from the \"Notes\" tab."
+msgstr ""
+
+#: inc/notes.php
+msgid "Search notes…"
+msgstr ""
+
+#: inc/notes.php
+msgid "Download text file"
+msgstr ""
+
+#: inc/notes.php
+msgid "My notes"
+msgstr ""
+
+#: inc/paths.php
+#, php-format
+msgid "To buy this course you must first finish %s."
+msgstr ""
+
+#: inc/paths.php
+#, php-format
+msgid "Prerequisite for buying this course: %s"
+msgstr ""
+
+#: inc/paths.php
+#, php-format
+msgid "Prerequisite for this course: %s (this course's lessons open after that)."
+msgstr ""
+
+#: inc/paths.php
+msgid "Course prerequisite (Nias Course Builder)"
+msgstr ""
+
+#: inc/paths.php
+msgid "Courses that must be finished first"
+msgstr ""
+
+#: inc/paths.php
+msgid "Finished means"
+msgstr ""
+
+#: inc/paths.php
+#, php-format
+msgid "100% progress"
+msgstr ""
+
+#: inc/paths.php
+msgid "Getting the certificate"
+msgstr ""
+
+#: inc/paths.php
+msgid "Before that"
+msgstr ""
+
+#: inc/paths.php
+msgid "Buying allowed, lessons locked"
+msgstr ""
+
+#: inc/paths.php
+msgid "Buying not possible either"
+msgstr ""
+
+#: inc/paths.php
+msgid "Learning paths"
+msgstr ""
+
+#: inc/paths.php
+msgid "Learning path"
+msgstr ""
+
+#: inc/paths.php
+msgid "Add learning path"
+msgstr ""
+
+#: inc/paths.php
+msgid "Edit learning path"
+msgstr ""
+
+#: inc/paths.php
+msgid "Courses of this path (in order)"
+msgstr ""
+
+#: inc/paths.php
+msgid "Select the courses in the order they should be taken. Show it anywhere on the site with the shortcode:"
+msgstr ""
+
+#: inc/paths.php
+msgid "Sequential"
+msgstr ""
+
+#: inc/paths.php
+msgid "Each course's lessons open after finishing the previous course of this path."
+msgstr ""
+
+#: inc/paths.php
+msgid "Finished"
+msgstr ""
+
+#: inc/paths.php
+msgid "After the previous course"
+msgstr ""
+
+#: inc/paths.php
+#, php-format
+msgid "In progress · %s%%"
+msgstr ""
+
+#: inc/paths.php
+msgid "Ready to start"
+msgstr ""
+
+#: inc/paths.php
+#, php-format
+msgid "%1$s of %2$s courses finished"
+msgstr ""
+
+#: inc/protect.php
+msgid "The folder could not be created."
+msgstr ""
+
+#: inc/protect.php
+msgid "The file could not be moved (check write permissions)."
+msgstr ""
+
+#: inc/protect.php
+msgid "First enable the module and save."
+msgstr ""
+
+#: inc/protect.php
+msgid "The course files folder is closed: direct requests are refused"
+msgstr ""
+
+#: inc/protect.php
+msgid "Warning: the protected folder still opens by direct address!"
+msgstr ""
+
+#: inc/protect.php
+msgid "The folder status could not be checked"
+msgstr ""
+
+#: inc/protect.php
+msgid "Check again"
+msgstr ""
+
+#: inc/protect.php
+msgid "Folder:"
+msgstr ""
+
+#: inc/protect.php
+msgid "Web server:"
+msgstr ""
+
+#: inc/protect.php
+msgid "Nginx does not read .htaccess; put this rule in the site configuration (server block) and reload Nginx:"
+msgstr ""
+
+#: inc/protect.php
+msgid "Videos and files already uploaded in course lessons (on this site) are moved to the protected folder; lesson addresses and media library records are updated automatically. If these same files are also used elsewhere on the site (posts, pages), they will no longer open directly there. Back up the site before moving."
+msgstr ""
+
+#: inc/protect.php
+msgid "Check course files"
+msgstr ""
+
+#: inc/protect.php
+msgid "Start moving"
+msgstr ""
+
+#: inc/revenue.php
+msgid "You have an open payout request; wait until it is reviewed."
+msgstr ""
+
+#: inc/revenue.php
+msgid "First enter your IBAN (Sheba) or card number."
+msgstr ""
+
+#: inc/revenue.php
+#, php-format
+msgid "The minimum payout amount is %s."
+msgstr ""
+
+#: inc/revenue.php
+msgid "Account details saved."
+msgstr ""
+
+#: inc/revenue.php
+msgid "Payout request submitted."
+msgstr ""
+
+#: inc/revenue.php
+msgid "In holding period"
+msgstr ""
+
+#: inc/revenue.php
+msgid "In a payout request"
+msgstr ""
+
+#: inc/revenue.php
+msgid "Paid"
+msgstr ""
+
+#: inc/revenue.php
+msgid "Paid out"
+msgstr ""
+
+#: inc/revenue.php
+msgid "Rejected"
+msgstr ""
+
+#: inc/revenue.php
+msgid "Withdrawable"
+msgstr ""
+
+#: inc/revenue.php
+#, php-format
+msgid "In holding period (%s days after the sale)"
+msgstr ""
+
+#: inc/revenue.php
+msgid "Paid to date"
+msgstr ""
+
+#: inc/revenue.php
+msgid "Payout"
+msgstr ""
+
+#: inc/revenue.php
+msgid "Save account"
+msgstr ""
+
+#: inc/revenue.php
+#, php-format
+msgid "Request a payout of %s"
+msgstr ""
+
+#: inc/revenue.php
+msgid "Not enough withdrawable balance"
+msgstr ""
+
+#: inc/revenue.php
+#, php-format
+msgid "Minimum payout amount: %s. Each sale's share becomes withdrawable after the holding period; if an order is refunded or cancelled, its share is deducted."
+msgstr ""
+
+#: inc/revenue.php
+msgid "Request"
+msgstr ""
+
+#: inc/revenue.php
+msgid "Amount"
+msgstr ""
+
+#: inc/revenue.php
+msgid "Note"
+msgstr ""
+
+#: inc/revenue.php
+msgid "Sales and your share"
+msgstr ""
+
+#: inc/revenue.php
+msgid "Sale amount"
+msgstr ""
+
+#: inc/revenue.php
+msgid "Share"
+msgstr ""
+
+#: inc/revenue.php
+msgid "No sales recorded yet."
+msgstr ""
+
+#: inc/revenue.php
+msgid "Payout requests"
+msgstr ""
+
+#: inc/revenue.php
+msgid "There are no open requests."
+msgstr ""
+
+#: inc/revenue.php
+msgid "Tracking number / reason for rejection"
+msgstr ""
+
+#: inc/revenue.php
+msgid "Reject"
+msgstr ""
+
+#: inc/revenue.php
+msgid "Instructor accounts"
+msgstr ""
+
+#: inc/revenue.php
+msgid "Sales (gross)"
+msgstr ""
+
+#: inc/revenue.php
+msgid "Share percentage"
+msgstr ""
+
+#: inc/revenue.php
+msgid "No sales recorded for instructors yet."
+msgstr ""
+
+#: inc/revenue.php
+msgid "Default"
+msgstr ""
+
+#: inc/revenue.php
+msgid "Instructor revenue share (Nias Course Builder)"
+msgstr ""
+
+#: inc/revenue.php
+msgid "This instructor's share percentage"
+msgstr ""
+
+#: inc/revenue.php
+msgid "Empty = site default percentage. For a specific course you can set a separate percentage on that product's edit page."
+msgstr ""
+
+#: inc/revenue.php
+#, php-format
+msgid "Withdrawable: %1$s · In holding: %2$s · Paid: %3$s"
+msgstr ""
+
+#: inc/revenue.php
+msgid "Instructor share of this course's sales"
+msgstr ""
+
+#: inc/revenue.php
+msgid "Empty = the instructor's own percentage (or the site default)."
+msgstr ""
+
+#: inc/reviews.php
+msgid "Log in to your account to leave a review."
+msgstr ""
+
+#: inc/reviews.php
+msgid "The course instructor cannot rate their own course."
+msgstr ""
+
+#: inc/reviews.php
+msgid "Only students of this course can leave a review."
+msgstr ""
+
+#: inc/reviews.php
+#, php-format
+msgid "You can rate and review after watching at least %s%% of the course (your progress: %s%%)."
+msgstr ""
+
+#: inc/reviews.php
+msgid "Choose a rating (1 to 5 stars)."
+msgstr ""
+
+#: inc/reviews.php
+msgid "Please write a few words about your experience with the course."
+msgstr ""
+
+#: inc/reviews.php
+msgid "Only the course instructor and the admin can reply."
+msgstr ""
+
+#: inc/reviews.php
+msgid "The reply was not saved."
+msgstr ""
+
+#: inc/reviews.php
+#, php-format
+msgid "%s out of 5"
+msgstr ""
+
+#: inc/reviews.php
+msgid "Student reviews"
+msgstr ""
+
+#: inc/secure-media.php
+msgid "You are not logged in"
+msgstr ""
+
+#: inc/secure-media.php
+msgid "This is a personal link. Log in with your own account first to view the file."
+msgstr ""
+
+#: inc/secure-media.php
+msgid "This link does not belong to you"
+msgstr ""
+
+#: inc/secure-media.php
+msgid "Course file links are created separately for each user and only work for the owner of that account. Open the file from the course page in your own account."
+msgstr ""
+
+#: inc/secure-media.php
+msgid "This link has expired"
+msgstr ""
+
+#: inc/secure-media.php
+msgid "Open the course page again to create a fresh link."
+msgstr ""
+
+#: inc/secure-media.php
+msgid "You do not have access to this course"
+msgstr ""
+
+#: inc/secure-media.php
+msgid "This file is only for students of this course."
+msgstr ""
+
+#: inc/secure-media.php
+msgid "Invalid link"
+msgstr ""
+
+#: inc/secure-media.php
+msgid "This link is incomplete or has been changed."
+msgstr ""
+
+#: inc/secure-media.php
+msgid "Downloading this video is not allowed"
+msgstr ""
+
+#: inc/secure-media.php
+msgid "This course's videos only play inside the course page."
+msgstr ""
+
+#: inc/secure-media.php
+msgid "Log in to the site"
+msgstr ""
+
+#: inc/secure-media.php
+msgid "Go to the course page"
+msgstr ""
+
+#: inc/sms.php
+msgid "Course enrolment"
+msgstr ""
+
+#: inc/sms.php
+msgid "To the student after the course order is completed (or a free course is started)."
+msgstr ""
+
+#: inc/sms.php
+msgid "Dear {name}, you are enrolled in the course \"{course}\". Enter the course: {link}"
+msgstr ""
+
+#: inc/sms.php
+msgid "Quiz score announcement"
+msgstr ""
+
+#: inc/sms.php
+msgid "When the instructor grades the student's essay answers."
+msgstr ""
+
+#: inc/sms.php
+#, php-format
+msgid "Dear {name}, your score in \"{quiz}\": {score}% ({status}). {link}"
+msgstr ""
+
+#: inc/sms.php
+msgid "Instructor reply to a question"
+msgstr ""
+
+#: inc/sms.php
+msgid "When the instructor replies to a student's question in Q&A."
+msgstr ""
+
+#: inc/sms.php
+msgid "Dear {name}, the instructor replied to your question in the course \"{course}\". {link}"
+msgstr ""
+
+#: inc/sms.php
+msgid "When the course completion certificate is issued for the student."
+msgstr ""
+
+#: inc/sms.php
+msgid "Dear {name}, the certificate of the course \"{course}\" was issued. Certificate code: {code} {link}"
+msgstr ""
+
+#: inc/sms.php
+msgid "Drip lesson opened"
+msgstr ""
+
+#: inc/sms.php
+msgid "When a new lesson of a drip course opens for the student (\"Drip content\" module)."
+msgstr ""
+
+#: inc/sms.php
+msgid "Dear {name}, the lesson \"{lesson}\" of the course \"{course}\" is now open for you. {link}"
+msgstr ""
+
+#: inc/sms.php
+msgid "Access ending reminder"
+msgstr ""
+
+#: inc/sms.php
+msgid "A few days before time-limited access ends (\"Time-limited access and renewal\" module)."
+msgstr ""
+
+#: inc/sms.php
+msgid "Dear {name}, your access to the course \"{course}\" ends in {days} days ({date}). Renew: {link}"
+msgstr ""
+
+#: inc/sms.php
+msgid "The day the student's time-limited access ends."
+msgstr ""
+
+#: inc/sms.php
+msgid "Dear {name}, your access to the course \"{course}\" has ended. To renew: {link}"
+msgstr ""
+
+#: inc/sms.php
+msgid "Course continuation reminder (inactive student)"
+msgstr ""
+
+#: inc/sms.php
+msgid "When the student has not visited the course for a few days (\"Inactive student reminders\" module)."
+msgstr ""
+
+#: inc/sms.php
+msgid "Dear {name}, you have not visited the course \"{course}\" for {days} days. Continue from \"{lesson}\": {link}"
+msgstr ""
+
+#: inc/sms.php
+msgid "Assignment result"
+msgstr ""
+
+#: inc/sms.php
+msgid "When the instructor reviews the student's submitted assignment (\"Assignment\" module)."
+msgstr ""
+
+#: inc/sms.php
+msgid "Dear {name}, the assignment \"{lesson}\" was reviewed: {status} {score}. {link}"
+msgstr ""
+
+#: inc/sms.php
+msgid "New assignment"
+msgstr ""
+
+#: inc/sms.php
+msgid "When a student sends an assignment for one of the course lessons."
+msgstr ""
+
+#: inc/sms.php
+msgid "Dear {name}, {student} sent an assignment for \"{lesson}\" of the course \"{course}\". {link}"
+msgstr ""
+
+#: inc/sms.php
+msgid "Live class reminder"
+msgstr ""
+
+#: inc/sms.php
+msgid "About one hour before the online class starts (\"Online class\" module)."
+msgstr ""
+
+#: inc/sms.php
+msgid "Dear {name}, the class \"{lesson}\" of the course \"{course}\" starts at {date}. Join: {link}"
+msgstr ""
+
+#: inc/sms.php
+msgid "New student"
+msgstr ""
+
+#: inc/sms.php
+msgid "When someone enrols in one of the instructor's courses."
+msgstr ""
+
+#: inc/sms.php
+msgid "Dear {name}, {student} enrolled in the course \"{course}\"."
+msgstr ""
+
+#: inc/sms.php
+msgid "New question"
+msgstr ""
+
+#: inc/sms.php
+msgid "When a student posts a question (or a follow-up) in the instructor's course."
+msgstr ""
+
+#: inc/sms.php
+msgid "Dear {name}, {student} posted a question in the course \"{course}\". Reply: {link}"
+msgstr ""
+
+#: inc/sms.php
+msgid "Quiz awaiting grading"
+msgstr ""
+
+#: inc/sms.php
+msgid "When a student submits a quiz that has essay questions."
+msgstr ""
+
+#: inc/sms.php
+msgid "Dear {name}, {student} submitted the quiz \"{quiz}\" and it is waiting for your grading. {link}"
+msgstr ""
+
+#: inc/sms.php
+msgid "Course review result"
+msgstr ""
+
+#: inc/sms.php
+msgid "When the admin approves or rejects a course or an instructor's changes (\"Requires approval\")."
+msgstr ""
+
+#: inc/sms.php
+msgid "Dear {name}, {status}: \"{course}\". {link}"
+msgstr ""
+
+#: inc/sms.php
+msgid "Recipient name"
+msgstr ""
+
+#: inc/sms.php
+msgid "Student name"
+msgstr ""
+
+#: inc/sms.php
+msgid "Lesson name"
+msgstr ""
+
+#: inc/sms.php
+msgid "Quiz name"
+msgstr ""
+
+#: inc/sms.php woocommerce-course/quiz-results.php
+msgid "Score"
+msgstr ""
+
+#: inc/sms.php
+msgid "Link"
+msgstr ""
+
+#: inc/sms.php
+msgid "Days remaining"
+msgstr ""
+
+#: inc/sms.php
+msgid "End date"
+msgstr ""
+
+#: inc/sms.php
+msgid "Nias Login is not active."
+msgstr ""
+
+#: inc/sms.php
+#, php-format
+msgid "Nias Course Builder: %s"
+msgstr ""
+
+#: inc/sms.php
+msgid "The pattern code for this event has not been entered."
+msgstr ""
+
+#: inc/sms.php
+msgid "Next lesson"
+msgstr ""
+
+#: inc/sms.php
+msgid "Your course was published"
+msgstr ""
+
+#: inc/sms.php
+msgid "Your course was not published"
+msgstr ""
+
+#: inc/sms.php
+msgid "Your changes were approved"
+msgstr ""
+
+#: inc/sms.php
+msgid "Your changes were not approved"
+msgstr ""
+
+#: inc/sms.php
+msgid "Nias Login is not active or its SMS gateway is not set up."
+msgstr ""
+
+#: inc/sms.php
+msgid "Wait a moment and try again."
+msgstr ""
+
+#: inc/sms.php
+msgid "The mobile number is not valid."
+msgstr ""
+
+#: inc/sms.php
+msgid "Ali Rezaei"
+msgstr ""
+
+#: inc/sms.php
+msgid "Sample course"
+msgstr ""
+
+#: inc/sms.php
+msgid "First lesson"
+msgstr ""
+
+#: inc/sms.php
+msgid "Chapter one quiz"
+msgstr ""
+
+#: inc/sms.php
+msgid "Sent."
+msgstr ""
+
+#: inc/sms.php
+msgid "SMS is disabled: the \"Nias Login\" plugin is not installed or active."
+msgstr ""
+
+#: inc/sms.php
+msgid "Course SMS is sent only through the gateway you set up in Nias Login (version 1.4 or later, which has the SMS API). Until Nias Login is active, no SMS is sent."
+msgstr ""
+
+#: inc/sms.php
+msgid "Get Nias Login"
+msgstr ""
+
+#: inc/sms.php
+msgid "Nias Login is active, but its SMS gateway is not selected."
+msgstr ""
+
+#: inc/sms.php
+msgid "Enter the gateway and SMS panel details in the Nias Login settings; until then no SMS is sent."
+msgstr ""
+
+#: inc/sms.php
+#, php-format
+msgid "Sending through Nias Login · Gateway: %s"
+msgstr ""
+
+#: inc/sms.php
+msgid "This gateway supports both patterns and free text."
+msgstr ""
+
+#: inc/sms.php
+msgid "This gateway only supports sending with a pattern."
+msgstr ""
+
+#: inc/sms.php
+msgid "All sends are recorded in Nias Login's \"Message log\" with the label \"Nias Course Builder\"."
+msgstr ""
+
+#: inc/sms.php
+msgid "Sending method"
+msgstr ""
+
+#: inc/sms.php
+msgid "Pattern (recommended)"
+msgstr ""
+
+#: inc/sms.php
+msgid "Free text"
+msgstr ""
+
+#: inc/sms.php
+msgid "(not supported by the gateway)"
+msgstr ""
+
+#: inc/sms.php
+msgid "Pattern code"
+msgstr ""
+
+#: inc/sms.php
+msgid "Pattern variables (in the pattern's order)"
+msgstr ""
+
+#: inc/sms.php
+msgid "Variables of this event:"
+msgstr ""
+
+#: inc/sms.php
+msgid "Test send"
+msgstr ""
+
+#: inc/sms.php
+msgid "Recipient number: the user account's mobile number in Nias Login, or else the WooCommerce billing number. Name the variables exactly as in the SMS panel pattern and keep them in the pattern's order so it also works with gateways that read variables in order. Sends run in a queue so pages do not wait for the gateway."
+msgstr ""
+
+#: inc/transfer.php woocommerce-course/quiz-course.php
+msgid "Course not found."
+msgstr ""
+
+#: inc/transfer.php
+msgid "The copy could not be created."
+msgstr ""
+
+#: inc/transfer.php
+#, php-format
+msgid "%s (copy)"
+msgstr ""
+
+#: inc/transfer.php
+msgid "This file is not a Nias Course Builder export."
+msgstr ""
+
+#: inc/transfer.php
+msgid "The course could not be created."
+msgstr ""
+
+#: inc/transfer.php
+msgid "Copy course"
+msgstr ""
+
+#: inc/transfer.php
+msgid "Export course"
+msgstr ""
+
+#: inc/transfer.php
+msgid "The course copy was created (draft). Lesson quizzes were also copied separately so the two courses' results do not mix."
+msgstr ""
+
+#: inc/transfer.php
+msgid "The course was created as a draft."
+msgstr ""
+
+#: inc/transfer.php
+msgid "Export a course"
+msgstr ""
+
+#: inc/transfer.php
+msgid "A JSON file with the course text, chapters and lessons (with all settings such as drip, assignment and qualities), lesson quizzes and course settings. \"Copy course\" and \"Export course\" are also in the courses list (under each course name). Video and file addresses stay the same."
+msgstr ""
+
+#: inc/transfer.php
+msgid "Download export file"
+msgstr ""
+
+#: inc/transfer.php
+msgid "Import a course from a file"
+msgstr ""
+
+#: inc/transfer.php
+msgid "A Nias Course Builder export JSON file (from this site or another site). The course is created as a draft and its quizzes as new quizzes."
+msgstr ""
+
+#: inc/transfer.php
+msgid "Import course"
+msgstr ""
+
+#: nias-course-widget.php
+msgid "Nias course builder widget"
+msgstr ""
+
+#: widgets/nias-controls.php widgets/nias-woocommerce.php
+msgid "Chapter settings"
+msgstr ""
+
+#: widgets/nias-controls.php
+msgid "Chapter icon (optional)"
+msgstr ""
+
+#: widgets/nias-controls.php
+msgid "Course chapter title"
+msgstr ""
+
+#: widgets/nias-controls.php
+msgid "Chapter title HTML tag"
+msgstr ""
+
+#: widgets/nias-controls.php
+msgid "Course chapter subtitle"
+msgstr ""
+
+#: widgets/nias-controls.php widgets/nias-woocommerce.php
+msgid "Collapsible?"
+msgstr ""
+
+#: widgets/nias-controls.php widgets/nias-woocommerce.php
+msgid "Yes"
+msgstr ""
+
+#: widgets/nias-controls.php widgets/nias-woocommerce.php
+msgid "No"
+msgstr ""
+
+#: widgets/nias-controls.php widgets/nias-woocommerce.php
+msgid "Expand/collapse icon"
+msgstr ""
+
+#: widgets/nias-controls.php
+msgid "Is the lesson private?"
+msgstr ""
+
+#: widgets/nias-controls.php
+msgid "If the lesson is private, its content and link are shown only to users who bought the current product"
+msgstr ""
+
+#: widgets/nias-controls.php
+msgid "Lesson title"
+msgstr ""
+
+#: widgets/nias-controls.php
+msgid "Title subtitle"
+msgstr ""
+
+#: widgets/nias-controls.php widgets/nias-woocommerce.php
+msgid "Icon for this lesson"
+msgstr ""
+
+#: widgets/nias-controls.php
+msgid "Lesson label"
+msgstr ""
+
+#: widgets/nias-controls.php
+msgid "Video preview"
+msgstr ""
+
+#: widgets/nias-controls.php
+msgid "You can use the lightbox by choosing a dynamic icon"
+msgstr ""
+
+#: widgets/nias-controls.php
+msgid "Lesson private file link"
+msgstr ""
+
+#: widgets/nias-controls.php
+msgid "In this method the direct file link is shown to the user (others can download the link too)"
+msgstr ""
+
+#: widgets/nias-controls.php
+msgid "Do you want to use WooCommerce protected links?"
+msgstr ""
+
+#: widgets/nias-controls.php
+msgid "Protected links are shown indirectly and can only be downloaded by the current user; to use this method you must add the links on the downloadable product's edit page"
+msgstr ""
+
+#: widgets/nias-controls.php
+msgid "Files of this product"
+msgstr ""
+
+#: widgets/nias-controls.php woocommerce-course/curriculum-editor.php
+msgid "Course content"
+msgstr ""
+
+#: widgets/nias-controls.php
+msgid "Lessons list"
+msgstr ""
+
+#: widgets/nias-controls.php
+msgid "Lesson title HTML tag"
+msgstr ""
+
+#: widgets/nias-controls.php
+msgid "General icon and text"
+msgstr ""
+
+#: widgets/nias-controls.php
+msgid "Notice"
+msgstr ""
+
+#: widgets/nias-controls.php
+msgid "Items set in this section apply to all lessons of the widget"
+msgstr ""
+
+#: widgets/nias-controls.php
+msgid "Lesson lock icon"
+msgstr ""
+
+#: widgets/nias-controls.php
+msgid "Lesson open icon"
+msgstr ""
+
+#: widgets/nias-controls.php widgets/nias-woocommerce.php
+msgid "Download icon"
+msgstr ""
+
+#: widgets/nias-controls.php widgets/nias-woocommerce.php
+msgid "Preview icon"
+msgstr ""
+
+#: widgets/nias-controls.php widgets/nias-woocommerce.php
+msgid "Preview button text"
+msgstr ""
+
+#: widgets/nias-controls.php
+msgid "Course access text"
+msgstr ""
+
+#: widgets/nias-controls.php
+msgid "You have access"
+msgstr ""
+
+#: widgets/nias-controls.php
+msgid "No course access text"
+msgstr ""
+
+#: widgets/nias-controls.php widgets/nias-woocommerce.php
+msgid "Private course text in content"
+msgstr ""
+
+#: widgets/nias-controls.php widgets/nias-woocommerce.php
+msgid "This course is private; buy the course for full access"
+msgstr ""
+
+#: widgets/nias-controls.php
+msgid "Show SpotPlayer license"
+msgstr ""
+
+#: widgets/nias-controls.php widgets/nias-instructors.php
+msgid "Show"
+msgstr ""
+
+#: widgets/nias-controls.php
+msgid "Hide"
+msgstr ""
+
+#: widgets/nias-controls.php
+msgid "Show SpotPlayer download box"
+msgstr ""
+
+#: widgets/nias-controls.php
+msgid "Very important"
+msgstr ""
+
+#: widgets/nias-controls.php
+msgid "Please use this option only once, in one of the lesson widgets!"
+msgstr ""
+
+#: widgets/nias-controls.php
+msgid "Usage guide"
+msgstr ""
+
+#: widgets/nias-controls.php
+msgid "Number of students"
+msgstr ""
+
+#: widgets/nias-controls.php
+msgid "To show the number of buyers or students, use the total_sales meta"
+msgstr ""
+
+#: widgets/nias-controls.php
+msgid "Plugin authenticity"
+msgstr ""
+
+#: widgets/nias-controls.php
+msgid "The plugin developer is Nias, and the Nias website is the official source of updates and tutorials for this plugin"
+msgstr ""
+
+#: widgets/nias-controls.php
+msgid "Visit the Nias website"
+msgstr ""
+
+#: widgets/nias-controls.php
+msgid "Dynamic fields and links"
+msgstr ""
+
+#: widgets/nias-controls.php
+msgid "To make links and text fields dynamic you can use Nias Meta Builder"
+msgstr ""
+
+#: widgets/nias-controls.php
+msgid "View Nias Meta Builder"
+msgstr ""
+
+#: widgets/nias-controls.php widgets/nias-woocommerce.php
+msgid "Box style"
+msgstr ""
+
+#: widgets/nias-controls.php widgets/nias-woocommerce.php
+msgid "Border radius"
+msgstr ""
+
+#: widgets/nias-controls.php widgets/nias-woocommerce.php
+msgid "Padding"
+msgstr ""
+
+#: widgets/nias-controls.php
+msgid "Chapter style"
+msgstr ""
+
+#: widgets/nias-controls.php
+msgid "Chapter image width"
+msgstr ""
+
+#: widgets/nias-controls.php
+msgid "Title size"
+msgstr ""
+
+#: widgets/nias-controls.php
+msgid "Subtitle size"
+msgstr ""
+
+#: widgets/nias-controls.php
+msgid "Top spacing"
+msgstr ""
+
+#: widgets/nias-controls.php widgets/nias-woocommerce.php
+msgid "Expand/collapse icon size"
+msgstr ""
+
+#: widgets/nias-controls.php widgets/nias-woocommerce.php
+msgid "Expand/collapse icon color"
+msgstr ""
+
+#: widgets/nias-controls.php
+msgid "(right area) Lesson style"
+msgstr ""
+
+#: widgets/nias-controls.php
+msgid "Lesson icon size"
+msgstr ""
+
+#: widgets/nias-controls.php
+msgid "Expand/collapse icon hover color"
+msgstr ""
+
+#: widgets/nias-controls.php
+msgid "Lesson label font"
+msgstr ""
+
+#: widgets/nias-controls.php
+msgid "Lesson label color"
+msgstr ""
+
+#: widgets/nias-controls.php
+msgid "Lesson label background color"
+msgstr ""
+
+#: widgets/nias-controls.php widgets/nias-woocommerce.php
+msgid "Lesson title font"
+msgstr ""
+
+#: widgets/nias-controls.php
+msgid "Lesson subtitle font"
+msgstr ""
+
+#: widgets/nias-controls.php
+msgid "(left area) Lesson style"
+msgstr ""
+
+#: widgets/nias-controls.php
+msgid "Preview button font"
+msgstr ""
+
+#: widgets/nias-controls.php
+msgid "Preview background color"
+msgstr ""
+
+#: widgets/nias-controls.php
+msgid "Preview padding"
+msgstr ""
+
+#: widgets/nias-controls.php
+msgid "Preview border radius"
+msgstr ""
+
+#: widgets/nias-controls.php widgets/nias-woocommerce.php
+msgid "Preview icon size"
+msgstr ""
+
+#: widgets/nias-controls.php
+msgid "Download button background color"
+msgstr ""
+
+#: widgets/nias-controls.php
+msgid "Download button color"
+msgstr ""
+
+#: widgets/nias-controls.php
+msgid "Download button padding"
+msgstr ""
+
+#: widgets/nias-controls.php
+msgid "Download button border radius"
+msgstr ""
+
+#: widgets/nias-controls.php widgets/nias-woocommerce.php
+msgid "Download icon size"
+msgstr ""
+
+#: widgets/nias-controls.php
+msgid "Private course icon color"
+msgstr ""
+
+#: widgets/nias-controls.php
+msgid "Open course icon color"
+msgstr ""
+
+#: widgets/nias-controls.php
+msgid "SpotPlayer style"
+msgstr ""
+
+#: widgets/nias-controls.php
+msgid "License box background color"
+msgstr ""
+
+#: widgets/nias-controls.php
+msgid "License box text color"
+msgstr ""
+
+#: widgets/nias-instructors.php
+msgid "Course instructor"
+msgstr ""
+
+#: widgets/nias-instructors.php
+msgid "One line (name and photo)"
+msgstr ""
+
+#: widgets/nias-instructors.php
+msgid "Card with biography"
+msgstr ""
+
+#: widgets/nias-instructors.php
+msgid "Instructor photo"
+msgstr ""
+
+#: widgets/nias-instructors.php
+msgid "Image size"
+msgstr ""
+
+#: widgets/nias-instructors.php
+msgid "Empty = \"Instructor:\" / \"Instructors:\""
+msgstr ""
+
+#: widgets/nias-instructors.php
+msgid "No label"
+msgstr ""
+
+#: widgets/nias-instructors.php
+msgid "Link to the author page"
+msgstr ""
+
+#: widgets/nias-instructors.php
+msgid "Course ID (optional)"
+msgstr ""
+
+#: widgets/nias-instructors.php
+msgid "Empty = this course/product"
+msgstr ""
+
+#: widgets/nias-instructors.php
+msgid "Name color"
+msgstr ""
+
+#: widgets/nias-instructors.php
+msgid "Label color"
+msgstr ""
+
+#: widgets/nias-instructors.php
+msgid "Course instructor: in a single product/course template, this widget shows that course's instructor name."
+msgstr ""
+
+#: widgets/nias-instructors.php
+msgid "No instructor is selected for this course (Edit lessons and chapters › Course instructors)."
+msgstr ""
+
+#: widgets/nias-woocommerce.php
+msgid "WooCommerce course display"
+msgstr ""
+
+#: widgets/nias-woocommerce.php
+msgid "Chapter icon (general)"
+msgstr ""
+
+#: widgets/nias-woocommerce.php
+msgid "Lessons expand/collapse icon"
+msgstr ""
+
+#: widgets/nias-woocommerce.php
+msgid "Header/chapter style"
+msgstr ""
+
+#: widgets/nias-woocommerce.php
+msgid "Inside chapter style"
+msgstr ""
+
+#: widgets/nias-woocommerce.php
+msgid "Chapter image size"
+msgstr ""
+
+#: widgets/nias-woocommerce.php
+msgid "Chapter title font"
+msgstr ""
+
+#: widgets/nias-woocommerce.php
+msgid "Chapter title color"
+msgstr ""
+
+#: widgets/nias-woocommerce.php
+msgid "Chapter title background color"
+msgstr ""
+
+#: widgets/nias-woocommerce.php
+msgid "Chapter label font"
+msgstr ""
+
+#: widgets/nias-woocommerce.php
+msgid "Chapter label color"
+msgstr ""
+
+#: widgets/nias-woocommerce.php
+msgid "Chapter label background color"
+msgstr ""
+
+#: widgets/nias-woocommerce.php
+msgid "Lesson style"
+msgstr ""
+
+#: widgets/nias-woocommerce.php
+msgid "Lesson title color"
+msgstr ""
+
+#: widgets/nias-woocommerce.php
+msgid "Lesson title background color"
+msgstr ""
+
+#: widgets/nias-woocommerce.php
+msgid "Lesson subtitle  font"
+msgstr ""
+
+#: widgets/nias-woocommerce.php
+msgid "Lesson subtitle color"
+msgstr ""
+
+#: widgets/nias-woocommerce.php
+msgid "Lesson subtitle background color"
+msgstr ""
+
+#: widgets/nias-woocommerce.php
+msgid "Chapter content style"
+msgstr ""
+
+#: widgets/nias-woocommerce.php
+msgid "Space between lessons"
+msgstr ""
+
+#: widgets/nias-woocommerce.php
+msgid "Lesson box style"
+msgstr ""
+
+#: widgets/nias-woocommerce.php
+msgid "Space between lesson row items"
+msgstr ""
+
+#: widgets/nias-woocommerce.php
+msgid "Lesson icon style"
+msgstr ""
+
+#: widgets/nias-woocommerce.php
+msgid "Lesson icon/image size"
+msgstr ""
+
+#: widgets/nias-woocommerce.php
+msgid "Lesson icon color"
+msgstr ""
+
+#: widgets/nias-woocommerce.php
+msgid "Lesson image border radius"
+msgstr ""
+
+#: widgets/nias-woocommerce.php
+msgid "Preview button style"
+msgstr ""
+
+#: widgets/nias-woocommerce.php
+msgid "Preview text font"
+msgstr ""
+
+#: widgets/nias-woocommerce.php
+msgid "Text and icon color"
+msgstr ""
+
+#: widgets/nias-woocommerce.php
+msgid "Hover"
+msgstr ""
+
+#: widgets/nias-woocommerce.php
+msgid "Download button style"
+msgstr ""
+
+#: widgets/nias-woocommerce.php
+msgid "Button size"
+msgstr ""
+
+#: widgets/nias-woocommerce.php
+msgid "Icon color"
+msgstr ""
+
+#: widgets/nias-woocommerce.php
+msgid "Private section style"
+msgstr ""
+
+#: widgets/nias-woocommerce.php
+msgid "Lock icon size"
+msgstr ""
+
+#: widgets/nias-woocommerce.php
+msgid "Lock icon color"
+msgstr ""
+
+#: widgets/nias-woocommerce.php
+msgid "Hint text font (private)"
+msgstr ""
+
+#: widgets/nias-woocommerce.php
+msgid "Hint text color"
+msgstr ""
+
+#: widgets/nias-woocommerce.php
+msgid "Hint text background color"
+msgstr ""
+
+#: widgets/nias-woocommerce.php
+msgid "Lesson expand/collapse icon style"
+msgstr ""
+
+#: widgets/nias-woocommerce.php
+msgid "Icon size"
+msgstr ""
+
+#: widgets/nias-woocommerce.php
+msgid "Lesson content style"
+msgstr ""
+
+#: widgets/nias-woocommerce.php
+msgid "Lesson content font"
+msgstr ""
+
+#: widgets/nias-woocommerce.php
+msgid "Content text color"
+msgstr ""
+
+#: widgets/videomodal.php
+msgid "Lesson preview"
+msgstr ""
+
+#: woocommerce-course/curriculum-editor.php
+#, php-format
+msgid "To add chapters and lessons, first save the %s."
+msgstr ""
+
+#: woocommerce-course/curriculum-editor.php
+msgid "Saved and sent for admin approval; it applies to the course after approval."
+msgstr ""
+
+#: woocommerce-course/curriculum-editor.php woocommerce-course/quiz-builder.php
+msgid "Changes saved."
+msgstr ""
+
+#: woocommerce-course/curriculum-editor.php
+msgid "No valid product selected."
+msgstr ""
+
+#: woocommerce-course/curriculum-editor.php
+#, php-format
+msgid "%s has submitted changes to this course that are awaiting approval. Approving them replaces the current lessons with the instructor's version."
+msgstr ""
+
+#: woocommerce-course/curriculum-editor.php
+msgid "Review request"
+msgstr ""
+
+#: woocommerce-course/curriculum-editor.php
+msgid "New chapter"
+msgstr ""
+
+#: woocommerce-course/curriculum-editor.php
+msgid "New lesson"
+msgstr ""
+
+#: woocommerce-course/curriculum-editor.php
+msgid "Saving…"
+msgstr ""
+
+#: woocommerce-course/curriculum-editor.php
+msgid "Error saving changes."
+msgstr ""
+
+#: woocommerce-course/curriculum-editor.php
+msgid "You have unsaved changes."
+msgstr ""
+
+#: woocommerce-course/curriculum-editor.php
+msgid "Choose file"
+msgstr ""
+
+#: woocommerce-course/curriculum-editor.php
+msgid "Link address:"
+msgstr ""
+
+#: woocommerce-course/curriculum-editor.php
+msgid "Lessons & chapters"
+msgstr ""
+
+#: woocommerce-course/curriculum-editor.php
+msgid "Search chapter or lesson…"
+msgstr ""
+
+#: woocommerce-course/curriculum-editor.php
+msgid "Add chapter"
+msgstr ""
+
+#: woocommerce-course/curriculum-editor.php
+msgid "Save all changes"
+msgstr ""
+
+#: woocommerce-course/curriculum-editor.php
+msgid "SpotPlayer tools"
+msgstr ""
+
+#: woocommerce-course/curriculum-editor.php
+msgid "Course instructors"
+msgstr ""
+
+#: woocommerce-course/curriculum-editor.php
+msgid "Back to my courses"
+msgstr ""
+
+#: woocommerce-course/curriculum-editor.php
+msgid "Back to product"
+msgstr ""
+
+#: woocommerce-course/curriculum-editor.php
+msgid "Drag the handle to reorder"
+msgstr ""
+
+#: woocommerce-course/curriculum-editor.php
+msgid "Lesson content"
+msgstr ""
+
+#: woocommerce-course/curriculum-editor.php
+msgid "To insert embed code (Aparat/YouTube) that includes an iframe and style, the safest way is the \"Code\" tab."
+msgstr ""
+
+#: woocommerce-course/curriculum-editor.php
+msgid "Close"
+msgstr ""
+
+#: woocommerce-course/curriculum-editor.php
+msgid "Sync from a SpotPlayer link"
+msgstr ""
+
+#: woocommerce-course/curriculum-editor.php
+msgid "SpotPlayer video download page link"
+msgstr ""
+
+#: woocommerce-course/curriculum-editor.php
+msgid "Enter the video download page link; chapters and lessons are read automatically and replace the current content."
+msgstr ""
+
+#: woocommerce-course/curriculum-editor.php
+msgid "Sync lessons"
+msgstr ""
+
+#: woocommerce-course/curriculum-editor.php
+msgid "Chrome extension for exporting the lessons list"
+msgstr ""
+
+#: woocommerce-course/curriculum-editor.php
+msgid "With the Chrome extension you can export the lessons list from SpotPlayer both in a format the plugin recognizes (JSON) and as PDF."
+msgstr ""
+
+#: woocommerce-course/curriculum-editor.php
+msgid "Download extension"
+msgstr ""
+
+#: woocommerce-course/curriculum-editor.php
+msgid "How to use the extension"
+msgstr ""
+
+#: woocommerce-course/curriculum-editor.php
+msgid "Import the lessons list from a JSON file"
+msgstr ""
+
+#: woocommerce-course/curriculum-editor.php
+msgid "Choose the JSON file exported from the extension to import chapters and lessons and replace the current content."
+msgstr ""
+
+#: woocommerce-course/curriculum-editor.php
+msgid "Choose JSON file…"
+msgstr ""
+
+#: woocommerce-course/curriculum-editor.php
+msgid "Import from file"
+msgstr ""
+
+#: woocommerce-course/curriculum-editor.php
+msgid "License course IDs"
+msgstr ""
+
+#: woocommerce-course/curriculum-editor.php woocommerce-course/spotplayer-license.php
+msgid "SpotPlayer course IDs"
+msgstr ""
+
+#: woocommerce-course/curriculum-editor.php
+msgid "Enter course IDs separated by , . When the product is bought, the license is created automatically. Saved with \"Save all changes\"."
+msgstr ""
+
+#: woocommerce-course/curriculum-editor.php woocommerce-course/spotplayer-license.php
+msgid "Maximum devices"
+msgstr ""
+
+#: woocommerce-course/curriculum-editor.php
+msgid "Panel default"
+msgstr ""
+
+#: woocommerce-course/curriculum-editor.php
+msgid "Offline period (days)"
+msgstr ""
+
+#: woocommerce-course/curriculum-editor.php
+msgid "Total number of devices the buyer can activate the license on, and the period of offline viewing. Empty = SpotPlayer panel default."
+msgstr ""
+
+#: woocommerce-course/curriculum-editor.php woocommerce-course/spotplayer-license.php
+msgid "Device limit per platform"
+msgstr ""
+
+#: woocommerce-course/curriculum-editor.php
+msgid "At most 9 per platform. Empty = follow the total limit, and 0 = that platform is disabled. To apply, \"Maximum devices\" must have a value too."
+msgstr ""
+
+#: woocommerce-course/curriculum-editor.php
+msgid "Access period"
+msgstr ""
+
+#: woocommerce-course/curriculum-editor.php
+msgid "No expiry"
+msgstr ""
+
+#: woocommerce-course/curriculum-editor.php
+msgid "Number = days from license activation, Gregorian date YYYY-MM-DD = absolute expiry, 0 = no expiry, -1 = access disabled. Empty = use the default period from the settings."
+msgstr ""
+
+#: woocommerce-course/curriculum-editor.php woocommerce-course/spotplayer-license.php
+msgid "Accessible lesson range"
+msgstr ""
+
+#: woocommerce-course/curriculum-editor.php
+msgid "Limit access to specific lessons; e.g. \"1,4-6,10-\" means lesson 1, lessons 4 to 6 and from 10 onward. Empty = all lessons. Applies to all courses of this product."
+msgstr ""
+
+#: woocommerce-course/curriculum-editor.php
+msgid "Choose the instructors of this course"
+msgstr ""
+
+#: woocommerce-course/curriculum-editor.php
+msgid "Choose the instructors who teach this course. Changes are saved with \"Save all changes\"."
+msgstr ""
+
+#: woocommerce-course/curriculum-editor.php
+msgid "No instructor has been registered yet."
+msgstr ""
+
+#: woocommerce-course/curriculum-editor.php
+msgid "Add an instructor on the management page"
+msgstr ""
+
+#: woocommerce-course/modern-course.php
+msgid "Download file"
+msgstr ""
+
+#: woocommerce-course/modern-course.php
+msgid "Main quality"
+msgstr ""
+
+#: woocommerce-course/modern-course.php
+msgid "Other quality"
+msgstr ""
+
+#: woocommerce-course/modern-course.php
+msgid "Guest user"
+msgstr ""
+
+#: woocommerce-course/modern-course.php
+msgid "Enter the modern course view"
+msgstr ""
+
+#: woocommerce-course/modern-course.php
+msgid "Back to the product page"
+msgstr ""
+
+#: woocommerce-course/my-account.php
+msgid "Course endpoints"
+msgstr ""
+
+#: woocommerce-course/my-account.php
+msgid "My courses page endpoint"
+msgstr ""
+
+#: woocommerce-course/my-account.php
+msgid "This value is used in the account URL"
+msgstr ""
+
+#: woocommerce-course/my-account.php
+msgid "You have not enrolled in any course yet"
+msgstr ""
+
+#: woocommerce-course/my-account.php
+msgid "You have not bought any course yet."
+msgstr ""
+
+#: woocommerce-course/my-account.php
+msgid "Chapter"
+msgstr ""
+
+#: woocommerce-course/my-account.php
+msgid "Lesson"
+msgstr ""
+
+#: woocommerce-course/my-account.php
+msgid "Enter the course"
+msgstr ""
+
+#: woocommerce-course/my-account.php
+msgid "Log in to see your purchased courses."
+msgstr ""
+
+#: woocommerce-course/product-meta.php
+msgid "Meta settings"
+msgstr ""
+
+#: woocommerce-course/product-meta.php
+msgid "Custom metas"
+msgstr ""
+
+#: woocommerce-course/product-meta.php
+msgid "Define a name and a (Latin) key for each meta. Then you can enter each meta's value on each product's \"Edit lessons and chapters\" page and show it with its shortcode."
+msgstr ""
+
+#: woocommerce-course/product-meta.php
+msgid "Add meta"
+msgstr ""
+
+#: woocommerce-course/product-meta.php
+msgid "Meta name"
+msgstr ""
+
+#: woocommerce-course/product-meta.php
+msgid "E.g.: Course duration"
+msgstr ""
+
+#: woocommerce-course/product-meta.php
+msgid "Key (Latin)"
+msgstr ""
+
+#: woocommerce-course/product-meta.php
+msgid "E.g.: course_duration"
+msgstr ""
+
+#: woocommerce-course/product-meta.php
+msgid "ID"
+msgstr ""
+
+#: woocommerce-course/product-meta.php woocommerce-course/spotplayer-license.php
+msgid "Shortcode"
+msgstr ""
+
+#: woocommerce-course/product-meta.php
+msgid "Copied"
+msgstr ""
+
+#: woocommerce-course/product-meta.php
+msgid "Enter a Latin key"
+msgstr ""
+
+#: woocommerce-course/product-meta.php
+msgid "Product custom metas"
+msgstr ""
+
+#: woocommerce-course/product-meta.php
+msgid "No meta has been defined yet."
+msgstr ""
+
+#: woocommerce-course/product-meta.php
+msgid "Define metas"
+msgstr ""
+
+#: woocommerce-course/product-meta.php
+msgid "Copy ID"
+msgstr ""
+
+#: woocommerce-course/product-meta.php
+msgid "Copy shortcode"
+msgstr ""
+
+#: woocommerce-course/qa.php woocommerce-course/watch-tracking.php
+#, php-format
+msgid "%s ago"
+msgstr ""
+
+#: woocommerce-course/qa.php
+msgid "You are not allowed to ask questions in this course."
+msgstr ""
+
+#: woocommerce-course/qa.php
+msgid "The question text is too short."
+msgstr ""
+
+#: woocommerce-course/qa.php
+msgid "Post the question under a lesson."
+msgstr ""
+
+#: woocommerce-course/qa.php
+msgid "You have asked too many questions in the last hour; try again a bit later."
+msgstr ""
+
+#: woocommerce-course/qa.php
+msgid "Question not found."
+msgstr ""
+
+#: woocommerce-course/qa.php
+msgid "Only the course instructor or the person who asked can reply."
+msgstr ""
+
+#: woocommerce-course/qa.php
+msgid "The reply text is empty."
+msgstr ""
+
+#: woocommerce-course/qa.php
+msgid "This course's Q&A is for course participants."
+msgstr ""
+
+#: woocommerce-course/qa.php
+msgid "Log in to your account first."
+msgstr ""
+
+#: woocommerce-course/qa.php
+msgid "You are not allowed to do this."
+msgstr ""
+
+#: woocommerce-course/qa.php
+#, php-format
+msgid "New question in the course \"%s\""
+msgstr ""
+
+#: woocommerce-course/qa.php
+#, php-format
+msgid ""
+"%1$s asked in the course \"%2$s\"%3$s:\n"
+"\n"
+"%4$s\n"
+"\n"
+"%5$sReply: %6$s"
+msgstr ""
+
+#: woocommerce-course/qa.php
+msgid ""
+"This question is awaiting approval.\n"
+msgstr ""
+
+#: woocommerce-course/qa.php
+#, php-format
+msgid "Reply to your question in the course \"%s\""
+msgstr ""
+
+#: woocommerce-course/qa.php
+#, php-format
+msgid ""
+"Dear %1$s,\n"
+"\n"
+"The instructor replied to your question:\n"
+"\n"
+"\"%2$s\"\n"
+"\n"
+"%3$s\n"
+"\n"
+"View in the course: %4$s\n"
+"\n"
+"%5$s"
+msgstr ""
+
+#: woocommerce-course/qa.php
+msgid "Unanswered"
+msgstr ""
+
+#: woocommerce-course/qa.php
+msgid "Pending approval"
+msgstr ""
+
+#: woocommerce-course/qa.php
+msgid "Course Q&A"
+msgstr ""
+
+#: woocommerce-course/qa.php
+msgid "Reply saved."
+msgstr ""
+
+#: woocommerce-course/qa.php
+msgid "Search question text…"
+msgstr ""
+
+#: woocommerce-course/qa.php
+msgid "Filter"
+msgstr ""
+
+#: woocommerce-course/qa.php
+msgid "No unanswered questions. 🎉"
+msgstr ""
+
+#: woocommerce-course/qa.php woocommerce-course/quiz-results.php
+msgid "Nothing found."
+msgstr ""
+
+#: woocommerce-course/qa.php
+msgid "Whole course"
+msgstr ""
+
+#: woocommerce-course/qa.php
+msgid "Resolved"
+msgstr ""
+
+#: woocommerce-course/qa.php
+msgid "Delete reply"
+msgstr ""
+
+#: woocommerce-course/qa.php
+msgid "Delete this reply?"
+msgstr ""
+
+#: woocommerce-course/qa.php
+msgid "Your reply…"
+msgstr ""
+
+#: woocommerce-course/qa.php
+msgid "Reply and publish"
+msgstr ""
+
+#: woocommerce-course/qa.php
+msgid "Send reply"
+msgstr ""
+
+#: woocommerce-course/qa.php
+msgid "Approve and publish"
+msgstr ""
+
+#: woocommerce-course/qa.php
+msgid "Hide question"
+msgstr ""
+
+#: woocommerce-course/qa.php
+msgid "Reopen"
+msgstr ""
+
+#: woocommerce-course/qa.php
+msgid "Mark as resolved"
+msgstr ""
+
+#: woocommerce-course/qa.php
+msgid "Delete question"
+msgstr ""
+
+#: woocommerce-course/qa.php
+msgid "Delete this question and all its replies?"
+msgstr ""
+
+#: woocommerce-course/qa.php
+msgid "View in the course"
+msgstr ""
+
+#: woocommerce-course/qa.php woocommerce-course/quiz-results.php woocommerce-course/watch-tracking.php
+msgid "Previous"
+msgstr ""
+
+#: woocommerce-course/qa.php woocommerce-course/quiz-results.php woocommerce-course/watch-tracking.php
+#, php-format
+msgid "Page %1$s of %2$s"
+msgstr ""
+
+#: woocommerce-course/qa.php woocommerce-course/quiz-results.php woocommerce-course/watch-tracking.php
+msgid "Next"
+msgstr ""
+
+#: woocommerce-course/qa.php
+#, php-format
+msgid "%s questions are waiting for your reply."
+msgstr ""
+
+#: woocommerce-course/qa.php
+msgid "You have no unanswered questions."
+msgstr ""
+
+#: woocommerce-course/qa.php
+msgid "Answer questions"
+msgstr ""
+
+#: woocommerce-course/qa.php woocommerce-course/quiz-results.php
+msgid "Back to the instructor dashboard"
+msgstr ""
+
+#: woocommerce-course/quiz-builder.php
+msgid "Uncategorized"
+msgstr ""
+
+#: woocommerce-course/quiz-builder.php
+msgid "You do not have access to this quiz."
+msgstr ""
+
+#: woocommerce-course/quiz-builder.php woocommerce-course/quiz-frontend.php woocommerce-course/quiz-results.php
+msgid "Quiz not found."
+msgstr ""
+
+#: woocommerce-course/quiz-builder.php
+msgid "Creating the quiz failed."
+msgstr ""
+
+#: woocommerce-course/quiz-builder.php
+msgid "Quiz deleted."
+msgstr ""
+
+#: woocommerce-course/quiz-builder.php
+msgid "Loading the quiz builder…"
+msgstr ""
+
+#: woocommerce-course/quiz-course.php
+msgid "This quiz attempt was not found."
+msgstr ""
+
+#: woocommerce-course/quiz-course.php
+#, php-format
+msgid "The result of the quiz \"%s\" is out"
+msgstr ""
+
+#: woocommerce-course/quiz-course.php
+#, php-format
+msgid ""
+"Dear %s,\n"
+"\n"
+"Your essay answers in the quiz \"%s\" were graded.\n"
+"Final score: %s%% — %s\n"
+msgstr ""
+
+#: woocommerce-course/quiz-course.php
+msgid "Instructor's comment:"
+msgstr ""
+
+#: woocommerce-course/quiz-course.php
+msgid "View grades:"
+msgstr ""
+
+#: woocommerce-course/quiz-course.php
+msgid "My grades"
+msgstr ""
+
+#: woocommerce-course/quiz-course.php
+msgid "Log in to your account to see your grades."
+msgstr ""
+
+#: woocommerce-course/quiz-course.php woocommerce-course/quiz-results.php
+msgid "Not taken"
+msgstr ""
+
+#: woocommerce-course/quiz-course.php woocommerce-course/quiz-frontend.php
+msgid "Course final quiz"
+msgstr ""
+
+#: woocommerce-course/quiz-course.php
+#, php-format
+msgid "%s attempts"
+msgstr ""
+
+#: woocommerce-course/quiz-course.php
+#, php-format
+msgid "Last: %s%%"
+msgstr ""
+
+#: woocommerce-course/quiz-course.php
+msgid "Essay question awaiting grading"
+msgstr ""
+
+#: woocommerce-course/quiz-course.php
+#, php-format
+msgid "Pass at %s%%"
+msgstr ""
+
+#: woocommerce-course/quiz-course.php
+#, php-format
+msgid "Instructor's comment (final score %s%%)"
+msgstr ""
+
+#: woocommerce-course/quiz-course.php
+#, php-format
+msgid "%1$s of %2$s quizzes passed"
+msgstr ""
+
+#: woocommerce-course/quiz-course.php
+#, php-format
+msgid "Average score %s%%"
+msgstr ""
+
+#: woocommerce-course/quiz-course.php
+msgid "Go to the course"
+msgstr ""
+
+#: woocommerce-course/quiz-course.php
+msgid "There are no quizzes in your courses yet."
+msgstr ""
+
+#: woocommerce-course/quiz-frontend.php
+msgid "You must enrol in the course to take this quiz"
+msgstr ""
+
+#: woocommerce-course/quiz-frontend.php
+msgid "You have used all allowed attempts for this quiz."
+msgstr ""
+
+#: woocommerce-course/quiz-frontend.php
+msgid "This quiz's questions have changed; reopen the page and start again."
+msgstr ""
+
+#: woocommerce-course/quiz-frontend.php
+msgid "This quiz has no questions yet."
+msgstr ""
+
+#: woocommerce-course/quiz-results.php
+msgid "You do not have the required permission or the request has expired."
+msgstr ""
+
+#: woocommerce-course/quiz-results.php
+msgid "The score was saved and the result was announced to the student."
+msgstr ""
+
+#: woocommerce-course/quiz-results.php
+msgid "The student was given one more attempt."
+msgstr ""
+
+#: woocommerce-course/quiz-results.php
+msgid "This student's results in this quiz were cleared."
+msgstr ""
+
+#: woocommerce-course/quiz-results.php
+msgid "Saving failed; try again."
+msgstr ""
+
+#: woocommerce-course/quiz-results.php
+msgid "Deleted user"
+msgstr ""
+
+#: woocommerce-course/quiz-results.php
+msgid "Quiz results and grading"
+msgstr ""
+
+#: woocommerce-course/quiz-results.php
+msgid "Preparing the list of previous results… part of it is done each time the dashboard is opened."
+msgstr ""
+
+#: woocommerce-course/quiz-results.php
+msgid "Students who took part"
+msgstr ""
+
+#: woocommerce-course/quiz-results.php
+msgid "Average score"
+msgstr ""
+
+#: woocommerce-course/quiz-results.php
+msgid "Essay question grading queue"
+msgstr ""
+
+#: woocommerce-course/quiz-results.php
+msgid "No answers are awaiting grading. 🎉"
+msgstr ""
+
+#: woocommerce-course/quiz-results.php
+msgid "Essay question"
+msgstr ""
+
+#: woocommerce-course/quiz-results.php
+msgid "Submitted at"
+msgstr ""
+
+#: woocommerce-course/quiz-results.php
+msgid "Grade"
+msgstr ""
+
+#: woocommerce-course/quiz-results.php
+msgid "Search quiz name or number…"
+msgstr ""
+
+#: woocommerce-course/quiz-results.php
+#, php-format
+msgid "No quiz found with \"%s\"."
+msgstr ""
+
+#: woocommerce-course/quiz-results.php
+msgid "There are no quizzes."
+msgstr ""
+
+#: woocommerce-course/quiz-results.php
+msgid "Average"
+msgstr ""
+
+#: woocommerce-course/quiz-results.php
+msgid "Results"
+msgstr ""
+
+#: woocommerce-course/quiz-results.php
+msgid "All quizzes"
+msgstr ""
+
+#: woocommerce-course/quiz-results.php
+msgid "Excel export (CSV)"
+msgstr ""
+
+#: woocommerce-course/quiz-results.php woocommerce-course/watch-tracking.php
+#, php-format
+msgid "%s students"
+msgstr ""
+
+#: woocommerce-course/quiz-results.php
+msgid "Best"
+msgstr ""
+
+#: woocommerce-course/quiz-results.php
+msgid "Last"
+msgstr ""
+
+#: woocommerce-course/quiz-results.php
+msgid "Attempts"
+msgstr ""
+
+#: woocommerce-course/quiz-results.php
+msgid "Last attempt"
+msgstr ""
+
+#: woocommerce-course/quiz-results.php
+#, php-format
+msgid "%s attempts left"
+msgstr ""
+
+#: woocommerce-course/quiz-results.php woocommerce-course/watch-tracking.php
+msgid "Details"
+msgstr ""
+
+#: woocommerce-course/quiz-results.php
+msgid "No items found."
+msgstr ""
+
+#: woocommerce-course/quiz-results.php
+msgid "Best score"
+msgstr ""
+
+#: woocommerce-course/quiz-results.php
+msgid "Last score"
+msgstr ""
+
+#: woocommerce-course/quiz-results.php
+msgid "Number of attempts"
+msgstr ""
+
+#: woocommerce-course/quiz-results.php
+msgid "Left"
+msgstr ""
+
+#: woocommerce-course/quiz-results.php
+msgid "Pass date"
+msgstr ""
+
+#: woocommerce-course/quiz-results.php
+msgid "+ One more attempt"
+msgstr ""
+
+#: woocommerce-course/quiz-results.php
+msgid "Clear all of this student's results and answers in this quiz?"
+msgstr ""
+
+#: woocommerce-course/quiz-results.php
+msgid "Clear results (start over)"
+msgstr ""
+
+#: woocommerce-course/quiz-results.php
+msgid "Attempt details were not recorded for this student (older results only have the overall score)."
+msgstr ""
+
+#: woocommerce-course/quiz-results.php
+#, php-format
+msgid "Attempt %s"
+msgstr ""
+
+#: woocommerce-course/quiz-results.php
+#, php-format
+msgid "Automatic part: %s%%"
+msgstr ""
+
+#: woocommerce-course/quiz-results.php
+#, php-format
+msgid "Final score: %s%%"
+msgstr ""
+
+#: woocommerce-course/quiz-results.php
+msgid "Essay"
+msgstr ""
+
+#: woocommerce-course/quiz-results.php
+msgid "Grade essay questions"
+msgstr ""
+
+#: woocommerce-course/quiz-results.php
+#, php-format
+msgid "Automatic part: %1$s of %2$s points"
+msgstr ""
+
+#: woocommerce-course/quiz-results.php
+msgid "(no answer)"
+msgstr ""
+
+#: woocommerce-course/quiz-results.php
+msgid "Reference answer:"
+msgstr ""
+
+#: woocommerce-course/quiz-results.php
+#, php-format
+msgid "out of %s"
+msgstr ""
+
+#: woocommerce-course/quiz-results.php
+msgid "Feedback to the student (optional)…"
+msgstr ""
+
+#: woocommerce-course/quiz-results.php
+msgid "Overall comment about this quiz (optional)…"
+msgstr ""
+
+#: woocommerce-course/quiz-results.php
+msgid "Save score and notify the student"
+msgstr ""
+
+#: woocommerce-course/quiz-results.php
+msgid "Update score"
+msgstr ""
+
+#: woocommerce-course/quiz-results.php
+#, php-format
+msgid "Graded on %1$s by %2$s"
+msgstr ""
+
+#: woocommerce-course/quiz-results.php
+msgid "Quiz results"
+msgstr ""
+
+#: woocommerce-course/quiz-results.php
+msgid "Quiz grading queue"
+msgstr ""
+
+#: woocommerce-course/quiz-results.php
+msgid "No answers are awaiting grading."
+msgstr ""
+
+#: woocommerce-course/quiz-results.php
+msgid "All results and grades"
+msgstr ""
+
+#: woocommerce-course/spotplayer-license.php
+#, php-format
+msgid "<b>Nias Course Builder:</b> the original \"SpotPlayer\" plugin is also active. When Nias Course Builder's \"SpotPlayer License\" is on, having both active may create two licenses for one order. The original plugin's licenses and settings are read automatically; after <a href=\"%s\">migration</a>, deactivate the original plugin."
+msgstr ""
+
+#: woocommerce-course/spotplayer-license.php
+msgid "Compatibility with previous licenses (original SpotPlayer plugin)"
+msgstr ""
+
+#: woocommerce-course/spotplayer-license.php
+#, php-format
+msgid "Data from the original SpotPlayer plugin was found on this site: %1$s orders with issued licenses and %2$s products with course IDs%3$s. These are already read automatically (previous licenses appear in \"My licenses\" and no new license is created for those orders). The button below copies them into the Nias Course Builder structure so they remain after the original plugin is deactivated or deleted; the original plugin's data is not touched."
+msgstr ""
+
+#: woocommerce-course/spotplayer-license.php
+msgid " and its settings (API key, license creation code, …)"
+msgstr ""
+
+#: woocommerce-course/spotplayer-license.php
+#, php-format
+msgid "Not migrated: %1$s orders and %2$s products"
+msgstr ""
+
+#: woocommerce-course/spotplayer-license.php
+msgid "All previous licenses and products have been migrated."
+msgstr ""
+
+#: woocommerce-course/spotplayer-license.php
+msgid "Migrate previous licenses"
+msgstr ""
+
+#: woocommerce-course/spotplayer-license.php
+msgid "Neither WooCommerce nor EDD is active"
+msgstr ""
+
+#: woocommerce-course/spotplayer-license.php
+msgid "To use the SpotPlayer license, the WooCommerce (or EDD) plugin must be active."
+msgstr ""
+
+#: woocommerce-course/spotplayer-license.php
+msgid "Connect to SpotPlayer"
+msgstr ""
+
+#: woocommerce-course/spotplayer-license.php
+msgid "API key"
+msgstr ""
+
+#: woocommerce-course/spotplayer-license.php
+msgid "The API key is available in the SpotPlayer dashboard. Note: changing your SpotPlayer password changes the API key."
+msgstr ""
+
+#: woocommerce-course/spotplayer-license.php
+msgid "Rebranding domain"
+msgstr ""
+
+#: woocommerce-course/spotplayer-license.php
+msgid "Only if you have enabled the rebranding service, enter the domain as app.example.com."
+msgstr ""
+
+#: woocommerce-course/spotplayer-license.php
+msgid "Main color"
+msgstr ""
+
+#: woocommerce-course/spotplayer-license.php
+msgid "License creation code"
+msgstr ""
+
+#: woocommerce-course/spotplayer-license.php
+msgid "The code used to create the license. To restore the default, leave this field empty and save."
+msgstr ""
+
+#: woocommerce-course/spotplayer-license.php
+msgid "Code output for the latest order:"
+msgstr ""
+
+#: woocommerce-course/spotplayer-license.php
+msgid "License creation settings"
+msgstr ""
+
+#: woocommerce-course/spotplayer-license.php
+msgid "Test license mode"
+msgstr ""
+
+#: woocommerce-course/spotplayer-license.php
+msgid "With this option on, test licenses are created after purchases and each new test license replaces the previous one. <b style=\"color:#b91c1c\">Be sure to turn this option off after testing.</b>"
+msgstr ""
+
+#: woocommerce-course/spotplayer-license.php
+msgid "Test"
+msgstr ""
+
+#: woocommerce-course/spotplayer-license.php
+msgid "Do not create licenses for old orders"
+msgstr ""
+
+#: woocommerce-course/spotplayer-license.php
+msgid "When enabled, no license is created for orders placed before this option was enabled."
+msgstr ""
+
+#: woocommerce-course/spotplayer-license.php
+msgid "Create the license after manually completing the order"
+msgstr ""
+
+#: woocommerce-course/spotplayer-license.php
+msgid "When enabled, the order stays \"Processing\" after payment and no license is created until it is approved; useful to check the name and watermark before creating the license."
+msgstr ""
+
+#: woocommerce-course/spotplayer-license.php
+msgid "Watermark style"
+msgstr ""
+
+#: woocommerce-course/spotplayer-license.php
+msgid "Style of the watermark texts of licenses created from now on. Empty fields use the SpotPlayer panel defaults."
+msgstr ""
+
+#: woocommerce-course/spotplayer-license.php
+msgid "Font size"
+msgstr ""
+
+#: woocommerce-course/spotplayer-license.php
+#, php-format
+msgid "Opacity (%)"
+msgstr ""
+
+#: woocommerce-course/spotplayer-license.php
+msgid "Text repetition"
+msgstr ""
+
+#: woocommerce-course/spotplayer-license.php
+msgid "Margin"
+msgstr ""
+
+#: woocommerce-course/spotplayer-license.php
+msgid "Position"
+msgstr ""
+
+#: woocommerce-course/spotplayer-license.php
+msgid "Movement (seconds)"
+msgstr ""
+
+#: woocommerce-course/spotplayer-license.php
+msgid "The position is a bit number per the SpotPlayer API guide; 511 means showing at all points of the screen. The watermark color is white and only its opacity is set."
+msgstr ""
+
+#: woocommerce-course/spotplayer-license.php
+msgid "License configuration"
+msgstr ""
+
+#: woocommerce-course/spotplayer-license.php
+msgid "Note: the SpotPlayer panel accepts these options only when the license is created and they cannot be changed afterwards. Changing these settings only affects licenses created from now on."
+msgstr ""
+
+#: woocommerce-course/spotplayer-license.php
+msgid "Disabled license"
+msgstr ""
+
+#: woocommerce-course/spotplayer-license.php
+msgid "The license is created but disabled and the user cannot use it."
+msgstr ""
+
+#: woocommerce-course/spotplayer-license.php
+msgid "Show disabled content"
+msgstr ""
+
+#: woocommerce-course/spotplayer-license.php
+msgid "Content the license has no access to is not shown in the player's list."
+msgstr ""
+
+#: woocommerce-course/spotplayer-license.php
+msgid "Show the app while recording"
+msgstr ""
+
+#: woocommerce-course/spotplayer-license.php
+msgid "Lets the player's image be visible while the screen is recorded. By default the player blocks screen recording. (No effect on Linux and the web version.)"
+msgstr ""
+
+#: woocommerce-course/spotplayer-license.php
+msgid "Run in a virtual machine"
+msgstr ""
+
+#: woocommerce-course/spotplayer-license.php
+msgid "Allows the player to run inside a virtual machine."
+msgstr ""
+
+#: woocommerce-course/spotplayer-license.php
+msgid "Do not check processes"
+msgstr ""
+
+#: woocommerce-course/spotplayer-license.php
+msgid "The player does not check the system's running processes."
+msgstr ""
+
+#: woocommerce-course/spotplayer-license.php
+msgid "Audio watermark"
+msgstr ""
+
+#: woocommerce-course/spotplayer-license.php
+msgid "The buyer's mobile number is embedded in the content as an audio watermark. The first watermark text that is a valid number is used."
+msgstr ""
+
+#: woocommerce-course/spotplayer-license.php
+msgid "Default access period"
+msgstr ""
+
+#: woocommerce-course/spotplayer-license.php
+msgid "For courses without a separate access period. Empty or 0 = no expiry, number = days from activation, Gregorian date as YYYY-MM-DD = absolute expiry, and -1 = access disabled."
+msgstr ""
+
+#: woocommerce-course/spotplayer-license.php
+msgid "Display settings"
+msgstr ""
+
+#: woocommerce-course/spotplayer-license.php
+msgid "Show the \"Watch in the web player\" section"
+msgstr ""
+
+#: woocommerce-course/spotplayer-license.php
+msgid "If the web version is enabled for the license, the web player is shown on your site. When off, this section is not shown to the user."
+msgstr ""
+
+#: woocommerce-course/spotplayer-license.php
+msgid "Show the web version only"
+msgstr ""
+
+#: woocommerce-course/spotplayer-license.php
+msgid "Only the web version is shown; the native versions and the download list are not shown."
+msgstr ""
+
+#: woocommerce-course/spotplayer-license.php
+msgid "Show the \"Download videos\" section"
+msgstr ""
+
+#: woocommerce-course/spotplayer-license.php
+msgid "Since the app downloads and shows the files automatically, enabling this option is not recommended, and user support in this mode is the publisher's responsibility. In \"Show the web version only\" mode this section is not shown."
+msgstr ""
+
+#: woocommerce-course/spotplayer-license.php
+msgid "Show \"My licenses\" in the WooCommerce account menu"
+msgstr ""
+
+#: woocommerce-course/spotplayer-license.php
+msgid "An item in the account menu linking to the courses shortcode page."
+msgstr ""
+
+#: woocommerce-course/spotplayer-license.php
+msgid "Remove the Ostadyar theme's purchased courses link from the account menu"
+msgstr ""
+
+#: woocommerce-course/spotplayer-license.php
+msgid "This shortcode shows all of the user's licensed courses with online viewing and license download."
+msgstr ""
+
+#: woocommerce-course/spotplayer-license.php
+msgid "Show the user's courses"
+msgstr ""
+
+#: woocommerce-course/spotplayer-license.php
+msgid "Powered by <span style=\"color:#3858e9;font-weight:600\">SpotPlayer</span> — integrated with Nias Course Builder."
+msgstr ""
+
+#: woocommerce-course/spotplayer-license.php
+msgid "There are no active orders. Create an order to test."
+msgstr ""
+
+#: woocommerce-course/spotplayer-license.php
+msgid "Debug information"
+msgstr ""
+
+#: woocommerce-course/spotplayer-license.php
+msgid "The name value is empty. Use another field for the name."
+msgstr ""
+
+#: woocommerce-course/spotplayer-license.php
+msgid "The first watermark value is empty. Use another field."
+msgstr ""
+
+#: woocommerce-course/spotplayer-license.php
+msgid "Check and fix the syntax of the entered code and save the settings."
+msgstr ""
+
+#: woocommerce-course/spotplayer-license.php
+msgid "The WooCommerce $order variable contains the order data (default methods and get_meta for metadata)."
+msgstr ""
+
+#: woocommerce-course/spotplayer-license.php
+msgid "The WordPress $user variable contains the buyer's data (the get method and default fields)."
+msgstr ""
+
+#: woocommerce-course/spotplayer-license.php
+msgid "To trace watermarks, be sure to use a phone verification system (e.g. Digits) at sign-up."
+msgstr ""
+
+#: woocommerce-course/spotplayer-license.php
+msgid "The license for this order has been created."
+msgstr ""
+
+#: woocommerce-course/spotplayer-license.php
+msgid "No license has been created for this order yet."
+msgstr ""
+
+#: woocommerce-course/spotplayer-license.php
+msgid "View in the SpotPlayer panel"
+msgstr ""
+
+#: woocommerce-course/spotplayer-license.php
+msgid "License ID"
+msgstr ""
+
+#: woocommerce-course/spotplayer-license.php
+msgid "24-character ID"
+msgstr ""
+
+#: woocommerce-course/spotplayer-license.php
+msgid "Fetch by ID"
+msgstr ""
+
+#: woocommerce-course/spotplayer-license.php
+msgid "If the license was already created in the SpotPlayer panel, enter its ID and fetch it."
+msgstr ""
+
+#: woocommerce-course/spotplayer-license.php
+msgid "\"Save changes in the panel\" updates the license name."
+msgstr ""
+
+#: woocommerce-course/spotplayer-license.php
+#, php-format
+msgid "Watermark %d"
+msgstr ""
+
+#: woocommerce-course/spotplayer-license.php
+msgid "License key"
+msgstr ""
+
+#: woocommerce-course/spotplayer-license.php
+msgid "Copy key"
+msgstr ""
+
+#: woocommerce-course/spotplayer-license.php
+msgid "Manage the license in the panel"
+msgstr ""
+
+#: woocommerce-course/spotplayer-license.php
+msgid "No change"
+msgstr ""
+
+#: woocommerce-course/spotplayer-license.php
+msgid "Total number of devices the buyer can use. This value takes precedence over each platform's limit."
+msgstr ""
+
+#: woocommerce-course/spotplayer-license.php
+msgid "At most 9 per platform. Empty = follow the total limit, and 0 = that platform is disabled."
+msgstr ""
+
+#: woocommerce-course/spotplayer-license.php
+msgid "Each line: \"course ID:range\" — or just a range for all courses of the order. Empty = no change."
+msgstr ""
+
+#: woocommerce-course/spotplayer-license.php
+msgid "Courses access period"
+msgstr ""
+
+#: woocommerce-course/spotplayer-license.php
+msgid "Each line: \"course ID:value\" — or just a value for all courses of the order. Value: 0 = no expiry, number = days from activation, YYYY-MM-DD = expiry date, -1 = cut access. Empty = no change."
+msgstr ""
+
+#: woocommerce-course/spotplayer-license.php
+msgid "Save changes in the panel"
+msgstr ""
+
+#: woocommerce-course/spotplayer-license.php
+msgid "Update from the panel"
+msgstr ""
+
+#: woocommerce-course/spotplayer-license.php
+msgid "Delete license data from WordPress"
+msgstr ""
+
+#: woocommerce-course/spotplayer-license.php
+msgid "Create license"
+msgstr ""
+
+#: woocommerce-course/spotplayer-license.php
+msgid "Reset data"
+msgstr ""
+
+#: woocommerce-course/spotplayer-license.php
+msgid "IDs of one or more courses separated by , ."
+msgstr ""
+
+#: woocommerce-course/spotplayer-license.php
+msgid "SpotPlayer information"
+msgstr ""
+
+#: woocommerce-course/spotplayer-license.php
+msgid "The list of player versions is not available."
+msgstr ""
+
+#: woocommerce-course/spotplayer-license.php
+msgid "Download the player from the SpotPlayer site"
+msgstr ""
+
+#: woocommerce-course/spotplayer-license.php
+msgid "The course file list is not available. The player downloads the files automatically."
+msgstr ""
+
+#: woocommerce-course/spotplayer-license.php
+msgid "Open the list in SpotPlayer"
+msgstr ""
+
+#: woocommerce-course/spotplayer-license.php
+msgid "Try again"
+msgstr ""
+
+#: woocommerce-course/spotplayer-license.php
+msgid "This course's content carries visible and hidden watermarks; any copying or sharing of it can be traced and will lead to legal action."
+msgstr ""
+
+#: woocommerce-course/spotplayer-license.php
+msgid "Watch in the web player"
+msgstr ""
+
+#: woocommerce-course/spotplayer-license.php
+msgid "After activating the license in this browser, you can only watch the course on this device and browser, and one device is deducted from the license capacity."
+msgstr ""
+
+#: woocommerce-course/spotplayer-license.php
+msgid "Watch in the app"
+msgstr ""
+
+#: woocommerce-course/spotplayer-license.php
+msgid "First download and install the player for your operating system. Then on the add new course page enter the license key, choose the storage location and confirm the form."
+msgstr ""
+
+#: woocommerce-course/spotplayer-license.php
+msgid "Download and install the player"
+msgstr ""
+
+#: woocommerce-course/spotplayer-license.php
+msgid "Copy the key and enter it in the player"
+msgstr ""
+
+#: woocommerce-course/spotplayer-license.php
+msgid "Download videos"
+msgstr ""
+
+#: woocommerce-course/spotplayer-license.php
+msgid "Although the player downloads and shows the course files automatically, you can download the files separately from the links below."
+msgstr ""
+
+#: woocommerce-course/spotplayer-license.php
+msgid "My licenses"
+msgstr ""
+
+#: woocommerce-course/watch-tracking.php
+msgid "Video watch report"
+msgstr ""
+
+#: woocommerce-course/watch-tracking.php
+#, php-format
+msgid "Lesson %d"
+msgstr ""
+
+#: woocommerce-course/watch-tracking.php
+#, php-format
+msgid "Percentages are the share of each video the student really watched (not the playhead position). A lesson with %s%% watched counts as \"completed\"."
+msgstr ""
+
+#: woocommerce-course/watch-tracking.php
+msgid "Search student name or email…"
+msgstr ""
+
+#: woocommerce-course/watch-tracking.php
+msgid "Loading…"
+msgstr ""
+
+#: woocommerce-course/watch-tracking.php
+msgid "Average watch of each lesson (to find where students drop off)"
+msgstr ""
+
+#: woocommerce-course/watch-tracking.php
+msgid "Calculate each lesson's average"
+msgstr ""
+
+#: woocommerce-course/watch-tracking.php
+msgid "(calculated over all students and kept for up to 30 minutes)"
+msgstr ""
+
+#: woocommerce-course/watch-tracking.php
+msgid "Loading the report failed."
+msgstr ""
+
+#: woocommerce-course/watch-tracking.php
+#, php-format
+msgid "No student found with \"%s\"."
+msgstr ""
+
+#: woocommerce-course/watch-tracking.php
+msgid "No student has watched this course's videos in the Nias player yet. After watching, each student's real watched percentage of each lesson is shown here."
+msgstr ""
+
+#: woocommerce-course/watch-tracking.php
+msgid "Average video watching"
+msgstr ""
+
+#: woocommerce-course/watch-tracking.php
+msgid "Fully watched lessons"
+msgstr ""
+
+#: woocommerce-course/watch-tracking.php
+msgid "Last watched"
+msgstr ""
+
+#: woocommerce-course/watch-tracking.php
+msgid "Per lesson"
+msgstr ""
+
+#: woocommerce-course/watch-tracking.php
+msgid "No data."
+msgstr ""
+
+#. Description of the plugin
+#: nias-course-widget.php
+msgid "Build, sell and run online courses: lessons and chapters, modern course view, quizzes, certificates, instructors, SpotPlayer licenses and more; with or without WooCommerce and Elementor. Free forever ❤️"
+msgstr ""

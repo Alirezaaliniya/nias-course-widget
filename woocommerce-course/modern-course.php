@@ -124,7 +124,7 @@ function nias_modern_course_file_name($url)
     $path = parse_url((string) $url, PHP_URL_PATH);
     $base = $path ? basename($path) : '';
     $base = urldecode($base);
-    return $base !== '' ? $base : __('دانلود فایل', 'nias-course-widget');
+    return $base !== '' ? $base : __('Download file', 'nias-course-widget');
 }
 
 /**
@@ -481,13 +481,13 @@ function nias_modern_course_build_data($product_id)
             $video_sources = array();
             $quals = isset($les['qualities']) ? (array) $les['qualities'] : array();
             if ($video_kind === 'file' && $video_url !== '' && $quals && !$promoted) {
-                $main_label      = isset($les['qualityMain']) && $les['qualityMain'] !== '' ? $les['qualityMain'] : __('کیفیت اصلی', 'nias-course-widget');
+                $main_label      = isset($les['qualityMain']) && $les['qualityMain'] !== '' ? $les['qualityMain'] : __('Main quality', 'nias-course-widget');
                 $video_sources[] = array('label' => $main_label, 'height' => nias_lesson_quality_height($main_label), 'src' => $video_url);
                 foreach ($quals as $q) {
                     if (empty($q['url'])) {
                         continue;
                     }
-                    $label = $q['label'] !== '' ? $q['label'] : __('کیفیت دیگر', 'nias-course-widget');
+                    $label = $q['label'] !== '' ? $q['label'] : __('Other quality', 'nias-course-widget');
                     $src   = function_exists('nias_secure_media_url') ? nias_secure_media_url($q['url'], $product_id, 'video', !$private) : $q['url'];
                     $video_sources[] = array('label' => $label, 'height' => nias_lesson_quality_height($label), 'src' => $src);
                 }
@@ -558,7 +558,7 @@ function nias_modern_course_build_data($product_id)
         'courseTitle'  => $product->post_title,
         'courseSubtitle' => wp_trim_words(wp_strip_all_tags($product->post_excerpt ? $product->post_excerpt : $product->post_content), 32, '…'),
         'instructor'   => $instructor,
-        'studentName'  => ($user && $user->ID) ? $user->display_name : __('کاربر مهمان', 'nias-course-widget'),
+        'studentName'  => ($user && $user->ID) ? $user->display_name : __('Guest user', 'nias-course-widget'),
         'purchased'    => $purchased,
         'buyUrl'       => function_exists('nias_course_access_url') ? nias_course_access_url($product_id) : get_permalink($product_id),
         'free'         => $free, // «دوره» without a sale: private lessons only need a login
@@ -3003,7 +3003,7 @@ function nias_modern_course_button_shortcode($atts)
     }
 
     $url   = add_query_arg(NIAS_MODERN_QV, '1', get_permalink($product_id));
-    $label = ($atts['text'] !== '') ? $atts['text'] : __('ورود به محیط دوره مدرن', 'nias-course-widget');
+    $label = ($atts['text'] !== '') ? $atts['text'] : __('Enter the modern course view', 'nias-course-widget');
     $class = trim('nmc-enter-btn ' . sanitize_text_field($atts['class']));
 
     ob_start();
@@ -3054,7 +3054,7 @@ function nias_modern_course_sticky_button()
         <a class="nmc-fab" href="<?php echo esc_url($url); ?>">
             <span class="nmc-fab-dot"></span>
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg>
-            <span><?php echo esc_html__('ورود به محیط دوره مدرن', 'nias-course-widget'); ?></span>
+            <span><?php echo esc_html__('Enter the modern course view', 'nias-course-widget'); ?></span>
         </a>
     </div>
     <?php
@@ -3118,7 +3118,7 @@ function nias_modern_course_takeover()
     <div class="nmc-sa-bar">
         <a class="nmc-sa-back" href="<?php echo esc_url($back); ?>">
             <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg>
-            <span><?php echo esc_html__('بازگشت به صفحه محصول', 'nias-course-widget'); ?></span>
+            <span><?php echo esc_html__('Back to the product page', 'nias-course-widget'); ?></span>
         </a>
         <span class="nmc-sa-title"><?php echo esc_html($title); ?></span>
     </div>

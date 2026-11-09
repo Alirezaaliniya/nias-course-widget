@@ -181,8 +181,8 @@ function nias_meta_register_settings_page()
     }
     add_submenu_page(
         'nias-course-settings',
-        __('تنظیمات متا', 'nias-course-widget'),
-        __('متا', 'nias-course-widget'),
+        __('Meta settings', 'nias-course-widget'),
+        __('Meta', 'nias-course-widget'),
         'manage_options',
         'nias-course-meta',
         'nias_course_render_meta_settings'
@@ -212,17 +212,17 @@ function nias_course_render_meta_settings()
             <form method="post">
                 <?php wp_nonce_field('nias_meta_settings', 'nias_meta_nonce'); ?>
 
-                <?php nias_set_card_open('<svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M4 7h16M4 12h16M4 17h10" stroke="#3858e9" stroke-width="1.8" stroke-linecap="round"/></svg>', __('متاهای سفارشی', 'nias-course-widget')); ?>
+                <?php nias_set_card_open('<svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M4 7h16M4 12h16M4 17h10" stroke="#3858e9" stroke-width="1.8" stroke-linecap="round"/></svg>', __('Custom metas', 'nias-course-widget')); ?>
                     <div class="nias-card-pad">
                         <div class="nias-row-desc" style="margin-bottom:14px">
-                            <?php echo esc_html__('برای هر متا یک نام و یک کلید (لاتین) تعریف کنید. سپس می‌توانید مقدار هر متا را در صفحهٔ «ویرایش جلسات و فصل‌ها» هر محصول وارد کرده و با شورت‌کد آن را نمایش دهید.', 'nias-course-widget'); ?>
+                            <?php echo esc_html__('Define a name and a (Latin) key for each meta. Then you can enter each meta\'s value on each product\'s "Edit lessons and chapters" page and show it with its shortcode.', 'nias-course-widget'); ?>
                         </div>
 
                         <div id="nias-meta-rows" class="nias-meta-rows"></div>
 
                         <button type="button" class="nias-btn-soft" id="nias-meta-add">
                             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>
-                            <?php echo esc_html__('افزودن متا', 'nias-course-widget'); ?>
+                            <?php echo esc_html__('Add meta', 'nias-course-widget'); ?>
                         </button>
                     </div>
                 <?php nias_set_card_close(); ?>
@@ -230,7 +230,7 @@ function nias_course_render_meta_settings()
                 <?php nias_set_save_button('nias_save_meta_settings'); ?>
             </form>
 
-            <div class="nias-foot"><?php echo wp_kses_post(__('سپاسگزاریم از اینکه سایت خود را با <span style="color:#3858e9;font-weight:600">وردپرس</span> ساخته‌اید.', 'nias-course-widget')); ?></div>
+            <div class="nias-foot"><?php echo wp_kses_post(__('Thank you for building your site with <span style="color:#3858e9;font-weight:600">WordPress</span>.', 'nias-course-widget')); ?></div>
         </div>
         <?php nias_settings_ads_sidebar(); ?>
         </div>
@@ -258,16 +258,16 @@ function nias_course_render_meta_settings()
     jQuery(function ($) {
         var DEFS = <?php echo wp_json_encode($defs); ?> || [];
         var L = {
-            name: <?php echo wp_json_encode(__('نام متا', 'nias-course-widget')); ?>,
-            namePh: <?php echo wp_json_encode(__('مثلاً: مدت دوره', 'nias-course-widget')); ?>,
-            key: <?php echo wp_json_encode(__('کلید (لاتین)', 'nias-course-widget')); ?>,
-            keyPh: <?php echo wp_json_encode(__('مثلاً: course_duration', 'nias-course-widget')); ?>,
-            id: <?php echo wp_json_encode(__('شناسه', 'nias-course-widget')); ?>,
-            sc: <?php echo wp_json_encode(__('شورت‌کد', 'nias-course-widget')); ?>,
-            copy: <?php echo wp_json_encode(__('کپی', 'nias-course-widget')); ?>,
-            copied: <?php echo wp_json_encode(__('کپی شد', 'nias-course-widget')); ?>,
-            del: <?php echo wp_json_encode(__('حذف', 'nias-course-widget')); ?>,
-            keyHint: <?php echo wp_json_encode(__('یک کلید لاتین وارد کنید', 'nias-course-widget')); ?>
+            name: <?php echo wp_json_encode(__('Meta name', 'nias-course-widget')); ?>,
+            namePh: <?php echo wp_json_encode(__('E.g.: Course duration', 'nias-course-widget')); ?>,
+            key: <?php echo wp_json_encode(__('Key (Latin)', 'nias-course-widget')); ?>,
+            keyPh: <?php echo wp_json_encode(__('E.g.: course_duration', 'nias-course-widget')); ?>,
+            id: <?php echo wp_json_encode(__('ID', 'nias-course-widget')); ?>,
+            sc: <?php echo wp_json_encode(__('Shortcode', 'nias-course-widget')); ?>,
+            copy: <?php echo wp_json_encode(__('Copy', 'nias-course-widget')); ?>,
+            copied: <?php echo wp_json_encode(__('Copied', 'nias-course-widget')); ?>,
+            del: <?php echo wp_json_encode(__('Remove', 'nias-course-widget')); ?>,
+            keyHint: <?php echo wp_json_encode(__('Enter a Latin key', 'nias-course-widget')); ?>
         };
         var $rows = $('#nias-meta-rows');
 
@@ -379,13 +379,13 @@ function nias_meta_render_curriculum_box($product_id)
             <span class="nc-meta-ic">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16M4 12h16M4 17h10"/></svg>
             </span>
-            <span class="nc-meta-title"><?php echo esc_html__('متاهای سفارشی محصول', 'nias-course-widget'); ?></span>
+            <span class="nc-meta-title"><?php echo esc_html__('Product custom metas', 'nias-course-widget'); ?></span>
         </div>
 
         <?php if (empty($defs)) : ?>
             <div class="nc-meta-empty">
-                <?php echo esc_html__('هنوز متایی تعریف نشده است.', 'nias-course-widget'); ?>
-                <a href="<?php echo esc_url(admin_url('admin.php?page=nias-course-meta')); ?>" target="_blank" rel="noopener"><?php echo esc_html__('تعریف متا', 'nias-course-widget'); ?> ↗</a>
+                <?php echo esc_html__('No meta has been defined yet.', 'nias-course-widget'); ?>
+                <a href="<?php echo esc_url(admin_url('admin.php?page=nias-course-meta')); ?>" target="_blank" rel="noopener"><?php echo esc_html__('Define metas', 'nias-course-widget'); ?> ↗</a>
             </div>
         <?php else : ?>
             <div class="nc-meta-grid">
@@ -398,8 +398,8 @@ function nias_meta_render_curriculum_box($product_id)
                         <input type="text" class="nc-meta-input" data-nias-meta-key="<?php echo esc_attr($key); ?>" value="<?php echo esc_attr($val); ?>">
                         <div class="nc-meta-tools">
                             <code dir="ltr"><?php echo esc_html($key); ?></code>
-                            <button type="button" class="nc-meta-cbtn" data-clip="<?php echo esc_attr($key); ?>"><?php echo esc_html__('کپی شناسه', 'nias-course-widget'); ?></button>
-                            <button type="button" class="nc-meta-cbtn" data-clip="<?php echo esc_attr($sc); ?>"><?php echo esc_html__('کپی شورت‌کد', 'nias-course-widget'); ?></button>
+                            <button type="button" class="nc-meta-cbtn" data-clip="<?php echo esc_attr($key); ?>"><?php echo esc_html__('Copy ID', 'nias-course-widget'); ?></button>
+                            <button type="button" class="nc-meta-cbtn" data-clip="<?php echo esc_attr($sc); ?>"><?php echo esc_html__('Copy shortcode', 'nias-course-widget'); ?></button>
                         </div>
                     </div>
                 <?php endforeach; ?>
@@ -430,7 +430,7 @@ function nias_meta_render_curriculum_box($product_id)
     (function () {
         var box = document.querySelector('.nc-meta-box');
         if (!box) return;
-        var COPIED = <?php echo wp_json_encode(__('کپی شد', 'nias-course-widget')); ?>;
+        var COPIED = <?php echo wp_json_encode(__('Copied', 'nias-course-widget')); ?>;
         function fallbackCopy(text) {
             var ta = document.createElement('textarea');
             ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';

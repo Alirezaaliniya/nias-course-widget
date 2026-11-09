@@ -31,13 +31,13 @@ function nias_gm_points_table()
 function nias_gm_badges()
 {
     return apply_filters('nias_gm_badges', array(
-        'starter'   => array('t' => __('شروع‌کننده', 'nias-course-widget'), 'd' => __('اولین جلسه را کامل دیدید', 'nias-course-widget'), 'c' => 'lesson', 'n' => 1, 'i' => '🚀'),
-        'diligent'  => array('t' => __('کوشا', 'nias-course-widget'), 'd' => __('۱۰ جلسه را کامل دیدید', 'nias-course-widget'), 'c' => 'lesson', 'n' => 10, 'i' => '📚'),
-        'quizzer'   => array('t' => __('آزمون‌دان', 'nias-course-widget'), 'd' => __('در ۵ آزمون قبول شدید', 'nias-course-widget'), 'c' => 'quiz', 'n' => 5, 'i' => '🧠'),
-        'builder'   => array('t' => __('پروژه‌محور', 'nias-course-widget'), 'd' => __('اولین تکلیف قبول شد', 'nias-course-widget'), 'c' => 'assign', 'n' => 1, 'i' => '🛠️'),
-        'graduate'  => array('t' => __('فارغ‌التحصیل', 'nias-course-widget'), 'd' => __('یک دوره را تمام کردید', 'nias-course-widget'), 'c' => 'course', 'n' => 1, 'i' => '🎓'),
-        'critic'    => array('t' => __('منتقد', 'nias-course-widget'), 'd' => __('نظرتان را دربارهٔ یک دوره نوشتید', 'nias-course-widget'), 'c' => 'review', 'n' => 1, 'i' => '✍️'),
-        'star'      => array('t' => __('ستارهٔ کلاس', 'nias-course-widget'), 'd' => __('۵۰۰ امتیاز گرفتید', 'nias-course-widget'), 'c' => 'points', 'n' => 500, 'i' => '⭐'),
+        'starter'   => array('t' => __('Starter', 'nias-course-widget'), 'd' => __('You fully watched your first lesson', 'nias-course-widget'), 'c' => 'lesson', 'n' => 1, 'i' => '🚀'),
+        'diligent'  => array('t' => __('Diligent', 'nias-course-widget'), 'd' => __('You fully watched 10 lessons', 'nias-course-widget'), 'c' => 'lesson', 'n' => 10, 'i' => '📚'),
+        'quizzer'   => array('t' => __('Quiz master', 'nias-course-widget'), 'd' => __('You passed 5 quizzes', 'nias-course-widget'), 'c' => 'quiz', 'n' => 5, 'i' => '🧠'),
+        'builder'   => array('t' => __('Project-driven', 'nias-course-widget'), 'd' => __('Your first assignment was passed', 'nias-course-widget'), 'c' => 'assign', 'n' => 1, 'i' => '🛠️'),
+        'graduate'  => array('t' => __('Graduate', 'nias-course-widget'), 'd' => __('You finished a course', 'nias-course-widget'), 'c' => 'course', 'n' => 1, 'i' => '🎓'),
+        'critic'    => array('t' => __('Critic', 'nias-course-widget'), 'd' => __('You wrote your opinion about a course', 'nias-course-widget'), 'c' => 'review', 'n' => 1, 'i' => '✍️'),
+        'star'      => array('t' => __('Class star', 'nias-course-widget'), 'd' => __('You earned 500 points', 'nias-course-widget'), 'c' => 'points', 'n' => 500, 'i' => '⭐'),
     ));
 }
 
@@ -139,7 +139,7 @@ function nias_gm_name($user_id)
     $mode = function_exists('carbon_get_theme_option') ? carbon_get_theme_option('nias_gm_names') : '';
     $u    = get_userdata($user_id);
     if (!$u || $mode === 'hidden') {
-        return __('دانشجو', 'nias-course-widget');
+        return __('Student', 'nias-course-widget');
     }
     if ($mode === 'full') {
         return $u->display_name;
@@ -205,13 +205,13 @@ function nias_gm_block($html, $post_id)
         .ngm-pop.on{transform:translateX(-50%);opacity:1}.ngm-pop i{font-style:normal;font-size:26px}
         @media(max-width:800px){.ngm-grid{grid-template-columns:1fr}}
         </style>
-        <h2><?php echo esc_html__('امتیاز و نشان‌ها', 'nias-course-widget'); ?></h2>
+        <h2><?php echo esc_html__('Points and badges', 'nias-course-widget'); ?></h2>
         <?php if ($uid) : ?>
         <div class="ngm-top">
-            <div class="ngm-k"><span><?php echo esc_html__('امتیاز شما در این دوره', 'nias-course-widget'); ?></span><b><?php echo esc_html($fa($board['mine'])); ?></b></div>
-            <div class="ngm-k"><span><?php echo esc_html__('رتبهٔ شما', 'nias-course-widget'); ?></span><b><?php echo esc_html($board['rank'] ? $fa($board['rank']) : '—'); ?></b></div>
-            <div class="ngm-k"><span><?php echo esc_html__('امتیاز کل', 'nias-course-widget'); ?></span><b><?php echo esc_html($fa(get_user_meta($uid, '_nias_gm_points', true))); ?></b></div>
-            <div class="ngm-k"><span><?php echo esc_html__('نشان‌ها', 'nias-course-widget'); ?></span><b><?php echo esc_html(sprintf(__('%1$s از %2$s', 'nias-course-widget'), $fa(count($have)), $fa(count($badges)))); ?></b></div>
+            <div class="ngm-k"><span><?php echo esc_html__('Your points in this course', 'nias-course-widget'); ?></span><b><?php echo esc_html($fa($board['mine'])); ?></b></div>
+            <div class="ngm-k"><span><?php echo esc_html__('Your rank', 'nias-course-widget'); ?></span><b><?php echo esc_html($board['rank'] ? $fa($board['rank']) : '—'); ?></b></div>
+            <div class="ngm-k"><span><?php echo esc_html__('Total points', 'nias-course-widget'); ?></span><b><?php echo esc_html($fa(get_user_meta($uid, '_nias_gm_points', true))); ?></b></div>
+            <div class="ngm-k"><span><?php echo esc_html__('Badges', 'nias-course-widget'); ?></span><b><?php echo esc_html(sprintf(__('%1$s of %2$s', 'nias-course-widget'), $fa(count($have)), $fa(count($badges)))); ?></b></div>
         </div>
         <?php endif; ?>
         <div class="ngm-grid">
@@ -219,16 +219,16 @@ function nias_gm_block($html, $post_id)
                 <?php foreach ($badges as $k => $b) : ?><div class="ngm-b <?php echo isset($have[$k]) ? '' : 'off'; ?>" title="<?php echo esc_attr($b['d']); ?>"><i><?php echo esc_html($b['i']); ?></i><b><?php echo esc_html($b['t']); ?></b><small><?php echo esc_html($b['d']); ?></small></div><?php endforeach; ?>
             </div>
             <?php if ($show_board) : ?>
-            <div><b style="display:block;margin-bottom:6px"><?php echo esc_html__('برترین‌های این دوره', 'nias-course-widget'); ?></b>
-                <?php if ($board['rows']) : ?><ol class="ngm-lb"><?php foreach ($board['rows'] as $i => $r) : ?><li class="<?php echo (int) $r['user_id'] === $uid ? 'me' : ''; ?>"><span class="r"><?php echo esc_html($fa($i + 1)); ?></span><span class="n"><?php echo esc_html((int) $r['user_id'] === $uid ? __('شما', 'nias-course-widget') : nias_gm_name((int) $r['user_id'])); ?></span><span class="p"><?php echo esc_html($fa($r['pts'])); ?></span></li><?php endforeach; ?></ol>
-                <?php else : ?><p style="color:#64748b;font-size:13px"><?php echo esc_html__('هنوز کسی امتیاز نگرفته؛ اولین نفر باشید!', 'nias-course-widget'); ?></p><?php endif; ?>
+            <div><b style="display:block;margin-bottom:6px"><?php echo esc_html__('Top students of this course', 'nias-course-widget'); ?></b>
+                <?php if ($board['rows']) : ?><ol class="ngm-lb"><?php foreach ($board['rows'] as $i => $r) : ?><li class="<?php echo (int) $r['user_id'] === $uid ? 'me' : ''; ?>"><span class="r"><?php echo esc_html($fa($i + 1)); ?></span><span class="n"><?php echo esc_html((int) $r['user_id'] === $uid ? __('You', 'nias-course-widget') : nias_gm_name((int) $r['user_id'])); ?></span><span class="p"><?php echo esc_html($fa($r['pts'])); ?></span></li><?php endforeach; ?></ol>
+                <?php else : ?><p style="color:#64748b;font-size:13px"><?php echo esc_html__('Nobody has earned points yet; be the first!', 'nias-course-widget'); ?></p><?php endif; ?>
             </div>
             <?php endif; ?>
         </div>
         <?php if ($new) :
             $first = $badges[$new[0]] ?? null;
             if ($first) : ?>
-            <div class="ngm-pop" role="status"><i><?php echo esc_html($first['i']); ?></i><div><b><?php echo esc_html(sprintf(__('نشان جدید: %s', 'nias-course-widget'), $first['t'])); ?></b><br><small><?php echo esc_html($first['d']); ?></small></div></div>
+            <div class="ngm-pop" role="status"><i><?php echo esc_html($first['i']); ?></i><div><b><?php echo esc_html(sprintf(__('New badge: %s', 'nias-course-widget'), $first['t'])); ?></b><br><small><?php echo esc_html($first['d']); ?></small></div></div>
             <script>(function(){var p=document.querySelector('.ngm-pop');if(!p)return;setTimeout(function(){p.classList.add('on');},600);setTimeout(function(){p.classList.remove('on');},6000);})();</script>
         <?php endif; endif; ?>
     </section>
@@ -243,7 +243,7 @@ add_shortcode('nias_my_badges', function () {
     $uid  = get_current_user_id();
     $have = get_user_meta($uid, '_nias_gm_badges', true);
     $have = is_array($have) ? $have : array();
-    $h    = '<div dir="rtl" style="display:flex;flex-wrap:wrap;gap:10px;align-items:center"><b>' . esc_html(sprintf(__('امتیاز شما: %s', 'nias-course-widget'), nias_fa_digits(number_format_i18n((int) get_user_meta($uid, '_nias_gm_points', true))))) . '</b>';
+    $h    = '<div dir="rtl" style="display:flex;flex-wrap:wrap;gap:10px;align-items:center"><b>' . esc_html(sprintf(__('Your points: %s', 'nias-course-widget'), nias_fa_digits(number_format_i18n((int) get_user_meta($uid, '_nias_gm_points', true))))) . '</b>';
     foreach (nias_gm_badges() as $k => $b) {
         $h .= '<span title="' . esc_attr($b['d']) . '" style="border:1px solid #e6ecf5;border-radius:99px;padding:4px 10px;' . (isset($have[$k]) ? '' : 'opacity:.4;filter:grayscale(1)') . '">' . esc_html($b['i'] . ' ' . $b['t']) . '</span>';
     }

@@ -17,13 +17,13 @@ function nias_cert_register_issued_page()
         return;
     }
     $pending = nias_cert_count_status('pending');
-    $label   = __('مدارک صادرشده', 'nias-course-widget');
+    $label   = __('Issued certificates', 'nias-course-widget');
     if ($pending) {
         $label .= ' <span class="awaiting-mod">' . (int) $pending . '</span>';
     }
     add_submenu_page(
         'nias-course-settings',
-        __('مدارک صادرشده', 'nias-course-widget'),
+        __('Issued certificates', 'nias-course-widget'),
         $label,
         'manage_options',
         'nias-course-cert-issued',
@@ -102,17 +102,17 @@ function nias_cert_handle_admin_download()
 {
     $id = isset($_GET['id']) ? (int) $_GET['id'] : 0;
     if (!current_user_can('manage_options')) {
-        wp_die(esc_html__('دسترسی لازم را ندارید.', 'nias-course-widget'));
+        wp_die(esc_html__('You do not have the required permission.', 'nias-course-widget'));
     }
     check_admin_referer('nias_cert_dl_' . $id);
     $row = nias_cert_get($id);
     if (!$row) {
-        wp_die(esc_html__('مدرک یافت نشد.', 'nias-course-widget'));
+        wp_die(esc_html__('Certificate not found.', 'nias-course-widget'));
     }
     try {
         nias_cert_output_pdf(nias_cert_row_data($row), nias_cert_design_for_row($row), 'I');
     } catch (\Throwable $e) {
-        wp_die(esc_html__('خطا در تولید مدرک: ', 'nias-course-widget') . esc_html($e->getMessage()));
+        wp_die(esc_html__('Error generating the certificate: ', 'nias-course-widget') . esc_html($e->getMessage()));
     }
     exit;
 }
@@ -165,14 +165,14 @@ function nias_cert_render_issued_page()
     );
     $done = isset($_GET['done']) ? sanitize_key(wp_unslash($_GET['done'])) : '';
     $done_msgs = array(
-        'approve'  => __('مدرک تأیید شد.', 'nias-course-widget'),
-        'restore'  => __('مدرک دوباره معتبر شد.', 'nias-course-widget'),
-        'revoke'   => __('مدرک باطل شد.', 'nias-course-widget'),
-        'delete'   => __('رکورد مدرک حذف شد.', 'nias-course-widget'),
-        'refreeze' => __('طرح مدرک با قالب فعلی دوره به‌روز شد.', 'nias-course-widget'),
-        'resend'   => __('ایمیل مدرک ارسال شد.', 'nias-course-widget'),
+        'approve'  => __('Certificate approved.', 'nias-course-widget'),
+        'restore'  => __('Certificate is valid again.', 'nias-course-widget'),
+        'revoke'   => __('Certificate revoked.', 'nias-course-widget'),
+        'delete'   => __('Certificate record deleted.', 'nias-course-widget'),
+        'refreeze' => __('The certificate design was updated with the course\'s current template.', 'nias-course-widget'),
+        'resend'   => __('Certificate email sent.', 'nias-course-widget'),
         /* translators: %d: number of certificates */
-        'backfill' => sprintf(__('%d مدرک قدیمی وارد فهرست شد.', 'nias-course-widget'), isset($_GET['n']) ? (int) $_GET['n'] : 0),
+        'backfill' => sprintf(__('%d old certificates were added to the list.', 'nias-course-widget'), isset($_GET['n']) ? (int) $_GET['n'] : 0),
     );
     ?>
     <div class="nias-settings-app" dir="rtl">
@@ -185,7 +185,7 @@ function nias_cert_render_issued_page()
 
             <div class="nci-stats">
                 <?php
-                $labels = array('' => __('همه', 'nias-course-widget'), 'valid' => __('معتبر', 'nias-course-widget'), 'pending' => __('در انتظار تأیید', 'nias-course-widget'), 'revoked' => __('باطل‌شده', 'nias-course-widget'));
+                $labels = array('' => __('All', 'nias-course-widget'), 'valid' => __('Valid', 'nias-course-widget'), 'pending' => __('Awaiting approval', 'nias-course-widget'), 'revoked' => __('Revoked', 'nias-course-widget'));
                 foreach ($labels as $k => $lbl) :
                     $url = $k === '' ? remove_query_arg(array('status', 'paged'), $base) : add_query_arg('status', $k, $base); ?>
                     <a class="nci-stat nci-stat-<?php echo esc_attr($k ? $k : 'all'); ?> <?php echo $status === $k ? 'active' : ''; ?>" href="<?php echo esc_url($url); ?>">
@@ -195,34 +195,34 @@ function nias_cert_render_issued_page()
                 <?php endforeach; ?>
             </div>
 
-            <?php nias_set_card_open('<svg width="20" height="20" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="9" r="5" stroke="#3858e9" stroke-width="1.8"/><path d="m8.5 13-1.5 8 5-2.5 5 2.5-1.5-8" stroke="#3858e9" stroke-width="1.8" stroke-linejoin="round"/></svg>', __('مدارک صادرشده', 'nias-course-widget')); ?>
+            <?php nias_set_card_open('<svg width="20" height="20" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="9" r="5" stroke="#3858e9" stroke-width="1.8"/><path d="m8.5 13-1.5 8 5-2.5 5 2.5-1.5-8" stroke="#3858e9" stroke-width="1.8" stroke-linejoin="round"/></svg>', __('Issued certificates', 'nias-course-widget')); ?>
                 <div class="nias-card-pad">
                     <div class="nci-toolbar">
                         <form method="get" class="nci-search">
                             <input type="hidden" name="page" value="nias-course-cert-issued">
                             <?php if ($status) : ?><input type="hidden" name="status" value="<?php echo esc_attr($status); ?>"><?php endif; ?>
-                            <input type="search" class="nias-input" name="s" value="<?php echo esc_attr($search); ?>" placeholder="<?php echo esc_attr__('جست‌وجوی کد، نام یا دوره…', 'nias-course-widget'); ?>">
-                            <button type="submit" class="nias-btn-soft"><?php echo esc_html__('جست‌وجو', 'nias-course-widget'); ?></button>
+                            <input type="search" class="nias-input" name="s" value="<?php echo esc_attr($search); ?>" placeholder="<?php echo esc_attr__('Search code, name or course…', 'nias-course-widget'); ?>">
+                            <button type="submit" class="nias-btn-soft"><?php echo esc_html__('Search', 'nias-course-widget'); ?></button>
                         </form>
                         <form method="post">
                             <?php wp_nonce_field('nias_cert_backfill'); ?>
-                            <button type="submit" name="nias_cert_backfill" value="1" class="nias-btn-soft" title="<?php echo esc_attr__('کدهای مدرکی که پیش از این نسخه ساخته شده‌اند را به این فهرست اضافه می‌کند.', 'nias-course-widget'); ?>"><?php echo esc_html__('همگام‌سازی مدارک قدیمی', 'nias-course-widget'); ?></button>
+                            <button type="submit" name="nias_cert_backfill" value="1" class="nias-btn-soft" title="<?php echo esc_attr__('Adds certificate codes created before this version to this list.', 'nias-course-widget'); ?>"><?php echo esc_html__('Sync old certificates', 'nias-course-widget'); ?></button>
                         </form>
                     </div>
 
                     <?php if (!$rows) : ?>
-                        <div class="nci-empty"><?php echo esc_html__('مدرکی یافت نشد. مدارک پس از احراز شرایط توسط دانشجو، یا با «همگام‌سازی مدارک قدیمی» در این فهرست ثبت می‌شوند.', 'nias-course-widget'); ?></div>
+                        <div class="nci-empty"><?php echo esc_html__('No certificate found. Certificates are added to this list after a student meets the requirements, or with "Sync old certificates".', 'nias-course-widget'); ?></div>
                     <?php else : ?>
                         <div class="nci-table-wrap">
                         <table class="nci-table">
                             <thead><tr>
-                                <th><?php echo esc_html__('دانشجو', 'nias-course-widget'); ?></th>
-                                <th><?php echo esc_html__('دوره', 'nias-course-widget'); ?></th>
-                                <th><?php echo esc_html__('کد مدرک', 'nias-course-widget'); ?></th>
-                                <th><?php echo esc_html__('تاریخ', 'nias-course-widget'); ?></th>
-                                <th><?php echo esc_html__('وضعیت', 'nias-course-widget'); ?></th>
-                                <th><?php echo esc_html__('استعلام', 'nias-course-widget'); ?></th>
-                                <th><?php echo esc_html__('عملیات', 'nias-course-widget'); ?></th>
+                                <th><?php echo esc_html__('Student', 'nias-course-widget'); ?></th>
+                                <th><?php echo esc_html__('Course', 'nias-course-widget'); ?></th>
+                                <th><?php echo esc_html__('Certificate code', 'nias-course-widget'); ?></th>
+                                <th><?php echo esc_html__('Date', 'nias-course-widget'); ?></th>
+                                <th><?php echo esc_html__('Status', 'nias-course-widget'); ?></th>
+                                <th><?php echo esc_html__('Verification', 'nias-course-widget'); ?></th>
+                                <th><?php echo esc_html__('Actions', 'nias-course-widget'); ?></th>
                             </tr></thead>
                             <tbody>
                             <?php $lookups = nias_cert_log_counts(wp_list_pluck($rows, 'id')); ?>
@@ -245,23 +245,23 @@ function nias_cert_render_issued_page()
                                     <td>
                                         <span class="nci-badge nci-badge-<?php echo esc_attr($r['status']); ?>"><?php echo esc_html(nias_cert_status_label($r['status'])); ?></span>
                                         <?php if ($r['status'] === 'revoked' && !empty($r['note']) && $r['note'] !== 'legacy') : ?><div class="nci-muted"><?php echo esc_html($r['note']); ?></div><?php endif; ?>
-                                        <?php if (!empty($r['emailed_at'])) : ?><div class="nci-muted" title="<?php echo esc_attr($r['emailed_at']); ?>">✉ <?php echo esc_html__('ایمیل شد', 'nias-course-widget'); ?></div><?php endif; ?>
-                                        <?php if (!empty($r['design_ref']) && nias_cert_freeze_on()) : ?><div class="nci-muted" title="<?php echo esc_attr__('این مدرک با طرحی که هنگام صدور داشت ساخته می‌شود.', 'nias-course-widget'); ?>">🔒 <?php echo esc_html__('طرح ثابت', 'nias-course-widget'); ?></div><?php endif; ?>
+                                        <?php if (!empty($r['emailed_at'])) : ?><div class="nci-muted" title="<?php echo esc_attr($r['emailed_at']); ?>">✉ <?php echo esc_html__('Emailed', 'nias-course-widget'); ?></div><?php endif; ?>
+                                        <?php if (!empty($r['design_ref']) && nias_cert_freeze_on()) : ?><div class="nci-muted" title="<?php echo esc_attr__('This certificate is built with the design it had when issued.', 'nias-course-widget'); ?>">🔒 <?php echo esc_html__('Fixed design', 'nias-course-widget'); ?></div><?php endif; ?>
                                     </td>
                                     <td><?php $nl = isset($lookups[$id]) ? $lookups[$id] : 0; ?><a class="nci-a" href="<?php echo esc_url(admin_url('admin.php?page=nias-course-cert-verifications&cert=' . $id)); ?>"><?php echo esc_html(nias_fa_digits($nl)); ?></a></td>
                                     <td class="nci-actions">
                                         <?php if ($r['status'] === 'pending') : ?>
-                                            <a class="nci-a nci-a-ok" href="<?php echo esc_url($act('approve')); ?>"><?php echo esc_html__('تأیید', 'nias-course-widget'); ?></a>
+                                            <a class="nci-a nci-a-ok" href="<?php echo esc_url($act('approve')); ?>"><?php echo esc_html__('Approve', 'nias-course-widget'); ?></a>
                                         <?php endif; ?>
                                         <?php if ($r['status'] === 'revoked') : ?>
-                                            <a class="nci-a nci-a-ok" href="<?php echo esc_url($act('restore')); ?>"><?php echo esc_html__('بازگردانی', 'nias-course-widget'); ?></a>
+                                            <a class="nci-a nci-a-ok" href="<?php echo esc_url($act('restore')); ?>"><?php echo esc_html__('Restore', 'nias-course-widget'); ?></a>
                                         <?php else : ?>
-                                            <a class="nci-a nci-a-bad nci-revoke" href="<?php echo esc_url($act('revoke')); ?>"><?php echo esc_html__('ابطال', 'nias-course-widget'); ?></a>
+                                            <a class="nci-a nci-a-bad nci-revoke" href="<?php echo esc_url($act('revoke')); ?>"><?php echo esc_html__('Revoke', 'nias-course-widget'); ?></a>
                                         <?php endif; ?>
                                         <a class="nci-a" target="_blank" href="<?php echo esc_url($dl); ?>"><?php echo esc_html__('PDF', 'nias-course-widget'); ?></a>
-                                        <?php if (!empty($r['design_ref']) && nias_cert_freeze_on()) : ?><a class="nci-a" href="<?php echo esc_url($act('refreeze')); ?>" title="<?php echo esc_attr__('طرح این مدرک با قالب فعلی دوره جایگزین شود.', 'nias-course-widget'); ?>" onclick="return confirm('<?php echo esc_js(__('طرح این مدرک با قالب فعلی دوره جایگزین شود؟', 'nias-course-widget')); ?>')"><?php echo esc_html__('اعمال قالب فعلی', 'nias-course-widget'); ?></a><?php endif; ?>
-                                        <?php if ($r['status'] === 'valid' && nias_cert_email_enabled()) : ?><a class="nci-a" href="<?php echo esc_url($act('resend')); ?>"><?php echo esc_html(!empty($r['emailed_at']) ? __('ارسال دوبارهٔ ایمیل', 'nias-course-widget') : __('ارسال ایمیل', 'nias-course-widget')); ?></a><?php endif; ?>
-                                        <a class="nci-a" target="_blank" href="<?php echo esc_url(nias_cert_verify_url($r['code'], (int) $r['user_id'])); ?>"><?php echo esc_html__('استعلام', 'nias-course-widget'); ?></a>
+                                        <?php if (!empty($r['design_ref']) && nias_cert_freeze_on()) : ?><a class="nci-a" href="<?php echo esc_url($act('refreeze')); ?>" title="<?php echo esc_attr__('Replace this certificate\'s design with the course\'s current template.', 'nias-course-widget'); ?>" onclick="return confirm('<?php echo esc_js(__('Replace this certificate\'s design with the course\'s current template?', 'nias-course-widget')); ?>')"><?php echo esc_html__('Apply current template', 'nias-course-widget'); ?></a><?php endif; ?>
+                                        <?php if ($r['status'] === 'valid' && nias_cert_email_enabled()) : ?><a class="nci-a" href="<?php echo esc_url($act('resend')); ?>"><?php echo esc_html(!empty($r['emailed_at']) ? __('Resend email', 'nias-course-widget') : __('Send email', 'nias-course-widget')); ?></a><?php endif; ?>
+                                        <a class="nci-a" target="_blank" href="<?php echo esc_url(nias_cert_verify_url($r['code'], (int) $r['user_id'])); ?>"><?php echo esc_html__('Verification', 'nias-course-widget'); ?></a>
                                     </td>
                                 </tr>
                             <?php endforeach; ?>
@@ -287,7 +287,7 @@ function nias_cert_render_issued_page()
     document.querySelectorAll('.nci-revoke').forEach(function (a) {
         a.addEventListener('click', function (e) {
             e.preventDefault();
-            var note = window.prompt('<?php echo esc_js(__('دلیل ابطال (اختیاری):', 'nias-course-widget')); ?>', '');
+            var note = window.prompt('<?php echo esc_js(__('Reason for revoking (optional):', 'nias-course-widget')); ?>', '');
             if (note === null) { return; }
             window.location.href = a.href + '&note=' + encodeURIComponent(note);
         });

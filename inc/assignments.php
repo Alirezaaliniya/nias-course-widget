@@ -156,7 +156,7 @@ function nias_assign_user_rows($user_id, $post_id, $lesson)
 
 function nias_assign_status_label($st)
 {
-    $l = array('pending' => __('در انتظار تصحیح', 'nias-course-widget'), 'passed' => __('قبول', 'nias-course-widget'), 'failed' => __('مردود', 'nias-course-widget'), 'resubmit' => __('نیاز به ارسال دوباره', 'nias-course-widget'));
+    $l = array('pending' => __('Awaiting grading', 'nias-course-widget'), 'passed' => __('Passed', 'nias-course-widget'), 'failed' => __('Failed', 'nias-course-widget'), 'resubmit' => __('Resubmission needed', 'nias-course-widget'));
     return isset($l[$st]) ? $l[$st] : $st;
 }
 
@@ -221,12 +221,12 @@ add_action('wp_ajax_nias_assign_file', function () {
     $uid = get_current_user_id();
     if (!$r || !wp_verify_nonce(isset($_GET['n']) ? sanitize_text_field(wp_unslash($_GET['n'])) : '', 'nias_assign_file_' . $id)
         || ((int) $r['user_id'] !== $uid && !nias_assign_can_review($uid, (int) $r['post_id']))) {
-        wp_die(esc_html__('دسترسی ندارید.', 'nias-course-widget'), 403);
+        wp_die(esc_html__('You do not have access.', 'nias-course-widget'), 403);
     }
     $up   = wp_get_upload_dir();
     $path = wp_normalize_path(trailingslashit($up['basedir']) . $r['file']);
     if (!is_file($path) || strpos($path, wp_normalize_path($up['basedir']) . '/nias-protected/assignments/') !== 0) {
-        wp_die(esc_html__('فایل پیدا نشد.', 'nias-course-widget'), 404);
+        wp_die(esc_html__('File not found.', 'nias-course-widget'), 404);
     }
     nocache_headers();
     header('Content-Type: application/octet-stream');
@@ -248,7 +248,7 @@ function nias_assign_request($check_review = false)
 {
     $pid = isset($_POST['product_id']) ? (int) $_POST['product_id'] : 0;
     if (!nias_assign_enabled() || !$pid || !check_ajax_referer('nias_assign_' . $pid, 'nonce', false) || !is_user_logged_in()) {
-        wp_send_json_error(array('message' => __('درخواست نامعتبر است.', 'nias-course-widget')), 403);
+        wp_send_json_error(array('message' => __('Invalid request.', 'nias-course-widget')), 403);
     }
     return $pid;
 }
@@ -258,7 +258,7 @@ add_action('wp_ajax_nias_assign_list', function () {
     $lesson = isset($_POST['lesson']) ? sanitize_key(wp_unslash($_POST['lesson'])) : '';
     $cfg    = nias_assign_lesson($pid, $lesson);
     if (!$cfg) {
-        wp_send_json_error(array('message' => __('این جلسه تکلیف ندارد.', 'nias-course-widget')));
+        wp_send_json_error(array('message' => __('This lesson has no assignment.', 'nias-course-widget')));
     }
     $rows = nias_assign_user_rows(get_current_user_id(), $pid, $lesson);
     $last = $rows ? $rows[0]['status'] : '';
@@ -277,29 +277,29 @@ add_action('wp_ajax_nias_assign_submit', function () {
     $lesson = isset($_POST['lesson']) ? sanitize_key(wp_unslash($_POST['lesson'])) : '';
     $cfg    = nias_assign_lesson($pid, $lesson);
     if (!$cfg || !nias_assign_can_submit($uid, $pid, $cfg)) {
-        wp_send_json_error(array('message' => __('ارسال تکلیف برای این جلسه ممکن نیست.', 'nias-course-widget')));
+        wp_send_json_error(array('message' => __('Submitting an assignment for this lesson is not possible.', 'nias-course-widget')));
     }
     $rows = nias_assign_user_rows($uid, $pid, $lesson);
     if ($rows && $rows[0]['status'] === 'passed') {
-        wp_send_json_error(array('message' => __('این تکلیف قبلاً قبول شده است.', 'nias-course-widget')));
+        wp_send_json_error(array('message' => __('This assignment has already been passed.', 'nias-course-widget')));
     }
     // Rate limit: 10 sends per hour per user.
     $rk = 'nias_assign_rl_' . $uid;
     $n  = (int) get_transient($rk);
     if ($n >= 10) {
-        wp_send_json_error(array('message' => __('تعداد ارسال در یک ساعت زیاد است؛ کمی بعد دوباره امتحان کنید.', 'nias-course-widget')));
+        wp_send_json_error(array('message' => __('Too many submissions in one hour; try again a bit later.', 'nias-course-widget')));
     }
     if (empty($_FILES['file']) || !is_array($_FILES['file']) || (int) $_FILES['file']['error'] !== UPLOAD_ERR_OK || !is_uploaded_file($_FILES['file']['tmp_name'])) {
-        wp_send_json_error(array('message' => __('فایلی دریافت نشد.', 'nias-course-widget')));
+        wp_send_json_error(array('message' => __('No file was received.', 'nias-course-widget')));
     }
     $f    = $_FILES['file'];
     $name = sanitize_file_name(wp_unslash($f['name']));
     $ext  = strtolower(pathinfo($name, PATHINFO_EXTENSION));
     if (!$ext || !in_array($ext, $cfg['types'], true)) {
-        wp_send_json_error(array('message' => sprintf(__('نوع فایل مجاز نیست. مجاز: %s', 'nias-course-widget'), implode('، ', $cfg['types']))));
+        wp_send_json_error(array('message' => sprintf(__('File type not allowed. Allowed: %s', 'nias-course-widget'), implode('، ', $cfg['types']))));
     }
     if ((int) $f['size'] > $cfg['max'] * MB_IN_BYTES) {
-        wp_send_json_error(array('message' => sprintf(__('حجم فایل بیشتر از %s مگابایت است.', 'nias-course-widget'), nias_fa_digits($cfg['max']))));
+        wp_send_json_error(array('message' => sprintf(__('The file is larger than %s MB.', 'nias-course-widget'), nias_fa_digits($cfg['max']))));
     }
     // Content must match the name: real images, and no script inside any file.
     $head = (string) @file_get_contents($f['tmp_name'], false, null, 0, 4096);
@@ -309,12 +309,12 @@ add_action('wp_ajax_nias_assign_submit', function () {
     }
     $check = wp_check_filetype_and_ext($f['tmp_name'], $name);
     if ($bad || !empty($check['proper_filename']) || ($check['ext'] && $check['ext'] !== $ext && !in_array($ext, array('rar', 'zip', '7z'), true))) {
-        wp_send_json_error(array('message' => __('محتوای فایل با پسوند آن نمی‌خواند یا مجاز نیست.', 'nias-course-widget')));
+        wp_send_json_error(array('message' => __('The file content does not match its extension or is not allowed.', 'nias-course-widget')));
     }
     $dir    = nias_assign_dir($uid);
     $stored = wp_generate_password(20, false, false) . '.' . $ext;
     if (!@move_uploaded_file($f['tmp_name'], $dir . '/' . $stored)) {
-        wp_send_json_error(array('message' => __('ذخیرهٔ فایل ممکن نشد.', 'nias-course-widget')));
+        wp_send_json_error(array('message' => __('The file could not be saved.', 'nias-course-widget')));
     }
     $rel  = 'nias-protected/assignments/' . $uid . '/' . $stored;
     $note = isset($_POST['note']) ? mb_substr(sanitize_textarea_field(wp_unslash($_POST['note'])), 0, 2000) : '';
@@ -368,7 +368,7 @@ function nias_assign_pending_count($scope)
 add_action('wp_ajax_nias_assign_queue', function () {
     global $wpdb;
     if (!check_ajax_referer('nias_assign_review', 'nonce', false) || !nias_assign_enabled()) {
-        wp_send_json_error(array('message' => __('درخواست نامعتبر است.', 'nias-course-widget')), 403);
+        wp_send_json_error(array('message' => __('Invalid request.', 'nias-course-widget')), 403);
     }
     $uid   = get_current_user_id();
     $scope = nias_assign_scope($uid);
@@ -389,13 +389,13 @@ add_action('wp_ajax_nias_assign_queue', function () {
 add_action('wp_ajax_nias_assign_grade', function () {
     global $wpdb;
     if (!check_ajax_referer('nias_assign_review', 'nonce', false) || !nias_assign_enabled()) {
-        wp_send_json_error(array('message' => __('درخواست نامعتبر است.', 'nias-course-widget')), 403);
+        wp_send_json_error(array('message' => __('Invalid request.', 'nias-course-widget')), 403);
     }
     $id  = isset($_POST['id']) ? (int) $_POST['id'] : 0;
     $r   = $id ? nias_assign_row($id) : null;
     $uid = get_current_user_id();
     if (!$r || !nias_assign_can_review($uid, (int) $r['post_id'])) {
-        wp_send_json_error(array('message' => __('دسترسی ندارید.', 'nias-course-widget')), 403);
+        wp_send_json_error(array('message' => __('You do not have access.', 'nias-course-widget')), 403);
     }
     $score    = isset($_POST['score']) && $_POST['score'] !== '' ? max(0, min(100, (int) $_POST['score'])) : -1;
     $feedback = isset($_POST['feedback']) ? mb_substr(sanitize_textarea_field(wp_unslash($_POST['feedback'])), 0, 4000) : '';
@@ -404,7 +404,7 @@ add_action('wp_ajax_nias_assign_grade', function () {
         $status = 'resubmit';
     } else {
         if ($score < 0) {
-            wp_send_json_error(array('message' => __('نمره را وارد کنید.', 'nias-course-widget')));
+            wp_send_json_error(array('message' => __('Enter the score.', 'nias-course-widget')));
         }
         $cfg    = nias_assign_lesson((int) $r['post_id'], $r['lesson']);
         $pass   = $cfg ? (int) $cfg['pass'] : 0;
@@ -425,13 +425,13 @@ add_action('nias_assign_graded', function ($row) {
     }
     $course = get_the_title((int) $row['post_id']);
     $link   = function_exists('nias_course_modern_view_url') ? nias_course_modern_view_url((int) $row['post_id']) : get_permalink((int) $row['post_id']);
-    $state  = nias_assign_status_label($row['status']) . ((int) $row['score'] >= 0 ? ' — ' . sprintf(__('نمره: %s', 'nias-course-widget'), nias_fa_digits($row['score'])) : '');
+    $state  = nias_assign_status_label($row['status']) . ((int) $row['score'] >= 0 ? ' — ' . sprintf(__('Score: %s', 'nias-course-widget'), nias_fa_digits($row['score'])) : '');
     $body   = '<div dir="rtl" style="font-family:Tahoma,Arial,sans-serif;font-size:14px;line-height:2;color:#1f2a30">'
-        . '<p>' . esc_html(sprintf(__('%s عزیز،', 'nias-course-widget'), $u->display_name)) . '</p>'
-        . '<p>' . esc_html(sprintf(__('تکلیف جلسهٔ «%1$s» در دورهٔ «%2$s» بررسی شد: %3$s', 'nias-course-widget'), $row['lesson_title'], $course, $state)) . '</p>'
+        . '<p>' . esc_html(sprintf(__('Dear %s,', 'nias-course-widget'), $u->display_name)) . '</p>'
+        . '<p>' . esc_html(sprintf(__('The assignment of the lesson "%1$s" in the course "%2$s" was reviewed: %3$s', 'nias-course-widget'), $row['lesson_title'], $course, $state)) . '</p>'
         . ($row['feedback'] !== '' ? '<p style="background:#f5f8ff;border-radius:10px;padding:10px 14px">' . nl2br(esc_html($row['feedback'])) . '</p>' : '')
-        . '<p><a href="' . esc_url($link) . '" style="display:inline-block;background:#1e83f0;color:#fff;text-decoration:none;padding:8px 18px;border-radius:9px">' . esc_html__('مشاهدهٔ دوره', 'nias-course-widget') . '</a></p></div>';
-    wp_mail($u->user_email, sprintf(__('نتیجهٔ تکلیف «%s»', 'nias-course-widget'), $row['lesson_title']), $body, array('Content-Type: text/html; charset=UTF-8'));
+        . '<p><a href="' . esc_url($link) . '" style="display:inline-block;background:#1e83f0;color:#fff;text-decoration:none;padding:8px 18px;border-radius:9px">' . esc_html__('View course', 'nias-course-widget') . '</a></p></div>';
+    wp_mail($u->user_email, sprintf(__('Assignment result "%s"', 'nias-course-widget'), $row['lesson_title']), $body, array('Content-Type: text/html; charset=UTF-8'));
 }, 10, 1);
 
 /* -------------------------------------------------------------------------
@@ -454,7 +454,7 @@ add_action('admin_menu', function () {
         return;
     }
     $n = nias_assign_pending_count(null);
-    add_submenu_page('nias-course-settings', __('تکالیف', 'nias-course-widget'), __('تکالیف', 'nias-course-widget') . ($n ? ' <span class="awaiting-mod">' . (int) $n . '</span>' : ''), 'manage_options', 'nias-course-assignments', function () {
+    add_submenu_page('nias-course-settings', __('Assignments', 'nias-course-widget'), __('Assignments', 'nias-course-widget') . ($n ? ' <span class="awaiting-mod">' . (int) $n . '</span>' : ''), 'manage_options', 'nias-course-assignments', function () {
         echo '<div class="nias-settings-app" dir="rtl">';
         nias_settings_topbar('assign');
         echo '<div class="nias-set-shell"><div class="nias-set-main">' . nias_assign_review_html() . '</div></div></div>'; // phpcs:ignore -- escaped inside
@@ -491,8 +491,8 @@ function nias_assign_review_html()
         .nas-empty{color:#64748b;padding:20px;text-align:center;background:#fff;border:1px dashed #dbe3ef;border-radius:14px}
         .nas-more{align-self:center;border:1px solid #dbe3ef;background:#fff;border-radius:9px;padding:8px 16px;font:inherit;cursor:pointer}
         </style>
-        <div class="nas-h"><h2><?php echo esc_html__('تکالیف دانشجویان', 'nias-course-widget'); ?></h2>
-            <div class="nas-f"><button type="button" class="on" data-f="pending"><?php echo esc_html__('در انتظار تصحیح', 'nias-course-widget'); ?></button><button type="button" data-f="passed"><?php echo esc_html__('قبول', 'nias-course-widget'); ?></button><button type="button" data-f="failed"><?php echo esc_html__('مردود', 'nias-course-widget'); ?></button><button type="button" data-f="resubmit"><?php echo esc_html__('ارسال دوباره', 'nias-course-widget'); ?></button><button type="button" data-f="all"><?php echo esc_html__('همه', 'nias-course-widget'); ?></button></div>
+        <div class="nas-h"><h2><?php echo esc_html__('Student assignments', 'nias-course-widget'); ?></h2>
+            <div class="nas-f"><button type="button" class="on" data-f="pending"><?php echo esc_html__('Awaiting grading', 'nias-course-widget'); ?></button><button type="button" data-f="passed"><?php echo esc_html__('Passed', 'nias-course-widget'); ?></button><button type="button" data-f="failed"><?php echo esc_html__('Failed', 'nias-course-widget'); ?></button><button type="button" data-f="resubmit"><?php echo esc_html__('Resubmit', 'nias-course-widget'); ?></button><button type="button" data-f="all"><?php echo esc_html__('All', 'nias-course-widget'); ?></button></div>
         </div>
         <div class="nas-list" data-nas-list></div>
     </div>

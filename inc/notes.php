@@ -53,7 +53,7 @@ function nias_notes_request()
 {
     $pid = isset($_POST['product_id']) ? (int) $_POST['product_id'] : 0;
     if (!nias_notes_enabled() || !$pid || !is_user_logged_in() || !nias_is_course_post($pid) || !check_ajax_referer('nias_notes_' . $pid, 'nonce', false)) {
-        wp_send_json_error(array('message' => __('درخواست نامعتبر است.', 'nias-course-widget')), 403);
+        wp_send_json_error(array('message' => __('Invalid request.', 'nias-course-widget')), 403);
     }
     return $pid;
 }
@@ -78,11 +78,11 @@ add_action('wp_ajax_nias_notes_add', function () {
     $text   = isset($_POST['text']) ? trim(sanitize_textarea_field(wp_unslash($_POST['text']))) : '';
     $t      = isset($_POST['t']) ? max(0, min(86400, (int) round((float) $_POST['t']))) : 0;
     if (!preg_match('/^c\d+l\d+$/', $lesson) || $text === '') {
-        wp_send_json_error(array('message' => __('متن یادداشت را بنویسید.', 'nias-course-widget')));
+        wp_send_json_error(array('message' => __('Write the note text.', 'nias-course-widget')));
     }
     $notes = nias_notes_get($uid, $pid);
     if (count($notes) >= 500) {
-        wp_send_json_error(array('message' => __('حداکثر ۵۰۰ یادداشت برای هر دوره.', 'nias-course-widget')));
+        wp_send_json_error(array('message' => __('Maximum 500 notes per course.', 'nias-course-widget')));
     }
     $titles = function_exists('nias_watch_lessons') ? nias_watch_lessons($pid) : array();
     $n = array('id' => substr(md5(uniqid('', true)), 0, 10), 'lesson' => $lesson, 'title' => isset($titles[$lesson]) ? $titles[$lesson] : '', 't' => $t, 'text' => mb_substr($text, 0, 2000), 'at' => time());
@@ -102,7 +102,7 @@ add_action('wp_ajax_nias_notes_delete', function () {
 /** Plain-text export of all the user's notes. */
 add_action('wp_ajax_nias_notes_export', function () {
     if (!nias_notes_enabled() || !check_ajax_referer('nias_notes_export', 'n', false)) {
-        wp_die(esc_html__('دسترسی ندارید.', 'nias-course-widget'), 403);
+        wp_die(esc_html__('You do not have access.', 'nias-course-widget'), 403);
     }
     $uid = get_current_user_id();
     $out = '';
@@ -171,10 +171,10 @@ function nias_notes_account_html($user_id = 0)
     .nnt-empty{color:#64748b}
     </style>
     <?php if (!$courses) : ?>
-        <p class="nnt-empty"><?php echo esc_html__('هنوز یادداشتی ننوشته‌اید. در جلسه‌های ویدیویی، از تب «یادداشت‌ها» می‌توانید در هر لحظه یادداشت بگذارید.', 'nias-course-widget'); ?></p>
+        <p class="nnt-empty"><?php echo esc_html__('You have not written any notes yet. In video lessons you can add a note at any moment from the "Notes" tab.', 'nias-course-widget'); ?></p>
     <?php else : ?>
-        <div class="nnt-top"><input type="search" placeholder="<?php echo esc_attr__('جستجو در یادداشت‌ها…', 'nias-course-widget'); ?>" oninput="var q=this.value.trim();document.querySelectorAll('.nnt-n').forEach(function(n){n.style.display=!q||n.textContent.indexOf(q)>-1?'':'none';});">
-            <a href="<?php echo esc_url(add_query_arg(array('action' => 'nias_notes_export', 'n' => wp_create_nonce('nias_notes_export')), admin_url('admin-ajax.php'))); ?>"><?php echo esc_html__('دریافت فایل متنی', 'nias-course-widget'); ?></a></div>
+        <div class="nnt-top"><input type="search" placeholder="<?php echo esc_attr__('Search notes…', 'nias-course-widget'); ?>" oninput="var q=this.value.trim();document.querySelectorAll('.nnt-n').forEach(function(n){n.style.display=!q||n.textContent.indexOf(q)>-1?'':'none';});">
+            <a href="<?php echo esc_url(add_query_arg(array('action' => 'nias_notes_export', 'n' => wp_create_nonce('nias_notes_export')), admin_url('admin-ajax.php'))); ?>"><?php echo esc_html__('Download text file', 'nias-course-widget'); ?></a></div>
         <?php foreach ($courses as $pid) :
             $notes = nias_notes_get($user_id, $pid);
             usort($notes, function ($a, $b) { return strcmp($a['lesson'], $b['lesson']) ?: ($a['t'] - $b['t']); });
@@ -219,15 +219,15 @@ add_filter('woocommerce_account_menu_items', function ($items) {
     $out = array();
     foreach ($items as $k => $v) {
         if ($k === 'customer-logout') {
-            $out['my-notes'] = __('یادداشت‌های من', 'nias-course-widget');
+            $out['my-notes'] = __('My notes', 'nias-course-widget');
         }
         $out[$k] = $v;
     }
     return $out;
 }, 31);
 add_action('woocommerce_account_my-notes_endpoint', function () {
-    echo '<h3>' . esc_html__('یادداشت‌های من', 'nias-course-widget') . '</h3>' . nias_notes_account_html(); // phpcs:ignore -- escaped inside
+    echo '<h3>' . esc_html__('My notes', 'nias-course-widget') . '</h3>' . nias_notes_account_html(); // phpcs:ignore -- escaped inside
 });
 add_filter('woocommerce_endpoint_my-notes_title', function () {
-    return __('یادداشت‌های من', 'nias-course-widget');
+    return __('My notes', 'nias-course-widget');
 });

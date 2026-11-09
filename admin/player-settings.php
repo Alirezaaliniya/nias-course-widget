@@ -272,8 +272,8 @@ function nias_player_register_page()
     }
     add_submenu_page(
         'nias-course-settings',
-        __('تنظیمات پلیر ویدیو', 'nias-course-widget'),
-        __('پلیر ویدیو', 'nias-course-widget'),
+        __('Video player settings', 'nias-course-widget'),
+        __('Video player', 'nias-course-widget'),
         'manage_options',
         'nias-course-player',
         'nias_player_render_page'
@@ -325,7 +325,7 @@ function nias_player_render_page()
     // (Not one from the protected course folder: those open only through signed links.)
     $sample = get_posts(array('post_type' => 'attachment', 'post_mime_type' => 'video', 'posts_per_page' => 1, 'post_status' => 'inherit', 'meta_query' => array(array('key' => '_wp_attached_file', 'value' => 'nias-protected/', 'compare' => 'NOT LIKE'))));
     $sample_url = $sample ? wp_get_attachment_url($sample[0]->ID) : '';
-    $speeds = array('0.5' => '۰٫۵×', '0.75' => '۰٫۷۵×', '1' => __('عادی', 'nias-course-widget'), '1.25' => '۱٫۲۵×', '1.5' => '۱٫۵×', '1.75' => '۱٫۷۵×', '2' => '۲×');
+    $speeds = array('0.5' => '۰٫۵×', '0.75' => '۰٫۷۵×', '1' => __('Normal', 'nias-course-widget'), '1.25' => '۱٫۲۵×', '1.5' => '۱٫۵×', '1.75' => '۱٫۷۵×', '2' => '۲×');
     $on_off_row = function ($name, $title, $desc) {
         nias_set_toggle_row($name, $title, $desc, nias_player_fields()[$name][1]);
     };
@@ -372,114 +372,114 @@ function nias_player_render_page()
             <form method="post" id="npl-form">
                 <?php wp_nonce_field('nias_player_settings', 'nias_player_nonce'); ?>
 
-                <?php nias_set_card_open($icon('<circle cx="13.5" cy="6.5" r="2.5"/><circle cx="6.5" cy="12" r="2.5"/><circle cx="17.5" cy="15.5" r="2.5"/><path d="M12 22a10 10 0 1 1 10-10c0 2-1.5 3-3 3h-2a2 2 0 0 0-1 3.7A2 2 0 0 1 12 22Z"/>'), __('ظاهر', 'nias-course-widget')); ?>
+                <?php nias_set_card_open($icon('<circle cx="13.5" cy="6.5" r="2.5"/><circle cx="6.5" cy="12" r="2.5"/><circle cx="17.5" cy="15.5" r="2.5"/><path d="M12 22a10 10 0 1 1 10-10c0 2-1.5 3-3 3h-2a2 2 0 0 0-1 3.7A2 2 0 0 1 12 22Z"/>'), __('Appearance', 'nias-course-widget')); ?>
                     <div class="nias-row-block">
                         <div class="npl-grid">
-                            <?php $color('nias_player_accent', __('رنگ اصلی (دکمه‌ها و نوار پخش)', 'nias-course-widget')); ?>
-                            <?php $color('nias_player_seen_color', __('رنگ نوار «دیده‌شده»', 'nias-course-widget')); ?>
-                            <?php $num('nias_player_radius', __('گردی گوشه‌ها', 'nias-course-widget'), '', 0, 40, 'px'); ?>
+                            <?php $color('nias_player_accent', __('Main color (buttons and progress bar)', 'nias-course-widget')); ?>
+                            <?php $color('nias_player_seen_color', __('"Watched" bar color', 'nias-course-widget')); ?>
+                            <?php $num('nias_player_radius', __('Corner radius', 'nias-course-widget'), '', 0, 40, 'px'); ?>
                         </div>
                     </div>
-                    <?php $seg('nias_player_big_style', __('دکمهٔ پخش وسط تصویر', 'nias-course-widget'), array('circle' => __('دایره', 'nias-course-widget'), 'rounded' => __('مستطیل گرد', 'nias-course-widget'), 'none' => __('بدون دکمه', 'nias-course-widget'))); ?>
-                    <?php $seg('nias_player_ratio', __('نسبت تصویر', 'nias-course-widget'), array('16:9' => '16:9', '4:3' => '4:3', '21:9' => '21:9', '1:1' => '1:1', '9:16' => __('9:16 (عمودی)', 'nias-course-widget')), __('برای پلیر محتوای درس و نمای مدرن دوره.', 'nias-course-widget')); ?>
+                    <?php $seg('nias_player_big_style', __('Play button in the middle of the video', 'nias-course-widget'), array('circle' => __('Circle', 'nias-course-widget'), 'rounded' => __('Rounded rectangle', 'nias-course-widget'), 'none' => __('No button', 'nias-course-widget'))); ?>
+                    <?php $seg('nias_player_ratio', __('Aspect ratio', 'nias-course-widget'), array('16:9' => '16:9', '4:3' => '4:3', '21:9' => '21:9', '1:1' => '1:1', '9:16' => __('9:16 (vertical)', 'nias-course-widget')), __('For the lesson content player and the modern course view.', 'nias-course-widget')); ?>
                     <div class="nias-card-padx">
-                        <?php nias_set_image_row('nias_player_poster', __('تصویر پیش‌فرض قبل از پخش (پوستر)', 'nias-course-widget'), __('وقتی ویدیو تصویر اختصاصی ندارد نمایش داده می‌شود.', 'nias-course-widget')); ?>
-                        <?php nias_set_image_row('nias_player_logo', __('لوگو روی ویدیو', 'nias-course-widget'), __('PNG با پس‌زمینهٔ شفاف؛ در تمام‌صفحه هم دیده می‌شود.', 'nias-course-widget')); ?>
+                        <?php nias_set_image_row('nias_player_poster', __('Default image before playing (poster)', 'nias-course-widget'), __('Shown when the video has no image of its own.', 'nias-course-widget')); ?>
+                        <?php nias_set_image_row('nias_player_logo', __('Logo on the video', 'nias-course-widget'), __('PNG with a transparent background; also visible in full screen.', 'nias-course-widget')); ?>
                     </div>
-                    <?php $seg('nias_player_logo_pos', __('جای لوگو', 'nias-course-widget'), array('tr' => __('بالا راست', 'nias-course-widget'), 'tl' => __('بالا چپ', 'nias-course-widget'), 'br' => __('پایین راست', 'nias-course-widget'), 'bl' => __('پایین چپ', 'nias-course-widget'))); ?>
+                    <?php $seg('nias_player_logo_pos', __('Logo position', 'nias-course-widget'), array('tr' => __('Top right', 'nias-course-widget'), 'tl' => __('Top left', 'nias-course-widget'), 'br' => __('Bottom right', 'nias-course-widget'), 'bl' => __('Bottom left', 'nias-course-widget'))); ?>
                     <div class="nias-row-block nias-row-sep"><div class="npl-grid">
-                        <?php $num('nias_player_logo_opacity', __('شفافیت لوگو', 'nias-course-widget'), '', 10, 100, '٪'); ?>
-                        <div class="nias-field"><label class="nias-flabel"><?php esc_html_e('لینک لوگو (اختیاری)', 'nias-course-widget'); ?></label><input type="url" class="nias-input" dir="ltr" name="nias_player_logo_link" value="<?php echo esc_attr(nias_player_opt('nias_player_logo_link')); ?>" placeholder="https://"></div>
+                        <?php $num('nias_player_logo_opacity', __('Logo opacity', 'nias-course-widget'), '', 10, 100, '٪'); ?>
+                        <div class="nias-field"><label class="nias-flabel"><?php esc_html_e('Logo link (optional)', 'nias-course-widget'); ?></label><input type="url" class="nias-input" dir="ltr" name="nias_player_logo_link" value="<?php echo esc_attr(nias_player_opt('nias_player_logo_link')); ?>" placeholder="https://"></div>
                     </div></div>
                 <?php nias_set_card_close(); ?>
 
-                <?php nias_set_card_open($icon('<rect x="2" y="6" width="20" height="12" rx="3"/><path d="M6 12h.01M10 12h.01M14 12h4"/>'), __('کنترل‌ها', 'nias-course-widget')); ?>
+                <?php nias_set_card_open($icon('<rect x="2" y="6" width="20" height="12" rx="3"/><path d="M6 12h.01M10 12h.01M14 12h4"/>'), __('Controls', 'nias-course-widget')); ?>
                     <?php
-                    $on_off_row('nias_player_ctrl_skip', __('دکمه‌های جلو و عقب', 'nias-course-widget'), '');
-                    $seg('nias_player_skip_seconds', __('مقدار پرش (ثانیه)', 'nias-course-widget'), array('5' => '۵', '10' => '۱۰', '15' => '۱۵', '30' => '۳۰'), __('برای دکمه‌ها، کلیدهای J/L و دو ضربه روی موبایل.', 'nias-course-widget'));
-                    $on_off_row('nias_player_ctrl_volume', __('کنترل صدا', 'nias-course-widget'), '');
-                    $on_off_row('nias_player_ctrl_time', __('نمایش زمان', 'nias-course-widget'), __('با کلیک روی زمان، بین «سپری‌شده» و «باقی‌مانده» جابه‌جا می‌شود.', 'nias-course-widget'));
-                    $on_off_row('nias_player_ctrl_speed', __('انتخاب سرعت پخش', 'nias-course-widget'), '');
-                    $on_off_row('nias_player_ctrl_quality', __('انتخاب کیفیت', 'nias-course-widget'), __('دانشجو از منوی تنظیمات پلیر کیفیت ویدیو را عوض می‌کند: برای ویدیوهای HLS و DASH با چند کیفیت، و برای فایل‌های MP4 وقتی در ویرایشگر جلسه «کیفیت‌های دیگر» (مثلاً 720p و 480p) اضافه شده باشد. انتخاب هر کاربر به خاطر سپرده می‌شود.', 'nias-course-widget'));
-                    $on_off_row('nias_player_ctrl_seen', __('نشان و نوار «دیده‌شده»', 'nias-course-widget'), __('دانشجو می‌بیند چند درصد و کدام بخش‌های ویدیو را دیده است.', 'nias-course-widget'));
-                    $on_off_row('nias_player_ctrl_pip', __('تصویر در تصویر (PiP)', 'nias-course-widget'), '');
-                    $on_off_row('nias_player_ctrl_fullscreen', __('تمام‌صفحه', 'nias-course-widget'), '');
-                    $on_off_row('nias_player_ctrl_keyboard', __('میانبرهای صفحه‌کلید', 'nias-course-widget'), __('فاصله: پخش/توقف · ← →: ۵ ثانیه · J/L: پرش · ↑ ↓: صدا · M: بی‌صدا · F: تمام‌صفحه · 0 تا 9: پرش به ۰٪ تا ۹۰٪', 'nias-course-widget'));
-                    $on_off_row('nias_player_ctrl_doubletap', __('دو ضربه برای جلو/عقب در موبایل', 'nias-course-widget'), '');
+                    $on_off_row('nias_player_ctrl_skip', __('Forward and back buttons', 'nias-course-widget'), '');
+                    $seg('nias_player_skip_seconds', __('Skip amount (seconds)', 'nias-course-widget'), array('5' => '۵', '10' => '۱۰', '15' => '۱۵', '30' => '۳۰'), __('For the buttons, the J/L keys and double tap on mobile.', 'nias-course-widget'));
+                    $on_off_row('nias_player_ctrl_volume', __('Volume control', 'nias-course-widget'), '');
+                    $on_off_row('nias_player_ctrl_time', __('Show time', 'nias-course-widget'), __('Clicking the time switches between "elapsed" and "remaining".', 'nias-course-widget'));
+                    $on_off_row('nias_player_ctrl_speed', __('Playback speed selection', 'nias-course-widget'), '');
+                    $on_off_row('nias_player_ctrl_quality', __('Quality selection', 'nias-course-widget'), __('Students change the video quality from the player\'s settings menu: for HLS and DASH videos with several qualities, and for MP4 files when "Other qualities" (e.g. 720p and 480p) were added in the lesson editor. Each user\'s choice is remembered.', 'nias-course-widget'));
+                    $on_off_row('nias_player_ctrl_seen', __('"Watched" badge and bar', 'nias-course-widget'), __('Students see what percentage and which parts of the video they have watched.', 'nias-course-widget'));
+                    $on_off_row('nias_player_ctrl_pip', __('Picture in picture (PiP)', 'nias-course-widget'), '');
+                    $on_off_row('nias_player_ctrl_fullscreen', __('Full screen', 'nias-course-widget'), '');
+                    $on_off_row('nias_player_ctrl_keyboard', __('Keyboard shortcuts', 'nias-course-widget'), __('Space: play/pause · ← →: 5 seconds · J/L: skip · ↑ ↓: volume · M: mute · F: full screen · 0 to 9: jump to 0% to 90%', 'nias-course-widget'));
+                    $on_off_row('nias_player_ctrl_doubletap', __('Double tap to skip on mobile', 'nias-course-widget'), '');
                     ?>
-                    <div class="nias-row-block nias-row-sep"><?php $num('nias_player_idle', __('مخفی شدن کنترل‌ها هنگام پخش پس از', 'nias-course-widget'), '', 1, 15, __('ثانیه', 'nias-course-widget')); ?></div>
+                    <div class="nias-row-block nias-row-sep"><?php $num('nias_player_idle', __('Hide controls while playing after', 'nias-course-widget'), '', 1, 15, __('seconds', 'nias-course-widget')); ?></div>
                 <?php nias_set_card_close(); ?>
 
-                <?php nias_set_card_open($icon('<circle cx="12" cy="12" r="10"/><path d="m10 8 6 4-6 4V8Z"/>'), __('پخش', 'nias-course-widget')); ?>
+                <?php nias_set_card_open($icon('<circle cx="12" cy="12" r="10"/><path d="m10 8 6 4-6 4V8Z"/>'), __('Playback', 'nias-course-widget')); ?>
                     <div class="nias-row-block">
-                        <?php $multi('nias_player_speeds', __('سرعت‌های قابل انتخاب', 'nias-course-widget'), __('«عادی» همیشه در دسترس است.', 'nias-course-widget'), $speeds); ?>
+                        <?php $multi('nias_player_speeds', __('Selectable speeds', 'nias-course-widget'), __('"Normal" is always available.', 'nias-course-widget'), $speeds); ?>
                         <div class="npl-grid">
-                            <?php $select('nias_player_default_speed', __('سرعت پیش‌فرض', 'nias-course-widget'), '', $speeds); ?>
-                            <?php $select('nias_player_max_speed', __('حداکثر سرعت مجاز', 'nias-course-widget'), __('برای دوره‌هایی که نباید سریع دیده شوند.', 'nias-course-widget'), array('1' => __('عادی (بدون افزایش سرعت)', 'nias-course-widget'), '1.25' => '۱٫۲۵×', '1.5' => '۱٫۵×', '1.75' => '۱٫۷۵×', '2' => '۲×')); ?>
+                            <?php $select('nias_player_default_speed', __('Default speed', 'nias-course-widget'), '', $speeds); ?>
+                            <?php $select('nias_player_max_speed', __('Maximum allowed speed', 'nias-course-widget'), __('For courses that should not be watched fast.', 'nias-course-widget'), array('1' => __('Normal (no speed-up)', 'nias-course-widget'), '1.25' => '۱٫۲۵×', '1.5' => '۱٫۵×', '1.75' => '۱٫۷۵×', '2' => '۲×')); ?>
                         </div>
                     </div>
-                    <?php $seg('nias_player_resume', __('ادامهٔ پخش از آخرین موقعیت', 'nias-course-widget'), array('auto' => __('خودکار', 'nias-course-widget'), 'ask' => __('بپرسد', 'nias-course-widget'), 'off' => __('همیشه از ابتدا', 'nias-course-widget'))); ?>
+                    <?php $seg('nias_player_resume', __('Resume from the last position', 'nias-course-widget'), array('auto' => __('Automatic', 'nias-course-widget'), 'ask' => __('Ask', 'nias-course-widget'), 'off' => __('Always from the start', 'nias-course-widget'))); ?>
                     <?php
-                    $on_off_row('nias_player_auto_next', __('پخش خودکار درس بعدی', 'nias-course-widget'), __('در پایان ویدیو، درس بعدی با شمارش معکوس (قابل لغو) شروع می‌شود. در نمای مدرن دوره.', 'nias-course-widget'));
+                    $on_off_row('nias_player_auto_next', __('Autoplay next lesson', 'nias-course-widget'), __('At the end of the video, the next lesson starts after a (cancellable) countdown. In the modern course view.', 'nias-course-widget'));
                     ?>
-                    <div class="nias-row-block nias-row-sep" data-nias-show-when="nias_player_auto_next=on"><?php $num('nias_player_auto_next_delay', __('شمارش معکوس', 'nias-course-widget'), '', 2, 30, __('ثانیه', 'nias-course-widget')); ?></div>
+                    <div class="nias-row-block nias-row-sep" data-nias-show-when="nias_player_auto_next=on"><?php $num('nias_player_auto_next_delay', __('Countdown', 'nias-course-widget'), '', 2, 30, __('seconds', 'nias-course-widget')); ?></div>
                     <?php
-                    $on_off_row('nias_player_autoplay', __('شروع خودکار پخش', 'nias-course-widget'), __('مرورگرها پخش خودکار با صدا را مسدود می‌کنند؛ در آن صورت ویدیو بی‌صدا شروع می‌شود.', 'nias-course-widget'));
-                    $on_off_row('nias_player_remember', __('به‌خاطر سپردن صدا و سرعت هر کاربر', 'nias-course-widget'), '');
-                    $seg('nias_player_preload', __('پیش‌بارگذاری', 'nias-course-widget'), array('metadata' => __('فقط اطلاعات (پیشنهادی)', 'nias-course-widget'), 'auto' => __('بخشی از ویدیو', 'nias-course-widget'), 'none' => __('هیچ (کمترین مصرف)', 'nias-course-widget')));
+                    $on_off_row('nias_player_autoplay', __('Start playing automatically', 'nias-course-widget'), __('Browsers block autoplay with sound; in that case the video starts muted.', 'nias-course-widget'));
+                    $on_off_row('nias_player_remember', __('Remember each user\'s volume and speed', 'nias-course-widget'), '');
+                    $seg('nias_player_preload', __('Preload', 'nias-course-widget'), array('metadata' => __('Metadata only (recommended)', 'nias-course-widget'), 'auto' => __('Part of the video', 'nias-course-widget'), 'none' => __('None (lowest usage)', 'nias-course-widget')));
                     ?>
                 <?php nias_set_card_close(); ?>
 
-                <?php nias_set_card_open($icon('<path d="M22 10 12 5 2 10l10 5 10-5Z"/><path d="M6 12v5c3 2 9 2 12 0v-5"/>'), __('قوانین یادگیری', 'nias-course-widget')); ?>
+                <?php nias_set_card_open($icon('<path d="M22 10 12 5 2 10l10 5 10-5Z"/><path d="M6 12v5c3 2 9 2 12 0v-5"/>'), __('Learning rules', 'nias-course-widget')); ?>
                     <div class="nias-row-block">
-                        <div class="nias-row-desc"><?php esc_html_e('پلیر هر ثانیه از ویدیو را که دانشجو واقعاً تماشا کند ثبت می‌کند؛ جلو زدن، زمان توقف و سرعت بیش از ۲ برابر حساب نمی‌شود. گزارش هر دانشجو در صفحهٔ ویرایش محصول، باکس «گزارش تماشای ویدیو» است.', 'nias-course-widget'); ?></div>
-                        <?php $num('nias_video_complete_pct', __('درصد تماشا برای تکمیل درس', 'nias-course-widget'), __('پیشرفت دوره و شرط «حداقل پیشرفت» مدرک بر این اساس است.', 'nias-course-widget'), 10, 100, '٪'); ?>
+                        <div class="nias-row-desc"><?php esc_html_e('The player records every second of video the student really watches; skipping ahead, paused time and speeds above 2x do not count. Each student\'s report is on the product edit page, in the "Video watch report" box.', 'nias-course-widget'); ?></div>
+                        <?php $num('nias_video_complete_pct', __('Watch percentage to complete a lesson', 'nias-course-widget'), __('Course progress and the certificate\'s "minimum progress" requirement are based on this.', 'nias-course-widget'), 10, 100, '٪'); ?>
                     </div>
-                    <?php $seg('nias_player_seek_lock', __('جلوگیری از جلو زدن', 'nias-course-widget'), array('off' => __('آزاد', 'nias-course-widget'), 'first' => __('تا تکمیل درس', 'nias-course-widget'), 'always' => __('همیشه', 'nias-course-widget')), __('دانشجو نمی‌تواند به بخشی که هنوز ندیده بپرد (عقب رفتن آزاد است). در حالت «تا تکمیل درس»، پس از رسیدن به درصد تکمیل، پرش آزاد می‌شود.', 'nias-course-widget')); ?>
-                    <?php $on_off_row('nias_player_pause_hidden', __('توقف پخش با ترک تب', 'nias-course-widget'), __('اگر دانشجو به تب یا برنامهٔ دیگری برود، ویدیو متوقف می‌شود (به‌جز حالت تصویر در تصویر).', 'nias-course-widget')); ?>
+                    <?php $seg('nias_player_seek_lock', __('Prevent skipping ahead', 'nias-course-widget'), array('off' => __('Free', 'nias-course-widget'), 'first' => __('Until the lesson is completed', 'nias-course-widget'), 'always' => __('Always', 'nias-course-widget')), __('Students cannot jump to a part they have not watched yet (going back is free). In "Until the lesson is completed" mode, skipping is allowed once the completion percentage is reached.', 'nias-course-widget')); ?>
+                    <?php $on_off_row('nias_player_pause_hidden', __('Pause when the tab is left', 'nias-course-widget'), __('If the student switches to another tab or app, the video pauses (except in picture-in-picture).', 'nias-course-widget')); ?>
                 <?php nias_set_card_close(); ?>
 
-                <?php nias_set_card_open($icon('<path d="M12 3 4 6v6c0 5 3.4 8.4 8 9 4.6-.6 8-4 8-9V6l-8-3Z"/>'), __('محافظت از ویدیو', 'nias-course-widget')); ?>
-                    <?php $on_off_row('nias_video_watermark', __('واترمارک اختصاصی هر دانشجو', 'nias-course-widget'), __('مشخصات دانشجو کم‌رنگ روی ویدیو نمایش داده می‌شود تا ضبط و انتشار غیرمجاز قابل ردیابی باشد.', 'nias-course-widget')); ?>
+                <?php nias_set_card_open($icon('<path d="M12 3 4 6v6c0 5 3.4 8.4 8 9 4.6-.6 8-4 8-9V6l-8-3Z"/>'), __('Video protection', 'nias-course-widget')); ?>
+                    <?php $on_off_row('nias_video_watermark', __('Personal watermark for each student', 'nias-course-widget'), __('The student\'s details are shown faintly on the video so unauthorized recording and sharing can be traced.', 'nias-course-widget')); ?>
                     <div data-nias-show-when="nias_video_watermark=on">
                         <div class="nias-row-block nias-row-sep">
-                            <?php nias_set_text_field('nias_player_wm_text', __('متن واترمارک', 'nias-course-widget'), '{name} — {phone}'); ?>
-                            <div class="nias-row-desc"><?php esc_html_e('فیلدها: {name} نام کامل · {first_name} · {phone} موبایل (بخشی پوشیده) · {email} ایمیل (پوشیده) · {username} · {user_id} · {date} تاریخ امروز · {site} دامنه', 'nias-course-widget'); ?></div>
+                            <?php nias_set_text_field('nias_player_wm_text', __('Watermark text', 'nias-course-widget'), '{name} — {phone}'); ?>
+                            <div class="nias-row-desc"><?php esc_html_e('Fields: {name} full name · {first_name} · {phone} mobile (partly masked) · {email} email (masked) · {username} · {user_id} · {date} today\'s date · {site} domain', 'nias-course-widget'); ?></div>
                         </div>
-                        <?php $seg('nias_player_wm_mode', __('نحوهٔ نمایش', 'nias-course-widget'), array('move' => __('متحرک (پیشنهادی)', 'nias-course-widget'), 'corner' => __('ثابت در گوشه', 'nias-course-widget'))); ?>
+                        <?php $seg('nias_player_wm_mode', __('Display mode', 'nias-course-widget'), array('move' => __('Moving (recommended)', 'nias-course-widget'), 'corner' => __('Fixed in a corner', 'nias-course-widget'))); ?>
                         <div class="nias-row-block nias-row-sep"><div class="npl-grid">
-                            <?php $num('nias_player_wm_opacity', __('شفافیت', 'nias-course-widget'), '', 5, 100, '٪'); ?>
-                            <?php $num('nias_player_wm_size', __('اندازهٔ متن', 'nias-course-widget'), '', 9, 40, 'px'); ?>
-                            <?php $num('nias_player_wm_interval', __('جابه‌جایی هر', 'nias-course-widget'), '', 3, 60, __('ثانیه', 'nias-course-widget')); ?>
+                            <?php $num('nias_player_wm_opacity', __('Opacity', 'nias-course-widget'), '', 5, 100, '٪'); ?>
+                            <?php $num('nias_player_wm_size', __('Text size', 'nias-course-widget'), '', 9, 40, 'px'); ?>
+                            <?php $num('nias_player_wm_interval', __('Move every', 'nias-course-widget'), '', 3, 60, __('seconds', 'nias-course-widget')); ?>
                         </div></div>
                     </div>
-                    <?php $on_off_row('nias_player_no_download', __('جلوگیری از دانلود', 'nias-course-widget'), __('دکمه‌های دانلود ویدیو حذف می‌شوند، کلیک راست و «ذخیرهٔ ویدیو» در صفحهٔ دوره و پلیر بسته می‌شود، Ctrl+S غیرفعال می‌شود و لینک ویدیو اگر مستقیم در مرورگر باز شود پخش/ذخیره نمی‌شود. با زدن PrintScreen یا ابزار برش صفحه (Win+Shift+S) و رفتن به برنامهٔ دیگر، تصویر ویدیو سیاه و پخش متوقف می‌شود. توجه: هیچ سایتی نمی‌تواند اسکرین‌شات یا فیلم‌برداری از صفحه را صددرصد ببندد؛ واترمارک نام کاربر (همین صفحه) بازدارندهٔ اصلی است.', 'nias-course-widget')); ?>
-                    <?php $on_off_row('nias_player_block_context', __('غیرفعال کردن کلیک راست روی ویدیو', 'nias-course-widget'), __('گزینه‌های «ذخیرهٔ ویدیو» مرورگر پنهان می‌شوند. دکمهٔ دانلود پلیر همیشه پنهان است.', 'nias-course-widget')); ?>
+                    <?php $on_off_row('nias_player_no_download', __('Prevent download', 'nias-course-widget'), __('Video download buttons are removed, right click and "Save video" are blocked on the course page and player, Ctrl+S is disabled, and the video link does not play/save if opened directly in the browser. Pressing PrintScreen or the snipping tool (Win+Shift+S) and switching to another app turns the video black and pauses it. Note: no website can fully block screenshots or screen recording; the user-name watermark (on this page) is the main deterrent.', 'nias-course-widget')); ?>
+                    <?php $on_off_row('nias_player_block_context', __('Disable right click on the video', 'nias-course-widget'), __('The browser\'s "Save video" options are hidden. The player\'s download button is always hidden.', 'nias-course-widget')); ?>
                 <?php nias_set_card_close(); ?>
 
-                <?php nias_set_card_open($icon('<path d="M2 12h3l3-8 4 16 3-8h7"/>'), __('پخش جریانی (HLS / DASH)', 'nias-course-widget')); ?>
-                    <?php $seg('nias_player_hls_start', __('کیفیت شروع پخش', 'nias-course-widget'), array('auto' => __('خودکار', 'nias-course-widget'), 'low' => __('پایین‌ترین (شروع سریع)', 'nias-course-widget'), 'high' => __('بالاترین', 'nias-course-widget'))); ?>
-                    <?php $on_off_row('nias_player_hls_cap', __('محدود کردن کیفیت به اندازهٔ پلیر', 'nias-course-widget'), __('در پلیر کوچک یا موبایل کیفیت ۱۰۸۰ دریافت نمی‌شود؛ مصرف اینترنت دانشجو کمتر می‌شود.', 'nias-course-widget')); ?>
-                    <div class="nias-row-block nias-row-sep"><?php $num('nias_player_buffer', __('بافر جلوتر از زمان پخش', 'nias-course-widget'), __('بیشتر = پخش پایدارتر در اینترنت ضعیف، مصرف بیشتر در صورت ترک ویدیو.', 'nias-course-widget'), 10, 120, __('ثانیه', 'nias-course-widget')); ?></div>
+                <?php nias_set_card_open($icon('<path d="M2 12h3l3-8 4 16 3-8h7"/>'), __('Streaming (HLS / DASH)', 'nias-course-widget')); ?>
+                    <?php $seg('nias_player_hls_start', __('Starting quality', 'nias-course-widget'), array('auto' => __('Automatic', 'nias-course-widget'), 'low' => __('Lowest (fast start)', 'nias-course-widget'), 'high' => __('Highest', 'nias-course-widget'))); ?>
+                    <?php $on_off_row('nias_player_hls_cap', __('Limit quality to the player size', 'nias-course-widget'), __('On a small player or mobile, 1080p is not loaded; the student uses less data.', 'nias-course-widget')); ?>
+                    <div class="nias-row-block nias-row-sep"><?php $num('nias_player_buffer', __('Buffer ahead of playback', 'nias-course-widget'), __('More = smoother playback on weak connections, more data used if the video is left.', 'nias-course-widget'), 10, 120, __('seconds', 'nias-course-widget')); ?></div>
                 <?php nias_set_card_close(); ?>
 
                 <div class="npl-actions">
                     <?php nias_set_save_button('nias_save_player_settings'); ?>
-                    <button type="submit" name="nias_player_reset" value="1" class="nias-btn-del" onclick="return confirm('<?php echo esc_js(__('همهٔ تنظیمات پلیر به حالت پیش‌فرض برگردد؟', 'nias-course-widget')); ?>')"><?php esc_html_e('بازگشت به پیش‌فرض', 'nias-course-widget'); ?></button>
+                    <button type="submit" name="nias_player_reset" value="1" class="nias-btn-del" onclick="return confirm('<?php echo esc_js(__('Reset all player settings to default?', 'nias-course-widget')); ?>')"><?php esc_html_e('Reset to default', 'nias-course-widget'); ?></button>
                 </div>
             </form>
         </div>
 
         <aside class="npl-preview">
             <div class="nias-card">
-                <div class="nias-card-head"><?php echo $icon('<path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/>'); // phpcs:ignore ?><div class="nias-card-title"><?php esc_html_e('پیش‌نمایش زنده', 'nias-course-widget'); ?></div></div>
+                <div class="nias-card-head"><?php echo $icon('<path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/>'); // phpcs:ignore ?><div class="nias-card-title"><?php esc_html_e('Live preview', 'nias-course-widget'); ?></div></div>
                 <div class="nias-card-pad">
                     <div id="npl-stage" class="npl-stage"></div>
                     <div class="nias-field" style="margin-top:12px">
-                        <label class="nias-flabel"><?php esc_html_e('ویدیوی نمونه', 'nias-course-widget'); ?></label>
+                        <label class="nias-flabel"><?php esc_html_e('Sample video', 'nias-course-widget'); ?></label>
                         <input type="url" id="npl-sample" class="nias-input" dir="ltr" value="<?php echo esc_attr($sample_url); ?>" placeholder="https://…/video.mp4 | master.m3u8 | manifest.mpd">
                     </div>
-                    <div class="nias-fdesc"><?php esc_html_e('تغییرات بلافاصله اینجا اعمال می‌شوند؛ برای اعمال روی سایت «ذخیره» را بزنید. واترمارک با مشخصات خودتان نمایش داده می‌شود. پیش‌نمایش در پیشرفت دانشجوها ثبت نمی‌شود.', 'nias-course-widget'); ?></div>
+                    <div class="nias-fdesc"><?php esc_html_e('Changes apply here immediately; click "Save" to apply them on the site. The watermark is shown with your own details. The preview is not recorded in student progress.', 'nias-course-widget'); ?></div>
                 </div>
             </div>
         </aside>
@@ -489,7 +489,7 @@ function nias_player_render_page()
     .npl-shell{align-items:flex-start}
     .npl-preview{width:420px;flex:none;position:sticky;top:46px}
     .npl-stage{border-radius:12px;overflow:hidden;background:#0e1518}
-    .npl-stage:empty::before{content:"<?php echo esc_js(__('یک آدرس ویدیو برای پیش‌نمایش وارد کنید', 'nias-course-widget')); ?>";display:flex;align-items:center;justify-content:center;aspect-ratio:16/9;color:#8a94a6;font-size:13px}
+    .npl-stage:empty::before{content:"<?php echo esc_js(__('Enter a video address for the preview', 'nias-course-widget')); ?>";display:flex;align-items:center;justify-content:center;aspect-ratio:16/9;color:#8a94a6;font-size:13px}
     .npl-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:14px}
     .npl-color-row{display:flex;gap:8px;align-items:center}
     .npl-color-row input[type=color]{width:44px;height:38px;border:1px solid #e3e7ef;border-radius:8px;padding:2px;background:#fff;cursor:pointer;flex:none}

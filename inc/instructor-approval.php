@@ -138,10 +138,10 @@ function nias_inst_course_save()
     $pid  = isset($_POST['course']) ? (int) $_POST['course'] : 0;
     $back = wp_validate_redirect(isset($_POST['back']) ? esc_url_raw(wp_unslash($_POST['back'])) : '', home_url('/'));
     if (!$uid || !wp_verify_nonce(isset($_POST['_wpnonce']) ? sanitize_text_field(wp_unslash($_POST['_wpnonce'])) : '', 'nias_inst_course_' . $pid)) {
-        wp_die(esc_html__('درخواست منقضی شده است.', 'nias-course-widget'), '', array('response' => 403, 'back_link' => true));
+        wp_die(esc_html__('The request has expired.', 'nias-course-widget'), '', array('response' => 403, 'back_link' => true));
     }
     if ($pid ? !nias_can_edit_course($uid, $pid) : !nias_inst_can_create($uid)) {
-        wp_die(esc_html__('دسترسی لازم را ندارید.', 'nias-course-widget'), '', array('response' => 403, 'back_link' => true));
+        wp_die(esc_html__('You do not have the required permission.', 'nias-course-widget'), '', array('response' => 403, 'back_link' => true));
     }
     $title = sanitize_text_field(wp_unslash(isset($_POST['title']) ? $_POST['title'] : ''));
     if ($title === '') {
@@ -218,7 +218,7 @@ function nias_inst_panel_details_view($user_id)
 {
     $pid = isset($_GET['course']) ? (int) $_GET['course'] : 0;
     if ($pid ? !nias_can_edit_course($user_id, $pid) : !nias_inst_can_create($user_id)) {
-        return '<div class="nip-wrap"><div class="nip-empty">' . esc_html__('دسترسی لازم را ندارید.', 'nias-course-widget') . '</div></div>';
+        return '<div class="nip-wrap"><div class="nip-empty">' . esc_html__('You do not have the required permission.', 'nias-course-widget') . '</div></div>';
     }
     $d = $pid ? nias_inst_course_details($pid, $user_id) : array('title' => '', 'excerpt' => '', 'content' => '', 'thumbnail' => 0, 'price' => '');
     $is_product = $pid ? get_post_type($pid) === 'product' : nias_inst_new_course_type() === 'product';
@@ -226,27 +226,27 @@ function nias_inst_panel_details_view($user_id)
     $pending = $pid ? nias_course_pending_get($pid) : array();
     $here = $pid ? nias_inst_panel_url('course', array('course' => $pid)) : nias_inst_panel_url('course');
 
-    $h = '<div class="nip-wrap"><div class="nip-h"><h2>' . esc_html($pid ? __('مشخصات دوره', 'nias-course-widget') : __('دورهٔ جدید', 'nias-course-widget')) . '</h2>'
-        . ($pid ? '<a class="nip-btn pri" href="' . esc_url(nias_inst_panel_url('curriculum', array('course' => $pid))) . '">' . esc_html__('جلسات و فصل‌ها', 'nias-course-widget') . '</a>' : '') . '</div>';
+    $h = '<div class="nip-wrap"><div class="nip-h"><h2>' . esc_html($pid ? __('Course details', 'nias-course-widget') : __('New course', 'nias-course-widget')) . '</h2>'
+        . ($pid ? '<a class="nip-btn pri" href="' . esc_url(nias_inst_panel_url('curriculum', array('course' => $pid))) . '">' . esc_html__('Lessons and chapters', 'nias-course-widget') . '</a>' : '') . '</div>';
     $h .= nias_inst_panel_notice();
     if (!$pid) {
         $h .= '<div class="nip-info">' . esc_html(nias_inst_approval_on()
-            ? sprintf(__('دوره به‌صورت %s ساخته می‌شود و تا بررسی و انتشار مدیر سایت، در وضعیت «در انتظار بررسی» می‌ماند.', 'nias-course-widget'), $is_product ? __('محصول ووکامرس', 'nias-course-widget') : __('«دوره»', 'nias-course-widget'))
-            : sprintf(__('دوره به‌صورت %s ساخته و منتشر می‌شود.', 'nias-course-widget'), $is_product ? __('محصول ووکامرس', 'nias-course-widget') : __('«دوره»', 'nias-course-widget'))) . '</div>';
+            ? sprintf(__('The course is created as a %s and stays "Pending review" until the site admin reviews and publishes it.', 'nias-course-widget'), $is_product ? __('WooCommerce product', 'nias-course-widget') : __('"Course"', 'nias-course-widget'))
+            : sprintf(__('The course is created and published as a %s.', 'nias-course-widget'), $is_product ? __('WooCommerce product', 'nias-course-widget') : __('"Course"', 'nias-course-widget'))) . '</div>';
     } elseif (isset($pending['details'])) {
-        $h .= '<div class="nip-info wait">' . esc_html__('تغییرات مشخصات این دوره در انتظار تأیید مدیر است؛ تا آن زمان سایت نسخهٔ قبلی را نشان می‌دهد.', 'nias-course-widget') . '</div>';
+        $h .= '<div class="nip-info wait">' . esc_html__('Changes to this course\'s details are awaiting admin approval; until then the site shows the previous version.', 'nias-course-widget') . '</div>';
     }
     wp_enqueue_media();
     $img = $d['thumbnail'] ? wp_get_attachment_image_url($d['thumbnail'], 'medium') : '';
     $h .= '<form class="nip-form" method="post" action="' . esc_url(admin_url('admin-post.php')) . '">' . wp_nonce_field('nias_inst_course_' . $pid, '_wpnonce', false, false)
         . '<input type="hidden" name="action" value="nias_inst_course_save"><input type="hidden" name="course" value="' . (int) $pid . '"><input type="hidden" name="back" value="' . esc_attr($here) . '">'
-        . '<label>' . esc_html__('عنوان دوره', 'nias-course-widget') . ' <b>*</b><input type="text" name="title" required maxlength="200" value="' . esc_attr($d['title']) . '"></label>'
-        . '<label>' . esc_html__('توضیح کوتاه', 'nias-course-widget') . '<textarea name="excerpt" rows="3">' . esc_textarea($d['excerpt']) . '</textarea></label>'
-        . '<label>' . esc_html__('توضیحات کامل', 'nias-course-widget') . '<textarea name="content" rows="8">' . esc_textarea($d['content']) . '</textarea></label>'
-        . '<div class="nip-img"><span>' . esc_html__('تصویر دوره', 'nias-course-widget') . '</span><div class="nip-img-box"' . ($img ? ' style="background-image:url(' . esc_url($img) . ')"' : '') . '></div>'
-        . '<input type="hidden" name="thumbnail" value="' . (int) $d['thumbnail'] . '"><button type="button" class="nip-btn" data-nip-img>' . esc_html__('انتخاب تصویر', 'nias-course-widget') . '</button> <button type="button" class="nip-btn" data-nip-img-clear>' . esc_html__('حذف', 'nias-course-widget') . '</button></div>'
-        . ($show_price ? '<label>' . esc_html__('قیمت (تومان)', 'nias-course-widget') . '<input type="text" name="price" inputmode="numeric" value="' . esc_attr($d['price']) . '"><small>' . esc_html__('قیمت پس از تأیید مدیر اعمال می‌شود.', 'nias-course-widget') . '</small></label>' : '')
-        . '<div><button class="nip-btn pri" type="submit">' . esc_html($pid ? (nias_inst_needs_approval($user_id, $pid) ? __('ارسال برای تأیید', 'nias-course-widget') : __('ذخیره', 'nias-course-widget')) : __('ساخت دوره و رفتن به جلسات', 'nias-course-widget')) . '</button></div></form>';
+        . '<label>' . esc_html__('Course title', 'nias-course-widget') . ' <b>*</b><input type="text" name="title" required maxlength="200" value="' . esc_attr($d['title']) . '"></label>'
+        . '<label>' . esc_html__('Short description', 'nias-course-widget') . '<textarea name="excerpt" rows="3">' . esc_textarea($d['excerpt']) . '</textarea></label>'
+        . '<label>' . esc_html__('Full description', 'nias-course-widget') . '<textarea name="content" rows="8">' . esc_textarea($d['content']) . '</textarea></label>'
+        . '<div class="nip-img"><span>' . esc_html__('Course image', 'nias-course-widget') . '</span><div class="nip-img-box"' . ($img ? ' style="background-image:url(' . esc_url($img) . ')"' : '') . '></div>'
+        . '<input type="hidden" name="thumbnail" value="' . (int) $d['thumbnail'] . '"><button type="button" class="nip-btn" data-nip-img>' . esc_html__('Choose image', 'nias-course-widget') . '</button> <button type="button" class="nip-btn" data-nip-img-clear>' . esc_html__('Remove', 'nias-course-widget') . '</button></div>'
+        . ($show_price ? '<label>' . esc_html__('Price (Toman)', 'nias-course-widget') . '<input type="text" name="price" inputmode="numeric" value="' . esc_attr($d['price']) . '"><small>' . esc_html__('The price applies after admin approval.', 'nias-course-widget') . '</small></label>' : '')
+        . '<div><button class="nip-btn pri" type="submit">' . esc_html($pid ? (nias_inst_needs_approval($user_id, $pid) ? __('Send for approval', 'nias-course-widget') : __('Save', 'nias-course-widget')) : __('Create course and go to lessons', 'nias-course-widget')) . '</button></div></form>';
     $h .= "<script>document.addEventListener('DOMContentLoaded',function(){var f=document.querySelector('.nip-form');if(!f)return;var inp=f.querySelector('[name=thumbnail]'),box=f.querySelector('.nip-img-box'),fr;f.querySelector('[data-nip-img]').addEventListener('click',function(){if(!window.wp||!wp.media){return;}fr=fr||wp.media({title:'تصویر دوره',library:{type:'image'},multiple:false});fr.off('select').on('select',function(){var a=fr.state().get('selection').first().toJSON();inp.value=a.id;box.style.backgroundImage='url('+((a.sizes&&a.sizes.medium?a.sizes.medium.url:a.url))+')';});fr.open();});f.querySelector('[data-nip-img-clear]').addEventListener('click',function(){inp.value='0';box.style.backgroundImage='';});});</script>";
     return $h . '</div>';
 }
@@ -256,12 +256,12 @@ function nias_inst_panel_notice()
 {
     $n = isset($_GET['nip_notice']) ? sanitize_key(wp_unslash($_GET['nip_notice'])) : '';
     $map = array(
-        'saved'           => array('ok', __('ذخیره شد.', 'nias-course-widget')),
-        'pending'         => array('wait', __('تغییرات برای تأیید مدیر ارسال شد؛ پس از تأیید روی دوره اعمال می‌شود.', 'nias-course-widget')),
-        'created'         => array('ok', __('دوره ساخته شد. حالا فصل‌ها و جلسات را اضافه کنید.', 'nias-course-widget')),
-        'created_pending' => array('wait', __('دوره ساخته شد و در انتظار بررسی مدیر است. حالا فصل‌ها و جلسات را اضافه کنید.', 'nias-course-widget')),
-        'title'           => array('err', __('عنوان دوره را وارد کنید.', 'nias-course-widget')),
-        'error'           => array('err', __('انجام نشد.', 'nias-course-widget')),
+        'saved'           => array('ok', __('Saved.', 'nias-course-widget')),
+        'pending'         => array('wait', __('The changes were sent for admin approval; they apply to the course after approval.', 'nias-course-widget')),
+        'created'         => array('ok', __('The course was created. Now add chapters and lessons.', 'nias-course-widget')),
+        'created_pending' => array('wait', __('The course was created and is awaiting admin review. Now add chapters and lessons.', 'nias-course-widget')),
+        'title'           => array('err', __('Enter the course title.', 'nias-course-widget')),
+        'error'           => array('err', __('Failed.', 'nias-course-widget')),
     );
     return isset($map[$n]) ? '<div class="nip-info ' . esc_attr($map[$n][0]) . '">' . esc_html($map[$n][1]) . '</div>' : '';
 }
@@ -277,10 +277,10 @@ function nias_inst_notify_admin($post_id, $user_id, $kind)
     }
     $u = get_userdata($user_id);
     $title = get_the_title($post_id);
-    $subject = $kind === 'new' ? sprintf(__('دورهٔ جدید «%s» در انتظار بررسی', 'nias-course-widget'), $title) : sprintf(__('تغییرات دورهٔ «%s» در انتظار تأیید', 'nias-course-widget'), $title);
-    wp_mail(get_option('admin_email'), $subject, sprintf(__("%1\$s %2\$s.\n\nبررسی: %3\$s", 'nias-course-widget'),
-        $u ? $u->display_name : __('یک مدرس', 'nias-course-widget'),
-        $kind === 'new' ? sprintf(__('دورهٔ «%s» را ساخت', 'nias-course-widget'), $title) : sprintf(__('دورهٔ «%s» را ویرایش کرد', 'nias-course-widget'), $title),
+    $subject = $kind === 'new' ? sprintf(__('New course "%s" pending review', 'nias-course-widget'), $title) : sprintf(__('Changes to the course "%s" awaiting approval', 'nias-course-widget'), $title);
+    wp_mail(get_option('admin_email'), $subject, sprintf(__("%1\$s %2\$s.\n\nReview: %3\$s", 'nias-course-widget'),
+        $u ? $u->display_name : __('An instructor', 'nias-course-widget'),
+        $kind === 'new' ? sprintf(__('created the course "%s"', 'nias-course-widget'), $title) : sprintf(__('edited the course "%s"', 'nias-course-widget'), $title),
         admin_url('admin.php?page=nias-course-approvals')));
 }
 
@@ -294,24 +294,20 @@ function nias_inst_notify_instructor($user_id, $post_id, $approved, $note, $kind
     $title = get_the_title($post_id);
     if ($kind === 'new') {
         wp_mail($u->user_email,
-            $approved ? sprintf(__('دورهٔ «%s» منتشر شد', 'nias-course-widget'), $title) : sprintf(__('دورهٔ «%s» منتشر نشد', 'nias-course-widget'), $title),
-            sprintf(__("%1\$s عزیز،
-
-%2\$s%3\$s
-
-%4\$s", 'nias-course-widget'), $u->display_name,
-                $approved ? sprintf(__('مدیر سایت دورهٔ «%1$s» را بررسی و منتشر کرد: %2$s', 'nias-course-widget'), $title, get_permalink($post_id)) : sprintf(__('مدیر سایت دورهٔ «%s» را برای انتشار تأیید نکرد و به پیش‌نویس برگرداند.', 'nias-course-widget'), $title),
+            $approved ? sprintf(__('The course "%s" was published', 'nias-course-widget'), $title) : sprintf(__('The course "%s" was not published', 'nias-course-widget'), $title),
+            sprintf(__("Dear %1\$s,\n\n%2\$s%3\$s\n\n%4\$s", 'nias-course-widget'), $u->display_name,
+                $approved ? sprintf(__('The site admin reviewed and published the course "%1$s": %2$s', 'nias-course-widget'), $title, get_permalink($post_id)) : sprintf(__('The site admin did not approve the course "%s" for publishing and returned it to draft.', 'nias-course-widget'), $title),
                 $note !== '' ? "
 
-" . __('یادداشت مدیر:', 'nias-course-widget') . "
+" . __('Admin note:', 'nias-course-widget') . "
 " . $note : '', get_bloginfo('name')));
         return;
     }
     wp_mail($u->user_email,
-        $approved ? sprintf(__('تغییرات دورهٔ «%s» تأیید شد', 'nias-course-widget'), $title) : sprintf(__('تغییرات دورهٔ «%s» تأیید نشد', 'nias-course-widget'), $title),
-        sprintf(__("%1\$s عزیز،\n\n%2\$s%3\$s\n\n%4\$s", 'nias-course-widget'), $u->display_name,
-            $approved ? sprintf(__('مدیر سایت تغییرات شما در دورهٔ «%s» را تأیید کرد و روی سایت اعمال شد.', 'nias-course-widget'), $title) : sprintf(__('مدیر سایت تغییرات شما در دورهٔ «%s» را تأیید نکرد.', 'nias-course-widget'), $title),
-            $note !== '' ? "\n\n" . __('یادداشت مدیر:', 'nias-course-widget') . "\n" . $note : '', get_bloginfo('name')));
+        $approved ? sprintf(__('Changes to the course "%s" were approved', 'nias-course-widget'), $title) : sprintf(__('Changes to the course "%s" were not approved', 'nias-course-widget'), $title),
+        sprintf(__("Dear %1\$s,\n\n%2\$s%3\$s\n\n%4\$s", 'nias-course-widget'), $u->display_name,
+            $approved ? sprintf(__('The site admin approved your changes to the course "%s" and they were applied on the site.', 'nias-course-widget'), $title) : sprintf(__('The site admin did not approve your changes to the course "%s".', 'nias-course-widget'), $title),
+            $note !== '' ? "\n\n" . __('Admin note:', 'nias-course-widget') . "\n" . $note : '', get_bloginfo('name')));
 }
 
 /* -------------------------------------------------------------------------
@@ -357,15 +353,15 @@ function nias_inst_sections_diff($live, $new)
         $b = isset($new[$ci]) ? $new[$ci] : null;
         $ct = $b ? $b['section_title'] : $a['section_title'];
         if (!$a) {
-            $out[] = sprintf(__('فصل جدید: «%1$s» (%2$s جلسه)', 'nias-course-widget'), $ct, nias_fa_digits(count((array) $b['lessons'])));
+            $out[] = sprintf(__('New chapter: "%1$s" (%2$s lessons)', 'nias-course-widget'), $ct, nias_fa_digits(count((array) $b['lessons'])));
             continue;
         }
         if (!$b) {
-            $out[] = sprintf(__('حذف فصل: «%s»', 'nias-course-widget'), $a['section_title']);
+            $out[] = sprintf(__('Chapter removed: "%s"', 'nias-course-widget'), $a['section_title']);
             continue;
         }
         if ($a['section_title'] !== $b['section_title']) {
-            $out[] = sprintf(__('عنوان فصل: «%1$s» ← «%2$s»', 'nias-course-widget'), $a['section_title'], $b['section_title']);
+            $out[] = sprintf(__('Chapter title: "%1$s" → "%2$s"', 'nias-course-widget'), $a['section_title'], $b['section_title']);
         }
         $la = array_values((array) $a['lessons']);
         $lb = array_values((array) $b['lessons']);
@@ -374,23 +370,23 @@ function nias_inst_sections_diff($live, $new)
             $x = isset($la[$li]) ? $la[$li] : null;
             $y = isset($lb[$li]) ? $lb[$li] : null;
             if (!$x) {
-                $out[] = sprintf(__('جلسهٔ جدید در «%1$s»: «%2$s»', 'nias-course-widget'), $ct, $y['lesson_title']);
+                $out[] = sprintf(__('New lesson in "%1$s": "%2$s"', 'nias-course-widget'), $ct, $y['lesson_title']);
                 continue;
             }
             if (!$y) {
-                $out[] = sprintf(__('حذف جلسه از «%1$s»: «%2$s»', 'nias-course-widget'), $ct, $x['lesson_title']);
+                $out[] = sprintf(__('Lesson removed from "%1$s": "%2$s"', 'nias-course-widget'), $ct, $x['lesson_title']);
                 continue;
             }
             $changes = array();
             $fields = array(
-                'lesson_title' => __('عنوان', 'nias-course-widget'), 'lesson_content' => __('محتوا', 'nias-course-widget'),
-                'lesson_preview_video' => __('ویدیو', 'nias-course-widget'), 'lesson_download' => __('فایل', 'nias-course-widget'),
-                'lesson_private' => __('خصوصی بودن', 'nias-course-widget'), 'lesson_duration' => __('مدت', 'nias-course-widget'),
-                'lesson_quiz' => __('آزمون', 'nias-course-widget'), 'lesson_gate' => __('پیش‌نیاز', 'nias-course-widget'), 'lesson_label' => __('برچسب', 'nias-course-widget'),
-                'lesson_qualities' => __('کیفیت‌های ویدیو', 'nias-course-widget'),
-                'lesson_live' => __('کلاس زنده', 'nias-course-widget'), 'lesson_live_start' => __('زمان کلاس زنده', 'nias-course-widget'), 'lesson_live_url' => __('لینک کلاس زنده', 'nias-course-widget'),
-                'lesson_assign' => __('تکلیف', 'nias-course-widget'), 'lesson_assign_text' => __('شرح تکلیف', 'nias-course-widget'),
-                'lesson_drip' => __('قطره‌ای', 'nias-course-widget'), 'lesson_drip_day' => __('روز باز شدن', 'nias-course-widget'), 'lesson_drip_time' => __('ساعت باز شدن', 'nias-course-widget'),
+                'lesson_title' => __('Title', 'nias-course-widget'), 'lesson_content' => __('Content', 'nias-course-widget'),
+                'lesson_preview_video' => __('Video', 'nias-course-widget'), 'lesson_download' => __('File', 'nias-course-widget'),
+                'lesson_private' => __('Privacy', 'nias-course-widget'), 'lesson_duration' => __('Duration', 'nias-course-widget'),
+                'lesson_quiz' => __('Quiz', 'nias-course-widget'), 'lesson_gate' => __('Prerequisite', 'nias-course-widget'), 'lesson_label' => __('Label', 'nias-course-widget'),
+                'lesson_qualities' => __('Video qualities', 'nias-course-widget'),
+                'lesson_live' => __('Live class', 'nias-course-widget'), 'lesson_live_start' => __('Live class time', 'nias-course-widget'), 'lesson_live_url' => __('Live class link', 'nias-course-widget'),
+                'lesson_assign' => __('Assignment', 'nias-course-widget'), 'lesson_assign_text' => __('Assignment description', 'nias-course-widget'),
+                'lesson_drip' => __('Drip', 'nias-course-widget'), 'lesson_drip_day' => __('Opening day', 'nias-course-widget'), 'lesson_drip_time' => __('Opening time', 'nias-course-widget'),
             );
             foreach ($fields as $k => $label) {
                 $vx = isset($x[$k]) ? $x[$k] : '';
@@ -400,7 +396,7 @@ function nias_inst_sections_diff($live, $new)
                 }
             }
             if ($changes) {
-                $out[] = sprintf(__('جلسهٔ «%1$s»: تغییر %2$s', 'nias-course-widget'), $y['lesson_title'], implode('، ', $changes));
+                $out[] = sprintf(__('Lesson "%1$s": %2$s changed', 'nias-course-widget'), $y['lesson_title'], implode('، ', $changes));
             }
         }
     }
@@ -412,14 +408,14 @@ add_action('admin_menu', function () {
         return;
     }
     $n = nias_inst_requests_count();
-    add_submenu_page('nias-course-settings', __('درخواست‌های مدرسین', 'nias-course-widget'), __('درخواست‌های مدرسین', 'nias-course-widget') . ($n ? ' <span class="awaiting-mod">' . nias_fa_digits($n) . '</span>' : ''), 'manage_options', 'nias-course-approvals', 'nias_inst_requests_page');
+    add_submenu_page('nias-course-settings', __('Instructor requests', 'nias-course-widget'), __('Instructor requests', 'nias-course-widget') . ($n ? ' <span class="awaiting-mod">' . nias_fa_digits($n) . '</span>' : ''), 'manage_options', 'nias-course-approvals', 'nias_inst_requests_page');
 }, 23);
 
 add_action('admin_post_nias_inst_review', function () {
     $pid = isset($_POST['course']) ? (int) $_POST['course'] : 0;
     $op  = isset($_POST['op']) ? sanitize_key(wp_unslash($_POST['op'])) : '';
     if (!current_user_can('manage_options') || !wp_verify_nonce(isset($_POST['_wpnonce']) ? sanitize_text_field(wp_unslash($_POST['_wpnonce'])) : '', 'nias_inst_review_' . $pid)) {
-        wp_die(esc_html__('درخواست منقضی شده است.', 'nias-course-widget'), '', array('response' => 403, 'back_link' => true));
+        wp_die(esc_html__('The request has expired.', 'nias-course-widget'), '', array('response' => 403, 'back_link' => true));
     }
     $note = sanitize_textarea_field(wp_unslash(isset($_POST['note']) ? $_POST['note'] : ''));
     $p    = nias_course_pending_get($pid);
@@ -458,7 +454,7 @@ function nias_inst_requests_page()
     $form = function ($pid, $buttons) {
         $h = '<form class="nir-act" method="post" action="' . esc_url(admin_url('admin-post.php')) . '">' . wp_nonce_field('nias_inst_review_' . $pid, '_wpnonce', false, false)
             . '<input type="hidden" name="action" value="nias_inst_review"><input type="hidden" name="course" value="' . (int) $pid . '">'
-            . '<textarea name="note" rows="1" placeholder="' . esc_attr__('یادداشت برای مدرس (اختیاری)…', 'nias-course-widget') . '"></textarea>';
+            . '<textarea name="note" rows="1" placeholder="' . esc_attr__('Note for the instructor (optional)…', 'nias-course-widget') . '"></textarea>';
         foreach ($buttons as $op => $b) {
             $h .= '<button class="nir-btn ' . esc_attr($b[1]) . '" name="op" value="' . esc_attr($op) . '">' . esc_html($b[0]) . '</button>';
         }
@@ -471,17 +467,17 @@ function nias_inst_requests_page()
     }
     echo '<div class="nias-set-shell"><div class="nias-set-main">';
     echo '<style>.nir h2{font-size:20px;margin:6px 0 14px}.nir h3{font-size:16px;margin:18px 0 10px}.nir-card{background:#fff;border:1px solid #e6eaef;border-radius:14px;padding:14px 16px;margin-bottom:12px}.nir-t{display:flex;gap:10px;align-items:center;flex-wrap:wrap}.nir-t b{font-size:15px}.nir-t span{font-size:12.5px;color:#64748b}.nir-chip{background:#fff4e2;color:#b45309;border-radius:99px;padding:2px 10px;font-size:12px;font-weight:700}.nir-diff{margin:10px 0;padding:0 18px 0 0;font-size:13.5px;line-height:2;color:#334155}.nir-act{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:10px}.nir-act textarea{flex:1;min-width:220px;border:1px solid #dbe3ef;border-radius:9px;padding:6px 10px;font:inherit}.nir-btn{height:34px;padding:0 14px;border-radius:9px;border:1px solid #dbe3ef;background:#fff;font:inherit;font-weight:700;cursor:pointer}.nir-btn.pri{background:#16a34a;border-color:#16a34a;color:#fff}.nir-btn.no{color:#d64545;border-color:#f3c9c9}.nir-empty{padding:26px;text-align:center;color:#64748b;background:#fff;border:1px dashed #d8dee6;border-radius:14px}.nir-ok{background:#ecf8ea;border:1px solid #cfeccb;color:#2f7d27;border-radius:12px;padding:10px 14px;margin-bottom:12px;font-weight:600}.nir a{color:#3858e9}</style>';
-    echo '<div class="nir"><h2>' . esc_html__('درخواست‌های مدرسین', 'nias-course-widget') . '</h2>';
+    echo '<div class="nir"><h2>' . esc_html__('Instructor requests', 'nias-course-widget') . '</h2>';
     if ($done) {
-        echo '<div class="nir-ok">' . esc_html__('انجام شد و به مدرس اطلاع داده شد.', 'nias-course-widget') . '</div>';
+        echo '<div class="nir-ok">' . esc_html__('Done, and the instructor was notified.', 'nias-course-widget') . '</div>';
     }
     if (!nias_inst_approval_on()) {
-        echo '<div class="nir-card">' . esc_html__('«نیاز به تأیید» در تنظیمات پنل مدرس خاموش است؛ تغییرات مدرسین مستقیم اعمال می‌شود.', 'nias-course-widget') . '</div>';
+        echo '<div class="nir-card">' . esc_html__('"Requires approval" is off in the instructor panel settings; instructors\' changes apply directly.', 'nias-course-widget') . '</div>';
     }
     $new = nias_inst_pending_new_ids();
-    echo '<h3>' . esc_html(sprintf(__('دوره‌های جدید در انتظار بررسی (%s)', 'nias-course-widget'), nias_fa_digits(count($new)))) . '</h3>';
+    echo '<h3>' . esc_html(sprintf(__('New courses pending review (%s)', 'nias-course-widget'), nias_fa_digits(count($new)))) . '</h3>';
     if (!$new) {
-        echo '<div class="nir-empty">' . esc_html__('دورهٔ جدیدی در انتظار نیست.', 'nias-course-widget') . '</div>';
+        echo '<div class="nir-empty">' . esc_html__('No new course is pending.', 'nias-course-widget') . '</div>';
     }
     foreach ($new as $pid) {
         $a = get_userdata((int) get_post_field('post_author', $pid));
@@ -489,16 +485,16 @@ function nias_inst_requests_page()
         foreach ((array) carbon_get_post_meta($pid, 'course_sections') as $s) {
             $n += count((array) (isset($s['lessons']) ? $s['lessons'] : array()));
         }
-        echo '<div class="nir-card"><div class="nir-t"><b>' . esc_html(get_the_title($pid)) . '</b><span class="nir-chip">' . esc_html__('در انتظار بررسی', 'nias-course-widget') . '</span><span>'
-            . esc_html(sprintf(__('%1$s · %2$s · %3$s جلسه', 'nias-course-widget'), $a ? $a->display_name : '—', nias_course_type_label($pid), nias_fa_digits($n))) . '</span>'
-            . '<a href="' . esc_url(get_edit_post_link($pid)) . '">' . esc_html__('ویرایش', 'nias-course-widget') . '</a><a href="' . esc_url(admin_url('admin.php?page=nias-course-curriculum&product=' . $pid)) . '">' . esc_html__('جلسات', 'nias-course-widget') . '</a><a href="' . esc_url(get_preview_post_link($pid)) . '" target="_blank">' . esc_html__('پیش‌نمایش', 'nias-course-widget') . '</a></div>'
-            . (get_post_type($pid) === 'product' && function_exists('wc_get_product') && ($wp = wc_get_product($pid)) ? '<div class="nir-diff">' . esc_html(sprintf(__('قیمت: %s', 'nias-course-widget'), $wp->get_regular_price() !== '' ? nias_fa_digits(number_format_i18n((float) $wp->get_regular_price())) : __('تعیین نشده', 'nias-course-widget'))) . '</div>' : '')
-            . $form($pid, array('publish' => array(__('انتشار دوره', 'nias-course-widget'), 'pri'), 'reject_new' => array(__('رد (پیش‌نویس)', 'nias-course-widget'), 'no'))) . '</div>';
+        echo '<div class="nir-card"><div class="nir-t"><b>' . esc_html(get_the_title($pid)) . '</b><span class="nir-chip">' . esc_html__('Pending review', 'nias-course-widget') . '</span><span>'
+            . esc_html(sprintf(__('%1$s · %2$s · %3$s lessons', 'nias-course-widget'), $a ? $a->display_name : '—', nias_course_type_label($pid), nias_fa_digits($n))) . '</span>'
+            . '<a href="' . esc_url(get_edit_post_link($pid)) . '">' . esc_html__('Edit', 'nias-course-widget') . '</a><a href="' . esc_url(admin_url('admin.php?page=nias-course-curriculum&product=' . $pid)) . '">' . esc_html__('Lessons', 'nias-course-widget') . '</a><a href="' . esc_url(get_preview_post_link($pid)) . '" target="_blank">' . esc_html__('Preview', 'nias-course-widget') . '</a></div>'
+            . (get_post_type($pid) === 'product' && function_exists('wc_get_product') && ($wp = wc_get_product($pid)) ? '<div class="nir-diff">' . esc_html(sprintf(__('Price: %s', 'nias-course-widget'), $wp->get_regular_price() !== '' ? nias_fa_digits(number_format_i18n((float) $wp->get_regular_price())) : __('Not set', 'nias-course-widget'))) . '</div>' : '')
+            . $form($pid, array('publish' => array(__('Publish course', 'nias-course-widget'), 'pri'), 'reject_new' => array(__('Reject (draft)', 'nias-course-widget'), 'no'))) . '</div>';
     }
     $chg = nias_inst_pending_change_ids();
-    echo '<h3>' . esc_html(sprintf(__('تغییرات در انتظار تأیید (%s)', 'nias-course-widget'), nias_fa_digits(count($chg)))) . '</h3>';
+    echo '<h3>' . esc_html(sprintf(__('Changes awaiting approval (%s)', 'nias-course-widget'), nias_fa_digits(count($chg)))) . '</h3>';
     if (!$chg) {
-        echo '<div class="nir-empty">' . esc_html__('تغییری در انتظار تأیید نیست.', 'nias-course-widget') . '</div>';
+        echo '<div class="nir-empty">' . esc_html__('No changes are awaiting approval.', 'nias-course-widget') . '</div>';
     }
     foreach ($chg as $pid) {
         $p = nias_course_pending_get($pid);
@@ -506,10 +502,10 @@ function nias_inst_requests_page()
         $items = array();
         if (isset($p['details'])) {
             $live = nias_inst_course_details($pid, get_current_user_id());
-            foreach (array('title' => __('عنوان', 'nias-course-widget'), 'excerpt' => __('توضیح کوتاه', 'nias-course-widget'), 'content' => __('توضیحات', 'nias-course-widget'), 'thumbnail' => __('تصویر', 'nias-course-widget'), 'price' => __('قیمت', 'nias-course-widget')) as $k => $lbl) {
+            foreach (array('title' => __('Title', 'nias-course-widget'), 'excerpt' => __('Short description', 'nias-course-widget'), 'content' => __('Description', 'nias-course-widget'), 'thumbnail' => __('Image', 'nias-course-widget'), 'price' => __('Price', 'nias-course-widget')) as $k => $lbl) {
                 if (isset($p['details'][$k]) && (string) $p['details'][$k] !== (string) $live[$k]) {
-                    $items[] = $k === 'title' ? sprintf(__('عنوان: «%1$s» ← «%2$s»', 'nias-course-widget'), $live['title'], $p['details']['title'])
-                        : ($k === 'price' ? sprintf(__('قیمت: %1$s ← %2$s', 'nias-course-widget'), $live['price'] !== '' ? nias_fa_digits($live['price']) : '—', $p['details']['price'] !== '' ? nias_fa_digits($p['details']['price']) : '—') : sprintf(__('تغییر %s', 'nias-course-widget'), $lbl));
+                    $items[] = $k === 'title' ? sprintf(__('Title: "%1$s" → "%2$s"', 'nias-course-widget'), $live['title'], $p['details']['title'])
+                        : ($k === 'price' ? sprintf(__('Price: %1$s → %2$s', 'nias-course-widget'), $live['price'] !== '' ? nias_fa_digits($live['price']) : '—', $p['details']['price'] !== '' ? nias_fa_digits($p['details']['price']) : '—') : sprintf(__('%s changed', 'nias-course-widget'), $lbl));
                 }
             }
         }
@@ -517,14 +513,14 @@ function nias_inst_requests_page()
             $items = array_merge($items, nias_inst_sections_diff(carbon_get_post_meta($pid, 'course_sections'), $p['sections']));
         }
         if (!$items) {
-            $items[] = __('بدون تفاوت با نسخهٔ فعلی', 'nias-course-widget');
+            $items[] = __('No difference from the current version', 'nias-course-widget');
         }
         echo '<div class="nir-card"><div class="nir-t"><b>' . esc_html(get_the_title($pid)) . '</b><span>' . esc_html(sprintf(__('%1$s · %2$s', 'nias-course-widget'), $a ? $a->display_name : '—', function_exists('nias_qa_when') ? nias_qa_when($p['at']) : $p['at'])) . '</span>'
-            . '<a href="' . esc_url(get_permalink($pid)) . '" target="_blank">' . esc_html__('نسخهٔ فعلی', 'nias-course-widget') . '</a></div>'
+            . '<a href="' . esc_url(get_permalink($pid)) . '" target="_blank">' . esc_html__('Current version', 'nias-course-widget') . '</a></div>'
             . '<ul class="nir-diff">' . implode('', array_map(function ($i) {
                 return '<li>' . esc_html($i) . '</li>';
             }, array_slice($items, 0, 60))) . (count($items) > 60 ? '<li>…</li>' : '') . '</ul>'
-            . $form($pid, array('approve' => array(__('تأیید و اعمال', 'nias-course-widget'), 'pri'), 'reject' => array(__('رد تغییرات', 'nias-course-widget'), 'no'))) . '</div>';
+            . $form($pid, array('approve' => array(__('Approve and apply', 'nias-course-widget'), 'pri'), 'reject' => array(__('Reject changes', 'nias-course-widget'), 'no'))) . '</div>';
     }
     echo '</div></div></div></div>';
 }

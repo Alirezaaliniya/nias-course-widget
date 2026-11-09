@@ -165,17 +165,17 @@ function nias_inst_panel_settings_card()
     if (function_exists('nias_set_saved_banner')) {
         nias_set_saved_banner($saved);
     }
-    nias_set_card_open('<svg width="20" height="20" viewBox="0 0 24 24" fill="none"><rect x="3" y="4" width="18" height="16" rx="3" stroke="#3858e9" stroke-width="1.8"/><path d="M3 9h18M8 4v5" stroke="#3858e9" stroke-width="1.8"/></svg>', __('پنل مدرس', 'nias-course-widget'));
+    nias_set_card_open('<svg width="20" height="20" viewBox="0 0 24 24" fill="none"><rect x="3" y="4" width="18" height="16" rx="3" stroke="#3858e9" stroke-width="1.8"/><path d="M3 9h18M8 4v5" stroke="#3858e9" stroke-width="1.8"/></svg>', __('Instructor panel', 'nias-course-widget'));
     echo '<form method="post">';
     wp_nonce_field('nias_inst_panel', 'nias_inst_panel_nonce');
-    nias_set_toggle_row('nias_inst_panel', __('فعال‌سازی پنل مدرس', 'nias-course-widget'),
-        __('در «پیشخوان مدرس» تب‌های «دوره‌های من»، «آزمون‌ها»، «نتایج و تصحیح» و «پرسش و پاسخ» نمایش داده می‌شود تا مدرس بدون ورود به پیشخوان وردپرس، دوره‌های خودش را مدیریت کند. مدرس فقط به دوره‌هایی که مدرسشان است دسترسی دارد؛ قیمت، موجودی و تنظیمات ووکامرس، اسپات پلیر و انتخاب مدرسین فقط در اختیار مدیر سایت می‌ماند.', 'nias-course-widget'), 'off');
+    nias_set_toggle_row('nias_inst_panel', __('Enable instructor panel', 'nias-course-widget'),
+        __('The "My courses", "Quizzes", "Results & grading" and "Q&A" tabs are shown in the "Instructor dashboard" so instructors can manage their own courses without entering the WordPress dashboard. Instructors only have access to courses they teach; price, stock and WooCommerce settings, SpotPlayer and instructor selection stay with the site admin.', 'nias-course-widget'), 'off');
     echo '<div data-nias-show-when="nias_inst_panel=on">';
-    nias_set_toggle_row('nias_inst_panel_curriculum', __('ویرایش فصل‌ها و جلسات', 'nias-course-widget'), __('ویرایشگر کامل جلسات و فصل‌ها (محتوا، ویدیو، فایل، درس خصوصی، آزمون جلسه و پیش‌نیاز) برای دوره‌های خود مدرس.', 'nias-course-widget'), 'on');
-    nias_set_toggle_row('nias_inst_panel_quiz', __('ساخت و تنظیم آزمون', 'nias-course-widget'), __('آزمون‌ساز با همهٔ تنظیمات؛ مدرس آزمون‌های خودش و آزمون‌های دوره‌هایش را می‌بیند و فقط می‌تواند آن‌ها را به دوره‌های خودش وصل کند.', 'nias-course-widget'), 'on');
-    nias_set_toggle_row('nias_inst_panel_upload', __('آپلود فایل', 'nias-course-widget'), __('مدرس می‌تواند تصویر، ویدیو و فایل پیوست آپلود کند؛ در کتابخانهٔ رسانه فقط فایل‌های خودش را می‌بیند.', 'nias-course-widget'), 'on');
-    nias_set_toggle_row('nias_inst_panel_create', __('ساخت دورهٔ جدید', 'nias-course-widget'), __('مدرس می‌تواند دورهٔ جدید بسازد (با ووکامرس: محصول ووکامرس؛ بدون ووکامرس: «دوره») و مشخصات دوره‌هایش (عنوان، توضیحات، تصویر) را ویرایش کند.', 'nias-course-widget'), 'on');
-    nias_set_toggle_row('nias_inst_panel_approval', __('نیاز به تأیید', 'nias-course-widget'), __('تغییرات مدرس روی دورهٔ منتشرشده تا تأیید مدیر اعمال نمی‌شود و سایت نسخهٔ قبلی را نشان می‌دهد؛ دورهٔ تازه‌ساخته هم تا انتشار مدیر «در انتظار بررسی» می‌ماند. درخواست‌ها در زیرمنوی «درخواست‌های مدرسین» بررسی می‌شوند. با این گزینه مدرس قیمت پیشنهادی محصول را هم می‌تواند ثبت کند.', 'nias-course-widget'), 'off');
+    nias_set_toggle_row('nias_inst_panel_curriculum', __('Edit chapters and lessons', 'nias-course-widget'), __('Full lessons and chapters editor (content, video, file, private lesson, lesson quiz and prerequisite) for the instructor\'s own courses.', 'nias-course-widget'), 'on');
+    nias_set_toggle_row('nias_inst_panel_quiz', __('Build and configure quizzes', 'nias-course-widget'), __('Quiz builder with all settings; instructors see their own quizzes and their courses\' quizzes and can only link them to their own courses.', 'nias-course-widget'), 'on');
+    nias_set_toggle_row('nias_inst_panel_upload', __('File upload', 'nias-course-widget'), __('Instructors can upload images, videos and attachments; in the media library they only see their own files.', 'nias-course-widget'), 'on');
+    nias_set_toggle_row('nias_inst_panel_create', __('Create new course', 'nias-course-widget'), __('Instructors can create new courses (with WooCommerce: a WooCommerce product; without WooCommerce: a "Course") and edit their courses\' details (title, description, image).', 'nias-course-widget'), 'on');
+    nias_set_toggle_row('nias_inst_panel_approval', __('Requires approval', 'nias-course-widget'), __('An instructor\'s changes to a published course do not apply until the admin approves them, and the site shows the previous version; a newly created course also stays "Pending review" until the admin publishes it. Requests are reviewed in the "Instructor requests" submenu. With this option instructors can also propose the product price.', 'nias-course-widget'), 'off');
     echo '</div>';
     nias_set_save_button('nias_save_inst_panel');
     echo '</form>';
@@ -227,25 +227,25 @@ function nias_inst_panel_nav($user_id, $active)
     if (!nias_inst_panel_on()) {
         return '';
     }
-    $tabs = array('home' => array(__('پیشخوان', 'nias-course-widget'), nias_inst_panel_url()));
-    $tabs['courses'] = array(__('دوره‌های من', 'nias-course-widget'), nias_inst_panel_url('courses'));
+    $tabs = array('home' => array(__('Dashboard', 'nias-course-widget'), nias_inst_panel_url()));
+    $tabs['courses'] = array(__('My courses', 'nias-course-widget'), nias_inst_panel_url('courses'));
     if (nias_can_use_quiz_builder($user_id) && function_exists('nias_quiz_enabled') && nias_quiz_enabled()) {
-        $tabs['quizzes'] = array(__('آزمون‌ها', 'nias-course-widget'), nias_inst_panel_url('quizzes'));
-        $tabs['results'] = array(__('نتایج و تصحیح', 'nias-course-widget'), nias_inst_panel_url('results'));
+        $tabs['quizzes'] = array(__('Quizzes', 'nias-course-widget'), nias_inst_panel_url('quizzes'));
+        $tabs['results'] = array(__('Results & grading', 'nias-course-widget'), nias_inst_panel_url('results'));
     }
     if (function_exists('nias_qa_enabled') && nias_qa_enabled()) {
         $n = nias_qa_unanswered_count(nias_qa_staff_scope($user_id));
-        $tabs['qa'] = array(__('پرسش و پاسخ', 'nias-course-widget') . ($n ? ' <b>' . esc_html(nias_fa_digits($n)) . '</b>' : ''), nias_inst_panel_url('qa'));
+        $tabs['qa'] = array(__('Q&A', 'nias-course-widget') . ($n ? ' <b>' . esc_html(nias_fa_digits($n)) . '</b>' : ''), nias_inst_panel_url('qa'));
     }
     if (function_exists('nias_rev_enabled') && nias_rev_enabled()) {
-        $tabs['earnings'] = array(__('درآمد', 'nias-course-widget'), nias_inst_panel_url('earnings'));
+        $tabs['earnings'] = array(__('Income', 'nias-course-widget'), nias_inst_panel_url('earnings'));
     }
     if (function_exists('nias_stats_enabled') && nias_stats_enabled()) {
-        $tabs['stats'] = array(__('گزارش‌ها', 'nias-course-widget'), nias_inst_panel_url('stats'));
+        $tabs['stats'] = array(__('Reports', 'nias-course-widget'), nias_inst_panel_url('stats'));
     }
     if (function_exists('nias_assign_enabled') && nias_assign_enabled()) {
         $an = nias_assign_pending_count(nias_assign_scope($user_id));
-        $tabs['assign'] = array(__('تکالیف', 'nias-course-widget') . ($an ? ' <b>' . esc_html(nias_fa_digits($an)) . '</b>' : ''), nias_inst_panel_url('assign'));
+        $tabs['assign'] = array(__('Assignments', 'nias-course-widget') . ($an ? ' <b>' . esc_html(nias_fa_digits($an)) . '</b>' : ''), nias_inst_panel_url('assign'));
     }
     $h = '<nav class="nip-nav" dir="rtl">';
     foreach ($tabs as $k => $t) {
@@ -253,7 +253,7 @@ function nias_inst_panel_nav($user_id, $active)
     }
     $new = nias_inst_new_course_url($user_id);
     if ($new) {
-        $h .= '<a class="nip-new" href="' . esc_url($new) . '">+ ' . esc_html__('دورهٔ جدید', 'nias-course-widget') . '</a>';
+        $h .= '<a class="nip-new" href="' . esc_url($new) . '">+ ' . esc_html__('New course', 'nias-course-widget') . '</a>';
     }
     return $h . '</nav>' . nias_inst_panel_css();
 }
@@ -316,15 +316,15 @@ function nias_inst_panel_courses_view($user_id)
         ? (function_exists('nias_instructor_dashboard_product_ids') ? nias_instructor_dashboard_product_ids($user_id, true) : array())
         : nias_inst_course_ids($user_id);
     _prime_post_caches($ids, false, true);
-    $h = '<div class="nip-wrap"><div class="nip-h"><h2>' . esc_html__('دوره‌های من', 'nias-course-widget') . '</h2>'
-        . (nias_inst_new_course_url($user_id) ? '<a class="nip-btn pri" href="' . esc_url(nias_inst_new_course_url($user_id)) . '">+ ' . esc_html__('دورهٔ جدید', 'nias-course-widget') . '</a>' : '') . '</div>';
+    $h = '<div class="nip-wrap"><div class="nip-h"><h2>' . esc_html__('My courses', 'nias-course-widget') . '</h2>'
+        . (nias_inst_new_course_url($user_id) ? '<a class="nip-btn pri" href="' . esc_url(nias_inst_new_course_url($user_id)) . '">+ ' . esc_html__('New course', 'nias-course-widget') . '</a>' : '') . '</div>';
     if (function_exists('nias_inst_panel_notice')) {
         $h .= nias_inst_panel_notice();
     }
     if (!$ids) {
         $new = nias_inst_new_course_url($user_id);
-        return $h . '<div class="nip-empty">' . esc_html($new ? __('هنوز دوره‌ای ندارید. اولین دورهٔ خود را بسازید؛ دوره‌هایی هم که مدیر سایت به شما بسپارد اینجا نمایش داده می‌شوند.', 'nias-course-widget') : __('هنوز دوره‌ای به شما سپرده نشده است. مدیر سایت باید شما را در «مدرسین دوره» انتخاب کند.', 'nias-course-widget'))
-            . ($new ? '<div style="margin-top:14px"><a class="nip-btn pri" href="' . esc_url($new) . '">+ ' . esc_html__('ساخت اولین دوره', 'nias-course-widget') . '</a></div>' : '') . '</div></div>';
+        return $h . '<div class="nip-empty">' . esc_html($new ? __('You have no courses yet. Create your first course; courses the site admin assigns to you are shown here too.', 'nias-course-widget') : __('No course has been assigned to you yet. The site admin must select you under "Course instructors".', 'nias-course-widget'))
+            . ($new ? '<div style="margin-top:14px"><a class="nip-btn pri" href="' . esc_url($new) . '">+ ' . esc_html__('Create your first course', 'nias-course-widget') . '</a></div>' : '') . '</div></div>';
     }
     $qa_counts = array();
     if (function_exists('nias_qa_enabled') && nias_qa_enabled()) {
@@ -345,19 +345,19 @@ function nias_inst_panel_courses_view($user_id)
         }
         $img = get_the_post_thumbnail_url($pid, 'medium_large');
         $view = function_exists('nias_course_modern_view_url') ? nias_course_modern_view_url($pid) : get_permalink($pid);
-        $status = array('publish' => '', 'draft' => __('پیش‌نویس (تأیید نشد)', 'nias-course-widget'), 'pending' => __('در انتظار بررسی', 'nias-course-widget'), 'private' => __('خصوصی', 'nias-course-widget'));
+        $status = array('publish' => '', 'draft' => __('Draft (not approved)', 'nias-course-widget'), 'pending' => __('Pending review', 'nias-course-widget'), 'private' => __('Private', 'nias-course-widget'));
         $h .= '<article class="nip-c"><div class="nip-c-img"' . ($img ? ' style="background-image:url(' . esc_url($img) . ')"' : '') . '></div><div class="nip-c-b">'
             . '<div class="nip-c-t">' . esc_html($p->post_title) . '</div><div class="nip-c-m">'
-            . '<span>' . esc_html(sprintf(__('%s جلسه', 'nias-course-widget'), nias_fa_digits($lessons))) . '</span>'
+            . '<span>' . esc_html(sprintf(__('%s lessons', 'nias-course-widget'), nias_fa_digits($lessons))) . '</span>'
             . (!empty($status[$p->post_status]) ? '<span class="' . ($p->post_status === 'pending' ? 'wait' : '') . '">' . esc_html($status[$p->post_status]) . '</span>' : '')
-            . (!empty($qa_counts[$pid]) ? '<span class="warn">' . esc_html(sprintf(__('%s پرسش بی‌پاسخ', 'nias-course-widget'), nias_fa_digits($qa_counts[$pid]))) . '</span>' : '')
-            . (function_exists('nias_course_pending_get') && nias_course_pending_get($pid) ? '<span class="wait">' . esc_html__('تغییرات در انتظار تأیید', 'nias-course-widget') . '</span>' : '')
+            . (!empty($qa_counts[$pid]) ? '<span class="warn">' . esc_html(sprintf(__('%s unanswered questions', 'nias-course-widget'), nias_fa_digits($qa_counts[$pid]))) . '</span>' : '')
+            . (function_exists('nias_course_pending_get') && nias_course_pending_get($pid) ? '<span class="wait">' . esc_html__('Changes awaiting approval', 'nias-course-widget') . '</span>' : '')
             . '</div><div class="nip-c-a">'
-            . (function_exists('nias_inst_can_create') && nias_inst_can_create($user_id) && nias_can_edit_course($user_id, $pid) ? '<a class="nip-btn" href="' . esc_url(nias_inst_panel_url('course', array('course' => $pid))) . '">' . esc_html__('مشخصات', 'nias-course-widget') . '</a>' : '')
-            . (nias_can_edit_course($user_id, $pid) ? '<a class="nip-btn pri" href="' . esc_url(nias_inst_panel_url('curriculum', array('course' => $pid))) . '">' . esc_html__('ویرایش جلسات و فصل‌ها', 'nias-course-widget') . '</a>' : '')
-            . (function_exists('nias_drip_enabled') && nias_drip_enabled() && nias_can_edit_course($user_id, $pid) ? '<a class="nip-btn" href="' . esc_url(nias_inst_panel_url('drip', array('course' => $pid))) . '">' . esc_html__('برنامهٔ قطره‌ای دانشجویان', 'nias-course-widget') . '</a>' : '')
-            . '<a class="nip-btn" href="' . esc_url($view) . '" target="_blank" rel="noopener">' . esc_html__('مشاهدهٔ دوره', 'nias-course-widget') . '</a>'
-            . (!empty($qa_counts[$pid]) ? '<a class="nip-btn" href="' . esc_url(nias_inst_panel_url('qa', array('qc' => $pid))) . '">' . esc_html__('پرسش‌ها', 'nias-course-widget') . '</a>' : '')
+            . (function_exists('nias_inst_can_create') && nias_inst_can_create($user_id) && nias_can_edit_course($user_id, $pid) ? '<a class="nip-btn" href="' . esc_url(nias_inst_panel_url('course', array('course' => $pid))) . '">' . esc_html__('Info', 'nias-course-widget') . '</a>' : '')
+            . (nias_can_edit_course($user_id, $pid) ? '<a class="nip-btn pri" href="' . esc_url(nias_inst_panel_url('curriculum', array('course' => $pid))) . '">' . esc_html__('Edit lessons and chapters', 'nias-course-widget') . '</a>' : '')
+            . (function_exists('nias_drip_enabled') && nias_drip_enabled() && nias_can_edit_course($user_id, $pid) ? '<a class="nip-btn" href="' . esc_url(nias_inst_panel_url('drip', array('course' => $pid))) . '">' . esc_html__('Students\' drip schedule', 'nias-course-widget') . '</a>' : '')
+            . '<a class="nip-btn" href="' . esc_url($view) . '" target="_blank" rel="noopener">' . esc_html__('View course', 'nias-course-widget') . '</a>'
+            . (!empty($qa_counts[$pid]) ? '<a class="nip-btn" href="' . esc_url(nias_inst_panel_url('qa', array('qc' => $pid))) . '">' . esc_html__('Questions', 'nias-course-widget') . '</a>' : '')
             . '</div></div></article>';
     }
     return $h . '</div></div>';
@@ -368,16 +368,16 @@ function nias_inst_panel_curriculum_view($user_id)
 {
     $pid = isset($_GET['course']) ? (int) $_GET['course'] : 0;
     if (!$pid || !nias_can_edit_course($user_id, $pid)) {
-        return '<div class="nip-wrap"><div class="nip-empty">' . esc_html__('به ویرایش این دوره دسترسی ندارید.', 'nias-course-widget') . '</div></div>';
+        return '<div class="nip-wrap"><div class="nip-empty">' . esc_html__('You do not have access to edit this course.', 'nias-course-widget') . '</div></div>';
     }
     ob_start();
     if (function_exists('nias_inst_panel_notice')) {
         echo '<div class="nip-pending-bar">' . nias_inst_panel_notice() . '</div>'; // phpcs:ignore -- escaped inside
     }
     if (function_exists('nias_course_pending_get') && isset(nias_course_pending_get($pid)['sections']) && !user_can($user_id, 'edit_post', $pid)) {
-        echo '<div class="nip-pending-bar"><div class="nip-info wait">' . esc_html__('این نسخهٔ شماست که در انتظار تأیید مدیر است؛ سایت تا تأیید، جلسات قبلی را نشان می‌دهد. می‌توانید به ویرایش ادامه دهید.', 'nias-course-widget') . '</div></div>';
+        echo '<div class="nip-pending-bar"><div class="nip-info wait">' . esc_html__('This is your version awaiting admin approval; until approved the site shows the previous lessons. You can keep editing.', 'nias-course-widget') . '</div></div>';
     } elseif (function_exists('nias_inst_needs_approval') && nias_inst_needs_approval($user_id, $pid)) {
-        echo '<div class="nip-pending-bar"><div class="nip-info">' . esc_html__('این دوره منتشر شده است؛ تغییرات شما پس از تأیید مدیر روی سایت اعمال می‌شود.', 'nias-course-widget') . '</div></div>';
+        echo '<div class="nip-pending-bar"><div class="nip-info">' . esc_html__('This course is published; your changes apply on the site after admin approval.', 'nias-course-widget') . '</div></div>';
     }
     nias_curriculum_render_editor($pid, array(
         'panel'   => true,
@@ -392,7 +392,7 @@ function nias_inst_panel_curriculum_view($user_id)
 function nias_inst_panel_quizzes_view($user_id)
 {
     if (!nias_can_use_quiz_builder($user_id) || !function_exists('nias_quiz_builder_app')) {
-        return '<div class="nip-wrap"><div class="nip-empty">' . esc_html__('ساخت آزمون برای شما فعال نیست.', 'nias-course-widget') . '</div></div>';
+        return '<div class="nip-wrap"><div class="nip-empty">' . esc_html__('Quiz building is not enabled for you.', 'nias-course-widget') . '</div></div>';
     }
     ob_start();
     nias_quiz_builder_app();
@@ -434,10 +434,10 @@ function nias_inst_panel_dispatch($user_id)
     if ($route === 'drip' && function_exists('nias_drip_tool_html')) {
         $pid = isset($_GET['course']) ? (int) $_GET['course'] : 0;
         if (!nias_drip_enabled() || !$pid || !nias_can_edit_course($user_id, $pid)) {
-            return nias_inst_panel_nav($user_id, 'courses') . '<div class="nip-wrap"><div class="nip-empty">' . esc_html__('به این بخش دسترسی ندارید.', 'nias-course-widget') . '</div></div>';
+            return nias_inst_panel_nav($user_id, 'courses') . '<div class="nip-wrap"><div class="nip-empty">' . esc_html__('You do not have access to this section.', 'nias-course-widget') . '</div></div>';
         }
-        return nias_inst_panel_nav($user_id, 'courses') . '<div class="nip-wrap"><div class="nip-card" style="padding:18px"><h3 style="margin:0 0 4px">' . esc_html(sprintf(__('برنامهٔ قطره‌ای دانشجویان «%s»', 'nias-course-widget'), get_the_title($pid))) . '</h3>'
-            . '<p style="margin:0 0 14px;color:#64748b;font-size:13px">' . esc_html__('دانشجو را پیدا کنید تا زمان باز شدن جلسات او را ببینید؛ می‌توانید همهٔ جلسات را برایش باز کنید یا شروع دوره‌اش را جابه‌جا کنید.', 'nias-course-widget') . '</p>'
+        return nias_inst_panel_nav($user_id, 'courses') . '<div class="nip-wrap"><div class="nip-card" style="padding:18px"><h3 style="margin:0 0 4px">' . esc_html(sprintf(__('Students\' drip schedule for "%s"', 'nias-course-widget'), get_the_title($pid))) . '</h3>'
+            . '<p style="margin:0 0 14px;color:#64748b;font-size:13px">' . esc_html__('Find a student to see when their lessons open; you can open all lessons for them or move their course start.', 'nias-course-widget') . '</p>'
             . nias_drip_tool_html($pid) . '</div></div>';
     }
     return null;

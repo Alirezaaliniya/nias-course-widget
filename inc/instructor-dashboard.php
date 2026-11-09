@@ -270,7 +270,7 @@ function nias_instructor_dashboard_data($user_id)
         $color   = nias_idash_palette($i);
         $courses[$pid] = array(
             'id'           => $pid,
-            'title'        => $post->post_title !== '' ? $post->post_title : __('(بدون عنوان)', 'nias-course-widget'),
+            'title'        => $post->post_title !== '' ? $post->post_title : __('(no title)', 'nias-course-widget'),
             'status'       => $post->post_status,
             'lessons'      => $lessons,
             'students'     => array(),   // set of buyer keys, collapsed to a count later
@@ -304,7 +304,7 @@ function nias_instructor_dashboard_data($user_id)
                 $buyer_name = $bu ? $bu->display_name : '';
             }
             if ($buyer_name === '') {
-                $buyer_name = __('کاربر', 'nias-course-widget');
+                $buyer_name = __('User', 'nias-course-widget');
             }
 
             {
@@ -469,7 +469,7 @@ function nias_instructor_dashboard_data($user_id)
             $ts     = strtotime($cm->comment_date);
             list($jy, $jm, $jd) = $ts ? nias_idash_to_jalali($ts) : array(0, 1, 1);
             $reviews[] = array(
-                'name'   => $cm->comment_author !== '' ? $cm->comment_author : __('کاربر', 'nias-course-widget'),
+                'name'   => $cm->comment_author !== '' ? $cm->comment_author : __('User', 'nias-course-widget'),
                 'course' => get_the_title($cm->comment_post_ID),
                 'text'   => wp_trim_words(wp_strip_all_tags($cm->comment_content), 30, '…'),
                 'rating' => $rating,
@@ -569,24 +569,24 @@ function nias_instructor_dashboard_render($user_id)
     $weekdays    = array('یکشنبه', 'دوشنبه', 'سه‌شنبه', 'چهارشنبه', 'پنجشنبه', 'جمعه', 'شنبه');
     $today_label = $weekdays[(int) wp_date('w', current_time('timestamp'))] . '، ' . nias_fa_digits($jd) . ' ' . $months_full[$jm - 1] . ' ' . nias_fa_digits($jy);
 
-    $name     = $d['user'] ? $d['user']->display_name : __('مدرس', 'nias-course-widget');
+    $name     = $d['user'] ? $d['user']->display_name : __('Instructor', 'nias-course-widget');
     $first    = preg_split('/\s+/u', trim($name));
     $first    = $first[0];
 
     // Revenue trend pill.
     if ($kpi['revenueTrend'] === null) {
-        $rev_pill = '<span class="nias-idash-pill nias-idash-pill-mute">' . esc_html__('بدون داده ماه قبل', 'nias-course-widget') . '</span>';
+        $rev_pill = '<span class="nias-idash-pill nias-idash-pill-mute">' . esc_html__('No data last month', 'nias-course-widget') . '</span>';
     } else {
         $up   = $kpi['revenueTrend'] >= 0;
         $cls  = $up ? 'nias-idash-pill-up' : 'nias-idash-pill-down';
         $arrow = $up ? 'M7 17 17 7M9 7h8v8' : 'M7 7l10 10M15 17H7V9';
         $rev_pill = '<span class="nias-idash-pill ' . $cls . '"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="' . $arrow . '"/></svg>' . nias_fa_digits(abs($kpi['revenueTrend'])) . '٪</span>';
     }
-    $students_pill  = '<span class="nias-idash-pill nias-idash-pill-mute">' . esc_html(sprintf(__('%s دوره', 'nias-course-widget'), nias_fa_digits(count($d['courses'])))) . '</span>';
+    $students_pill  = '<span class="nias-idash-pill nias-idash-pill-mute">' . esc_html(sprintf(__('%s courses', 'nias-course-widget'), nias_fa_digits(count($d['courses'])))) . '</span>';
     $courses_pill   = $kpi['drafts'] > 0
-        ? '<span class="nias-idash-pill nias-idash-pill-warn">' . esc_html(sprintf(__('%s پیش‌نویس', 'nias-course-widget'), nias_fa_digits($kpi['drafts']))) . '</span>'
-        : '<span class="nias-idash-pill nias-idash-pill-mute">' . esc_html__('بدون پیش‌نویس', 'nias-course-widget') . '</span>';
-    $rating_pill    = '<span class="nias-idash-pill nias-idash-pill-mute">' . esc_html(sprintf(__('%s نظر', 'nias-course-widget'), nias_fa_digits($kpi['reviewTotal']))) . '</span>';
+        ? '<span class="nias-idash-pill nias-idash-pill-warn">' . esc_html(sprintf(__('%s drafts', 'nias-course-widget'), nias_fa_digits($kpi['drafts']))) . '</span>'
+        : '<span class="nias-idash-pill nias-idash-pill-mute">' . esc_html__('No drafts', 'nias-course-widget') . '</span>';
+    $rating_pill    = '<span class="nias-idash-pill nias-idash-pill-mute">' . esc_html(sprintf(__('%s reviews', 'nias-course-widget'), nias_fa_digits($kpi['reviewTotal']))) . '</span>';
 
     ob_start();
     ?>
@@ -600,14 +600,14 @@ function nias_instructor_dashboard_render($user_id)
                     <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg>
                 </div>
                 <div>
-                    <div class="nias-idash-title"><?php echo esc_html__('پیشخوان مدرس', 'nias-course-widget'); ?></div>
+                    <div class="nias-idash-title"><?php echo esc_html__('Instructor dashboard', 'nias-course-widget'); ?></div>
                     <div class="nias-idash-sub"><?php echo esc_html($today_label); ?></div>
                 </div>
             </div>
             <div class="nias-idash-user">
                 <div class="nias-idash-user-meta">
                     <div class="nias-idash-user-name"><?php echo esc_html($name); ?></div>
-                    <div class="nias-idash-user-role"><?php echo esc_html($d['isAdmin'] ? __('مدیر سایت', 'nias-course-widget') : __('مدرس', 'nias-course-widget')); ?></div>
+                    <div class="nias-idash-user-role"><?php echo esc_html($d['isAdmin'] ? __('Site admin', 'nias-course-widget') : __('Instructor', 'nias-course-widget')); ?></div>
                 </div>
                 <div class="nias-idash-avatar"><?php echo get_avatar($user_id, 40); ?></div>
             </div>
@@ -615,12 +615,12 @@ function nias_instructor_dashboard_render($user_id)
 
         <!-- greeting -->
         <div class="nias-idash-greet">
-            <h2><?php echo esc_html(sprintf(__('سلام، %s 👋', 'nias-course-widget'), $first)); ?></h2>
+            <h2><?php echo esc_html(sprintf(__('Hello, %s 👋', 'nias-course-widget'), $first)); ?></h2>
             <p>
                 <?php if ($d['isAdmin']) : ?>
-                    <?php echo esc_html__('نمای کلی همهٔ دوره‌های دارای مدرس در سایت شما.', 'nias-course-widget'); ?>
+                    <?php echo esc_html__('Overview of all courses with instructors on your site.', 'nias-course-widget'); ?>
                 <?php else : ?>
-                    <?php echo esc_html(sprintf(__('شما %s دانشجو در %s دوره دارید.', 'nias-course-widget'), nias_fa_digits($kpi['students']), nias_fa_digits(count($d['courses'])))); ?>
+                    <?php echo esc_html(sprintf(__('You have %s students in %s courses.', 'nias-course-widget'), nias_fa_digits($kpi['students']), nias_fa_digits(count($d['courses'])))); ?>
                 <?php endif; ?>
             </p>
         </div>
@@ -628,10 +628,10 @@ function nias_instructor_dashboard_render($user_id)
         <!-- KPI row -->
         <div class="nias-idash-kpis">
             <?php
-            echo nias_idash_kpi_card('#3858e9', nias_idash_icon('revenue'), __('درآمد این ماه', 'nias-course-widget'), nias_idash_money($kpi['revenueMonth']), __('تومان', 'nias-course-widget'), $rev_pill);
-            echo nias_idash_kpi_card('#8b5cf6', nias_idash_icon('students'), __('دانشجویان', 'nias-course-widget'), nias_fa_digits($kpi['students']), '', $students_pill);
-            echo nias_idash_kpi_card('#48af3b', nias_idash_icon('book'), __('دوره‌های منتشرشده', 'nias-course-widget'), nias_fa_digits($kpi['published']), '', $courses_pill);
-            echo nias_idash_kpi_card('#d39a2b', 'M12 2l2.9 6.3 6.9.7-5.1 4.6 1.4 6.8L12 17.8 5.9 20.4l1.4-6.8L2.2 9l6.9-.7z', __('میانگین رضایت', 'nias-course-widget'), $kpi['rating'] > 0 ? nias_fa_digits(number_format($kpi['rating'], 1)) : '—', $kpi['rating'] > 0 ? __('از ۵', 'nias-course-widget') : '', $rating_pill);
+            echo nias_idash_kpi_card('#3858e9', nias_idash_icon('revenue'), __('This month\'s income', 'nias-course-widget'), nias_idash_money($kpi['revenueMonth']), __('Toman', 'nias-course-widget'), $rev_pill);
+            echo nias_idash_kpi_card('#8b5cf6', nias_idash_icon('students'), __('Students', 'nias-course-widget'), nias_fa_digits($kpi['students']), '', $students_pill);
+            echo nias_idash_kpi_card('#48af3b', nias_idash_icon('book'), __('Published courses', 'nias-course-widget'), nias_fa_digits($kpi['published']), '', $courses_pill);
+            echo nias_idash_kpi_card('#d39a2b', 'M12 2l2.9 6.3 6.9.7-5.1 4.6 1.4 6.8L12 17.8 5.9 20.4l1.4-6.8L2.2 9l6.9-.7z', __('Average satisfaction', 'nias-course-widget'), $kpi['rating'] > 0 ? nias_fa_digits(number_format($kpi['rating'], 1)) : '—', $kpi['rating'] > 0 ? __('out of 5', 'nias-course-widget') : '', $rating_pill);
             ?>
         </div>
 
@@ -652,7 +652,7 @@ function nias_instructor_dashboard_render($user_id)
             </div>
         </div>
 
-        <div class="nias-idash-foot"><?php echo esc_html__('دوره ساز نیاس · پیشخوان مدرس', 'nias-course-widget'); ?></div>
+        <div class="nias-idash-foot"><?php echo esc_html__('Nias Course Builder · Instructor dashboard', 'nias-course-widget'); ?></div>
     </div>
     <?php echo nias_instructor_dashboard_inline_js(); ?>
     <?php
@@ -671,19 +671,19 @@ function nias_instructor_dashboard_chart($d)
     <section class="nias-idash-card">
         <div class="nias-idash-card-head nias-idash-chart-head">
             <div>
-                <div class="nias-idash-card-title"><?php echo esc_html__('روند فروش', 'nias-course-widget'); ?></div>
+                <div class="nias-idash-card-title"><?php echo esc_html__('Sales trend', 'nias-course-widget'); ?></div>
                 <div class="nias-idash-chart-total">
                     <span class="nias-idash-chart-num" data-total><?php echo esc_html(nias_idash_money($d['totalRevenue'])); ?></span>
-                    <span class="nias-idash-chart-cap"><?php echo esc_html__('تومان در', 'nias-course-widget'); ?> <span data-period-word>۱۲ ماه</span></span>
+                    <span class="nias-idash-chart-cap"><?php echo esc_html__('Toman in', 'nias-course-widget'); ?> <span data-period-word>۱۲ ماه</span></span>
                 </div>
             </div>
             <div class="nias-idash-seg" data-chart-toggle>
-                <button type="button" class="nias-idash-seg-btn is-on" data-range="12"><?php echo esc_html__('۱۲ ماه', 'nias-course-widget'); ?></button>
-                <button type="button" class="nias-idash-seg-btn" data-range="6"><?php echo esc_html__('۶ ماه', 'nias-course-widget'); ?></button>
+                <button type="button" class="nias-idash-seg-btn is-on" data-range="12"><?php echo esc_html__('12 months', 'nias-course-widget'); ?></button>
+                <button type="button" class="nias-idash-seg-btn" data-range="6"><?php echo esc_html__('6 months', 'nias-course-widget'); ?></button>
             </div>
         </div>
         <?php if ($max <= 0) : ?>
-            <div class="nias-idash-empty"><?php echo esc_html__('هنوز فروشی برای دوره‌های شما ثبت نشده است.', 'nias-course-widget'); ?></div>
+            <div class="nias-idash-empty"><?php echo esc_html__('No sales have been recorded for your courses yet.', 'nias-course-widget'); ?></div>
         <?php else : ?>
             <div class="nias-idash-bars">
                 <?php foreach ($series as $i => $s) :
@@ -691,7 +691,7 @@ function nias_instructor_dashboard_chart($d)
                     $h = 16 + ($max > 0 ? ($s['value'] / $max) * 150 : 0); ?>
                     <div class="nias-idash-bar-col" data-idx="<?php echo esc_attr($i); ?>" data-val="<?php echo esc_attr($s['value']); ?>">
                         <div class="nias-idash-bar-val"<?php echo $active ? '' : ' style="visibility:hidden"'; ?>><?php echo esc_html(nias_idash_money($s['value'])); ?></div>
-                        <div class="nias-idash-bar<?php echo $active ? ' is-active' : ''; ?>" style="height:<?php echo esc_attr(round($h)); ?>px" title="<?php echo esc_attr(nias_idash_money($s['value']) . ' ' . __('تومان', 'nias-course-widget')); ?>"></div>
+                        <div class="nias-idash-bar<?php echo $active ? ' is-active' : ''; ?>" style="height:<?php echo esc_attr(round($h)); ?>px" title="<?php echo esc_attr(nias_idash_money($s['value']) . ' ' . __('Toman', 'nias-course-widget')); ?>"></div>
                         <span class="nias-idash-bar-lbl"><?php echo esc_html($s['labelShort']); ?></span>
                     </div>
                 <?php endforeach; ?>
@@ -717,16 +717,16 @@ function nias_instructor_dashboard_courses($d)
     ob_start(); ?>
     <section class="nias-idash-card">
         <div class="nias-idash-card-head">
-            <div class="nias-idash-card-title"><?php echo esc_html__('دوره‌های من', 'nias-course-widget'); ?></div>
+            <div class="nias-idash-card-title"><?php echo esc_html__('My courses', 'nias-course-widget'); ?></div>
             <div class="nias-idash-chips" data-course-filter>
-                <button type="button" class="nias-idash-chip is-on" data-filter="all"><?php echo esc_html__('همه', 'nias-course-widget'); ?> <span><?php echo esc_html(nias_fa_digits($counts['all'])); ?></span></button>
-                <button type="button" class="nias-idash-chip" data-filter="publish"><?php echo esc_html__('منتشرشده', 'nias-course-widget'); ?> <span><?php echo esc_html(nias_fa_digits($counts['publish'])); ?></span></button>
-                <button type="button" class="nias-idash-chip" data-filter="draft"><?php echo esc_html__('پیش‌نویس', 'nias-course-widget'); ?> <span><?php echo esc_html(nias_fa_digits($counts['draft'])); ?></span></button>
+                <button type="button" class="nias-idash-chip is-on" data-filter="all"><?php echo esc_html__('All', 'nias-course-widget'); ?> <span><?php echo esc_html(nias_fa_digits($counts['all'])); ?></span></button>
+                <button type="button" class="nias-idash-chip" data-filter="publish"><?php echo esc_html__('Published', 'nias-course-widget'); ?> <span><?php echo esc_html(nias_fa_digits($counts['publish'])); ?></span></button>
+                <button type="button" class="nias-idash-chip" data-filter="draft"><?php echo esc_html__('Draft', 'nias-course-widget'); ?> <span><?php echo esc_html(nias_fa_digits($counts['draft'])); ?></span></button>
             </div>
         </div>
 
         <?php if (empty($courses)) : ?>
-            <div class="nias-idash-empty"><?php echo esc_html__('هنوز دوره‌ای به شما اختصاص داده نشده است.', 'nias-course-widget'); ?></div>
+            <div class="nias-idash-empty"><?php echo esc_html__('No course has been assigned to you yet.', 'nias-course-widget'); ?></div>
         <?php else : ?>
             <div class="nias-idash-courses">
                 <?php foreach ($courses as $c) :
@@ -739,14 +739,14 @@ function nias_instructor_dashboard_courses($d)
                             <div class="nias-idash-course-titlerow">
                                 <a class="nias-idash-course-title" href="<?php echo esc_url($c['viewUrl']); ?>"><?php echo esc_html($c['title']); ?></a>
                                 <?php if ($is_draft) : ?>
-                                    <span class="nias-idash-status nias-idash-status-draft"><?php echo esc_html__('پیش‌نویس', 'nias-course-widget'); ?></span>
+                                    <span class="nias-idash-status nias-idash-status-draft"><?php echo esc_html__('Draft', 'nias-course-widget'); ?></span>
                                 <?php else : ?>
-                                    <span class="nias-idash-status nias-idash-status-pub"><?php echo esc_html__('منتشرشده', 'nias-course-widget'); ?></span>
+                                    <span class="nias-idash-status nias-idash-status-pub"><?php echo esc_html__('Published', 'nias-course-widget'); ?></span>
                                 <?php endif; ?>
                             </div>
                             <div class="nias-idash-course-meta">
                                 <span><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8"/></svg><?php echo esc_html($is_draft && $c['students'] === 0 ? '—' : nias_fa_digits($c['students'])); ?></span>
-                                <span><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="<?php echo esc_attr(nias_idash_icon('list')); ?>"></path></svg><?php echo esc_html(nias_fa_digits($c['lessons'])); ?> <?php echo esc_html__('درس', 'nias-course-widget'); ?></span>
+                                <span><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="<?php echo esc_attr(nias_idash_icon('list')); ?>"></path></svg><?php echo esc_html(nias_fa_digits($c['lessons'])); ?> <?php echo esc_html__('lesson', 'nias-course-widget'); ?></span>
                                 <?php if ($c['reviews'] > 0) : ?>
                                     <span class="nias-idash-course-rate"><svg width="13" height="13" viewBox="0 0 24 24" fill="#d39a2b" stroke="none"><path d="M12 2l2.9 6.3 6.9.7-5.1 4.6 1.4 6.8L12 17.8 5.9 20.4l1.4-6.8L2.2 9l6.9-.7z"/></svg><?php echo esc_html(nias_fa_digits(number_format($c['rating'], 1))); ?></span>
                                 <?php endif; ?>
@@ -754,12 +754,12 @@ function nias_instructor_dashboard_courses($d)
                         </div>
                         <div class="nias-idash-course-rev">
                             <div class="nias-idash-course-rev-num"><?php echo esc_html($c['revenue'] > 0 ? nias_idash_money($c['revenue']) : '—'); ?></div>
-                            <div class="nias-idash-course-rev-cap"><?php echo esc_html__('درآمد کل', 'nias-course-widget'); ?></div>
+                            <div class="nias-idash-course-rev-cap"><?php echo esc_html__('Total income', 'nias-course-widget'); ?></div>
                         </div>
                         <?php if ($c['editUrl']) : ?>
                             <a class="nias-idash-manage" href="<?php echo esc_url($c['editUrl']); ?>">
                                 <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="<?php echo esc_attr(nias_idash_icon('edit')); ?>"></path></svg>
-                                <?php echo esc_html__('مدیریت', 'nias-course-widget'); ?>
+                                <?php echo esc_html__('Manage', 'nias-course-widget'); ?>
                             </a>
                         <?php endif; ?>
                     </div>
@@ -779,11 +779,11 @@ function nias_instructor_dashboard_students($d)
         <div class="nias-idash-card-head">
             <div class="nias-idash-side-title">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#3858e9" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="<?php echo esc_attr(nias_idash_icon('students')); ?>"></path></svg>
-                <span><?php echo esc_html__('دانشجویان اخیر', 'nias-course-widget'); ?></span>
+                <span><?php echo esc_html__('Recent students', 'nias-course-widget'); ?></span>
             </div>
         </div>
         <?php if (empty($d['recentStudents'])) : ?>
-            <div class="nias-idash-empty"><?php echo esc_html__('هنوز ثبت‌نامی ثبت نشده است.', 'nias-course-widget'); ?></div>
+            <div class="nias-idash-empty"><?php echo esc_html__('No enrolment recorded yet.', 'nias-course-widget'); ?></div>
         <?php else : ?>
             <div class="nias-idash-rows">
                 <?php foreach ($d['recentStudents'] as $i => $s) :
@@ -812,7 +812,7 @@ function nias_instructor_dashboard_certs($d)
         <div class="nias-idash-card-head">
             <div class="nias-idash-side-title">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#48af3b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 13.5L7 22l5-3 5 3-1-8.5M18 8a6 6 0 1 1-12 0 6 6 0 0 1 12 0z"/></svg>
-                <span><?php echo esc_html__('گواهینامه‌های اخیر', 'nias-course-widget'); ?></span>
+                <span><?php echo esc_html__('Recent certificates', 'nias-course-widget'); ?></span>
             </div>
         </div>
         <div class="nias-idash-rows">
@@ -842,7 +842,7 @@ function nias_instructor_dashboard_reviews($d)
         <div class="nias-idash-card-head">
             <div class="nias-idash-side-title">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#8b5cf6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8z"/></svg>
-                <span><?php echo esc_html__('نظرات اخیر دوره‌ها', 'nias-course-widget'); ?></span>
+                <span><?php echo esc_html__('Recent course reviews', 'nias-course-widget'); ?></span>
             </div>
         </div>
         <div class="nias-idash-reviews">
@@ -939,14 +939,14 @@ function nias_instructor_dashboard_output()
 
     if (!is_user_logged_in()) {
         return '<div class="nias-idash nias-idash-gate" dir="rtl">' . nias_instructor_dashboard_styles()
-            . '<div class="nias-idash-gate-box">' . esc_html__('برای مشاهدهٔ پیشخوان مدرس ابتدا وارد شوید.', 'nias-course-widget') . '</div></div>';
+            . '<div class="nias-idash-gate-box">' . esc_html__('Log in first to see the instructor dashboard.', 'nias-course-widget') . '</div></div>';
     }
 
     $user_id       = get_current_user_id();
     $is_instructor = function_exists('nias_user_is_instructor') && nias_user_is_instructor($user_id);
     if (!$is_instructor && !current_user_can('manage_options')) {
         return '<div class="nias-idash nias-idash-gate" dir="rtl">' . nias_instructor_dashboard_styles()
-            . '<div class="nias-idash-gate-box">' . esc_html__('این صفحه مخصوص مدرسین است.', 'nias-course-widget') . '</div></div>';
+            . '<div class="nias-idash-gate-box">' . esc_html__('This page is for instructors only.', 'nias-course-widget') . '</div></div>';
     }
 
     $nav = function ($active) use ($user_id) {
@@ -973,11 +973,11 @@ function nias_instructor_dashboard_output()
 
     $start = '';
     if (function_exists('nias_inst_new_course_url') && nias_inst_panel_on() && ($new = nias_inst_new_course_url($user_id))) {
-        $start = '<div class="nip-start" dir="rtl"><div><b>' . esc_html__('دورهٔ جدید بسازید', 'nias-course-widget') . '</b><span>'
+        $start = '<div class="nip-start" dir="rtl"><div><b>' . esc_html__('Create a new course', 'nias-course-widget') . '</b><span>'
             . esc_html(function_exists('nias_inst_approval_on') && nias_inst_approval_on() && !user_can($user_id, 'manage_options')
-                ? __('عنوان، توضیحات و تصویر را وارد کنید و جلسات را بسازید؛ دوره پس از بررسی مدیر منتشر می‌شود.', 'nias-course-widget')
-                : __('عنوان، توضیحات و تصویر را وارد کنید و جلسات و فصل‌ها را بسازید.', 'nias-course-widget'))
-            . '</span></div><a class="nip-btn pri" href="' . esc_url($new) . '">+ ' . esc_html__('دورهٔ جدید', 'nias-course-widget') . '</a></div>';
+                ? __('Enter the title, description and image and build the lessons; the course is published after admin review.', 'nias-course-widget')
+                : __('Enter the title, description and image and build the lessons and chapters.', 'nias-course-widget'))
+            . '</span></div><a class="nip-btn pri" href="' . esc_url($new) . '">+ ' . esc_html__('New course', 'nias-course-widget') . '</a></div>';
     }
     return $nav('home') . $start . nias_instructor_dashboard_render($user_id);
 }

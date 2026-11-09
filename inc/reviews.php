@@ -93,22 +93,22 @@ function nias_reviews_mine($user_id, $post_id)
 function nias_reviews_block_reason($user_id, $post_id)
 {
     if (!$user_id) {
-        return __('برای ثبت نظر وارد حساب کاربری شوید.', 'nias-course-widget');
+        return __('Log in to your account to leave a review.', 'nias-course-widget');
     }
     if (function_exists('nias_can_edit_course') && nias_can_edit_course($user_id, $post_id)) {
-        return __('مدرس دوره نمی‌تواند به دورهٔ خودش امتیاز بدهد.', 'nias-course-widget');
+        return __('The course instructor cannot rate their own course.', 'nias-course-widget');
     }
     $has = function_exists('nias_course_user_completed') && nias_course_user_completed($user_id, $post_id);
     if (!$has && function_exists('nias_course_is_free') && nias_course_is_free($post_id)) {
         $has = function_exists('nias_course_enrolled_at') && nias_course_enrolled_at($user_id, $post_id);
     }
     if (!$has) {
-        return __('فقط دانشجویان این دوره می‌توانند نظر ثبت کنند.', 'nias-course-widget');
+        return __('Only students of this course can leave a review.', 'nias-course-widget');
     }
     $min = nias_reviews_min_progress();
     $p   = function_exists('nias_cert_user_progress') ? nias_cert_user_progress($user_id, $post_id) : 100;
     if ($p < $min) {
-        return sprintf(__('بعد از دیدن دست‌کم %s٪ دوره می‌توانید امتیاز و نظر بدهید (پیشرفت شما: %s٪).', 'nias-course-widget'), nias_fa_digits($min), nias_fa_digits($p));
+        return sprintf(__('You can rate and review after watching at least %s%% of the course (your progress: %s%%).', 'nias-course-widget'), nias_fa_digits($min), nias_fa_digits($p));
     }
     return '';
 }
@@ -144,7 +144,7 @@ function nias_reviews_request()
 {
     $pid = isset($_POST['product_id']) ? (int) $_POST['product_id'] : 0;
     if (!nias_reviews_enabled() || !$pid || !nias_is_course_post($pid) || !check_ajax_referer('nias_reviews_' . $pid, 'nonce', false)) {
-        wp_send_json_error(array('message' => __('درخواست نامعتبر است.', 'nias-course-widget')), 403);
+        wp_send_json_error(array('message' => __('Invalid request.', 'nias-course-widget')), 403);
     }
     return $pid;
 }
@@ -168,10 +168,10 @@ add_action('wp_ajax_nias_reviews_submit', function () {
     $rating = isset($_POST['rating']) ? (int) $_POST['rating'] : 0;
     $text   = isset($_POST['text']) ? trim(sanitize_textarea_field(wp_unslash($_POST['text']))) : '';
     if ($rating < 1 || $rating > 5) {
-        wp_send_json_error(array('message' => __('امتیاز (۱ تا ۵ ستاره) را انتخاب کنید.', 'nias-course-widget')));
+        wp_send_json_error(array('message' => __('Choose a rating (1 to 5 stars).', 'nias-course-widget')));
     }
     if (mb_strlen($text) < 10) {
-        wp_send_json_error(array('message' => __('لطفاً چند کلمه دربارهٔ تجربه‌تان از دوره بنویسید.', 'nias-course-widget')));
+        wp_send_json_error(array('message' => __('Please write a few words about your experience with the course.', 'nias-course-widget')));
     }
     $text     = mb_substr($text, 0, 3000);
     $u        = wp_get_current_user();
@@ -209,13 +209,13 @@ add_action('wp_ajax_nias_reviews_reply', function () {
     $pid = nias_reviews_request();
     $uid = get_current_user_id();
     if (!user_can($uid, 'manage_options') && !(function_exists('nias_can_edit_course') && nias_can_edit_course($uid, $pid))) {
-        wp_send_json_error(array('message' => __('فقط مدرس دوره و مدیر می‌توانند پاسخ بدهند.', 'nias-course-widget')), 403);
+        wp_send_json_error(array('message' => __('Only the course instructor and the admin can reply.', 'nias-course-widget')), 403);
     }
     $parent = isset($_POST['parent']) ? (int) $_POST['parent'] : 0;
     $p      = $parent ? get_comment($parent) : null;
     $text   = isset($_POST['text']) ? trim(sanitize_textarea_field(wp_unslash($_POST['text']))) : '';
     if (!$p || (int) $p->comment_post_ID !== $pid || $text === '') {
-        wp_send_json_error(array('message' => __('پاسخ ثبت نشد.', 'nias-course-widget')));
+        wp_send_json_error(array('message' => __('The reply was not saved.', 'nias-course-widget')));
     }
     $u = wp_get_current_user();
     wp_insert_comment(array('comment_post_ID' => $pid, 'comment_author' => $u->display_name, 'comment_author_email' => $u->user_email, 'comment_content' => mb_substr($text, 0, 3000), 'comment_type' => 'review', 'comment_parent' => $parent, 'user_id' => $uid, 'comment_approved' => 1));
@@ -233,7 +233,7 @@ function nias_reviews_stars($avg, $size = 16)
         $fill = $avg >= $i ? 100 : ($avg > $i - 1 ? (int) round(($avg - $i + 1) * 100) : 0);
         $h .= '<span class="nrv-star" style="width:' . (int) $size . 'px;height:' . (int) $size . 'px"><i style="width:' . $fill . '%"></i></span>';
     }
-    return '<span class="nrv-stars" aria-label="' . esc_attr(sprintf(__('%s از ۵', 'nias-course-widget'), nias_fa_digits($avg))) . '">' . $h . '</span>';
+    return '<span class="nrv-stars" aria-label="' . esc_attr(sprintf(__('%s out of 5', 'nias-course-widget'), nias_fa_digits($avg))) . '">' . $h . '</span>';
 }
 
 add_filter('nias_modern_course_extra', 'nias_reviews_block', 20, 2);
@@ -294,9 +294,9 @@ function nias_reviews_block($html, $post_id)
         .nrv-rf input{flex:1;border:1px solid #dbe3ef;border-radius:9px;padding:7px 10px;font:inherit}
         .nrv-rf button,.nrv-more{border:1px solid #dbe3ef;background:#fff;border-radius:9px;padding:7px 14px;font:inherit;cursor:pointer}
         </style>
-        <h2><?php echo esc_html__('نظر دانشجویان', 'nias-course-widget'); ?></h2>
+        <h2><?php echo esc_html__('Student reviews', 'nias-course-widget'); ?></h2>
         <div class="nrv-sum">
-            <div class="nrv-big"><b data-nrv-avg><?php echo esc_html($sum['count'] ? nias_fa_digits(number_format_i18n($sum['avg'], 1)) : '—'); ?></b><?php echo nias_reviews_stars($sum['avg'], 18); // phpcs:ignore -- built safely ?><br><span data-nrv-count><?php echo esc_html(sprintf(__('%s نظر', 'nias-course-widget'), nias_fa_digits($sum['count']))); ?></span></div>
+            <div class="nrv-big"><b data-nrv-avg><?php echo esc_html($sum['count'] ? nias_fa_digits(number_format_i18n($sum['avg'], 1)) : '—'); ?></b><?php echo nias_reviews_stars($sum['avg'], 18); // phpcs:ignore -- built safely ?><br><span data-nrv-count><?php echo esc_html(sprintf(__('%s reviews', 'nias-course-widget'), nias_fa_digits($sum['count']))); ?></span></div>
             <div class="nrv-dist"><?php foreach ($sum['dist'] as $k => $n) : $w = $sum['count'] ? round($n / $sum['count'] * 100) : 0; ?><div><span><?php echo esc_html(nias_fa_digits($k)); ?> ★</span><em><i style="width:<?php echo (int) $w; ?>%"></i></em><span><?php echo esc_html(nias_fa_digits($n)); ?></span></div><?php endforeach; ?></div>
         </div>
         <div data-nrv-form></div>

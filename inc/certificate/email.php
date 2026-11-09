@@ -28,12 +28,12 @@ function nias_cert_email_enabled()
 
 function nias_cert_email_default_subject()
 {
-    return __('مدرک دورهٔ «{course_name}» صادر شد', 'nias-course-widget');
+    return __('Certificate issued for the course "{course_name}"', 'nias-course-widget');
 }
 
 function nias_cert_email_default_body()
 {
-    return __("سلام {student_name} عزیز،\n\nتبریک! مدرک پایان دورهٔ «{course_name}» به نام شما صادر شد.\n\nکد مدرک: {code}\nتاریخ صدور: {date}\n\nهر کسی (مثلاً کارفرما) می‌تواند اصالت مدرک شما را از این نشانی بررسی کند:\n{verify_url}\n\nبا آرزوی موفقیت\n{site_name}", 'nias-course-widget');
+    return __("Hello dear {student_name},\n\nCongratulations! The completion certificate of the course \"{course_name}\" has been issued in your name.\n\nCertificate code: {code}\nIssue date: {date}\n\nAnyone (for example an employer) can check the authenticity of your certificate at this address:\n{verify_url}\n\nWishing you success\n{site_name}", 'nias-course-widget');
 }
 
 /* -------------------------------------------------------------------------
@@ -150,8 +150,8 @@ function nias_cert_mail_certificate($to, $data, $template)
     $btn  = 'display:inline-block;padding:11px 22px;border-radius:10px;text-decoration:none;font-weight:bold;margin:4px';
     $html = '<div dir="rtl" style="text-align:right;line-height:2;font-size:14px">' . nl2br(make_clickable(esc_html($body)))
         . '<p style="margin-top:22px">'
-        . '<a href="' . esc_url($tokens['account_url']) . '" style="' . $btn . ';background:#3858e9;color:#ffffff">' . esc_html__('دریافت مدرک', 'nias-course-widget') . '</a>'
-        . '<a href="' . esc_url($data['verify_url']) . '" style="' . $btn . ';background:#eef1fd;color:#3858e9">' . esc_html__('صفحهٔ استعلام مدرک', 'nias-course-widget') . '</a>'
+        . '<a href="' . esc_url($tokens['account_url']) . '" style="' . $btn . ';background:#3858e9;color:#ffffff">' . esc_html__('Get certificate', 'nias-course-widget') . '</a>'
+        . '<a href="' . esc_url($data['verify_url']) . '" style="' . $btn . ';background:#eef1fd;color:#3858e9">' . esc_html__('Certificate verification page', 'nias-course-widget') . '</a>'
         . '</p></div>';
     $html = apply_filters('nias_certificate_email_html', $html, $data);
 
@@ -186,7 +186,7 @@ add_action('admin_post_nias_cert_test_email', 'nias_cert_handle_test_email');
 function nias_cert_handle_test_email()
 {
     if (!current_user_can('manage_options')) {
-        wp_die(esc_html__('دسترسی لازم را ندارید.', 'nias-course-widget'));
+        wp_die(esc_html__('You do not have the required permission.', 'nias-course-widget'));
     }
     check_admin_referer('nias_cert_test_email');
     $me   = wp_get_current_user();

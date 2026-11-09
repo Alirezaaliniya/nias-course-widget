@@ -280,8 +280,8 @@ function nias_curriculum_register_page()
 {
     $hook = add_submenu_page(
         '', // hidden (no menu parent)
-        __('ویرایش جلسات و فصل‌ها', 'nias-course-widget'),
-        __('ویرایش جلسات و فصل‌ها', 'nias-course-widget'),
+        __('Edit lessons and chapters', 'nias-course-widget'),
+        __('Edit lessons and chapters', 'nias-course-widget'),
         'edit_posts', // per-course check below (edit_post); edit_products only exists with WooCommerce
         'nias-course-curriculum',
         'nias_curriculum_render_page'
@@ -297,7 +297,7 @@ function nias_curriculum_register_page()
 
 function nias_curriculum_set_admin_title()
 {
-    $GLOBALS['title'] = __('ویرایش جلسات و فصل‌ها', 'nias-course-widget');
+    $GLOBALS['title'] = __('Edit lessons and chapters', 'nias-course-widget');
 }
 
 /* -------------------------------------------------------------------------
@@ -372,10 +372,10 @@ function nias_curriculum_inject_button()
     </style>
     <script>
     jQuery(function ($) {
-        var label   = <?php echo wp_json_encode(__('ویرایش جلسات و فصل‌ها', 'nias-course-widget')); ?>;
+        var label   = <?php echo wp_json_encode(__('Edit lessons and chapters', 'nias-course-widget')); ?>;
         var href    = <?php echo wp_json_encode($url); ?>;
         var isNew   = <?php echo $is_new ? 'true' : 'false'; ?>;
-        var saveMsg = <?php echo wp_json_encode(sprintf(__('برای افزودن فصل و درس، ابتدا %s را ذخیره کنید.', 'nias-course-widget'), nias_course_type_label($post->ID))); ?>;
+        var saveMsg = <?php echo wp_json_encode(sprintf(__('To add chapters and lessons, first save the %s.', 'nias-course-widget'), nias_course_type_label($post->ID))); ?>;
         if ($('.nias-curriculum-btn').length) {
             return;
         }
@@ -418,7 +418,7 @@ function nias_curriculum_row_action($actions, $post)
     }
     $url = admin_url('admin.php?page=nias-course-curriculum&product=' . intval($post->ID));
     $actions['nias_curriculum'] = '<a href="' . esc_url($url) . '" style="color:#2563eb;font-weight:600;">'
-        . esc_html__('ویرایش جلسات و فصل‌ها', 'nias-course-widget') . '</a>';
+        . esc_html__('Edit lessons and chapters', 'nias-course-widget') . '</a>';
     return $actions;
 }
 
@@ -432,11 +432,11 @@ function nias_curriculum_ajax_save()
     $product_id = isset($_POST['product_id']) ? intval($_POST['product_id']) : 0;
 
     if (!$product_id || !check_ajax_referer('nias_curriculum_save_' . $product_id, 'nonce', false)) {
-        wp_send_json_error(array('message' => __('درخواست نامعتبر است.', 'nias-course-widget')));
+        wp_send_json_error(array('message' => __('Invalid request.', 'nias-course-widget')));
     }
     $full = current_user_can('edit_post', $product_id); // admin / editor: every part of the page
     if (!$full && !(function_exists('nias_can_edit_course') && nias_can_edit_course(get_current_user_id(), $product_id))) {
-        wp_send_json_error(array('message' => __('دسترسی لازم را ندارید.', 'nias-course-widget')));
+        wp_send_json_error(array('message' => __('You do not have the required permission.', 'nias-course-widget')));
     }
     if (!current_user_can('unfiltered_html') && function_exists('nias_course_trust_existing')) {
         nias_course_trust_existing($product_id);
@@ -452,7 +452,7 @@ function nias_curriculum_ajax_save()
     // «نیاز به تأیید»: an instructor's edit of a live course waits for the admin.
     if (!$full && function_exists('nias_inst_needs_approval') && nias_inst_needs_approval(get_current_user_id(), $product_id)) {
         nias_course_pending_set($product_id, 'sections', $sections, get_current_user_id());
-        wp_send_json_success(array('message' => __('ذخیره شد و برای تأیید مدیر ارسال شد؛ پس از تأیید روی دوره اعمال می‌شود.', 'nias-course-widget'), 'pending' => true));
+        wp_send_json_success(array('message' => __('Saved and sent for admin approval; it applies to the course after approval.', 'nias-course-widget'), 'pending' => true));
     }
     carbon_set_post_meta($product_id, 'course_sections', $sections);
     if (!defined('NIAS_CS_COMPACT') || !NIAS_CS_COMPACT) {
@@ -462,7 +462,7 @@ function nias_curriculum_ajax_save()
     // Instructor panel: only chapters/lessons; instructors, SpotPlayer and
     // custom meta stay with the site admin.
     if (!$full) {
-        wp_send_json_success(array('message' => __('تغییرات ذخیره شد.', 'nias-course-widget')));
+        wp_send_json_success(array('message' => __('Changes saved.', 'nias-course-widget')));
     }
 
     // Course instructors (when the feature is enabled).
@@ -494,7 +494,7 @@ function nias_curriculum_ajax_save()
         nias_meta_save_product_values($product_id, wp_unslash($_POST['meta_values']));
     }
 
-    wp_send_json_success(array('message' => __('تغییرات ذخیره شد.', 'nias-course-widget')));
+    wp_send_json_success(array('message' => __('Changes saved.', 'nias-course-widget')));
 }
 
 /* -------------------------------------------------------------------------
@@ -504,15 +504,15 @@ function nias_curriculum_ajax_save()
 function nias_curriculum_render_page()
 {
     if (!current_user_can('edit_posts')) {
-        wp_die(esc_html__('دسترسی لازم را ندارید.', 'nias-course-widget'));
+        wp_die(esc_html__('You do not have the required permission.', 'nias-course-widget'));
     }
 
     $product_id = isset($_GET['product']) ? intval($_GET['product']) : 0;
     $product    = $product_id ? get_post($product_id) : null;
 
     if (!$product || !nias_is_course_type($product->post_type) || !current_user_can('edit_post', $product_id)) {
-        echo '<div class="wrap"><h1>' . esc_html__('ویرایش جلسات و فصل‌ها', 'nias-course-widget') . '</h1>';
-        echo '<div class="notice notice-error"><p>' . esc_html__('محصول معتبری انتخاب نشده است.', 'nias-course-widget') . '</p></div></div>';
+        echo '<div class="wrap"><h1>' . esc_html__('Edit lessons and chapters', 'nias-course-widget') . '</h1>';
+        echo '<div class="notice notice-error"><p>' . esc_html__('No valid product selected.', 'nias-course-widget') . '</p></div></div>';
         return;
     }
     nias_curriculum_render_editor($product_id, array());
@@ -535,7 +535,7 @@ function nias_curriculum_render_editor($product_id, $ctx)
     $sections  = function_exists('nias_course_sections_for_editor') ? nias_course_sections_for_editor($product_id, get_current_user_id()) : carbon_get_post_meta($product_id, 'course_sections');
     if ($ctx['admin'] && !$ctx['panel'] && function_exists('nias_course_pending_get') && ($pend = nias_course_pending_get($product_id))) {
         $pu = get_userdata(isset($pend['by']) ? (int) $pend['by'] : 0);
-        echo '<div class="notice notice-warning" style="margin:12px 0"><p>' . esc_html(sprintf(__('%s تغییراتی در این دوره ثبت کرده که در انتظار تأیید است. تأیید آن، نسخهٔ مدرس را جایگزین جلسات فعلی می‌کند.', 'nias-course-widget'), $pu ? $pu->display_name : __('یک مدرس', 'nias-course-widget'))) . ' <a href="' . esc_url(admin_url('admin.php?page=nias-course-approvals')) . '">' . esc_html__('بررسی درخواست', 'nias-course-widget') . '</a></p></div>';
+        echo '<div class="notice notice-warning" style="margin:12px 0"><p>' . esc_html(sprintf(__('%s has submitted changes to this course that are awaiting approval. Approving them replaces the current lessons with the instructor\'s version.', 'nias-course-widget'), $pu ? $pu->display_name : __('An instructor', 'nias-course-widget'))) . ' <a href="' . esc_url(admin_url('admin.php?page=nias-course-approvals')) . '">' . esc_html__('Review request', 'nias-course-widget') . '</a></p></div>';
     }
     $sections  = is_array($sections) ? $sections : array();
     $spot_enabled = function_exists('nias_spot_enabled') && nias_spot_enabled();
@@ -593,16 +593,16 @@ function nias_curriculum_render_editor($product_id, $ctx)
             'manageUrl' => admin_url('admin.php?page=nias-course-instructors'),
         ),
         'i18n'           => array(
-            'newChapter'  => __('فصل جدید', 'nias-course-widget'),
-            'newLesson'   => __('درس جدید', 'nias-course-widget'),
-            'copySuffix'  => __(' (کپی)', 'nias-course-widget'),
-            'saved'       => __('تغییرات ذخیره شد.', 'nias-course-widget'),
-            'saving'      => __('در حال ذخیره…', 'nias-course-widget'),
-            'saveError'   => __('خطا در ذخیره تغییرات.', 'nias-course-widget'),
-            'leaveWarn'   => __('تغییرات ذخیره‌نشده دارید.', 'nias-course-widget'),
-            'pickImage'   => __('انتخاب تصویر', 'nias-course-widget'),
-            'pickFile'    => __('انتخاب فایل', 'nias-course-widget'),
-            'linkPrompt'  => __('آدرس پیوند:', 'nias-course-widget'),
+            'newChapter'  => __('New chapter', 'nias-course-widget'),
+            'newLesson'   => __('New lesson', 'nias-course-widget'),
+            'copySuffix'  => __(' (copy)', 'nias-course-widget'),
+            'saved'       => __('Changes saved.', 'nias-course-widget'),
+            'saving'      => __('Saving…', 'nias-course-widget'),
+            'saveError'   => __('Error saving changes.', 'nias-course-widget'),
+            'leaveWarn'   => __('You have unsaved changes.', 'nias-course-widget'),
+            'pickImage'   => __('Choose image', 'nias-course-widget'),
+            'pickFile'    => __('Choose file', 'nias-course-widget'),
+            'linkPrompt'  => __('Link address:', 'nias-course-widget'),
         ),
     );
     ?>
@@ -619,7 +619,7 @@ function nias_curriculum_render_editor($product_id, $ctx)
                         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg>
                     </div>
                     <div>
-                        <div class="nc-head-title"><?php echo esc_html__('دروس و فصل‌ها', 'nias-course-widget'); ?></div>
+                        <div class="nc-head-title"><?php echo esc_html__('Lessons & chapters', 'nias-course-widget'); ?></div>
                         <div class="nc-head-sub"><?php echo esc_html($product->post_title); ?></div>
                     </div>
                 </div>
@@ -628,29 +628,29 @@ function nias_curriculum_render_editor($product_id, $ctx)
                         <span class="nc-search-ic">
                             <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
                         </span>
-                        <input type="text" id="nc-search-input" placeholder="<?php echo esc_attr__('جستجوی فصل یا درس…', 'nias-course-widget'); ?>">
+                        <input type="text" id="nc-search-input" placeholder="<?php echo esc_attr__('Search chapter or lesson…', 'nias-course-widget'); ?>">
                     </div>
                     <button type="button" class="nc-btn nc-btn-primary" id="nc-add-chapter-top">
                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>
-                        <?php echo esc_html__('افزودن فصل', 'nias-course-widget'); ?>
+                        <?php echo esc_html__('Add chapter', 'nias-course-widget'); ?>
                     </button>
                     <button type="button" class="nc-btn nc-btn-save" id="nc-save-all">
                         <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><path d="M17 21v-8H7v8M7 3v5h8"/></svg>
-                        <?php echo esc_html__('ذخیره همه تغییرات', 'nias-course-widget'); ?>
+                        <?php echo esc_html__('Save all changes', 'nias-course-widget'); ?>
                     </button>
                     <button type="button" class="nc-btn nc-btn-spot" id="nc-spot-open">
                         <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m8 6 8 6-8 6V6z"/><rect x="3" y="3" width="18" height="18" rx="3"/></svg>
-                        <?php echo esc_html__('ابزار اسپات پلیر', 'nias-course-widget'); ?>
+                        <?php echo esc_html__('SpotPlayer tools', 'nias-course-widget'); ?>
                     </button>
                     <?php if ($inst_enabled) : ?>
                     <button type="button" class="nc-btn nc-btn-inst" id="nc-inst-open">
                         <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8ZM23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-                        <?php echo esc_html__('مدرسین دوره', 'nias-course-widget'); ?>
+                        <?php echo esc_html__('Course instructors', 'nias-course-widget'); ?>
                         <span class="nc-inst-count" id="nc-inst-count"></span>
                     </button>
                     <?php endif; ?>
                     <a class="nc-btn nc-btn-ghost" id="nc-back" href="<?php echo esc_url($boot['productEditUrl']); ?>">
-                        <?php echo esc_html($ctx['panel'] ? __('بازگشت به دوره‌های من', 'nias-course-widget') : __('بازگشت به محصول', 'nias-course-widget')); ?>
+                        <?php echo esc_html($ctx['panel'] ? __('Back to my courses', 'nias-course-widget') : __('Back to product', 'nias-course-widget')); ?>
                     </a>
                 </div>
             </div>
@@ -660,12 +660,12 @@ function nias_curriculum_render_editor($product_id, $ctx)
                 <div class="nc-list-col">
                     <div class="nc-list-head">
                         <div class="nc-list-head-l">
-                            <span><?php echo esc_html__('محتوای دوره', 'nias-course-widget'); ?></span>
+                            <span><?php echo esc_html__('Course content', 'nias-course-widget'); ?></span>
                             <span class="nc-stat" id="nc-stat"></span>
                         </div>
                         <div class="nc-list-head-r">
                             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="6" r="1"/><circle cx="15" cy="6" r="1"/><circle cx="9" cy="12" r="1"/><circle cx="15" cy="12" r="1"/><circle cx="9" cy="18" r="1"/><circle cx="15" cy="18" r="1"/></svg>
-                            <?php echo esc_html__('برای جابه‌جایی، دستگیره را بکشید', 'nias-course-widget'); ?>
+                            <?php echo esc_html__('Drag the handle to reorder', 'nias-course-widget'); ?>
                         </div>
                     </div>
                     <div id="nc-list"></div>
@@ -676,7 +676,7 @@ function nias_curriculum_render_editor($product_id, $ctx)
                     <div class="nc-ed-body">
                         <div id="nc-ed-fields"></div>
                         <div id="nc-ed-content" style="display:none">
-                            <div class="nc-label"><?php echo esc_html__('محتوای درس', 'nias-course-widget'); ?></div>
+                            <div class="nc-label"><?php echo esc_html__('Lesson content', 'nias-course-widget'); ?></div>
                             <?php
                             wp_editor('', 'nc-content-editor', array(
                                 'wpautop'       => true,
@@ -696,7 +696,7 @@ function nias_curriculum_render_editor($product_id, $ctx)
                                 ),
                             ));
                             ?>
-                            <div class="nc-note"><span>!</span><div><?php echo esc_html__('برای درج کد امبد (آپارات/یوتیوب) که شامل iframe و استایل است، مطمئن‌ترین راه استفاده از تب «کد» است.', 'nias-course-widget'); ?></div></div>
+                            <div class="nc-note"><span>!</span><div><?php echo esc_html__('To insert embed code (Aparat/YouTube) that includes an iframe and style, the safest way is the "Code" tab.', 'nias-course-widget'); ?></div></div>
                         </div>
                     </div>
                     <div class="nc-ed-foot" id="nc-ed-foot"></div>
@@ -711,13 +711,13 @@ function nias_curriculum_render_editor($product_id, $ctx)
         <!-- SpotPlayer tools drawer -->
         <div id="nc-spot-drawer" class="nc-spot-drawer" aria-hidden="true">
             <div class="nc-spot-overlay" data-spot-close></div>
-            <aside class="nc-spot-panel" role="dialog" aria-label="<?php echo esc_attr__('ابزار اسپات پلیر', 'nias-course-widget'); ?>">
+            <aside class="nc-spot-panel" role="dialog" aria-label="<?php echo esc_attr__('SpotPlayer tools', 'nias-course-widget'); ?>">
                 <div class="nc-spot-head">
                     <div class="nc-spot-head-t">
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m8 6 8 6-8 6V6z"/><rect x="3" y="3" width="18" height="18" rx="3"/></svg>
-                        <span><?php echo esc_html__('ابزار اسپات پلیر', 'nias-course-widget'); ?></span>
+                        <span><?php echo esc_html__('SpotPlayer tools', 'nias-course-widget'); ?></span>
                     </div>
-                    <button type="button" class="nc-spot-x" data-spot-close aria-label="<?php echo esc_attr__('بستن', 'nias-course-widget'); ?>">
+                    <button type="button" class="nc-spot-x" data-spot-close aria-label="<?php echo esc_attr__('Close', 'nias-course-widget'); ?>">
                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
                     </button>
                 </div>
@@ -728,14 +728,14 @@ function nias_curriculum_render_editor($product_id, $ctx)
                     <section class="nc-spot-card">
                         <div class="nc-spot-card-t">
                             <span class="nc-spot-num">۱</span>
-                            <?php echo esc_html__('همگام‌سازی از لینک اسپات پلیر', 'nias-course-widget'); ?>
+                            <?php echo esc_html__('Sync from a SpotPlayer link', 'nias-course-widget'); ?>
                         </div>
-                        <label class="nc-spot-label" for="nc-spot-url"><?php echo esc_html__('لینک صفحه دانلود ویدیو اسپات پلیر', 'nias-course-widget'); ?></label>
+                        <label class="nc-spot-label" for="nc-spot-url"><?php echo esc_html__('SpotPlayer video download page link', 'nias-course-widget'); ?></label>
                         <input type="text" id="nc-spot-url" class="nc-spot-input" dir="ltr" placeholder="https://…" value="<?php echo esc_attr($boot['spot']['downloadUrl']); ?>">
-                        <p class="nc-spot-hint"><?php echo esc_html__('لینک صفحه دانلود ویدیو را وارد کنید؛ فصل‌ها و جلسات به‌صورت خودکار خوانده شده و جایگزین محتوای فعلی می‌شوند.', 'nias-course-widget'); ?></p>
+                        <p class="nc-spot-hint"><?php echo esc_html__('Enter the video download page link; chapters and lessons are read automatically and replace the current content.', 'nias-course-widget'); ?></p>
                         <button type="button" class="nc-spot-btn nc-spot-btn-primary" id="nc-spot-sync">
                             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 2v6h-6M3 12a9 9 0 0 1 15-6.7L21 8M3 22v-6h6M21 12a9 9 0 0 1-15 6.7L3 16"/></svg>
-                            <?php echo esc_html__('همگام‌سازی جلسات', 'nias-course-widget'); ?>
+                            <?php echo esc_html__('Sync lessons', 'nias-course-widget'); ?>
                         </button>
                     </section>
 
@@ -743,17 +743,17 @@ function nias_curriculum_render_editor($product_id, $ctx)
                     <section class="nc-spot-card">
                         <div class="nc-spot-card-t">
                             <span class="nc-spot-num">۲</span>
-                            <?php echo esc_html__('اکستنشن کروم خروجی لیست جلسات', 'nias-course-widget'); ?>
+                            <?php echo esc_html__('Chrome extension for exporting the lessons list', 'nias-course-widget'); ?>
                         </div>
-                        <p class="nc-spot-hint"><?php echo esc_html__('با اکستنشن کروم می‌توانید لیست جلسات را از اسپات پلیر هم با فرمت قابل تشخیص توسط پلاگین (JSON) و هم به‌صورت PDF خروجی بگیرید.', 'nias-course-widget'); ?></p>
+                        <p class="nc-spot-hint"><?php echo esc_html__('With the Chrome extension you can export the lessons list from SpotPlayer both in a format the plugin recognizes (JSON) and as PDF.', 'nias-course-widget'); ?></p>
                         <div class="nc-spot-row">
                             <a class="nc-spot-btn nc-spot-btn-dark <?php echo NIAS_SPOT_EXT_DOWNLOAD_URL === '#' ? 'is-disabled' : ''; ?>" id="nc-spot-ext-dl" href="<?php echo esc_url(NIAS_SPOT_EXT_DOWNLOAD_URL); ?>" target="_blank" rel="noopener">
                                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
-                                <?php echo esc_html__('دانلود اکستنشن', 'nias-course-widget'); ?>
+                                <?php echo esc_html__('Download extension', 'nias-course-widget'); ?>
                             </a>
                             <a class="nc-spot-btn nc-spot-btn-soft <?php echo NIAS_SPOT_EXT_TUTORIAL_URL === '#' ? 'is-disabled' : ''; ?>" id="nc-spot-ext-help" href="<?php echo esc_url(NIAS_SPOT_EXT_TUTORIAL_URL); ?>" target="_blank" rel="noopener">
                                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.1 9a3 3 0 0 1 5.8 1c0 2-3 3-3 3M12 17h.01"/></svg>
-                                <?php echo esc_html__('آموزش کار با اکستنشن', 'nias-course-widget'); ?>
+                                <?php echo esc_html__('How to use the extension', 'nias-course-widget'); ?>
                             </a>
                         </div>
                     </section>
@@ -762,17 +762,17 @@ function nias_curriculum_render_editor($product_id, $ctx)
                     <section class="nc-spot-card">
                         <div class="nc-spot-card-t">
                             <span class="nc-spot-num">۳</span>
-                            <?php echo esc_html__('وارد کردن لیست جلسات از فایل JSON', 'nias-course-widget'); ?>
+                            <?php echo esc_html__('Import the lessons list from a JSON file', 'nias-course-widget'); ?>
                         </div>
-                        <p class="nc-spot-hint"><?php echo esc_html__('فایل JSON خروجی‌گرفته‌شده از اکستنشن را انتخاب کنید تا فصل‌ها و جلسات وارد و جایگزین محتوای فعلی شوند.', 'nias-course-widget'); ?></p>
+                        <p class="nc-spot-hint"><?php echo esc_html__('Choose the JSON file exported from the extension to import chapters and lessons and replace the current content.', 'nias-course-widget'); ?></p>
                         <label class="nc-spot-file" id="nc-spot-file-label">
                             <input type="file" id="nc-spot-file" accept=".json,application/json" hidden>
                             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg>
-                            <span id="nc-spot-file-name"><?php echo esc_html__('انتخاب فایل JSON…', 'nias-course-widget'); ?></span>
+                            <span id="nc-spot-file-name"><?php echo esc_html__('Choose JSON file…', 'nias-course-widget'); ?></span>
                         </label>
                         <button type="button" class="nc-spot-btn nc-spot-btn-primary" id="nc-spot-import" disabled>
                             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12M7 10l5 5 5-5M5 21h14"/></svg>
-                            <?php echo esc_html__('وارد کردن از فایل', 'nias-course-widget'); ?>
+                            <?php echo esc_html__('Import from file', 'nias-course-widget'); ?>
                         </button>
                     </section>
 
@@ -781,43 +781,43 @@ function nias_curriculum_render_editor($product_id, $ctx)
                     <section class="nc-spot-card">
                         <div class="nc-spot-card-t">
                             <span class="nc-spot-num">۴</span>
-                            <?php echo esc_html__('شناسه دوره‌های لایسنس', 'nias-course-widget'); ?>
+                            <?php echo esc_html__('License course IDs', 'nias-course-widget'); ?>
                         </div>
-                        <label class="nc-spot-label" for="nc-spot-license"><?php echo esc_html__('شناسه دوره‌های اسپات پلیر', 'nias-course-widget'); ?></label>
+                        <label class="nc-spot-label" for="nc-spot-license"><?php echo esc_html__('SpotPlayer course IDs', 'nias-course-widget'); ?></label>
                         <textarea id="nc-spot-license" class="nc-spot-input" dir="ltr" rows="2" placeholder="aaaaaaaaaaaaaaaaaaaaaaaa,bbbbbbbbbbbbbbbbbbbbbbbb"><?php echo esc_textarea($boot['spot']['licenseCourse']); ?></textarea>
-                        <p class="nc-spot-hint"><?php echo esc_html__('شناسه دوره‌ها را با جداکننده , وارد کنید. با خرید محصول، لایسنس به‌صورت خودکار ساخته می‌شود. با «ذخیره همه تغییرات» ذخیره می‌شود.', 'nias-course-widget'); ?></p>
+                        <p class="nc-spot-hint"><?php echo esc_html__('Enter course IDs separated by , . When the product is bought, the license is created automatically. Saved with "Save all changes".', 'nias-course-widget'); ?></p>
 
                         <div style="display:grid;grid-template-columns:1fr 1fr;gap:0 12px;margin-top:14px">
                             <div>
-                                <label class="nc-spot-label" for="nc-spot-devices"><?php echo esc_html__('حداکثر دستگاه‌ها', 'nias-course-widget'); ?></label>
-                                <input type="number" id="nc-spot-devices" class="nc-spot-input" dir="ltr" min="1" max="99" value="<?php echo esc_attr($boot['spot']['devices']); ?>" placeholder="<?php echo esc_attr__('پیش‌فرض پنل', 'nias-course-widget'); ?>">
+                                <label class="nc-spot-label" for="nc-spot-devices"><?php echo esc_html__('Maximum devices', 'nias-course-widget'); ?></label>
+                                <input type="number" id="nc-spot-devices" class="nc-spot-input" dir="ltr" min="1" max="99" value="<?php echo esc_attr($boot['spot']['devices']); ?>" placeholder="<?php echo esc_attr__('Panel default', 'nias-course-widget'); ?>">
                             </div>
                             <div>
-                                <label class="nc-spot-label" for="nc-spot-offline"><?php echo esc_html__('مهلت آفلاین (روز)', 'nias-course-widget'); ?></label>
-                                <input type="number" id="nc-spot-offline" class="nc-spot-input" dir="ltr" min="1" value="<?php echo esc_attr($boot['spot']['offline']); ?>" placeholder="<?php echo esc_attr__('پیش‌فرض پنل', 'nias-course-widget'); ?>">
+                                <label class="nc-spot-label" for="nc-spot-offline"><?php echo esc_html__('Offline period (days)', 'nias-course-widget'); ?></label>
+                                <input type="number" id="nc-spot-offline" class="nc-spot-input" dir="ltr" min="1" value="<?php echo esc_attr($boot['spot']['offline']); ?>" placeholder="<?php echo esc_attr__('Panel default', 'nias-course-widget'); ?>">
                             </div>
                         </div>
-                        <p class="nc-spot-hint"><?php echo esc_html__('تعداد کل دستگاه‌هایی که خریدار می‌تواند لایسنس را رویشان فعال کند و مدت مشاهده بدون اینترنت. خالی = پیش‌فرض پنل اسپات پلیر.', 'nias-course-widget'); ?></p>
+                        <p class="nc-spot-hint"><?php echo esc_html__('Total number of devices the buyer can activate the license on, and the period of offline viewing. Empty = SpotPlayer panel default.', 'nias-course-widget'); ?></p>
 
-                        <label class="nc-spot-label" style="margin-top:14px"><?php echo esc_html__('سقف دستگاه به تفکیک پلتفرم', 'nias-course-widget'); ?></label>
+                        <label class="nc-spot-label" style="margin-top:14px"><?php echo esc_html__('Device limit per platform', 'nias-course-widget'); ?></label>
                         <div style="display:grid;grid-template-columns:repeat(6,1fr);gap:8px">
                             <?php foreach (nias_spot_platforms() as $pkey => $plabel) : ?>
                                 <div>
                                     <span style="display:block;font-size:11px;color:#6b7280;margin-bottom:4px;text-align:center"><?php echo esc_html($plabel); ?></span>
                                     <input type="number" class="nc-spot-input nc-spot-plat" data-plat="<?php echo esc_attr($pkey); ?>" dir="ltr" min="0" max="9" style="text-align:center;padding:8px 4px"
-                                           value="<?php echo esc_attr($boot['spot']['plat'][$pkey]); ?>" placeholder="<?php echo esc_attr__('خودکار', 'nias-course-widget'); ?>">
+                                           value="<?php echo esc_attr($boot['spot']['plat'][$pkey]); ?>" placeholder="<?php echo esc_attr__('Automatic', 'nias-course-widget'); ?>">
                                 </div>
                             <?php endforeach; ?>
                         </div>
-                        <p class="nc-spot-hint"><?php echo esc_html__('حداکثر ۹ برای هر پلتفرم. خالی = پیروی از سقف کل، و ۰ = آن پلتفرم غیرفعال شود. برای اعمال شدن، «حداکثر دستگاه‌ها» هم باید مقدار داشته باشد.', 'nias-course-widget'); ?></p>
+                        <p class="nc-spot-hint"><?php echo esc_html__('At most 9 per platform. Empty = follow the total limit, and 0 = that platform is disabled. To apply, "Maximum devices" must have a value too.', 'nias-course-widget'); ?></p>
 
-                        <label class="nc-spot-label" for="nc-spot-expires" style="margin-top:14px"><?php echo esc_html__('مدت دسترسی', 'nias-course-widget'); ?></label>
-                        <input type="text" id="nc-spot-expires" class="nc-spot-input" dir="ltr" value="<?php echo esc_attr($boot['spot']['expires']); ?>" placeholder="<?php echo esc_attr__('بدون انقضا', 'nias-course-widget'); ?>">
-                        <p class="nc-spot-hint"><?php echo esc_html__('عدد = تعداد روز از زمان فعال‌سازی لایسنس، تاریخ میلادی YYYY-MM-DD = انقضای مطلق، 0 = بدون انقضا، -1 = دسترسی غیرفعال. خالی = استفاده از مدت پیش‌فرض تنظیمات.', 'nias-course-widget'); ?></p>
+                        <label class="nc-spot-label" for="nc-spot-expires" style="margin-top:14px"><?php echo esc_html__('Access period', 'nias-course-widget'); ?></label>
+                        <input type="text" id="nc-spot-expires" class="nc-spot-input" dir="ltr" value="<?php echo esc_attr($boot['spot']['expires']); ?>" placeholder="<?php echo esc_attr__('No expiry', 'nias-course-widget'); ?>">
+                        <p class="nc-spot-hint"><?php echo esc_html__('Number = days from license activation, Gregorian date YYYY-MM-DD = absolute expiry, 0 = no expiry, -1 = access disabled. Empty = use the default period from the settings.', 'nias-course-widget'); ?></p>
 
-                        <label class="nc-spot-label" for="nc-spot-limit" style="margin-top:14px"><?php echo esc_html__('بازه جلسات قابل دسترس', 'nias-course-widget'); ?></label>
+                        <label class="nc-spot-label" for="nc-spot-limit" style="margin-top:14px"><?php echo esc_html__('Accessible lesson range', 'nias-course-widget'); ?></label>
                         <input type="text" id="nc-spot-limit" class="nc-spot-input" dir="ltr" value="<?php echo esc_attr($boot['spot']['limit']); ?>" placeholder="1,4-6,10-">
-                        <p class="nc-spot-hint"><?php echo esc_html__('محدود کردن دسترسی به جلسات خاص؛ مثلاً «1,4-6,10-» یعنی جلسه ۱، جلسات ۴ تا ۶ و از ۱۰ به بعد. خالی = همه جلسات. روی همه دوره‌های این محصول اعمال می‌شود.', 'nias-course-widget'); ?></p>
+                        <p class="nc-spot-hint"><?php echo esc_html__('Limit access to specific lessons; e.g. "1,4-6,10-" means lesson 1, lessons 4 to 6 and from 10 onward. Empty = all lessons. Applies to all courses of this product.', 'nias-course-widget'); ?></p>
                     </section>
                     <?php endif; ?>
 
@@ -829,13 +829,13 @@ function nias_curriculum_render_editor($product_id, $ctx)
         <!-- Instructors drawer -->
         <div id="nc-inst-drawer" class="nc-spot-drawer nc-inst-drawer" aria-hidden="true">
             <div class="nc-spot-overlay" data-inst-close></div>
-            <aside class="nc-spot-panel" role="dialog" aria-label="<?php echo esc_attr__('مدرسین دوره', 'nias-course-widget'); ?>">
+            <aside class="nc-spot-panel" role="dialog" aria-label="<?php echo esc_attr__('Course instructors', 'nias-course-widget'); ?>">
                 <div class="nc-spot-head">
                     <div class="nc-spot-head-t">
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8ZM23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-                        <span><?php echo esc_html__('مدرسین دوره', 'nias-course-widget'); ?></span>
+                        <span><?php echo esc_html__('Course instructors', 'nias-course-widget'); ?></span>
                     </div>
-                    <button type="button" class="nc-spot-x" data-inst-close aria-label="<?php echo esc_attr__('بستن', 'nias-course-widget'); ?>">
+                    <button type="button" class="nc-spot-x" data-inst-close aria-label="<?php echo esc_attr__('Close', 'nias-course-widget'); ?>">
                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
                     </button>
                 </div>
@@ -844,15 +844,15 @@ function nias_curriculum_render_editor($product_id, $ctx)
                     <section class="nc-spot-card">
                         <div class="nc-spot-card-t">
                             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
-                            <?php echo esc_html__('انتخاب مدرسین این دوره', 'nias-course-widget'); ?>
+                            <?php echo esc_html__('Choose the instructors of this course', 'nias-course-widget'); ?>
                         </div>
-                        <p class="nc-spot-hint"><?php echo esc_html__('مدرسینی که این دوره را تدریس می‌کنند انتخاب کنید. تغییرات با «ذخیره همه تغییرات» ذخیره می‌شوند.', 'nias-course-widget'); ?></p>
+                        <p class="nc-spot-hint"><?php echo esc_html__('Choose the instructors who teach this course. Changes are saved with "Save all changes".', 'nias-course-widget'); ?></p>
 
                         <?php if (empty($inst_available)) : ?>
-                            <div class="nc-inst-none"><?php echo esc_html__('هنوز مدرسی ثبت نشده است.', 'nias-course-widget'); ?></div>
+                            <div class="nc-inst-none"><?php echo esc_html__('No instructor has been registered yet.', 'nias-course-widget'); ?></div>
                             <a class="nc-spot-btn nc-spot-btn-soft" href="<?php echo esc_url($boot['instructors']['manageUrl']); ?>" target="_blank" rel="noopener">
                                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8ZM19 8v6M22 11h-6"/></svg>
-                                <?php echo esc_html__('افزودن مدرس در صفحهٔ مدیریت', 'nias-course-widget'); ?>
+                                <?php echo esc_html__('Add an instructor on the management page', 'nias-course-widget'); ?>
                             </a>
                         <?php else : ?>
                             <div class="nc-inst-pick" id="nc-inst-pick">
@@ -870,7 +870,7 @@ function nias_curriculum_render_editor($product_id, $ctx)
                                     </label>
                                 <?php endforeach; ?>
                             </div>
-                            <a class="nc-inst-managelink" href="<?php echo esc_url($boot['instructors']['manageUrl']); ?>" target="_blank" rel="noopener"><?php echo esc_html__('مدیریت مدرسین', 'nias-course-widget'); ?> ↗</a>
+                            <a class="nc-inst-managelink" href="<?php echo esc_url($boot['instructors']['manageUrl']); ?>" target="_blank" rel="noopener"><?php echo esc_html__('Manage instructors', 'nias-course-widget'); ?> ↗</a>
                         <?php endif; ?>
                     </section>
                 </div>

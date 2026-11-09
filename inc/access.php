@@ -61,7 +61,7 @@ function nias_access_period_label($post_id)
         $n    = (int) carbon_get_theme_option('nias_access_default_days');
         $unit = 'day';
     }
-    $t = $n <= 0 ? __('نامحدود', 'nias-course-widget') : sprintf($unit === 'month' ? __('%s ماه', 'nias-course-widget') : __('%s روز', 'nias-course-widget'), $n);
+    $t = $n <= 0 ? __('Unlimited', 'nias-course-widget') : sprintf($unit === 'month' ? __('%s months', 'nias-course-widget') : __('%s days', 'nias-course-widget'), $n);
     return function_exists('nias_fa_digits') ? nias_fa_digits($t) : $t;
 }
 
@@ -349,17 +349,17 @@ function nias_access_mail($user_id, $post_id, $subject, $line)
         return;
     }
     $body = '<div dir="rtl" style="font-family:Tahoma,Arial,sans-serif;font-size:14px;line-height:2;color:#1f2a30">'
-        . '<p>' . esc_html(sprintf(__('%s عزیز،', 'nias-course-widget'), $u->display_name)) . '</p><p>' . esc_html($line) . '</p>'
-        . '<p><a href="' . esc_url(nias_access_renew_url($post_id)) . '" style="display:inline-block;background:#1e83f0;color:#fff;text-decoration:none;padding:8px 18px;border-radius:9px">' . esc_html__('تمدید دسترسی', 'nias-course-widget') . '</a></p></div>';
+        . '<p>' . esc_html(sprintf(__('Dear %s,', 'nias-course-widget'), $u->display_name)) . '</p><p>' . esc_html($line) . '</p>'
+        . '<p><a href="' . esc_url(nias_access_renew_url($post_id)) . '" style="display:inline-block;background:#1e83f0;color:#fff;text-decoration:none;padding:8px 18px;border-radius:9px">' . esc_html__('Renew access', 'nias-course-widget') . '</a></p></div>';
     wp_mail($u->user_email, $subject, $body, array('Content-Type: text/html; charset=UTF-8'));
 }
 add_action('nias_access_expiring_notice', function ($uid, $pid, $until, $days) {
     $c = get_the_title($pid);
-    nias_access_mail($uid, $pid, sprintf(__('دسترسی شما به دورهٔ «%s» رو به پایان است', 'nias-course-widget'), $c), nias_fa_digits(sprintf(__('دسترسی شما به دورهٔ «%1$s» %2$s روز دیگر (%3$s) به پایان می‌رسد. برای ادامهٔ دسترسی، آن را تمدید کنید.', 'nias-course-widget'), $c, $days, nias_access_date($until))));
+    nias_access_mail($uid, $pid, sprintf(__('Your access to the course "%s" is ending soon', 'nias-course-widget'), $c), nias_fa_digits(sprintf(__('Your access to the course "%1$s" ends in %2$s days (%3$s). Renew it to keep access.', 'nias-course-widget'), $c, $days, nias_access_date($until))));
 }, 10, 4);
 add_action('nias_access_expired_notice', function ($uid, $pid, $until) {
     $c = get_the_title($pid);
-    nias_access_mail($uid, $pid, sprintf(__('دسترسی شما به دورهٔ «%s» به پایان رسید', 'nias-course-widget'), $c), sprintf(__('مدت دسترسی شما به دورهٔ «%s» تمام شد. با تمدید، دوباره به همهٔ جلسات و پیشرفت قبلی‌تان دسترسی خواهید داشت.', 'nias-course-widget'), $c));
+    nias_access_mail($uid, $pid, sprintf(__('Your access to the course "%s" has ended', 'nias-course-widget'), $c), sprintf(__('Your access period for the course "%s" is over. By renewing, you get access again to all lessons and your previous progress.', 'nias-course-widget'), $c));
 }, 10, 3);
 
 /* -------------------------------------------------------------------------
@@ -376,7 +376,7 @@ add_action('nias_course_card_meta', function ($post_id) {
         return;
     }
     $style = $i['expired'] ? 'background:#fdeeee;color:#b42318' : ($i['soon'] ? 'background:#fff4e5;color:#b45309' : '');
-    $text  = $i['expired'] ? sprintf(__('منقضی شده (%s)', 'nias-course-widget'), $i['date']) : sprintf(__('دسترسی تا %s', 'nias-course-widget'), $i['date']);
+    $text  = $i['expired'] ? sprintf(__('Expired (%s)', 'nias-course-widget'), $i['date']) : sprintf(__('Access until %s', 'nias-course-widget'), $i['date']);
     echo '<span class="nias-cc-chip" style="' . esc_attr($style) . '">' . esc_html($text) . '</span>'; // phpcs:ignore
 });
 
@@ -388,7 +388,7 @@ add_action('add_meta_boxes_product', function () {
     if (!nias_access_enabled()) {
         return;
     }
-    add_meta_box('nias-access', __('دسترسی زمان‌دار (دوره ساز نیاس)', 'nias-course-widget'), 'nias_access_metabox', 'product', 'side', 'default');
+    add_meta_box('nias-access', __('Time-limited access (Nias Course Builder)', 'nias-course-widget'), 'nias_access_metabox', 'product', 'side', 'default');
 });
 
 function nias_access_metabox($post)
@@ -404,16 +404,16 @@ function nias_access_metabox($post)
     $item = ($rp && function_exists('nias_picker_product_item')) ? nias_picker_product_item($rp) : null;
     $def  = (int) carbon_get_theme_option('nias_access_default_days');
     ?>
-    <p style="margin-top:0"><label><b><?php echo esc_html__('مدت دسترسی پس از خرید', 'nias-course-widget'); ?></b></label><br>
+    <p style="margin-top:0"><label><b><?php echo esc_html__('Access period after purchase', 'nias-course-widget'); ?></b></label><br>
         <input type="number" min="0" name="nias_access_len" value="<?php echo esc_attr($len); ?>" style="width:80px" placeholder="<?php echo esc_attr($def ? $def : '∞'); ?>">
-        <select name="nias_access_unit"><option value="day" <?php selected($unit, 'day'); ?>><?php echo esc_html__('روز', 'nias-course-widget'); ?></option><option value="month" <?php selected($unit, 'month'); ?>><?php echo esc_html__('ماه (۳۰ روز)', 'nias-course-widget'); ?></option></select>
-        <br><small><?php echo esc_html($def ? sprintf(__('خالی = پیش‌فرض سایت (%s روز). ۰ = نامحدود.', 'nias-course-widget'), $def) : __('خالی یا ۰ = نامحدود.', 'nias-course-widget')); ?></small></p>
-    <p><label><b><?php echo esc_html__('محصول تمدید', 'nias-course-widget'); ?></b></label>
+        <select name="nias_access_unit"><option value="day" <?php selected($unit, 'day'); ?>><?php echo esc_html__('Days', 'nias-course-widget'); ?></option><option value="month" <?php selected($unit, 'month'); ?>><?php echo esc_html__('Months (30 days)', 'nias-course-widget'); ?></option></select>
+        <br><small><?php echo esc_html($def ? sprintf(__('Empty = site default (%s days). 0 = unlimited.', 'nias-course-widget'), $def) : __('Empty or 0 = unlimited.', 'nias-course-widget')); ?></small></p>
+    <p><label><b><?php echo esc_html__('Renewal product', 'nias-course-widget'); ?></b></label>
         <span data-nias-renew-pick style="display:block;margin-top:4px"></span>
         <input type="hidden" name="nias_renew_product" value="<?php echo (int) $rp; ?>">
-        <small><?php echo esc_html__('خالی = تمدید با خرید دوبارهٔ همین دوره. می‌توانید یک محصول جدا (مثلاً «تمدید ۳ ماهه» با قیمت کمتر) بسازید و این‌جا انتخاب کنید.', 'nias-course-widget'); ?></small></p>
-    <p><label><b><?php echo esc_html__('مدت هر تمدید (روز)', 'nias-course-widget'); ?></b></label><br>
-        <input type="number" min="0" name="nias_renew_days" value="<?php echo esc_attr($rd); ?>" style="width:80px"> <small><?php echo esc_html__('خالی = همان مدت دوره', 'nias-course-widget'); ?></small></p>
+        <small><?php echo esc_html__('Empty = renew by buying this same course again. You can create a separate product (e.g. a cheaper "3-month renewal") and select it here.', 'nias-course-widget'); ?></small></p>
+    <p><label><b><?php echo esc_html__('Length of each renewal (days)', 'nias-course-widget'); ?></b></label><br>
+        <input type="number" min="0" name="nias_renew_days" value="<?php echo esc_attr($rd); ?>" style="width:80px"> <small><?php echo esc_html__('Empty = same as the course period', 'nias-course-widget'); ?></small></p>
     <script>
     document.addEventListener('DOMContentLoaded', function () {
         var h = document.querySelector('[data-nias-renew-pick]'), inp = document.querySelector('[name=nias_renew_product]');
@@ -479,26 +479,26 @@ function nias_access_profile_box($user)
         }
         $rows[$pid] = (int) get_user_meta($user->ID, nias_access_key($pid), true);
     }
-    echo '<h2 id="nias-access">' . esc_html__('دسترسی زمان‌دار دوره‌ها (دوره ساز نیاس)', 'nias-course-widget') . '</h2>';
+    echo '<h2 id="nias-access">' . esc_html__('Time-limited course access (Nias Course Builder)', 'nias-course-widget') . '</h2>';
     if (isset($_GET['nias_access_done'])) {
-        echo '<div class="notice notice-success inline"><p>' . esc_html__('انجام شد.', 'nias-course-widget') . '</p></div>';
+        echo '<div class="notice notice-success inline"><p>' . esc_html__('Done.', 'nias-course-widget') . '</p></div>';
     }
     if (!$rows) {
-        echo '<p>' . esc_html__('این کاربر دورهٔ زمان‌داری ندارد.', 'nias-course-widget') . '</p>';
+        echo '<p>' . esc_html__('This user has no time-limited course.', 'nias-course-widget') . '</p>';
         return;
     }
-    echo '<table class="widefat striped" style="max-width:900px"><thead><tr><th>' . esc_html__('دوره', 'nias-course-widget') . '</th><th>' . esc_html__('پایان دسترسی', 'nias-course-widget') . '</th><th>' . esc_html__('تغییر', 'nias-course-widget') . '</th></tr></thead><tbody>';
+    echo '<table class="widefat striped" style="max-width:900px"><thead><tr><th>' . esc_html__('Course', 'nias-course-widget') . '</th><th>' . esc_html__('Access ends', 'nias-course-widget') . '</th><th>' . esc_html__('Change', 'nias-course-widget') . '</th></tr></thead><tbody>';
     foreach ($rows as $pid => $until) {
         $url = function ($op, $days = 0) use ($user, $pid) {
             return wp_nonce_url(admin_url('admin-post.php?action=nias_access_admin&user=' . (int) $user->ID . '&course=' . (int) $pid . '&op=' . $op . '&days=' . (int) $days), 'nias_access_admin_' . $user->ID);
         };
-        $state = $until < 0 ? __('نامحدود', 'nias-course-widget') : ($until <= time() ? sprintf(__('منقضی شده: %s', 'nias-course-widget'), nias_access_date($until)) : nias_access_date($until));
+        $state = $until < 0 ? __('Unlimited', 'nias-course-widget') : ($until <= time() ? sprintf(__('Expired: %s', 'nias-course-widget'), nias_access_date($until)) : nias_access_date($until));
         echo '<tr><td>' . esc_html(get_the_title($pid)) . '</td><td>' . esc_html($state) . '</td><td>'
-            . '<a class="button button-small" href="' . esc_url($url('extend', 30)) . '">+۳۰ ' . esc_html__('روز', 'nias-course-widget') . '</a> '
-            . '<a class="button button-small" href="' . esc_url($url('extend', 90)) . '">+۹۰ ' . esc_html__('روز', 'nias-course-widget') . '</a> '
-            . '<a class="button button-small" href="' . esc_url($url('unlimited')) . '">' . esc_html__('نامحدود', 'nias-course-widget') . '</a> '
-            . '<a class="button button-small" href="' . esc_url($url('end')) . '" onclick="return confirm(\'' . esc_js(__('دسترسی همین حالا تمام شود؟', 'nias-course-widget')) . '\')">' . esc_html__('پایان همین حالا', 'nias-course-widget') . '</a> '
-            . '<a class="button button-small" href="' . esc_url($url('reset')) . '">' . esc_html__('محاسبهٔ دوباره', 'nias-course-widget') . '</a>'
+            . '<a class="button button-small" href="' . esc_url($url('extend', 30)) . '">+۳۰ ' . esc_html__('Days', 'nias-course-widget') . '</a> '
+            . '<a class="button button-small" href="' . esc_url($url('extend', 90)) . '">+۹۰ ' . esc_html__('Days', 'nias-course-widget') . '</a> '
+            . '<a class="button button-small" href="' . esc_url($url('unlimited')) . '">' . esc_html__('Unlimited', 'nias-course-widget') . '</a> '
+            . '<a class="button button-small" href="' . esc_url($url('end')) . '" onclick="return confirm(\'' . esc_js(__('End access right now?', 'nias-course-widget')) . '\')">' . esc_html__('End now', 'nias-course-widget') . '</a> '
+            . '<a class="button button-small" href="' . esc_url($url('reset')) . '">' . esc_html__('Recalculate', 'nias-course-widget') . '</a>'
             . '</td></tr>';
     }
     echo '</tbody></table>';
@@ -508,7 +508,7 @@ add_action('admin_post_nias_access_admin', function () {
     $uid = isset($_GET['user']) ? (int) $_GET['user'] : 0;
     $pid = isset($_GET['course']) ? (int) $_GET['course'] : 0;
     if (!$uid || !$pid || !current_user_can('edit_user', $uid) || !check_admin_referer('nias_access_admin_' . $uid)) {
-        wp_die(esc_html__('دسترسی ندارید.', 'nias-course-widget'), 403);
+        wp_die(esc_html__('You do not have access.', 'nias-course-widget'), 403);
     }
     $op = isset($_GET['op']) ? sanitize_key(wp_unslash($_GET['op'])) : '';
     if ($op === 'extend') {

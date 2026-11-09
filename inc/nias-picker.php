@@ -57,7 +57,7 @@ function nias_picker_ajax()
 {
     $source = isset($_POST['source']) ? sanitize_key(wp_unslash($_POST['source'])) : '';
     if (!check_ajax_referer('nias_pick', 'nonce', false) || !nias_picker_can($source)) {
-        wp_send_json_error(array('message' => __('دسترسی لازم را ندارید.', 'nias-course-widget')), 403);
+        wp_send_json_error(array('message' => __('You do not have the required permission.', 'nias-course-widget')), 403);
     }
     $q = isset($_POST['q']) ? sanitize_text_field(wp_unslash($_POST['q'])) : '';
     $q = function_exists('mb_substr') ? mb_substr($q, 0, 80) : substr($q, 0, 80);
@@ -132,8 +132,8 @@ function nias_picker_quiz_item($id)
     $title = get_the_title($id);
     return array(
         'id'    => $id,
-        'label' => ($title !== '' ? $title : __('آزمون بدون عنوان', 'nias-course-widget')) . ' (#' . $id . ')',
-        'sub'   => sprintf(__('%1$s سوال · قبولی از %2$s٪', 'nias-course-widget'), nias_fa_digits((int) $count), nias_fa_digits((int) $pass)),
+        'label' => ($title !== '' ? $title : __('Untitled quiz', 'nias-course-widget')) . ' (#' . $id . ')',
+        'sub'   => sprintf(__('%1$s questions · pass at %2$s%%', 'nias-course-widget'), nias_fa_digits((int) $count), nias_fa_digits((int) $pass)),
         'pass'  => (int) $pass,
     );
 }
@@ -155,7 +155,7 @@ function nias_picker_search_product($q)
 function nias_picker_product_item($id)
 {
     $status = get_post_status($id);
-    $labels = array('publish' => '', 'draft' => __('پیش‌نویس', 'nias-course-widget'), 'private' => __('خصوصی', 'nias-course-widget'), 'pending' => __('در انتظار بررسی', 'nias-course-widget'));
+    $labels = array('publish' => '', 'draft' => __('Draft', 'nias-course-widget'), 'private' => __('Private', 'nias-course-widget'), 'pending' => __('Pending review', 'nias-course-widget'));
     $sub = isset($labels[$status]) ? $labels[$status] : $status;
     if (count(nias_course_post_types()) > 1) {
         $sub = trim(nias_course_type_label($id) . ($sub ? ' · ' . $sub : ''));

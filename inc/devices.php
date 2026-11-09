@@ -121,7 +121,7 @@ function nias_dev_describe($ua)
             break;
         }
     }
-    $os = __('سیستم نامشخص', 'nias-course-widget');
+    $os = __('Unknown system', 'nias-course-widget');
     foreach (array('iPad' => 'iPad', 'iPhone' => 'iPhone', 'Android' => 'Android', 'Windows' => 'Windows', 'Mac OS X' => 'macOS', 'CrOS' => 'ChromeOS', 'Linux' => 'Linux') as $k => $n) {
         if (stripos($ua, $k) !== false) {
             $os = $n;
@@ -221,7 +221,7 @@ add_filter('attach_session_information', function ($info, $user_id) {
 function nias_dev_limit_message($user_id = 0)
 {
     $msg = sprintf(
-        __('حساب کاربری شما روی حداکثر تعداد دستگاه مجاز (%s دستگاه) فعال است. برای ورود از این دستگاه، با یکی از دستگاه‌های قبلی وارد شوید و از «حساب کاربری › دستگاه‌های من» یک دستگاه را حذف کنید، یا با پشتیبانی تماس بگیرید.', 'nias-course-widget'),
+        __('Your account is active on the maximum number of allowed devices (%s devices). To log in from this device, log in on one of your previous devices and remove a device from "Account › My devices", or contact support.', 'nias-course-widget'),
         function_exists('nias_fa_digits') ? nias_fa_digits(nias_dev_opt('max')) : nias_dev_opt('max')
     );
     return (string) apply_filters('nias_dev_limit_message', $msg, $user_id);
@@ -335,9 +335,9 @@ add_action('init', function () {
 function nias_dev_kicked_message($reason)
 {
     $m = array(
-        'other'   => __('حساب شما روی دستگاه دیگری فعال شد و چون ورود همزمان مجاز نیست، از این دستگاه خارج شدید. برای ادامه دوباره وارد شوید.', 'nias-course-widget'),
-        'removed' => __('این دستگاه از فهرست «دستگاه‌های من» حذف شد و از حساب خارج شدید.', 'nias-course-widget'),
-        'oldest'  => __('حساب شما روی دستگاه جدیدی وارد شد و چون سقف دستگاه‌ها پر بود، این دستگاه (که کمتر استفاده شده بود) از حساب خارج شد.', 'nias-course-widget'),
+        'other'   => __('Your account became active on another device and since simultaneous login is not allowed, you were logged out of this device. Log in again to continue.', 'nias-course-widget'),
+        'removed' => __('This device was removed from "My devices" and you were logged out.', 'nias-course-widget'),
+        'oldest'  => __('Your account logged in on a new device and since the device limit was reached, this device (the least used one) was logged out.', 'nias-course-widget'),
     );
     return isset($m[$reason]) ? $m[$reason] : $m['removed'];
 }
@@ -346,7 +346,7 @@ add_action('wp_footer', function () {
     if (empty($GLOBALS['nias_dev_kicked'])) {
         return;
     }
-    echo nias_dev_notice_css() . '<div class="nias-dev-notice nias-dev-float" role="alert"><svg width="22" height="22" viewBox="0 0 24 24" fill="none"><rect x="5" y="2" width="14" height="20" rx="3" stroke="currentColor" stroke-width="1.8"/><path d="M11 18h2" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg><div><b>' . esc_html__('از حساب خارج شدید', 'nias-course-widget') . '</b><br>' . esc_html(nias_dev_kicked_message($GLOBALS['nias_dev_kicked'])) . '</div></div>'; // phpcs:ignore
+    echo nias_dev_notice_css() . '<div class="nias-dev-notice nias-dev-float" role="alert"><svg width="22" height="22" viewBox="0 0 24 24" fill="none"><rect x="5" y="2" width="14" height="20" rx="3" stroke="currentColor" stroke-width="1.8"/><path d="M11 18h2" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg><div><b>' . esc_html__('You were logged out', 'nias-course-widget') . '</b><br>' . esc_html(nias_dev_kicked_message($GLOBALS['nias_dev_kicked'])) . '</div></div>'; // phpcs:ignore
 });
 
 /** Close this session and send the person to the login page with the reason. */
@@ -377,7 +377,7 @@ function nias_dev_login_url()
 
 function nias_dev_notice_html()
 {
-    return '<div class="nias-dev-notice" role="alert"><svg width="22" height="22" viewBox="0 0 24 24" fill="none"><rect x="5" y="2" width="14" height="20" rx="3" stroke="currentColor" stroke-width="1.8"/><path d="M11 18h2" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg><div><b>' . esc_html__('ورود از این دستگاه ممکن نیست', 'nias-course-widget') . '</b><br>' . esc_html(nias_dev_limit_message()) . '</div></div>';
+    return '<div class="nias-dev-notice" role="alert"><svg width="22" height="22" viewBox="0 0 24 24" fill="none"><rect x="5" y="2" width="14" height="20" rx="3" stroke="currentColor" stroke-width="1.8"/><path d="M11 18h2" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg><div><b>' . esc_html__('Logging in from this device is not possible', 'nias-course-widget') . '</b><br>' . esc_html(nias_dev_limit_message()) . '</div></div>';
 }
 
 function nias_dev_notice_css()
@@ -387,7 +387,7 @@ function nias_dev_notice_css()
 
 add_filter('login_message', function ($m) {
     if (!empty($GLOBALS['nias_dev_kicked'])) {
-        $m .= nias_dev_notice_css() . '<div class="nias-dev-notice" role="alert"><div><b>' . esc_html__('از حساب خارج شدید', 'nias-course-widget') . '</b><br>' . esc_html(nias_dev_kicked_message($GLOBALS['nias_dev_kicked'])) . '</div></div>';
+        $m .= nias_dev_notice_css() . '<div class="nias-dev-notice" role="alert"><div><b>' . esc_html__('You were logged out', 'nias-course-widget') . '</b><br>' . esc_html(nias_dev_kicked_message($GLOBALS['nias_dev_kicked'])) . '</div></div>';
         $GLOBALS['nias_dev_kicked'] = '';
     }
     return isset($_GET['nias_device_limit']) ? $m . nias_dev_notice_css() . nias_dev_notice_html() : $m;
@@ -509,27 +509,27 @@ function nias_dev_account_html($user_id = 0)
     .ndv-flash.ok{background:#e7f7ec;color:#137a3a}.ndv-flash.limit,.ndv-flash.err{background:#fdeeee;color:#9b2c2c}
     </style>
     <div class="ndv">
-        <?php if ($flash === 'ok') : ?><div class="ndv-flash ok"><?php echo esc_html__('دستگاه حذف شد و از حساب شما خارج شد.', 'nias-course-widget'); ?></div><?php endif; ?>
-        <?php if ($flash === 'limit') : ?><div class="ndv-flash limit"><?php echo esc_html__('سقف حذف دستگاه در ۳۰ روز گذشته پر شده است؛ برای حذف بیشتر با پشتیبانی تماس بگیرید.', 'nias-course-widget'); ?></div><?php endif; ?>
-        <?php if ($flash === 'err') : ?><div class="ndv-flash err"><?php echo esc_html__('حذف دستگاه انجام نشد.', 'nias-course-widget'); ?></div><?php endif; ?>
+        <?php if ($flash === 'ok') : ?><div class="ndv-flash ok"><?php echo esc_html__('The device was removed and logged out of your account.', 'nias-course-widget'); ?></div><?php endif; ?>
+        <?php if ($flash === 'limit') : ?><div class="ndv-flash limit"><?php echo esc_html__('The device removal limit for the last 30 days has been reached; contact support to remove more.', 'nias-course-widget'); ?></div><?php endif; ?>
+        <?php if ($flash === 'err') : ?><div class="ndv-flash err"><?php echo esc_html__('Removing the device failed.', 'nias-course-widget'); ?></div><?php endif; ?>
         <div class="ndv-sum">
-            <b><?php echo esc_html(sprintf(__('%1$s از %2$s دستگاه', 'nias-course-widget'), $fa(count($list)), $fa($max))); ?></b>
+            <b><?php echo esc_html(sprintf(__('%1$s of %2$s devices', 'nias-course-widget'), $fa(count($list)), $fa($max))); ?></b>
             <span class="ndv-bar"><i style="width:<?php echo (int) min(100, round(count($list) / $max * 100)); ?>%"></i></span>
-            <span><?php echo esc_html(nias_dev_opt('single') === 'on' ? __('ورود همزمان مجاز نیست: با ورود از یک دستگاه، بقیه خارج می‌شوند.', 'nias-course-widget') : __('حساب شما روی این دستگاه‌ها فعال است.', 'nias-course-widget')); ?></span>
+            <span><?php echo esc_html(nias_dev_opt('single') === 'on' ? __('Simultaneous login is not allowed: logging in on one device logs the others out.', 'nias-course-widget') : __('Your account is active on these devices.', 'nias-course-widget')); ?></span>
         </div>
         <ul class="ndv-list">
-            <?php if (!$list) : ?><li class="ndv-m"><?php echo esc_html__('هنوز دستگاهی ثبت نشده است.', 'nias-course-widget'); ?></li><?php endif; ?>
+            <?php if (!$list) : ?><li class="ndv-m"><?php echo esc_html__('No device has been registered yet.', 'nias-course-widget'); ?></li><?php endif; ?>
             <?php foreach ($list as $id => $d) : $is = ($id === $cur); ?>
                 <li class="ndv-it<?php echo $is ? ' cur' : ''; ?>">
                     <span class="ndv-ic"><?php echo nias_dev_icon(isset($d['kind']) ? $d['kind'] : 'desktop'); // phpcs:ignore -- static svg ?></span>
                     <div class="ndv-b">
-                        <div class="ndv-t"><?php echo esc_html($d['label']); ?><?php if ($is) : ?><span class="ndv-cur"><?php echo esc_html__('همین دستگاه', 'nias-course-widget'); ?></span><?php endif; ?></div>
-                        <div class="ndv-m"><?php echo esc_html(sprintf(__('اولین ورود: %1$s · آخرین فعالیت: %2$s', 'nias-course-widget'), nias_dev_date($d['first']), nias_dev_date($d['last']))); ?></div>
+                        <div class="ndv-t"><?php echo esc_html($d['label']); ?><?php if ($is) : ?><span class="ndv-cur"><?php echo esc_html__('This device', 'nias-course-widget'); ?></span><?php endif; ?></div>
+                        <div class="ndv-m"><?php echo esc_html(sprintf(__('First login: %1$s · Last activity: %2$s', 'nias-course-widget'), nias_dev_date($d['first']), nias_dev_date($d['last']))); ?></div>
                     </div>
                     <?php if ($self && !$is && ($left === null || $left > 0)) : ?>
-                        <form method="post" onsubmit="return confirm('<?php echo esc_js(__('این دستگاه حذف شود؟ حساب شما روی آن دستگاه خارج می‌شود.', 'nias-course-widget')); ?>')">
+                        <form method="post" onsubmit="return confirm('<?php echo esc_js(__('Remove this device? Your account will be logged out on it.', 'nias-course-widget')); ?>')">
                             <?php wp_nonce_field('nias_dev_remove_' . $user_id, 'nias_dev_nonce'); ?>
-                            <button type="submit" class="ndv-rm" name="nias_dev_remove" value="<?php echo esc_attr($id); ?>"><?php echo esc_html__('حذف', 'nias-course-widget'); ?></button>
+                            <button type="submit" class="ndv-rm" name="nias_dev_remove" value="<?php echo esc_attr($id); ?>"><?php echo esc_html__('Remove', 'nias-course-widget'); ?></button>
                         </form>
                     <?php endif; ?>
                 </li>
@@ -538,11 +538,11 @@ function nias_dev_account_html($user_id = 0)
         <div class="ndv-note">
             <?php
             if (!$self) {
-                echo esc_html__('برای حذف یک دستگاه با پشتیبانی تماس بگیرید.', 'nias-course-widget');
+                echo esc_html__('Contact support to remove a device.', 'nias-course-widget');
             } elseif ($left !== null) {
-                echo esc_html(sprintf(__('در هر ۳۰ روز می‌توانید %1$s دستگاه حذف کنید (باقی‌مانده: %2$s). پاک کردن کوکی‌ها یا حالت ناشناس مرورگر هم یک دستگاه جدید حساب می‌شود.', 'nias-course-widget'), $fa(nias_dev_opt('removals')), $fa($left)));
+                echo esc_html(sprintf(__('You can remove %1$s devices every 30 days (remaining: %2$s). Clearing cookies or using the browser\'s private mode also counts as a new device.', 'nias-course-widget'), $fa(nias_dev_opt('removals')), $fa($left)));
             } else {
-                echo esc_html__('پاک کردن کوکی‌ها یا حالت ناشناس مرورگر هم یک دستگاه جدید حساب می‌شود.', 'nias-course-widget');
+                echo esc_html__('Clearing cookies or using the browser\'s private mode also counts as a new device.', 'nias-course-widget');
             }
             ?>
         </div>
@@ -555,7 +555,7 @@ add_shortcode('nias_my_devices', function () {
     if (!nias_dev_enabled()) {
         return '';
     }
-    return is_user_logged_in() ? nias_dev_account_html() : '<p>' . esc_html__('برای دیدن دستگاه‌های خود وارد حساب کاربری شوید.', 'nias-course-widget') . '</p>';
+    return is_user_logged_in() ? nias_dev_account_html() : '<p>' . esc_html__('Log in to your account to see your devices.', 'nias-course-widget') . '</p>';
 });
 
 // WooCommerce account tab.
@@ -584,20 +584,20 @@ add_filter('woocommerce_account_menu_items', function ($items) {
     $out = array();
     foreach ($items as $k => $v) {
         if ($k === 'customer-logout') {
-            $out[nias_dev_endpoint()] = __('دستگاه‌های من', 'nias-course-widget');
+            $out[nias_dev_endpoint()] = __('My devices', 'nias-course-widget');
         }
         $out[$k] = $v;
     }
     if (!isset($out[nias_dev_endpoint()])) {
-        $out[nias_dev_endpoint()] = __('دستگاه‌های من', 'nias-course-widget');
+        $out[nias_dev_endpoint()] = __('My devices', 'nias-course-widget');
     }
     return $out;
 }, 30);
 add_action('woocommerce_account_my-devices_endpoint', function () {
-    echo '<h3>' . esc_html__('دستگاه‌های من', 'nias-course-widget') . '</h3>' . nias_dev_account_html(); // phpcs:ignore -- escaped inside
+    echo '<h3>' . esc_html__('My devices', 'nias-course-widget') . '</h3>' . nias_dev_account_html(); // phpcs:ignore -- escaped inside
 });
 add_filter('woocommerce_endpoint_my-devices_title', function () {
-    return __('دستگاه‌های من', 'nias-course-widget');
+    return __('My devices', 'nias-course-widget');
 });
 
 /* -------------------------------------------------------------------------
@@ -616,29 +616,29 @@ function nias_dev_profile_box($user)
     $url = function ($did) use ($user) {
         return wp_nonce_url(admin_url('admin-post.php?action=nias_dev_admin_remove&user=' . (int) $user->ID . '&device=' . rawurlencode($did)), 'nias_dev_admin_' . $user->ID);
     };
-    echo '<h2 id="nias-devices">' . esc_html__('دستگاه‌های کاربر (دوره ساز نیاس)', 'nias-course-widget') . '</h2>';
+    echo '<h2 id="nias-devices">' . esc_html__('User devices (Nias Course Builder)', 'nias-course-widget') . '</h2>';
     if (isset($_GET['nias_dev_done'])) {
-        echo '<div class="notice notice-success inline"><p>' . esc_html__('انجام شد.', 'nias-course-widget') . '</p></div>';
+        echo '<div class="notice notice-success inline"><p>' . esc_html__('Done.', 'nias-course-widget') . '</p></div>';
     }
-    echo '<table class="widefat striped" style="max-width:900px"><thead><tr><th>' . esc_html__('دستگاه', 'nias-course-widget') . '</th><th>' . esc_html__('اولین ورود', 'nias-course-widget') . '</th><th>' . esc_html__('آخرین فعالیت', 'nias-course-widget') . '</th><th>IP</th><th></th></tr></thead><tbody>';
+    echo '<table class="widefat striped" style="max-width:900px"><thead><tr><th>' . esc_html__('Device', 'nias-course-widget') . '</th><th>' . esc_html__('First login', 'nias-course-widget') . '</th><th>' . esc_html__('Last activity', 'nias-course-widget') . '</th><th>IP</th><th></th></tr></thead><tbody>';
     if (!$list) {
-        echo '<tr><td colspan="5">' . esc_html__('دستگاهی ثبت نشده است.', 'nias-course-widget') . '</td></tr>';
+        echo '<tr><td colspan="5">' . esc_html__('No device registered.', 'nias-course-widget') . '</td></tr>';
     }
     foreach ($list as $id => $d) {
-        echo '<tr><td><b>' . esc_html($d['label']) . '</b><br><small style="color:#64748b">' . esc_html(wp_html_excerpt($d['ua'], 90, '…')) . '</small></td><td>' . esc_html(nias_dev_date($d['first'])) . '</td><td>' . esc_html(nias_dev_date($d['last'])) . '</td><td dir="ltr">' . esc_html($d['ip']) . '</td><td><a class="button button-small" href="' . esc_url($url($id)) . '">' . esc_html__('حذف', 'nias-course-widget') . '</a></td></tr>';
+        echo '<tr><td><b>' . esc_html($d['label']) . '</b><br><small style="color:#64748b">' . esc_html(wp_html_excerpt($d['ua'], 90, '…')) . '</small></td><td>' . esc_html(nias_dev_date($d['first'])) . '</td><td>' . esc_html(nias_dev_date($d['last'])) . '</td><td dir="ltr">' . esc_html($d['ip']) . '</td><td><a class="button button-small" href="' . esc_url($url($id)) . '">' . esc_html__('Remove', 'nias-course-widget') . '</a></td></tr>';
     }
     echo '</tbody></table>';
     $left = nias_dev_removals_left($user->ID);
-    echo '<p>' . esc_html(sprintf(__('سقف: %1$s دستگاه.', 'nias-course-widget'), nias_dev_opt('max')))
-        . ($left !== null ? ' ' . esc_html(sprintf(__('حذف توسط خود کاربر در ۳۰ روز اخیر: %s باقی‌مانده.', 'nias-course-widget'), $left)) : '')
-        . ($list ? ' <a class="button" href="' . esc_url($url('*')) . '" onclick="return confirm(\'' . esc_js(__('همهٔ دستگاه‌های این کاربر حذف شوند؟ از همه‌جا خارج می‌شود.', 'nias-course-widget')) . '\')">' . esc_html__('حذف همهٔ دستگاه‌ها', 'nias-course-widget') . '</a>' : '')
-        . ' <a class="button" href="' . esc_url(wp_nonce_url(admin_url('admin-post.php?action=nias_dev_admin_remove&user=' . (int) $user->ID . '&device=reset-removals'), 'nias_dev_admin_' . $user->ID)) . '">' . esc_html__('صفر کردن سهمیهٔ حذف', 'nias-course-widget') . '</a></p>';
+    echo '<p>' . esc_html(sprintf(__('Limit: %1$s devices.', 'nias-course-widget'), nias_dev_opt('max')))
+        . ($left !== null ? ' ' . esc_html(sprintf(__('Removals by the user in the last 30 days: %s remaining.', 'nias-course-widget'), $left)) : '')
+        . ($list ? ' <a class="button" href="' . esc_url($url('*')) . '" onclick="return confirm(\'' . esc_js(__('Remove all of this user\'s devices? They will be logged out everywhere.', 'nias-course-widget')) . '\')">' . esc_html__('Remove all devices', 'nias-course-widget') . '</a>' : '')
+        . ' <a class="button" href="' . esc_url(wp_nonce_url(admin_url('admin-post.php?action=nias_dev_admin_remove&user=' . (int) $user->ID . '&device=reset-removals'), 'nias_dev_admin_' . $user->ID)) . '">' . esc_html__('Reset removal quota', 'nias-course-widget') . '</a></p>';
 }
 
 add_action('admin_post_nias_dev_admin_remove', function () {
     $uid = isset($_GET['user']) ? (int) $_GET['user'] : 0;
     if (!$uid || !current_user_can('edit_user', $uid) || !check_admin_referer('nias_dev_admin_' . $uid)) {
-        wp_die(esc_html__('دسترسی ندارید.', 'nias-course-widget'), 403);
+        wp_die(esc_html__('You do not have access.', 'nias-course-widget'), 403);
     }
     $did = isset($_GET['device']) ? sanitize_text_field(wp_unslash($_GET['device'])) : '';
     if ($did === '*') {

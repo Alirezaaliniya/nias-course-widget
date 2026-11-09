@@ -190,7 +190,7 @@ function nias_stats_html($user_id, $base_url)
 {
     $ids = nias_stats_course_ids($user_id);
     if (!$ids) {
-        return '<div class="nst-empty">' . esc_html__('دوره‌ای برای گزارش ندارید.', 'nias-course-widget') . '</div>';
+        return '<div class="nst-empty">' . esc_html__('You have no course to report on.', 'nias-course-widget') . '</div>';
     }
     $pid = isset($_GET['course']) ? (int) $_GET['course'] : $ids[0];
     if (!in_array($pid, $ids, true)) {
@@ -239,22 +239,22 @@ function nias_stats_html($user_id, $base_url)
         <select name="course" onchange="this.form.submit()">
             <?php foreach ($ids as $id) : ?><option value="<?php echo (int) $id; ?>" <?php selected($id, $pid); ?>><?php echo esc_html(get_the_title($id)); ?></option><?php endforeach; ?>
         </select>
-        <span class="nst-at"><?php echo esc_html(sprintf(__('محاسبه: %s', 'nias-course-widget'), nias_fa_digits((function_exists('nias_cert_jalali') ? nias_cert_jalali(wp_date('Y-m-d', $s['at']), 'numeric') : wp_date('Y/m/d', $s['at'])) . ' ' . wp_date('H:i', $s['at'])))); ?></span>
-        <a href="<?php echo esc_url(add_query_arg(array('course' => $pid, 'nst_fresh' => wp_create_nonce('nias_stats_fresh')), $base_url)); ?>"><?php echo esc_html__('به‌روزرسانی', 'nias-course-widget'); ?></a>
+        <span class="nst-at"><?php echo esc_html(sprintf(__('Calculated: %s', 'nias-course-widget'), nias_fa_digits((function_exists('nias_cert_jalali') ? nias_cert_jalali(wp_date('Y-m-d', $s['at']), 'numeric') : wp_date('Y/m/d', $s['at'])) . ' ' . wp_date('H:i', $s['at'])))); ?></span>
+        <a href="<?php echo esc_url(add_query_arg(array('course' => $pid, 'nst_fresh' => wp_create_nonce('nias_stats_fresh')), $base_url)); ?>"><?php echo esc_html__('Refresh', 'nias-course-widget'); ?></a>
     </form>
 
     <div class="nst-kpis">
-        <div class="nst-kpi"><span><?php echo esc_html__('دانشجو', 'nias-course-widget'); ?></span><b><?php echo esc_html($fa($s['students'])); ?></b></div>
-        <div class="nst-kpi"><span><?php echo esc_html__('شروع کرده‌اند', 'nias-course-widget'); ?></span><b><?php echo esc_html($fa($s['started'])); ?></b><small><?php echo esc_html($fa($pct($s['started'], $s['students'])) . '٪'); ?></small></div>
-        <div class="nst-kpi"><span><?php echo esc_html__('دوره را تمام کرده‌اند', 'nias-course-widget'); ?></span><b><?php echo esc_html($fa($s['completed'])); ?></b><small><?php echo esc_html(sprintf(__('نرخ تکمیل %s٪', 'nias-course-widget'), $fa($pct($s['completed'], $s['students'])))); ?></small></div>
-        <div class="nst-kpi"><span><?php echo esc_html__('میانگین پیشرفت', 'nias-course-widget'); ?></span><b><?php echo esc_html($fa($s['avg']) . '٪'); ?></b></div>
-        <?php if ($s['orders']) : ?><div class="nst-kpi"><span><?php echo esc_html__('فروش ۱۲ ماه', 'nias-course-widget'); ?></span><b><?php echo esc_html(function_exists('nias_idash_money') ? nias_idash_money($s['revenue']) : $fa($s['revenue'])); ?></b><small><?php echo esc_html(sprintf(__('%s سفارش', 'nias-course-widget'), $fa($s['orders']))); ?></small></div><?php endif; ?>
+        <div class="nst-kpi"><span><?php echo esc_html__('Student', 'nias-course-widget'); ?></span><b><?php echo esc_html($fa($s['students'])); ?></b></div>
+        <div class="nst-kpi"><span><?php echo esc_html__('Have started', 'nias-course-widget'); ?></span><b><?php echo esc_html($fa($s['started'])); ?></b><small><?php echo esc_html($fa($pct($s['started'], $s['students'])) . '٪'); ?></small></div>
+        <div class="nst-kpi"><span><?php echo esc_html__('Have finished the course', 'nias-course-widget'); ?></span><b><?php echo esc_html($fa($s['completed'])); ?></b><small><?php echo esc_html(sprintf(__('Completion rate %s%%', 'nias-course-widget'), $fa($pct($s['completed'], $s['students'])))); ?></small></div>
+        <div class="nst-kpi"><span><?php echo esc_html__('Average progress', 'nias-course-widget'); ?></span><b><?php echo esc_html($fa($s['avg']) . '٪'); ?></b></div>
+        <?php if ($s['orders']) : ?><div class="nst-kpi"><span><?php echo esc_html__('12-month sales', 'nias-course-widget'); ?></span><b><?php echo esc_html(function_exists('nias_idash_money') ? nias_idash_money($s['revenue']) : $fa($s['revenue'])); ?></b><small><?php echo esc_html(sprintf(__('%s orders', 'nias-course-widget'), $fa($s['orders']))); ?></small></div><?php endif; ?>
     </div>
 
     <div class="nst-card">
-        <h3><?php echo esc_html__('ریزش جلسه‌به‌جلسه', 'nias-course-widget'); ?></h3>
-        <div class="nst-hint"><?php echo esc_html__('چند نفر از دانشجوها هر جلسهٔ ویدیویی را کامل دیده‌اند (درصد واقعی تماشا در پلیر نیاس). افت ناگهانی یعنی آن جلسه دانشجوها را از دوره بیرون می‌برد.', 'nias-course-widget'); ?></div>
-        <?php if ($s['drop']) : ?><div class="nst-drop"><?php echo esc_html(sprintf(__('بیشترین ریزش: %1$s نفر بین «%2$s» و «%3$s»', 'nias-course-widget'), $fa($s['drop']['n']), $s['drop']['from'], $s['drop']['title'])); ?></div><?php endif; ?>
+        <h3><?php echo esc_html__('Lesson-by-lesson drop-off', 'nias-course-widget'); ?></h3>
+        <div class="nst-hint"><?php echo esc_html__('How many students fully watched each video lesson (real watch percentage in the Nias player). A sudden drop means that lesson drives students out of the course.', 'nias-course-widget'); ?></div>
+        <?php if ($s['drop']) : ?><div class="nst-drop"><?php echo esc_html(sprintf(__('Biggest drop-off: %1$s students between "%2$s" and "%3$s"', 'nias-course-widget'), $fa($s['drop']['n']), $s['drop']['from'], $s['drop']['title'])); ?></div><?php endif; ?>
         <?php
         $any = false;
         foreach ($s['funnel'] as $f) {
@@ -266,40 +266,40 @@ function nias_stats_html($user_id, $base_url)
             echo '<div class="nst-bar"><span class="t" title="' . esc_attr($f['title']) . '">' . esc_html($f['title']) . '</span><span class="tr"><i style="width:' . (int) $w . '%"></i></span><span class="v">' . esc_html($fa($f['full']) . ' · ' . $fa($w) . '٪') . '</span></div>';
         }
         if (!$any) {
-            echo '<div class="nst-empty">' . esc_html__('هنوز داده‌ای از تماشای ویدیوهای این دوره ثبت نشده است.', 'nias-course-widget') . '</div>';
+            echo '<div class="nst-empty">' . esc_html__('No video watching data has been recorded for this course yet.', 'nias-course-widget') . '</div>';
         }
         ?>
     </div>
 
     <div class="nst-grid">
         <div class="nst-card">
-            <h3><?php echo esc_html__('آزمون‌ها', 'nias-course-widget'); ?></h3>
+            <h3><?php echo esc_html__('Quizzes', 'nias-course-widget'); ?></h3>
             <?php if ($s['quizzes']) : ?>
-                <table class="nst-tbl"><thead><tr><th><?php echo esc_html__('آزمون', 'nias-course-widget'); ?></th><th><?php echo esc_html__('شرکت‌کننده', 'nias-course-widget'); ?></th><th><?php echo esc_html__('میانگین بهترین نمره', 'nias-course-widget'); ?></th><th><?php echo esc_html__('قبولی', 'nias-course-widget'); ?></th></tr></thead><tbody>
+                <table class="nst-tbl"><thead><tr><th><?php echo esc_html__('Quiz', 'nias-course-widget'); ?></th><th><?php echo esc_html__('Participants', 'nias-course-widget'); ?></th><th><?php echo esc_html__('Average best score', 'nias-course-widget'); ?></th><th><?php echo esc_html__('Passes', 'nias-course-widget'); ?></th></tr></thead><tbody>
                 <?php foreach ($s['quizzes'] as $q) : ?>
-                    <tr><td><?php echo esc_html($q['title']); ?></td><td><?php echo esc_html($fa($q['n'])); ?></td><td><?php echo esc_html($q['avg'] !== null ? $fa($q['avg']) . '٪' : '—'); ?></td><td><?php echo esc_html($fa($pct($q['pass'], $q['n'])) . '٪' . ($q['pending'] ? ' · ' . sprintf(__('%s در انتظار تصحیح', 'nias-course-widget'), $fa($q['pending'])) : '')); ?></td></tr>
+                    <tr><td><?php echo esc_html($q['title']); ?></td><td><?php echo esc_html($fa($q['n'])); ?></td><td><?php echo esc_html($q['avg'] !== null ? $fa($q['avg']) . '٪' : '—'); ?></td><td><?php echo esc_html($fa($pct($q['pass'], $q['n'])) . '٪' . ($q['pending'] ? ' · ' . sprintf(__('%s awaiting grading', 'nias-course-widget'), $fa($q['pending'])) : '')); ?></td></tr>
                 <?php endforeach; ?>
                 </tbody></table>
-            <?php else : ?><div class="nst-empty"><?php echo esc_html__('این دوره آزمونی ندارد.', 'nias-course-widget'); ?></div><?php endif; ?>
+            <?php else : ?><div class="nst-empty"><?php echo esc_html__('This course has no quiz.', 'nias-course-widget'); ?></div><?php endif; ?>
             <?php if ($s['assign'] && (int) $s['assign']['n']) : ?>
-                <h3 style="margin-top:16px"><?php echo esc_html__('تکالیف', 'nias-course-widget'); ?></h3>
-                <div><?php echo esc_html(sprintf(__('%1$s ارسال · %2$s قبول · %3$s در انتظار تصحیح · %4$s مردود/ارسال دوباره', 'nias-course-widget'), $fa($s['assign']['n']), $fa($s['assign']['passed']), $fa($s['assign']['pending']), $fa($s['assign']['other']))); ?></div>
+                <h3 style="margin-top:16px"><?php echo esc_html__('Assignments', 'nias-course-widget'); ?></h3>
+                <div><?php echo esc_html(sprintf(__('%1$s submitted · %2$s passed · %3$s awaiting grading · %4$s failed/resubmit', 'nias-course-widget'), $fa($s['assign']['n']), $fa($s['assign']['passed']), $fa($s['assign']['pending']), $fa($s['assign']['other']))); ?></div>
             <?php endif; ?>
         </div>
         <div class="nst-card">
-            <h3><?php echo esc_html__('دانشجوهای عقب‌افتاده', 'nias-course-widget'); ?></h3>
-            <div class="nst-hint"><?php echo esc_html__('زیر ۵۰٪ پیشرفت و بیش از ۱۴ روز بدون فعالیت.', 'nias-course-widget'); ?></div>
+            <h3><?php echo esc_html__('Students falling behind', 'nias-course-widget'); ?></h3>
+            <div class="nst-hint"><?php echo esc_html__('Below 50% progress and more than 14 days without activity.', 'nias-course-widget'); ?></div>
             <?php if ($s['risk']) : ?>
-                <table class="nst-tbl"><thead><tr><th><?php echo esc_html__('دانشجو', 'nias-course-widget'); ?></th><th><?php echo esc_html__('پیشرفت', 'nias-course-widget'); ?></th><th><?php echo esc_html__('بدون فعالیت', 'nias-course-widget'); ?></th></tr></thead><tbody>
-                <?php foreach ($s['risk'] as $r) : ?><tr><td><?php echo esc_html($r['name']); ?></td><td><?php echo esc_html($fa($r['pct']) . '٪'); ?></td><td><?php echo esc_html(sprintf(__('%s روز', 'nias-course-widget'), $fa($r['days']))); ?></td></tr><?php endforeach; ?>
+                <table class="nst-tbl"><thead><tr><th><?php echo esc_html__('Student', 'nias-course-widget'); ?></th><th><?php echo esc_html__('Progress', 'nias-course-widget'); ?></th><th><?php echo esc_html__('No activity', 'nias-course-widget'); ?></th></tr></thead><tbody>
+                <?php foreach ($s['risk'] as $r) : ?><tr><td><?php echo esc_html($r['name']); ?></td><td><?php echo esc_html($fa($r['pct']) . '٪'); ?></td><td><?php echo esc_html(sprintf(__('%s days', 'nias-course-widget'), $fa($r['days']))); ?></td></tr><?php endforeach; ?>
                 </tbody></table>
-            <?php else : ?><div class="nst-empty"><?php echo esc_html__('موردی نیست.', 'nias-course-widget'); ?></div><?php endif; ?>
+            <?php else : ?><div class="nst-empty"><?php echo esc_html__('Nothing here.', 'nias-course-widget'); ?></div><?php endif; ?>
         </div>
     </div>
 
     <?php if ($s['orders']) : $max = max(1, max(wp_list_pluck($s['months'], 'n'))); ?>
     <div class="nst-card">
-        <h3><?php echo esc_html__('فروش ماهانه (تعداد سفارش تکمیل‌شده)', 'nias-course-widget'); ?></h3>
+        <h3><?php echo esc_html__('Monthly sales (completed orders)', 'nias-course-widget'); ?></h3>
         <div class="nst-months">
             <?php foreach ($s['months'] as $m) : ?>
                 <div class="m" title="<?php echo esc_attr($m['label'] . ': ' . (function_exists('nias_idash_money') ? nias_idash_money($m['sum']) : $m['sum'])); ?>"><b><?php echo $m['n'] ? esc_html($fa($m['n'])) : ''; ?></b><i style="height:<?php echo (int) round($m['n'] / $max * 100); ?>%"></i><span><?php echo esc_html($m['label']); ?></span></div>
@@ -316,7 +316,7 @@ add_action('admin_menu', function () {
     if (!nias_stats_enabled()) {
         return;
     }
-    add_submenu_page('nias-course-settings', __('گزارش‌ها', 'nias-course-widget'), __('گزارش‌ها', 'nias-course-widget'), 'manage_options', 'nias-course-stats', function () {
+    add_submenu_page('nias-course-settings', __('Reports', 'nias-course-widget'), __('Reports', 'nias-course-widget'), 'manage_options', 'nias-course-stats', function () {
         echo '<div class="nias-settings-app" dir="rtl">';
         nias_settings_topbar('stats');
         echo '<div class="nias-set-shell"><div class="nias-set-main">' . nias_stats_html(get_current_user_id(), admin_url('admin.php?page=nias-course-stats')) . '</div></div></div>'; // phpcs:ignore -- escaped inside

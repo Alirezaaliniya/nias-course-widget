@@ -77,20 +77,20 @@ function nias_cert_jalali($date, $style = 'long')
 function nias_cert_token_labels()
 {
     return apply_filters('nias_certificate_token_labels', array(
-        'student_name'   => __('نام کامل دانشجو', 'nias-course-widget'),
-        'first_name'     => __('نام', 'nias-course-widget'),
-        'last_name'      => __('نام خانوادگی', 'nias-course-widget'),
-        'course_name'    => __('نام دوره', 'nias-course-widget'),
-        'date'           => __('تاریخ شمسی (۵ مهر ۱۴۰۵)', 'nias-course-widget'),
-        'date_numeric'   => __('تاریخ شمسی عددی', 'nias-course-widget'),
-        'date_gregorian' => __('تاریخ میلادی', 'nias-course-widget'),
-        'code'           => __('کد مدرک', 'nias-course-widget'),
-        'verify_url'     => __('لینک استعلام', 'nias-course-widget'),
-        'instructor'     => __('نام مدرس', 'nias-course-widget'),
-        'quiz_score'     => __('نمرهٔ آزمون (درصد)', 'nias-course-widget'),
-        'signer_name'    => __('نام امضاکننده', 'nias-course-widget'),
-        'site_name'      => __('نام سایت', 'nias-course-widget'),
-        'site_url'       => __('آدرس سایت', 'nias-course-widget'),
+        'student_name'   => __('Student full name', 'nias-course-widget'),
+        'first_name'     => __('First name', 'nias-course-widget'),
+        'last_name'      => __('Last name', 'nias-course-widget'),
+        'course_name'    => __('Course name', 'nias-course-widget'),
+        'date'           => __('Solar Hijri date (5 Mehr 1405)', 'nias-course-widget'),
+        'date_numeric'   => __('Numeric Solar Hijri date', 'nias-course-widget'),
+        'date_gregorian' => __('Gregorian date', 'nias-course-widget'),
+        'code'           => __('Certificate code', 'nias-course-widget'),
+        'verify_url'     => __('Verification link', 'nias-course-widget'),
+        'instructor'     => __('Instructor name', 'nias-course-widget'),
+        'quiz_score'     => __('Quiz score (percent)', 'nias-course-widget'),
+        'signer_name'    => __('Signer name', 'nias-course-widget'),
+        'site_name'      => __('Site name', 'nias-course-widget'),
+        'site_url'       => __('Site address', 'nias-course-widget'),
     ));
 }
 

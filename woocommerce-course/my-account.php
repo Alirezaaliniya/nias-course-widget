@@ -303,18 +303,18 @@ function nias_course_display_content($product_id) {
 add_filter('woocommerce_get_settings_advanced', 'nias_course_add_settings_field', 10, 2);
 function nias_course_add_settings_field($settings, $current_section) {
     $settings[] = array(
-        'title' => __('نقاط پایانی دوره', 'woocommerce'),
+        'title' => __('Course endpoints', 'woocommerce'),
         'type'  => 'title',
         'id'    => 'nias_course_settings'
     );
     
     $settings[] = array(
-        'title'    => __('نقاط پایانی دوره', 'woocommerce'),
-        'desc'     => __('نقطه پایانی صفحه دوره‌های من', 'woocommerce'),
+        'title'    => __('Course endpoints', 'woocommerce'),
+        'desc'     => __('My courses page endpoint', 'woocommerce'),
         'id'       => 'nias_course_endpoint',
         'type'     => 'text',
         'default'  => 'my-courses',
-        'desc_tip' => __('این مقدار در URL حساب کاربری استفاده خواهد شد', 'woocommerce'),
+        'desc_tip' => __('This value is used in the account URL', 'woocommerce'),
     );
 
     $settings[] = array(
@@ -443,8 +443,8 @@ function nias_course_render_cards($course_ids)
 
     if (empty($cards)) {
         $none = (function_exists('nias_wc_active') && !nias_wc_active())
-            ? __('شما هنوز در هیچ دوره ای ثبت نام نکرده اید', 'nias-course-widget')
-            : __('شما هنوز هیچ دوره‌ای خریداری نکرده‌اید.', 'nias-course-widget');
+            ? __('You have not enrolled in any course yet', 'nias-course-widget')
+            : __('You have not bought any course yet.', 'nias-course-widget');
         return '<p class="nias-cc-empty">' . esc_html($none) . '</p>';
     }
 
@@ -479,16 +479,16 @@ function nias_course_render_cards($course_ids)
                     <div class="nias-cc-meta">
                         <span class="nias-cc-chip">
                             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
-                            <?php echo esc_html(number_format_i18n($sec_count) . ' ' . __('سرفصل', 'nias-course-widget')); ?>
+                            <?php echo esc_html(number_format_i18n($sec_count) . ' ' . __('Chapter', 'nias-course-widget')); ?>
                         </span>
                         <span class="nias-cc-chip">
                             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="6 4 20 12 6 20 6 4"/></svg>
-                            <?php echo esc_html(number_format_i18n($les_count) . ' ' . __('جلسه', 'nias-course-widget')); ?>
+                            <?php echo esc_html(number_format_i18n($les_count) . ' ' . __('Lesson', 'nias-course-widget')); ?>
                         </span>
                         <?php do_action('nias_course_card_meta', $cid); ?>
                     </div>
                     <span class="nias-cc-btn">
-                        <?php echo esc_html__('ورود به دوره', 'nias-course-widget'); ?>
+                        <?php echo esc_html__('Enter the course', 'nias-course-widget'); ?>
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"/></svg>
                     </span>
                 </div>
@@ -522,7 +522,7 @@ add_shortcode('nias_purchased_courses', 'nias_purchased_courses_shortcode');
 function nias_purchased_courses_shortcode($atts)
 {
     if (!is_user_logged_in()) {
-        return '<p class="nias-cc-empty">' . esc_html__('برای مشاهده دوره‌های خریداری‌شده وارد شوید.', 'nias-course-widget') . '</p>';
+        return '<p class="nias-cc-empty">' . esc_html__('Log in to see your purchased courses.', 'nias-course-widget') . '</p>';
     }
     return nias_course_render_cards(nias_course_get_purchased_course_ids(get_current_user_id()));
 }
