@@ -2,7 +2,7 @@
 # This file is distributed under the GPL v2 or later.
 msgid ""
 msgstr ""
-"Project-Id-Version: Nias course 1.7.0\n"
+"Project-Id-Version: Nias course 2.0.0\n"
 "Report-Msgid-Bugs-To: https://nias.ir/\n"
 "POT-Creation-Date: 2026-11-09 14:28+0000\n"
 "PO-Revision-Date: 2026-11-09 14:28+0000\n"

@@ -5,7 +5,7 @@ Donate link: https://nias.ir/
 Requires at least: 5.8
 Tested up to: 7.0
 Requires PHP: 7.4
-Stable tag: 1.7.0
+Stable tag: 2.0.0
 License: GPLv2
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -115,48 +115,48 @@ Ask in our Telegram channel and group: [t.me/niasir](https://t.me/niasir), or on
 
 == Changelog ==
 
-= 1.7.0 =
+= 2.0.0 =
 
-* New: the plugin works without Elementor and without WooCommerce; the base language is now English with a complete Persian translation.
-* New modules (each can be turned on separately): drip content, device limit and single session, protected files folder, time-limited access and renewal, inactive student reminders, assignments, analytics, ratings and reviews, timestamped notes, prerequisites and learning paths, course copy and transfer, instructor revenue share, live classes, points and badges.
-* New: question banks with per-difficulty random draws, video quality switching, download prevention and personal signed links for lesson files.
-* New: SMS notifications through the Nias Login plugin.
-* SpotPlayer: licenses issued by the original SpotPlayer plugin are recognized, with a one-click migration.
+A major release that brings together everything built since 1.3.3.
+
+**Works your way**
+
+* The plugin works without Elementor and without WooCommerce; free courses use the built-in "Course" post type.
+* The base language is now English, with a complete Persian translation included.
 * "My courses" also lists free courses the user has started.
-* Security: quiz submissions require access to the course, progress is recorded only for enrolled users, SpotPlayer sync is protected with a nonce and limited to spotplayer.ir, and SSL verification is on for SpotPlayer API requests.
 
-= 1.6.0 =
+**Course building**
 
-* New Nias video player (replaces Plyr) with real watch tracking, resume, keyboard shortcuts, picture in picture and HLS/DASH streaming.
-* Video watch report for every student and lesson.
-* New "Video player" settings page with a live preview.
+* Much faster course loading: each course's curriculum is stored in a single row, migrated automatically.
+* New modules (each can be turned on separately): drip content, prerequisites and learning paths, course copy and transfer.
+
+**Learning experience**
+
+* New Nias video player (replaces Plyr): real watch tracking, resume, keyboard shortcuts, picture in picture, quality switching and HLS/DASH streaming.
+* Video watch report for every student and lesson, and a new "Video player" settings page with a live preview.
+* New modules: timestamped notes, live classes, points and badges, ratings and reviews, inactive student reminders.
+
+**Quizzes, assignments and certificates**
+
+* Question banks with a random draw per student and per difficulty.
+* New assignments module with file upload, scoring and feedback.
+* Drag-and-drop certificate designer with templates, Code128 barcodes, QR codes and import/export.
+* Certificate requirements, verification form and API, "Issued certificates" screen, verification log and a "My certificates" account tab.
+* PDF digital signatures, automatic certificate emails, and issued certificates keep the design they had when issued.
+
+**Selling, instructors and access**
+
+* New modules: time-limited access with renewal, instructor revenue share with payouts, analytics for every course.
+* Instructor panel improvements and an optional approval step for instructors' changes.
+* SMS notifications through the Nias Login plugin.
+* SpotPlayer: licenses issued by the original SpotPlayer plugin are recognized, with a one-click migration.
+
+**Security**
+
+* Personal signed links for lesson files, a protected files folder, device limit and single session, and download prevention.
+* Quiz submissions require access to the course, progress is recorded only for enrolled users, SpotPlayer sync is protected and limited to spotplayer.ir, and SSL verification is on for SpotPlayer API requests.
+* Safer certificate codes, rate-limited verification and several privacy fixes.
 * mPDF and FPDI updated for PHP 8.3.
-
-= 1.5.2 =
-
-* Full HLS (m3u8) support in every player.
-* Lessons without content show a light "coming soon" card.
-
-= 1.5.1 =
-
-* PDF digital signatures for certificates.
-* Issued certificates keep the design they had when issued.
-* Verification log and automatic certificate emails.
-
-= 1.5.0 =
-
-* Advanced certificate designer: multi-select, Code128 barcodes, shapes, auto-save and template import/export.
-* Safer verification codes, rate limiting and several privacy fixes.
-
-= 1.4.1 =
-
-* Much faster course loading: each course's curriculum is stored in a single row, with automatic migration.
-
-= 1.4.0 =
-
-* Drag-and-drop certificate designer with ready templates.
-* Certificate verification form, requirements and "Issued certificates" screen.
-* "My certificates" tab in the WooCommerce account.
 
 = 1.3.3 =
 
@@ -232,3 +232,9 @@ Ask in our Telegram channel and group: [t.me/niasir](https://t.me/niasir), or on
 * Added style tab
 * Added spot configuration
 * Made all fields customizable
+
+== Upgrade Notice ==
+
+= 2.0.0 =
+
+Major update: new video player, certificates designer, optional modules and full Persian translation. Course data is migrated automatically; please back up your site first, and do not downgrade below 2.0.0 afterwards.

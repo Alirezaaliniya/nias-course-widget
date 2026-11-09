@@ -4,7 +4,7 @@
  * Plugin Name: Nias Course Builder
  * Description:   Build, sell and run online courses: lessons and chapters, modern course view, quizzes, certificates, instructors, SpotPlayer licenses and more; with or without WooCommerce and Elementor. Free forever ❤️
  * Plugin URI:  https://nias.ir/product/nias-course-widget/
- * Version:     1.7.0
+ * Version:     2.0.0
  * Author:      Alireza aliniya
  * Author URI:  https://nias.ir/
  * Text Domain: nias-course-widget
@@ -16,7 +16,7 @@
 if (! defined('ABSPATH')) {
     exit; // Exit if accessed directly.
 }
-define('NIAS_COURSE_VERSION', '1.7.0');
+define('NIAS_COURSE_VERSION', '2.0.0');
 
 /**
  * Translations. Source strings are English; the Persian translation comes
