@@ -3,7 +3,7 @@ Contributors: Niasir
 Tags: lms, online course, elearning, certificate, woocommerce
 Donate link: https://nias.ir/
 Requires at least: 5.8
-Tested up to: 7.0
+Tested up to: 7.1.4
 Requires PHP: 7.4
 Stable tag: 2.0.0
 License: GPLv2
