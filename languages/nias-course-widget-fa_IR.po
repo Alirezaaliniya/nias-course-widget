@@ -1543,7 +1543,7 @@ msgstr "دوره را تمام کرده‌اند"
 #: inc/analytics.php
 #, php-format
 msgid "Completion rate %s%%"
-msgstr "نرخ تکمیل %s٪"
+msgstr "نرخ تکمیل %s%%"
 
 #: inc/analytics.php
 msgid "Average progress"
@@ -1923,12 +1923,12 @@ msgstr "ابتدا در آزمون پایانی دوره قبول شوید."
 #: inc/certificate/conditions.php
 #, php-format
 msgid "Watch at least %d%% of the course"
-msgstr "مشاهدهٔ حداقل %d٪ از دوره"
+msgstr "مشاهدهٔ حداقل %d%% از دوره"
 
 #: inc/certificate/conditions.php
 #, php-format
 msgid "Your current progress is %d%%."
-msgstr "پیشرفت فعلی شما %d٪ است."
+msgstr "پیشرفت فعلی شما %d%% است."
 
 #: inc/certificate/conditions.php
 #, php-format
@@ -4093,7 +4093,7 @@ msgstr "آزمون بدون عنوان"
 #: inc/nias-picker.php woocommerce-course/quiz-results.php
 #, php-format
 msgid "%1$s questions · pass at %2$s%%"
-msgstr "%1$s سوال · قبولی از %2$s٪"
+msgstr "%1$s سوال · قبولی از %2$s%%"
 
 #: inc/notes.php
 msgid "Write the note text."
@@ -4210,7 +4210,7 @@ msgstr "پس از دورهٔ قبل"
 #: inc/paths.php
 #, php-format
 msgid "In progress · %s%%"
-msgstr "در حال یادگیری · %s٪"
+msgstr "در حال یادگیری · %s%%"
 
 #: inc/paths.php
 msgid "Ready to start"
@@ -4453,7 +4453,7 @@ msgstr "فقط دانشجویان این دوره می‌توانند نظر ث�
 #: inc/reviews.php
 #, php-format
 msgid "You can rate and review after watching at least %s%% of the course (your progress: %s%%)."
-msgstr "بعد از دیدن دست‌کم %s٪ دوره می‌توانید امتیاز و نظر بدهید (پیشرفت شما: %s٪)."
+msgstr "بعد از دیدن دست‌کم %s%% دوره می‌توانید امتیاز و نظر بدهید (پیشرفت شما: %s%%)."
 
 #: inc/reviews.php
 msgid "Choose a rating (1 to 5 stars)."
@@ -6143,7 +6143,7 @@ msgstr ""
 "%s عزیز،\n"
 "\n"
 "پاسخ‌های تشریحی شما در آزمون «%s» تصحیح شد.\n"
-"نمرهٔ نهایی: %s٪ — %s\n"
+"نمرهٔ نهایی: %s%% — %s\n"
 
 #: woocommerce-course/quiz-course.php
 msgid "Instructor's comment:"
@@ -6177,7 +6177,7 @@ msgstr "%s بار شرکت"
 #: woocommerce-course/quiz-course.php
 #, php-format
 msgid "Last: %s%%"
-msgstr "آخرین: %s٪"
+msgstr "آخرین: %s%%"
 
 #: woocommerce-course/quiz-course.php
 msgid "Essay question awaiting grading"
@@ -6186,12 +6186,12 @@ msgstr "سوال تشریحی در انتظار تصحیح"
 #: woocommerce-course/quiz-course.php
 #, php-format
 msgid "Pass at %s%%"
-msgstr "قبولی از %s٪"
+msgstr "قبولی از %s%%"
 
 #: woocommerce-course/quiz-course.php
 #, php-format
 msgid "Instructor's comment (final score %s%%)"
-msgstr "نظر مدرس (نمرهٔ نهایی %s٪)"
+msgstr "نظر مدرس (نمرهٔ نهایی %s%%)"
 
 #: woocommerce-course/quiz-course.php
 #, php-format
@@ -6201,7 +6201,7 @@ msgstr "%1$s از %2$s آزمون قبول"
 #: woocommerce-course/quiz-course.php
 #, php-format
 msgid "Average score %s%%"
-msgstr "میانگین نمره %s٪"
+msgstr "میانگین نمره %s%%"
 
 #: woocommerce-course/quiz-course.php
 msgid "Go to the course"
@@ -6394,12 +6394,12 @@ msgstr "شرکت %s"
 #: woocommerce-course/quiz-results.php
 #, php-format
 msgid "Automatic part: %s%%"
-msgstr "بخش خودکار: %s٪"
+msgstr "بخش خودکار: %s%%"
 
 #: woocommerce-course/quiz-results.php
 #, php-format
 msgid "Final score: %s%%"
-msgstr "نمرهٔ نهایی: %s٪"
+msgstr "نمرهٔ نهایی: %s%%"
 
 #: woocommerce-course/quiz-results.php
 msgid "Essay"
@@ -6929,7 +6929,7 @@ msgstr "درس %d"
 #: woocommerce-course/watch-tracking.php
 #, php-format
 msgid "Percentages are the share of each video the student really watched (not the playhead position). A lesson with %s%% watched counts as \"completed\"."
-msgstr "درصدها سهمی از هر ویدئو است که دانشجو واقعاً تماشا کرده (نه موقعیت نوار پخش). درس با %s٪ تماشا «تکمیل» حساب می‌شود."
+msgstr "درصدها سهمی از هر ویدئو است که دانشجو واقعاً تماشا کرده (نه موقعیت نوار پخش). درس با %s%% تماشا «تکمیل» حساب می‌شود."
 
 #: woocommerce-course/watch-tracking.php
 msgid "Search student name or email…"

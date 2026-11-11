@@ -167,21 +167,22 @@ function nias_spot_migrate_legacy($batch = 50, $only = null)
         $done['products']++;
     }
     // Orders (WooCommerce, HPOS or not).
-    if (function_exists('wc_get_orders')) {
-        $orders = wc_get_orders(array('limit' => (int) $batch, 'meta_key' => '_spotplayer_data', 'meta_compare' => 'EXISTS', 'type' => 'shop_order', 'status' => array_keys(wc_get_order_statuses()), 'return' => 'objects'));
-        foreach ($orders as $ord) {
-            if ($only && !in_array((int) $ord->get_id(), array_map('intval', (array) $only), true)) {
-                continue; // limited run (only these ids)
+    if (function_exists('wc_get_orders') || class_exists('\Automattic\WooCommerce\Utilities\OrderUtil')) {
+        $hpos = class_exists('\Automattic\WooCommerce\Utilities\OrderUtil') && \Automattic\WooCommerce\Utilities\OrderUtil::custom_orders_table_usage_is_enabled();
+        $t    = $hpos ? $wpdb->prefix . 'wc_orders_meta' : $wpdb->postmeta;
+        $col  = $hpos ? 'order_id' : 'post_id';
+
+        $order_ids = $wpdb->get_col("SELECT DISTINCT a.$col FROM $t a LEFT JOIN $t b ON b.$col = a.$col AND b.meta_key = '_nias_spot_data' WHERE a.meta_key = '_spotplayer_data' AND b.$col IS NULL" . ($only ? ' AND a.' . $col . ' IN (' . implode(',', array_map('intval', (array) $only)) . ')' : '') . " LIMIT " . (int) $batch);
+
+        if (!empty($order_ids)) {
+            $in_clause = implode(',', array_map('intval', $order_ids));
+            // Bulk-copy the original SpotPlayer data directly to the Nias key.
+            $wpdb->query("INSERT INTO $t ($col, meta_key, meta_value) SELECT a.$col, '_nias_spot_data', a.meta_value FROM $t a LEFT JOIN $t b ON b.$col = a.$col AND b.meta_key = '_nias_spot_data' WHERE a.meta_key = '_spotplayer_data' AND b.$col IS NULL AND a.$col IN ($in_clause)");
+            if ($hpos) {
+                // Keep the compatibility postmeta table synchronized if HPOS is active.
+                $wpdb->query("INSERT INTO {$wpdb->postmeta} (post_id, meta_key, meta_value) SELECT a.order_id, '_nias_spot_data', a.meta_value FROM $t a LEFT JOIN {$wpdb->postmeta} b ON b.post_id = a.order_id AND b.meta_key = '_nias_spot_data' WHERE a.meta_key = '_spotplayer_data' AND b.post_id IS NULL AND a.order_id IN ($in_clause)");
             }
-            if (!empty($ord->get_meta('_nias_spot_data'))) {
-                continue;
-            }
-            $d = $ord->get_meta('_spotplayer_data');
-            if (is_array($d) && $d) {
-                $ord->update_meta_data('_nias_spot_data', $d);
-                $ord->save_meta_data();
-                $done['orders']++;
-            }
+            $done['orders'] = count($order_ids);
         }
     }
     // EDD payments.
@@ -1720,13 +1721,15 @@ function nias_spot_woo_shortcode()
         $product   = wc_get_product($_GET['spp']);
         nias_spot_shop_success($spot_data, $product ? $product->get_name() : '', $_GET['spc'] ?? null);
     } else {
+        $found = 0;
         ?>
         <div id="nias-sp_courses">
             <?php
-            foreach (wc_get_orders(array('customer' => $uid)) as $ord) {
+            foreach (wc_get_orders(array('customer' => $uid, 'limit' => -1)) as $ord) {
                 $spot_data = nias_spot_order_meta($ord);
                 if ($spot_data && is_array($spot_data) && isset($spot_data['_id'])) {
                     foreach (nias_spot_woo_order_items($ord, true) as $p) {
+                        $found++;
                         ?>
                         <a href="<?php echo esc_url("?spo={$ord->get_id()}&spp={$p->get_id()}&spc=" . rawurlencode(nias_spot_product_course($p)) . ""); ?>">
                             <?php echo $p->get_image(); ?>
@@ -1739,6 +1742,9 @@ function nias_spot_woo_shortcode()
             ?>
         </div>
         <?php
+        if (!$found) {
+            echo '<div class="woocommerce-info" style="margin:20px 0;line-height:1.8;">' . esc_html__('شما هنوز در دوره‌ای ثبت نام نکرده‌اید یا لایسنسی برای حساب کاربری شما صادر نشده است.', 'nias-course-widget') . '</div>';
+        }
     }
 
     return ob_get_clean();
