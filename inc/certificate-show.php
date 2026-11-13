@@ -460,35 +460,85 @@ function nias_certificate_list_assets()
                 color: #666;
             }
 
-            .certificate-table {
+            .certificate-download-container {
+                direction: rtl;
+                color: #252525;
+                line-height: 1.8;
+            }
+
+            .certificate-download-container h2 {
+                color: #252525;
+                margin: 0 0 12px;
+            }
+
+            .certificate-list {
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr));
+                gap: 16px;
+                margin: 20px 0 0;
+            }
+
+            .certificate-card {
+                min-width: 0;
+                padding: 18px;
+                background: #fff;
+                border: 1px solid #e7dcfa;
+                border-radius: 14px;
+                box-shadow: 0 4px 16px rgba(37, 37, 37, .06);
+                border-top: 3px solid #6611dd;
+            }
+
+            .certificate-card-title {
+                margin: 0 0 14px;
+                color: #252525;
+                font-size: 17px;
+                line-height: 1.6;
+            }
+
+            .certificate-card-details {
+                display: grid;
+                gap: 10px;
+                margin: 0 0 16px;
+            }
+
+            .certificate-card-details > div {
+                display: grid;
+                grid-template-columns: minmax(92px, auto) minmax(0, 1fr);
+                gap: 10px;
+                align-items: start;
+                padding-bottom: 9px;
+                border-bottom: 1px solid #f1edf8;
+            }
+
+            .certificate-card-details dt {
+                color: #777;
+                font-size: 13px;
+            }
+
+            .certificate-card-details dd {
+                min-width: 0;
+                margin: 0;
+                color: #252525;
+                font-size: 13px;
+                overflow-wrap: anywhere;
+            }
+
+            .certificate-card .certificate-form { margin: 0; }
+
+            .certificate-card .button {
+                display: block;
                 width: 100%;
-                border-collapse: collapse;
-                margin: 20px 0;
-            }
-
-            .certificate-table th,
-            .certificate-table td {
-                padding: 10px;
-                border: 1px solid #ddd;
-                text-align: center;
-            }
-
-            .certificate-table th {
-                background: #f5f5f5;
-            }
-
-            .button {
-                background: #4CAF50;
+                background: #6611dd;
                 color: white;
                 border: none;
-                padding: 8px 16px;
-                border-radius: 4px;
+                padding: 10px 16px;
+                border-radius: 8px;
                 cursor: pointer;
                 transition: background 0.3s;
             }
 
-            .button:hover {
-                background: #45a049;
+            .certificate-card .button:hover {
+                background: #520db3;
             }
 
             .certificate-error {
@@ -635,20 +685,18 @@ function nias_certificate_shortcode($atts)
         <h2>مدارک دوره‌ها</h2>
         <p><strong>کاربر:</strong> ' . esc_html($user_data->display_name) . ' (ID: ' . esc_html($user_id) . ')</p>
         ' . $name_form . '
-        <table class="certificate-table">
-            <thead>
-                <tr>
-                    <th>نام دوره</th>
-                    <th>تاریخ تکمیل</th>
-                    <th>کد گواهی</th>
-                    <th>دانلود گواهی</th>
-                </tr>
-            </thead>
-            <tbody>';
+        <div class="certificate-list">';
 
         foreach ($courses as $product_id => $course_data) {
             $output .= sprintf(
-                '<tr><td>%s</td><td>%s</td><td>%s</td><td>%s</td></tr>',
+                '<article class="certificate-card">
+                    <h3 class="certificate-card-title">%s</h3>
+                    <dl class="certificate-card-details">
+                        <div><dt>تاریخ تکمیل</dt><dd>%s</dd></div>
+                        <div><dt>کد گواهی</dt><dd>%s</dd></div>
+                    </dl>
+                    %s
+                </article>',
                 esc_html($course_data['name']),
                 esc_html($course_data['date']),
                 $course_data['status'] === 'locked' ? '—' : esc_html($course_data['certificate_code']),
@@ -657,8 +705,7 @@ function nias_certificate_shortcode($atts)
         }
 
         $output .= '
-            </tbody>
-        </table>
+        </div>
     </div>';
 
         return $output;
